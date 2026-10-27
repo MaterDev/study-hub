@@ -95,6 +95,14 @@
     var entry = {doc:doc, root:root, page:page==null?null:page}; roots.push(entry);
     attachDoc(root.ownerDocument);
     ready.then(function(){ applyTo(entry); });
+    /* lessons rebuild parts of their page when you click (tabs, steppers, cards): re-apply highlights to whatever appears */
+    if(page == null && window.MutationObserver){
+      var t = null, mo = new MutationObserver(function(){
+        if(!entry.root.isConnected){ mo.disconnect(); return; }
+        clearTimeout(t); t = setTimeout(function(){ mo.disconnect(); applyTo(entry); mo.observe(root, {childList:true, subtree:true, characterData:true}); }, 200);
+      });
+      mo.observe(root, {childList:true, subtree:true, characterData:true});
+    }
     return entry;
   }
   function rootForNode(node){
