@@ -356,7 +356,9 @@ const $=id=>document.getElementById(id);
     b.onclick=()=>{ const k=sel.indexOf(i); if(k>=0){ sel.splice(k,1); b.classList.remove('on'); } else if(sel.length<3){ sel.push(i); b.classList.add('on'); } draw(); }; box.appendChild(b); });
   function text(){ return sel.length?'Next client conversation, I will:\n'+sel.map((i,k)=>(k+1)+'. '+Q[i][0]+': '+Q[i][1]).join('\n'):''; }
   function draw(){ plan.innerHTML=sel.length?'<b>Next client conversation, I will:</b><ol>'+sel.map(i=>'<li><b>'+Q[i][0]+'</b>: '+Q[i][1]+'</li>').join('')+'</ol>':'<span class="small">Pick up to three.</span>'; }
-  $('plan-copy').onclick=()=>{ const t=text(); if(!t){ $('plan-msg').textContent='Pick one first.'; return; } (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>$('plan-msg').textContent='Copied.',()=>$('plan-msg').textContent='Could not copy.'); };
+  $('plan-copy').onclick=()=>{ const t=text(); if(!t){ $('plan-msg').textContent='Pick one first.'; return; } const done=ok=>{ $('plan-msg').textContent=ok?'Copied.':'Could not copy.'; };
+    const fallback=()=>{ const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;left:-9999px;top:0;'; document.body.appendChild(ta); ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(e){} ta.remove(); done(ok); };
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(()=>done(true),fallback); } else fallback(); };
   draw();
 })();
 
