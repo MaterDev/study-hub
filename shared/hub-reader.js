@@ -9,7 +9,7 @@
   var css = [
     ".rd-tabs{position:absolute; top:34%; right:4px; z-index:22; display:flex; flex-direction:column; gap:6px; transition:right .18s steps(4);}",
     ".rd-tab{writing-mode:vertical-rl; transform:rotate(180deg); background:var(--surface); color:var(--ink); border:3px solid var(--outline); border-radius:10px; padding:14px 8px; font-family:var(--font-ui); font-weight:800; font-size:.74rem; letter-spacing:.04em; cursor:pointer; white-space:nowrap; line-height:1; box-shadow:-3px -3px 0 rgba(86,98,138,.25);}",
-    ".rd-tab .rd-n{display:inline-block; margin-bottom:6px; min-width:16px; padding:2px 3px; border-radius:9px; background:var(--vermil,#b35c5c); color:#fff; font-size:.64rem; text-align:center; writing-mode:horizontal-tb; transform:none;}",
+    ".rd-tab .rd-n{display:inline-block; margin:10px 0 10px; min-width:16px; padding:2px 3px; border-radius:9px; background:var(--vermil,#b35c5c); color:#fff; font-size:.64rem; text-align:center; writing-mode:horizontal-tb; transform:rotate(180deg);}",
     ".rd-tab:hover,.rd-tab[aria-pressed=true]{background:var(--ochre,#ffe066); color:var(--outline);}",
     ".rd-drawer{position:absolute; top:0; right:0; bottom:0; z-index:21; width:min(1200px,68%); min-width:420px; background:var(--surface); border-left:4px solid var(--outline); display:flex; flex-direction:column; transform:translateX(100%); visibility:hidden; transition:transform .18s steps(5), visibility 0s .18s; box-shadow:-10px 0 0 rgba(86,98,138,.18);}",
     ".rd-drawer.open{transform:none; visibility:visible; transition:transform .18s steps(5);}",
