@@ -154,22 +154,45 @@
     body.style.background = "var(--surface)"; current = r; drawer.classList.add("open"); titleEl.textContent = r.title; creditEl.textContent = "Highlights and notes are saved on this machine."; posEl.textContent = ""; pages = []; drawTabs();
     renderNotes(); setTimeout(placeTabs, 220);
   }
+  var editNote = null;
   function renderNotes(){
     if(!current || current.kind!=="notes" || !window.hubNotes) return;
+    if(editNote && body.querySelector(".nt-ed")) return;   /* don't wipe an editor mid-typing */
     var N = window.hubNotes, groups = [];
     var lk = N.currentDoc(); if(lk) groups.push({label:"This page", doc:lk, kind:"lesson"});
     readings.forEach(function(x){ if(x.kind!=="notes") groups.push({label:x.title, doc:"reading:"+x.id, kind:"reading", id:x.id}); });
     var html = '<div class="nt-list" data-testid="notes-list">', total = 0;
     groups.forEach(function(g){ var items = N.list(g.doc); total += items.length; if(!items.length) return;
       html += '<div class="nt-h">'+esc(g.label)+'</div>';
-      items.forEach(function(a){ html += '<div class="nt-item" data-id="'+a.id+'" data-doc="'+esc(g.doc)+'" data-kind="'+g.kind+'" data-page="'+(a.page||"")+'" data-rid="'+(g.id||"")+'" style="border-left-color:'+({yellow:"var(--ochre)",green:"var(--forest)",blue:"var(--cobalt)"}[a.color]||"var(--ochre)")+'" data-testid="notes-item-'+a.id+'">'+
-        '<div class="nt-q">“'+esc(a.quote.length>180?a.quote.slice(0,180)+"…":a.quote)+'”</div>'+(a.note?'<div class="nt-n">'+a.note+'</div>':'')+
-        '<div class="nt-meta"><span class="grow">'+(a.page?"p. "+a.page+" · ":"")+new Date(a.created).toLocaleDateString()+'</span><button type="button" class="rd-btn" data-del="'+a.id+'" aria-label="Delete highlight" data-testid="notes-delete-'+a.id+'">&times;</button></div></div>'; }); });
-    if(!total) html += '<p class="nt-empty" data-testid="notes-empty">Nothing highlighted yet. Select text on this page'+(readings.length>1?" or in a reading":"")+' to highlight it or add a note.</p>';
+      items.forEach(function(a){
+        var col = ({yellow:"var(--ochre)",green:"var(--forest)",blue:"var(--cobalt)"}[a.color]||"var(--ochre)");
+        html += '<div class="nt-item" data-id="'+a.id+'" data-doc="'+esc(g.doc)+'" data-kind="'+g.kind+'" data-page="'+(a.page||"")+'" data-rid="'+(g.id||"")+'" style="border-left-color:'+col+'" data-testid="notes-item-'+a.id+'">'+
+          '<div class="nt-q">“'+esc(a.quote.length>180?a.quote.slice(0,180)+"…":a.quote)+'”</div>';
+        if(editNote===a.id){
+          html += '<div class="hn-tools"><button type="button" class="hn-btn" data-cmd="bold" aria-label="Bold" data-testid="notes-bold"><b>B</b></button><button type="button" class="hn-btn" data-cmd="italic" aria-label="Italic" data-testid="notes-italic"><i>I</i></button><button type="button" class="hn-btn" data-cmd="insertUnorderedList" aria-label="Bulleted list" data-testid="notes-list-btn">&bull;&nbsp;List</button></div>'+
+            '<div class="hn-ed nt-ed" contenteditable="true" data-ph="Write a note…" aria-label="Note" data-testid="notes-editor-'+a.id+'">'+(a.note||"")+'</div>'+
+            '<div class="hn-row"><span class="grow"></span><button type="button" class="hn-btn" data-nact="cancel" data-testid="notes-cancel">Cancel</button><button type="button" class="hn-btn primary" data-nact="save" data-testid="notes-save">Save</button></div>';
+        } else {
+          if(a.note) html += '<div class="nt-n">'+a.note+'</div>';
+          html += '<div class="nt-meta"><span class="grow">'+(a.page?"p. "+a.page+" · ":"")+new Date(a.created).toLocaleDateString()+'</span>'+
+            '<button type="button" class="hn-btn" data-edit="'+a.id+'" data-testid="notes-edit-'+a.id+'">'+(a.note?"Edit note":"Add note")+'</button>'+
+            '<button type="button" class="hn-btn warn" data-del="'+a.id+'" aria-label="Delete highlight" data-testid="notes-delete-'+a.id+'">&times;</button></div>';
+        }
+        html += '</div>'; }); });
+    if(!total) html += '<p class="nt-empty" data-testid="notes-empty">Nothing highlighted yet. Right-click selected text'+(readings.length>1?" on this page or in a reading":"")+' and choose a highlight colour.</p>';
     body.innerHTML = html + '</div>';
+    if(editNote){ var ed = body.querySelector(".nt-ed"); if(ed){ ed.focus(); var r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); var sl = getSelection(); sl.removeAllRanges(); sl.addRange(r); } }
   }
+  body.addEventListener("mousedown", function(e){ if(e.target.closest("[data-cmd]")) e.preventDefault(); });
   body.addEventListener("click", function(e){
-    var d = e.target.closest("[data-del]"); if(d){ e.stopPropagation(); window.hubNotes.remove(d.dataset.del); return; }
+    var cm = e.target.closest("[data-cmd]"); if(cm){ document.execCommand(cm.dataset.cmd); var ed0 = body.querySelector(".nt-ed"); if(ed0) ed0.focus(); return; }
+    var d = e.target.closest("[data-del]"); if(d){ e.stopPropagation(); var r = d.getBoundingClientRect(); window.hubNotes.askDelete(d.dataset.del, {left:r.left, right:r.right, top:r.top, bottom:r.bottom}); return; }
+    var ed = e.target.closest("[data-edit]"); if(ed){ editNote = ed.dataset.edit; renderNotes(); return; }
+    var na = e.target.closest("[data-nact]"); if(na){
+      if(na.dataset.nact==="save"){ var box = body.querySelector(".nt-ed"), id = editNote; editNote = null; if(box) window.hubNotes.setNote(id, box.innerHTML); }
+      else editNote = null;
+      renderNotes(); return; }
+    if(e.target.closest(".nt-ed, .hn-tools")) return;
     var it = e.target.closest(".nt-item"); if(!it) return;
     if(it.dataset.kind==="reading"){ openAt(it.dataset.rid, +it.dataset.page || 1); }
     else { window.hubNotes.jump(it.dataset.id); }

@@ -101,16 +101,11 @@
 
   /* ---------- UI (lives in the hub shell) ---------- */
   var VAR = {yellow:"--ochre", green:"--forest", blue:"--cobalt"}, KEYS = ["yellow","green","blue"];
-  var pen = {on:false, color:"yellow"}, penBtns = {}, strip, editing = false;
-  try{ pen.color = localStorage.getItem("hub-pen-color") || "yellow"; if(!VAR[pen.color]) pen.color = "yellow"; pen.on = sessionStorage.getItem("hub-pen-on")==="1"; }catch(e){}
+  var pen = {color:"yellow"}, editing = false, confirming = false;
   function swatch(k){ return "var("+VAR[k]+")"; }
   function css(){
     var st = document.createElement("style");
     st.textContent =
-      ".pen-switch button[data-k]{width:30px; padding:0;} .pen-switch .sw{display:block; width:14px; height:14px; margin:0 auto; border-radius:50%; border:2px solid var(--outline);}" +
-      ".pen-switch button[data-k][aria-pressed=true]{background:var(--ink-faint,#a0a9c6);} .pen-switch button[data-k][aria-pressed=true] .sw{box-shadow:0 0 0 2px var(--surface,#fff),0 0 0 4px var(--outline);}" +
-      ".pen-lbl{font-family:var(--font-pixel); font-size:.48rem; padding:0 8px; display:flex; align-items:center; color:var(--ink-mute);}" +
-      ".pen-strip{position:absolute; left:0; right:0; top:0; height:4px; z-index:25; pointer-events:none; display:none;}" +
       ".hn-pop{position:fixed; z-index:60; width:min(330px,88vw); background:var(--surface); color:var(--ink); border:3px solid var(--outline); border-radius:12px; padding:10px 12px 10px; box-shadow:4px 4px 0 rgba(86,98,138,.3); font-family:var(--font-ui);}" +
       ".hn-pop[hidden]{display:none;} .hn-arrow{position:absolute; width:12px; height:12px; background:var(--surface); border:3px solid var(--outline); transform:rotate(45deg);} .hn-pop.below .hn-arrow{top:-9px; border-right:0; border-bottom:0;} .hn-pop.above .hn-arrow{bottom:-9px; border-left:0; border-top:0;}" +
       ".hn-quote{font-size:.72rem; font-style:italic; margin:0 0 8px; opacity:.75; max-height:3.2em; overflow:hidden;}" +
@@ -125,39 +120,16 @@
       ".nt-q{font-size:.78rem; font-style:italic;} .nt-n{font-size:.82rem; margin-top:5px; padding-left:8px; border-left:3px dotted var(--ink);} .nt-n ul,.nt-n ol{margin:.2em 0; padding-left:1.2em;}" +
       ".nt-meta{display:flex; gap:8px; align-items:center; margin-top:4px; font-size:.68rem; opacity:.75;} .nt-meta .grow{flex:1;} .nt-empty{font-family:var(--font-ui); font-size:.84rem; padding:6px 2px; color:var(--ink);}";
     document.head.appendChild(st);
-    /* pen control in the top bar, before the theme switch */
-    var sw = document.querySelector(".theme-switch");
-    if(sw){
-      var box = document.createElement("div"); box.className = "theme-switch pen-switch"; box.setAttribute("role","group"); box.setAttribute("aria-label","Highlighter"); box.setAttribute("data-testid","pen-switch");
-      box.innerHTML = '<span class="pen-lbl">PEN</span><button type="button" data-off aria-pressed="true" title="Highlighter off (H)" data-testid="pen-off">OFF</button>' +
-        KEYS.map(function(k){ return '<button type="button" data-k="'+k+'" aria-pressed="false" title="Highlight in '+k+' (H)" aria-label="Highlight '+k+'" data-testid="pen-colour-'+k+'"><span class="sw" style="background:'+swatch(k)+'"></span></button>'; }).join("");
-      sw.parentNode.insertBefore(box, sw); penBox = box;
-      box.addEventListener("click", function(e){ var b = e.target.closest("button"); if(!b) return;
-        if(b.hasAttribute("data-off")) setPen(false); else setPen(true, b.dataset.k); });
-    }
-    strip = document.createElement("div"); strip.className = "pen-strip"; strip.setAttribute("data-testid","pen-strip");
-    var main = document.querySelector(".hub-main"); if(main) main.appendChild(strip);
     pop = document.createElement("div"); pop.className = "hn-pop below"; pop.hidden = true; pop.setAttribute("data-testid","note-popover");
     document.body.appendChild(pop); pop.addEventListener("mouseenter", function(){ clearTimeout(hoverT); }); pop.addEventListener("mouseleave", function(){ if(!pinned){ clearTimeout(hoverT); hoverT = setTimeout(function(){ if(!pinned) closePop(); }, 280); } });
     document.addEventListener("mousedown", function(e){ if(!pop.hidden && !pop.contains(e.target)) closePop(); });
     document.addEventListener("keydown", docKey);
     menuInit();
-    setPen(pen.on, pen.color, true);
-  }
-  var penBox = null;
-  function setPen(on, color, quiet){
-    if(color && VAR[color]){ pen.color = color; try{ localStorage.setItem("hub-pen-color", color); }catch(e){} }
-    pen.on = !!on; try{ sessionStorage.setItem("hub-pen-on", on ? "1":"0"); }catch(e){}
-    if(penBox){ penBox.querySelector("[data-off]").setAttribute("aria-pressed", String(!pen.on));
-      penBox.querySelectorAll("[data-k]").forEach(function(b){ b.setAttribute("aria-pressed", String(pen.on && b.dataset.k===pen.color)); }); }
-    if(strip){ strip.style.display = pen.on ? "block" : "none"; strip.style.background = swatch(pen.color); }
-    docsSeen.forEach(function(d){ try{ if(d.body) d.body.style.cursor = pen.on ? "text" : ""; }catch(e){} });
   }
   function docKey(e){
     if(e.metaKey || e.ctrlKey || e.altKey) return;
     var t = e.target; if(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     if(e.key==="Escape"){ if(!pop.hidden) closePop(); return; }
-    if(e.key==="h" || e.key==="H"){ if(pen.on) setPen(false); else setPen(true, pen.color); }
   }
   function shellRect(rect, doc){
     var off = {left:0, top:0};
@@ -173,21 +145,14 @@
     var sel = e.root.ownerDocument.getSelection(); if(sel) sel.removeAllRanges();
     applyTo(e); persist(e.doc); return ann;
   }
-  function onSelect(doc){
-    if(!pen.on) return;
-    var sel = doc.getSelection(); if(!sel || sel.isCollapsed || !sel.rangeCount) return;
-    var range = sel.getRangeAt(0), e = rootForNode(range.startContainer); if(!e) return;
-    var pe = range.startContainer.parentElement; if(pe && pe.closest && pe.closest("input,textarea,button,select,[contenteditable],[data-no-annotate]")) return;
-    makeHighlight(e, range, pen.color);
-  }
-
   /* ---------- right-click menu: the usual items plus highlighting ---------- */
   var menu = null, menuCtx = null;
   function isEditable(t){ return !!(t && t.closest && t.closest("input,textarea,[contenteditable=true]")); }
   function openMenu(doc, ev){
     var t = ev.target, e = rootForNode(t); if(!e) return false;
+    var r0 = shellRect({left:ev.clientX, right:ev.clientX, top:ev.clientY, bottom:ev.clientY}, doc);
     var sel = doc.getSelection(), has = !!(sel && !sel.isCollapsed && sel.rangeCount), mark = t.closest && t.closest("mark[data-hl]");
-    menuCtx = {doc:doc, entry:e, range: has ? sel.getRangeAt(0).cloneRange() : null, text: has ? sel.toString() : "", target:t, id: mark ? mark.getAttribute("data-hl") : null, editable:isEditable(t)};
+    menuCtx = {doc:doc, entry:e, range: has ? sel.getRangeAt(0).cloneRange() : null, text: has ? sel.toString() : "", px:r0.left, py:r0.top, target:t, id: mark ? mark.getAttribute("data-hl") : null, editable:isEditable(t)};
     var ann = menuCtx.id && find(menuCtx.id), h = "";
     function item(a, label, extra){ return '<button type="button" class="cm-i" data-cm="'+a+'" data-testid="ctx-'+a+'">'+label+(extra||"")+'</button>'; }
     function sws(a){ return '<div class="cm-sw">'+KEYS.map(function(k){ return '<button type="button" class="hn-sw" data-cmc="'+k+'" aria-label="Highlight '+k+'" data-testid="ctx-colour-'+k+'" style="background:'+swatch(k)+'"></button>'; }).join("")+'</div>'; }
@@ -197,7 +162,6 @@
       if(has) h += item("copy","Copy"); h += item("all","Select all");
       if(has && !ann){ h += '<div class="cm-sep"></div><div class="cm-l">Highlight</div>' + sws() + item("note","Highlight and add note"); }
       if(ann){ h += '<div class="cm-sep"></div>' + item("editnote", ann.ann.note ? "Edit note" : "Add note") + '<div class="cm-l">Colour</div>' + sws() + item("unhl","Remove highlight"); }
-      h += '<div class="cm-sep"></div>' + item("pen", pen.on ? "Turn highlighter off" : "Turn highlighter on", '<kbd>H</kbd>');
     }
     menu.innerHTML = h; menu.hidden = false;
     var r = shellRect({left:ev.clientX, right:ev.clientX, top:ev.clientY, bottom:ev.clientY}, doc), w = menu.offsetWidth, hh = menu.offsetHeight;
@@ -224,8 +188,7 @@
       else if(a==="all"){ try{ if(x.editable) d.execCommand("selectAll"); else d.getSelection().selectAllChildren(x.entry.page!=null ? x.entry.root : d.body); }catch(e){} }
       else if(a==="note"){ var an = x.range && makeHighlight(x.entry, x.range, pen.color); if(an){ setTimeout(function(){ var m = x.entry.root.querySelector('mark[data-hl="'+an.id+'"]'); if(m){ pinned = true; openPop(an.id, shellRect(m.getBoundingClientRect(), d)); editing = true; renderPop(); } }, 60); } }
       else if(a==="editnote"){ var mk = x.entry.root.querySelector('mark[data-hl="'+x.id+'"]'); if(mk){ pinned = true; openPop(x.id, shellRect(mk.getBoundingClientRect(), d)); editing = true; renderPop(); } }
-      else if(a==="unhl"){ remove(x.id); }
-      else if(a==="pen"){ setPen(!pen.on, pen.color); }
+      else if(a==="unhl"){ var mu = x.entry.root.querySelector('mark[data-hl="'+x.id+'"]'); askDelete(x.id, mu ? shellRect(mu.getBoundingClientRect(), d) : {left:x.px, right:x.px, top:x.py, bottom:x.py}); }
     });
     document.addEventListener("mousedown", function(e){ if(!menu.contains(e.target)) closeMenu(); });
     document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeMenu(); });
@@ -238,7 +201,6 @@
   }
   function attachDoc(doc){
     if(docsSeen.indexOf(doc) !== -1) return; docsSeen.push(doc);
-    doc.addEventListener("mouseup", function(){ setTimeout(function(){ onSelect(doc); }, 0); });
     doc.addEventListener("contextmenu", function(ev){ if(ev.shiftKey) return; if(openMenu(doc, ev)) ev.preventDefault(); });
     if(doc !== document){
       doc.addEventListener("mousedown", function(){ if(!pop.hidden) closePop(); closeMenu(); });
@@ -246,7 +208,7 @@
     }
     /* a note shows where it was taken: hovering its text previews it; clicking pins it open */
     doc.addEventListener("mouseover", function(ev){
-      var m = ev.target.closest && ev.target.closest("mark[data-note]"); if(!m || pinned || editing) return;
+      var m = ev.target.closest && ev.target.closest("mark[data-note]"); if(!m || pinned || editing || confirming) return;
       clearTimeout(hoverT); var id = m.getAttribute("data-hl"); if(!pop.hidden && popId===id) return;
       hoverT = setTimeout(function(){ if(pinned || editing) return; var f = find(id); if(f) { popId = id; popAnchor = shellRect(m.getBoundingClientRect(), doc); renderPop(); } }, 220);
     });
@@ -276,12 +238,15 @@
   }
 
   var popAnchor = null, popId = null, pinned = false, hoverT = null;
-  function openPop(id, rect){ popId = id; popAnchor = rect; editing = false; renderPop(); }
+  function openPop(id, rect){ popId = id; popAnchor = rect; editing = false; confirming = false; renderPop(); }
+  function askDelete(id, rect){ pinned = true; popId = id; popAnchor = rect; editing = false; confirming = true; renderPop(); }
   function renderPop(){
     var f = find(popId); if(!f){ pop.hidden = true; return; } var a = f.ann;
     var q = a.quote.length>120 ? a.quote.slice(0,120)+"…" : a.quote;
     var h = '<div class="hn-arrow"></div><p class="hn-quote" data-testid="note-quote">“'+q.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];})+'”</p>';
-    if(editing){
+    if(confirming){
+      h += '<p class="hn-note" data-testid="note-confirm-text">Delete this highlight'+(a.note?' and its note':'')+'?</p><div class="hn-row"><span class="grow"></span><button type="button" class="hn-btn" data-a="cancel" data-testid="note-delete-cancel">Cancel</button><button type="button" class="hn-btn warn" data-a="confirmdel" data-testid="note-delete-confirm">Delete</button></div>';
+    } else if(editing){
       h += '<div class="hn-tools"><button type="button" class="hn-btn" data-cmd="bold" aria-label="Bold" data-testid="note-bold"><b>B</b></button><button type="button" class="hn-btn" data-cmd="italic" aria-label="Italic" data-testid="note-italic"><i>I</i></button><button type="button" class="hn-btn" data-cmd="insertUnorderedList" aria-label="Bulleted list" data-testid="note-list">&bull;&nbsp;List</button></div>' +
         '<div class="hn-ed" contenteditable="true" data-ph="Write a note…" aria-label="Note" data-testid="note-editor">'+(a.note||"")+'</div>' +
         '<div class="hn-row"><span class="grow"></span><button type="button" class="hn-btn" data-a="cancel" data-testid="note-cancel">Cancel</button><button type="button" class="hn-btn primary" data-a="save" data-testid="note-save">Save</button></div>';
@@ -309,11 +274,12 @@
     var c = e.target.closest("[data-c]"); if(c){ var f = find(popId); if(f){ f.ann.color = c.dataset.c; restyle(f.ann); persist(f.doc); renderPop(); } return; }
     var b = e.target.closest("[data-a]"); if(!b) return; var a = b.dataset.a;
     if(a==="edit"){ editing = true; renderPop(); }
-    else if(a==="cancel"){ editing = false; renderPop(); }
+    else if(a==="cancel"){ editing = false; confirming = false; renderPop(); }
     else if(a==="save"){ var f2 = find(popId); if(f2){ f2.ann.note = clean(pop.querySelector(".hn-ed").innerHTML); f2.ann.updated = new Date().toISOString(); restyle(f2.ann); persist(f2.doc); } editing = false; renderPop(); }
-    else if(a==="del"){ remove(popId); closePop(); }
+    else if(a==="del"){ pinned = true; confirming = true; renderPop(); }
+    else if(a==="confirmdel"){ remove(popId); closePop(); }
   }); document.addEventListener("mousedown", function(e){ if(e.target.closest && e.target.closest("[data-cmd]")) e.preventDefault(); }); }
-  function closePop(){ clearTimeout(hoverT); pop.hidden = true; popId = null; editing = false; pinned = false; }
+  function closePop(){ clearTimeout(hoverT); pop.hidden = true; popId = null; editing = false; confirming = false; pinned = false; }
   function remove(id){ var f = find(id); if(!f) return; store.items[f.doc] = store.items[f.doc].filter(function(a){ return a.id!==id; }); unwrap(id); persist(f.doc); }
 
   function jump(id){
@@ -342,6 +308,8 @@
 
   window.hubNotes = {
     registerRoot:registerRoot, list:list, remove:remove, jump:jump, onChange:function(f){ listeners.push(f); }, ready:ready,
+    setNote:function(id, html){ var f = find(id); if(!f) return; f.ann.note = clean(html); f.ann.updated = new Date().toISOString(); restyle(f.ann); persist(f.doc); },
+    askDelete:askDelete,
     currentDoc:function(){ return currentKey; }, colors:COLORS, all:function(){ return store.items; }
   };
 })();
