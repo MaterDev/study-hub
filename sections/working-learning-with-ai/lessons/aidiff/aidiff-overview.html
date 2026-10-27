@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module: Why AI Helps Some People and Hurts Others</title>
+<link rel="stylesheet" href="../../../../shared/theme.css">
+<link rel="stylesheet" href="aidiff.css">
+<style>
+  .map{display:grid; gap:12px; margin:16px 0;}
+  .mcard{display:grid; grid-template-columns:64px 1fr; gap:14px; align-items:center; background:var(--surface); border:3px solid var(--outline); border-radius:6px;
+    padding:14px 16px; box-shadow:4px 4px 0 rgba(86,98,138,.14); color:var(--ink-soft); font-weight:400; background-image:none !important; transition:transform .1s steps(2);}
+  .mcard:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(86,98,138,.2);}
+  .mcard .no{width:56px; height:56px; display:grid; place-items:center; font-family:var(--font-pixel); font-size:.9rem; color:var(--ink);
+    background:linear-gradient(180deg,#fbebb3,var(--gold) 55%,#e6c46a); border:3px solid var(--outline); border-radius:5px; box-shadow:inset 3px 3px 0 rgba(255,255,255,.6);}
+  .mcard h3{margin:0 0 2px; font-size:1.15rem;} .mcard p{margin:0; font-size:.92rem;}
+  .mcard .meta{font-family:var(--font-ui); font-size:.75rem; color:var(--ink-mute); margin-top:4px;}
+  .gl{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+  @media(max-width:640px){.gl{grid-template-columns:1fr;}}
+  .gl div{background:var(--paper); border:2px solid var(--line-strong); border-radius:5px; padding:10px 12px; font-size:.9rem;}
+  .gl b{display:block; font-family:var(--font-display); color:var(--ink); font-size:1rem;}
+  /* big picture animation */
+  .bp{position:relative; height:250px; background:#f7fbfe; border:3px solid var(--outline); border-radius:6px; overflow:hidden; margin:14px 0;}
+  .bp .person{position:absolute; left:6%; width:120px; text-align:center; font-family:var(--font-ui); font-size:.8rem; color:var(--ink-soft);}
+  .bp .avatar{width:42px; height:42px; margin:0 auto 4px; --sz:42px;}
+  .bp .tool{position:absolute; left:42%; top:96px; width:96px; height:56px; border:3px solid var(--outline); border-radius:6px; background:#e3dbf6;
+    display:grid; place-items:center; font-family:var(--font-pixel); font-size:.55rem; color:var(--ink);}
+  .bp .out{position:absolute; right:6%; width:150px; font-family:var(--font-ui); font-size:.82rem; text-align:right;}
+  .bp .bar{height:14px; border:2px solid var(--outline); border-radius:3px; margin-left:auto; animation:grow-w 1.2s steps(8) both;}
+  .bp .dot{position:absolute; width:12px; height:12px; border:2px solid var(--outline); border-radius:2px; background:var(--gold); animation:travel 3s steps(18) infinite;}
+  @keyframes travel{0%{left:20%; opacity:0;} 10%{opacity:1;} 45%{left:44%;} 55%{left:52%;} 90%{opacity:1;} 100%{left:74%; opacity:0;}}
+</style>
+</head>
+<body data-step="0">
+<div class="wrap">
+  <div id="mod-strip"></div>
+  <h1>Why AI Helps Some People and Hurts Others</h1>
+  <p class="subtitle">A five-lesson module on individual differences in generative-AI effectiveness &mdash; and what to do about them.</p>
+
+  <div class="objectives">
+    <b class="h">BY THE END OF THIS MODULE YOU CAN…</b>
+    <ul>
+      <li>Explain why identical AI tools produce very different outcomes for different people.</li>
+      <li>Spot when a task sits outside the AI's "jagged frontier" &mdash; and why that's hard to see.</li>
+      <li>Distinguish <strong>assisted performance</strong> from <strong>independent capability</strong>, and why AI can raise one while lowering the other.</li>
+      <li>Name the different risks for novices (upskilling inhibition) and experts (deskilling).</li>
+      <li>Apply three design levers to your own work so productivity gains don't cost you skill.</li>
+      <li>Judge how strong each piece of evidence actually is.</li>
+    </ul>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The big picture</h2>
+  <p class="lead">Same tool in, very different results out. The source paper's central claim: that variance is driven by individual differences &mdash; <em>and</em> using the tool feeds back to change those differences over time.</p>
+  <div class="bp" aria-hidden="true">
+    <div class="person" style="top:30px;"><div class="avatar"><div class="sprite-bit" style="--sz:42px;"></div></div>novice</div>
+    <div class="person" style="top:140px;"><div class="avatar"><div class="sprite-bit" style="--sz:42px; filter:hue-rotate(200deg);"></div></div>expert</div>
+    <div class="tool">SAME AI</div>
+    <div class="dot" style="top:58px;"></div><div class="dot" style="top:168px; animation-delay:1.5s;"></div>
+    <div class="out" style="top:44px;">task score<div class="bar" style="width:120px; background:var(--forest-soft);"></div><span style="font-size:.72rem; color:var(--ink-mute)">big boost&hellip; skill not forming?</span></div>
+    <div class="out" style="top:154px;">task score<div class="bar" style="width:140px; background:var(--cobalt-soft); animation-delay:.4s;"></div><span style="font-size:.72rem; color:var(--ink-mute)">small boost&hellip; vigilance fading?</span></div>
+  </div>
+  <div class="keyidea"><strong>One sentence to carry through the module:</strong> novices are harmed by what AI <em>gives</em> them, and experts by what AI <em>relieves</em> them of &mdash; so whether AI builds or erodes capability is mostly a matter of <em>how</em> it's used, not whether.</div>
+
+  <h2 id="sec2"><span class="num">2</span> The module map</h2>
+  <div class="map">
+    <a class="mcard" href="aidiff-1-puzzle.html"><span class="no">1</span><div><h3>The puzzle: same tools, different results</h3><p>The compression effect, and six candidate explanations for the variance.</p><div class="meta">≈12 min · interactive chart · explanation explorer</div></div></a>
+    <a class="mcard" href="aidiff-2-frontier.html"><span class="no">2</span><div><h3>The jagged frontier &amp; calibration</h3><p>Where AI helps vs. hurts, why the edge is invisible, and the "dilettante problem."</p><div class="meta">≈12 min · frontier explorer · sycophancy demo</div></div></a>
+    <a class="mcard" href="aidiff-3-loop.html"><span class="no">3</span><div><h3>The loop: use reshapes the user</h3><p>Cognitive offloading, performance vs. learning, and the different harms for novices and experts.</p><div class="meta">≈15 min · animated loop · evidence charts</div></div></a>
+    <a class="mcard" href="aidiff-4-design.html"><span class="no">4</span><div><h3>Designing for capability</h3><p>Two horizons of effective use and three levers &mdash; translated into a developer's daily practice.</p><div class="meta">≈12 min · workflow animation · reflection</div></div></a>
+    <a class="mcard" href="aidiff-5-evidence.html"><span class="no">5</span><div><h3>Checking the evidence</h3><p>Every load-bearing reference, verified against its source &mdash; with study designs, corrections and caveats.</p><div class="meta">≈10 min · filterable evidence explorer</div></div></a>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Key terms</h2>
+  <div class="gl">
+    <div><b>Compression effect</b>AI lifts lower performers the most, narrowing the gap with top performers.</div>
+    <div><b>Jagged frontier</b>The irregular boundary between tasks AI does well and tasks where it quietly fails.</div>
+    <div><b>Epistemic calibration</b>How well your confidence matches your real knowledge &mdash; and the AI's real output quality.</div>
+    <div><b>Cognitive offloading</b>Moving mental work onto an external tool. Generative AI offloads <em>generation</em> itself.</div>
+    <div><b>Deskilling</b>Losing a skill you already had, through disuse (the expert risk).</div>
+    <div><b>Upskilling inhibition</b>A skill never forming because the tool did the formative work (the novice risk).</div>
+    <div><b>Preserved generation</b>Designing AI use so you make the first attempt, and AI shapes or checks it.</div>
+    <div><b>Two horizons</b>Judging AI use by today's task <em>and</em> the capability you'll need without the tool.</div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> About the source</h2>
+  <p>The anchor is Lovett, N. (2026), <em>Individual differences in generative AI effectiveness: An empirical puzzle for HRD research</em>, published in <em>New Horizons in Adult Education &amp; Human Resource Development</em> (peer-reviewed, July 2026). It's a <strong>perspectives piece</strong>: it synthesizes existing studies and proposes a research agenda, rather than reporting a new experiment. Lesson 5 checks each study it leans on.</p>
+  <p class="src"><a href="https://doi.org/10.1177/19394225261472792" target="_blank">doi:10.1177/19394225261472792</a> · <a href="https://digitalcommons.odu.edu/cgi/viewcontent.cgi?article=1215&amp;context=efl_fac_pubs" target="_blank">open accepted manuscript</a></p>
+
+  <div id="mod-next"></div>
+  <footer>Module overview · Working &amp; Learning with AI · your Study Hub</footer>
+</div>
+<script src="aidiff.js"></script>
+<script src="../../../registry.js"></script>
+<script src="../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

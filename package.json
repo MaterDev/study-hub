@@ -1,0 +1,13 @@
+{
+  "name": "study-hub",
+  "private": true,
+  "description": "Personal interactive study hub \u2014 static lessons served with hot reload.",
+  "scripts": {
+    "dev": "node server.js --open",
+    "start": "node server.js",
+    "check": "node scripts/check-structure.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

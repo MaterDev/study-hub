@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Animation Fundamentals — Lesson 05</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-top">
+        <span class="lesson-badge">Lesson 05</span>
+        <h1>JavaScript Animation Fundamentals</h1>
+        <span class="subtitle">rAF · delta time · easing · canvas</span>
+      </div>
+      <nav class="tab-nav">
+        <button class="tab active" data-tab="loop">⏱ Loop Explorer</button>
+        <button class="tab" data-tab="delta">Δ Delta Time</button>
+        <button class="tab" data-tab="easing">〜 Easing Lab</button>
+        <button class="tab" data-tab="canvas">◎ Canvas Demo</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ══════════════════════════════
+         TAB 1: Loop Explorer
+    ══════════════════════════════ -->
+    <section class="tab-pane active" id="tab-loop">
+      <div class="pane-header">
+        <h2 class="pane-title">rAF Loop Explorer</h2>
+        <p class="pane-desc">A live <code>requestAnimationFrame</code> loop runs as long as this tab is visible. The stats below update every frame — each number is read directly from the <code>DOMHighResTimeStamp</code> passed to the callback.</p>
+      </div>
+
+      <!-- Controls above demo -->
+      <div class="controls-bar">
+        <button class="ctrl-btn" id="loop-pause-btn">Pause</button>
+        <span class="ctrl-hint">Pausing demonstrates how <code>cancelAnimationFrame</code> completely stops the loop — no CPU, no calls, nothing.</span>
+      </div>
+
+      <!-- Stats grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Frame #</div>
+          <div class="stat-val accent" id="stat-frame">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Timestamp (ms)</div>
+          <div class="stat-val cyan" id="stat-ts">0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Frame delta (ms)</div>
+          <div class="stat-val" id="stat-delta">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rolling FPS (60fr)</div>
+          <div class="stat-val" id="stat-fps">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Min delta (ms)</div>
+          <div class="stat-val dim" id="stat-min">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Max delta (ms)</div>
+          <div class="stat-val dim" id="stat-max">—</div>
+        </div>
+      </div>
+
+      <!-- Sparkline -->
+      <div class="sparkline-wrap">
+        <div class="sparkline-label">Last 60 frame times — <span style="color:var(--green)">≤17ms</span> · <span style="color:var(--yellow)">≤33ms</span> · <span style="color:var(--red)">&gt;33ms</span></div>
+        <div class="sparkline" id="sparkline"></div>
+      </div>
+
+      <!-- Animated proof -->
+      <div class="loop-stage">
+        <div class="loop-spinner-wrap">
+          <div class="loop-spinner" id="loop-spinner"></div>
+          <div class="loop-orb" id="loop-orb"></div>
+        </div>
+        <div class="loop-label">Transform driven by rAF angle accumulation — <code>angle += dt × 0.36</code></div>
+      </div>
+
+      <div class="commentary-box">
+        <div class="commentary-title">What the browser is doing each frame</div>
+        <ul>
+          <li>Your rAF callback fires — the timestamp argument is read from the high-resolution performance clock</li>
+          <li>JS runs: state updates, DOM mutations (<code>transform</code> only — no layout triggers)</li>
+          <li>Browser runs Style recalc, composite — no Layout or Paint needed for <code>transform</code></li>
+          <li><code>requestAnimationFrame(tick)</code> is called at the end — schedules the next callback before the next vsync</li>
+        </ul>
+      </div>
+
+      <div class="devtools-tip">
+        <div class="dt-title">DevTools</div>
+        Performance → Record 2 seconds → Stop → Zoom Main thread → find <strong style="color:var(--green)">Animation Frame Fired</strong> bars. Each green bar is one call to your rAF callback. Click one to see call duration and the JS call stack inside it.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         TAB 2: Delta Time
+    ══════════════════════════════ -->
+    <section class="tab-pane" id="tab-delta">
+      <div class="pane-header">
+        <h2 class="pane-title">Delta Time Demonstration</h2>
+        <p class="pane-desc">Two balls, same apparent goal, two different approaches. Ball A advances a fixed number of pixels per frame — speed changes with frame rate. Ball B uses delta time — always 120 px/s, regardless of hardware.</p>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-bar">
+        <button class="ctrl-btn" id="stress-btn">Stress (simulate jank)</button>
+        <button class="ctrl-btn secondary" id="delta-reset-btn">Reset positions</button>
+        <span class="ctrl-hint" id="stress-label">Off — press to delay every other frame by 50ms</span>
+      </div>
+
+      <!-- Two ball tracks -->
+      <div class="ball-section">
+        <div class="ball-row-header">
+          <span class="ball-row-name bad">Ball A — no delta time</span>
+          <code class="ball-row-code">x += 2</code>
+          <span class="ball-row-stat" id="ball-a-stat">x: 0 · 0 px/s</span>
+        </div>
+        <div class="ball-track" id="track-a">
+          <div class="ball ball-a" id="ball-a">A</div>
+        </div>
+
+        <div class="ball-row-header" style="margin-top:20px">
+          <span class="ball-row-name good">Ball B — with delta time</span>
+          <code class="ball-row-code">x += 120 * (dt/1000)</code>
+          <span class="ball-row-stat" id="ball-b-stat">x: 0 · 120 px/s</span>
+        </div>
+        <div class="ball-track" id="track-b">
+          <div class="ball ball-b" id="ball-b">B</div>
+        </div>
+      </div>
+
+      <!-- Live frame info -->
+      <div class="delta-info-row">
+        <div class="delta-info-item">
+          <div class="delta-info-label">Current dt (ms)</div>
+          <div class="delta-info-val" id="di-dt">—</div>
+        </div>
+        <div class="delta-info-item">
+          <div class="delta-info-label">Ball A effective speed</div>
+          <div class="delta-info-val red" id="di-a-speed">—</div>
+        </div>
+        <div class="delta-info-item">
+          <div class="delta-info-label">Ball B effective speed</div>
+          <div class="delta-info-val green" id="di-b-speed">—</div>
+        </div>
+      </div>
+
+      <div class="commentary-box">
+        <div class="commentary-title">What's happening</div>
+        <ul>
+          <li><strong>Ball A:</strong> moves 2px per rAF callback. On 60Hz = 120 px/s. On 120Hz = 240 px/s. Under stress (every other frame delayed ~50ms) = ~50px/s — it slows down.</li>
+          <li><strong>Ball B:</strong> moves <code>120 × dt / 1000</code> px. At 60fps dt≈16.67ms → 2px/frame. At 120fps dt≈8.33ms → 1px/frame. Same total speed.</li>
+          <li>Hit Stress to see them diverge — Ball A <strong>slows to a crawl</strong>, Ball B stays at 120 px/s regardless of frame timing.</li>
+          <li>In a real game or physics simulation, frame-rate dependence means different players on different hardware experience different game speeds — a serious bug.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         TAB 3: Easing Lab
+    ══════════════════════════════ -->
+    <section class="tab-pane" id="tab-easing">
+      <div class="pane-header">
+        <h2 class="pane-title">Easing Lab</h2>
+        <p class="pane-desc">Six easing functions written in pure JavaScript. Each shows the mathematical formula, an SVG curve (the x-axis is time, y-axis is progress), and a ball preview. The same math underlies CSS <code>cubic-bezier()</code> and GSAP's easing system.</p>
+      </div>
+
+      <div class="controls-bar">
+        <button class="ctrl-btn" id="preview-all-btn">Preview all simultaneously</button>
+        <span class="ctrl-hint">Or click any card to preview that function in isolation</span>
+      </div>
+
+      <div class="easing-grid" id="easing-grid"></div>
+
+      <!-- Comparison strip -->
+      <div class="comparison-strip" id="comparison-strip" style="display:none">
+        <div class="cs-label">Simultaneous comparison — all 6 easing functions on the same track:</div>
+        <div class="cs-track" id="cs-track"></div>
+      </div>
+
+      <div class="commentary-box">
+        <div class="commentary-title">Reading the curve</div>
+        <ul>
+          <li><strong>X axis</strong> = time (t from 0→1). <strong>Y axis</strong> = output progress (also 0→1 for most functions).</li>
+          <li>A <strong>steep early slope</strong> means fast initial movement that slows down (easeOut). <strong>Flat start, steep end</strong> means slow start, fast finish (easeIn).</li>
+          <li>Elastic and bounce curves go <em>above 1</em> — the output overshoots. With <code>lerp(a, b, t)</code> this means the animated value temporarily exceeds the target before settling.</li>
+          <li>All CSS timing functions (<code>ease</code>, <code>ease-in-out</code>, <code>cubic-bezier</code>) are approximating these same polynomial shapes with Bezier curves.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         TAB 4: Canvas Demo
+    ══════════════════════════════ -->
+    <section class="tab-pane" id="tab-canvas">
+      <div class="pane-header">
+        <h2 class="pane-title">Canvas: Orbital Gravity Well</h2>
+        <p class="pane-desc">A canvas animation using everything from this lesson: an rAF loop, delta time for frame-rate independence, eased attraction toward the mouse, and fading trails. Each dot moves at a physically correct speed regardless of frame rate.</p>
+      </div>
+
+      <!-- Controls above canvas -->
+      <div class="controls-bar canvas-controls">
+        <button class="ctrl-btn" id="canvas-pause-btn">Pause</button>
+        <button class="ctrl-btn secondary" id="canvas-add-btn">Add 10 dots</button>
+        <button class="ctrl-btn secondary" id="canvas-clear-btn">Clear dots</button>
+        <div class="ctrl-slider-wrap">
+          <label class="ctrl-label">Attraction <span id="attract-val">0.08</span></label>
+          <input type="range" id="attract-slider" min="0.01" max="0.3" step="0.01" value="0.08" class="ctrl-slider">
+        </div>
+        <div class="ctrl-slider-wrap">
+          <label class="ctrl-label">Trail <span id="trail-val">0.12</span></label>
+          <input type="range" id="trail-slider" min="0.02" max="0.4" step="0.01" value="0.12" class="ctrl-slider">
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="main-canvas"></canvas>
+        <div class="canvas-hud" id="canvas-hud">
+          <div id="hud-fps">— fps</div>
+          <div id="hud-dt">— ms</div>
+          <div id="hud-dots">0 dots</div>
+        </div>
+      </div>
+
+      <div class="commentary-box">
+        <div class="commentary-title">What's happening in the loop</div>
+        <ul>
+          <li><strong>Update:</strong> each dot calculates a vector toward the mouse and applies it as acceleration. Velocity is capped via lerp. All movements scaled by <code>dt</code>.</li>
+          <li><strong>Trail:</strong> instead of <code>ctx.clearRect</code> each frame, we draw a semi-transparent black rect. Old frames fade slowly — producing a trail. The <em>Trail</em> slider controls the alpha (fade speed).</li>
+          <li><strong>Dots:</strong> rendered with <code>ctx.arc()</code>. Color is mapped to speed — slow dots are blue/purple, fast dots shift to orange/red.</li>
+          <li><strong>HUD:</strong> <code>fps</code>, <code>dt</code>, and dot count are shown in a DOM overlay (<code>position: absolute</code> over the canvas) — updated each frame via <code>textContent</code>, not <code>ctx.fillText</code>.</li>
+          <li>Move your mouse over the canvas — dots eased-attract toward the cursor position using the same lerp + easing math from Tab 3.</li>
+        </ul>
+      </div>
+
+      <div class="devtools-tip">
+        <div class="dt-title">DevTools</div>
+        Open Performance → enable <strong>CPU: 4× slowdown</strong> (the throttle dropdown) → Record → watch the FPS drop in the HUD. Ball speeds should remain consistent (delta time works), but trails may stretch. The canvas clear-rect alpha determines visual artifact magnitude under throttle.
+      </div>
+    </section>
+
+  </main>
+
+  <script src="main.js"></script>
+
+<link rel="stylesheet" href="../../../skin-anim.css">
+</body>
+</html>

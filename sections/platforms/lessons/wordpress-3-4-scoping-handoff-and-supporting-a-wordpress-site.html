@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scoping, Handoff and Supporting a WordPress Site</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .stage div{min-width:0;}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-ui); text-transform:none; letter-spacing:0; max-width:100%;}
+  .chk{display:flex; gap:6px; align-items:flex-start; font-family:var(--font-ui); font-size:.82rem; color:var(--ink);} .chk input{accent-color:var(--cobalt); margin-top:3px;}
+  .sc-two{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.sc-two{grid-template-columns:minmax(0,1fr);}}
+  .sc-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); overflow-wrap:anywhere;}
+  .sc-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .sc-code{font-family:var(--font-mono); font-size:.76rem; background:var(--paper-2); color:var(--ink); border:2px solid var(--outline); border-radius:10px; padding:10px 12px; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.55;}
+  .sc-note{font-family:var(--font-ui); font-size:.86rem; color:var(--ink); margin-top:8px; min-height:2.6em; overflow-wrap:anywhere;}
+  .sc-q{border-top:1px solid var(--line); padding:8px 0;} .sc-q:first-child{border-top:0;}
+  .sc-q .t{font-family:var(--font-ui); font-size:.84rem; color:var(--ink); margin-bottom:5px; overflow-wrap:anywhere;}
+  .sc-seg{display:inline-flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .sc-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:5px 10px; font:700 .74rem var(--font-ui); cursor:pointer;} .sc-seg button:last-child{border-right:0;} .sc-seg button.on{background:var(--cobalt); color:#fff;} .sc-seg button.unk.on{background:var(--vermil); color:#fff;}
+  .sc-item{border:2px solid var(--line-strong); border-radius:8px; padding:7px 10px; background:var(--paper); color:var(--ink); font:600 .8rem var(--font-ui); cursor:pointer; text-align:left; overflow-wrap:anywhere; width:100%;}
+  .sc-item:hover{border-color:var(--cobalt);} .sc-item.on{border-color:var(--cobalt); background:var(--cobalt-soft);} .sc-item.good{border-color:var(--forest); background:var(--forest-soft);} .sc-item.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .sc-flag{border-left:5px solid var(--vermil); background:var(--vermil-soft); padding:6px 10px; margin:6px 0; font-family:var(--font-ui); font-size:.82rem; color:var(--ink); border-radius:0 8px 8px 0; overflow-wrap:anywhere;}
+  .sc-ok{border-left:5px solid var(--forest); background:var(--forest-soft); padding:6px 10px; margin:6px 0; font-family:var(--font-ui); font-size:.82rem; color:var(--ink); border-radius:0 8px 8px 0; overflow-wrap:anywhere;}
+  .sc-range{position:relative; height:34px; border:2px solid var(--outline); border-radius:8px; background:var(--paper); margin:8px 0; overflow:hidden;} .sc-range span{position:absolute; top:0; bottom:0; display:flex; align-items:center; justify-content:center; font:800 .72rem var(--font-ui); color:var(--ink); white-space:nowrap;}
+  .sc-range .a{background:var(--forest-soft); border-right:2px solid var(--forest);} .sc-range .b{background:var(--vermil-soft); border-right:2px solid var(--vermil);}
+  .sc-tbl{width:100%; border-collapse:collapse; font-family:var(--font-ui); font-size:.78rem; color:var(--ink); table-layout:fixed;} .sc-tbl td,.sc-tbl th{border:1px solid var(--line-strong); padding:5px 7px; text-align:left; vertical-align:top; overflow-wrap:anywhere;} .sc-tbl th{font-size:.68rem; text-transform:uppercase; color:var(--ink-mute);} .sc-tbl .pick{background:var(--cobalt-soft);}
+  .sc-meter{height:12px; border:2px solid var(--outline); border-radius:8px; background:var(--paper); overflow:hidden;} .sc-meter i{display:block; height:100%; background:var(--forest);}
+  .sc-slide{display:flex; align-items:center; gap:10px; font-family:var(--font-ui); font-size:.82rem; color:var(--ink); margin:6px 0;} .sc-slide input[type=range]{flex:1; min-width:0; accent-color:var(--cobalt);} .sc-slide b{min-width:2ch; text-align:right;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Scoping, Handoff and Supporting a WordPress Site</h1>
+  <p class="subtitle">The work around the code: asking the right questions before you estimate, writing assumptions down, handling change requests, handing a site to people who can run it without you, and agreeing what happens after launch. Mostly practice rather than documentation, so it is marked as guidance throughout.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Why this is guidance, not documentation</a></li>
+      <li><a href="#sec2">Discovery questions for WordPress (interactive)</a></li>
+      <li><a href="#sec3">Estimating with visible assumptions (interactive)</a></li>
+      <li><a href="#sec4">Change requests (interactive)</a></li>
+      <li><a href="#sec5">What clients assume WordPress includes (interactive)</a></li>
+      <li><a href="#sec6">Handoff and editor training (interactive)</a></li>
+      <li><a href="#sec7">Maintenance plans versus ad hoc fixes (interactive)</a></li>
+      <li><a href="#sec8">Access and offboarding (interactive)</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Why this is guidance, not documentation</h2>
+  <p class="lead">The WordPress documentation tells you how the software works. It does not tell you how to price a build, run a handover or sell a support plan. Those are professional practice, and what follows is my own synthesis, in the same spirit as the Shopify course&rsquo;s scoping and handoff lessons. Every number in the widgets is invented for illustration. Where the official documentation does say something relevant, such as how updates, backups, user roles and security habits work, I cite it.</p>
+  <p>The thread running through the lesson: a WordPress site is a bundle of choices (theme, plugins, hosting, content structure) that a client usually experiences as one thing called &ldquo;the website&rdquo;. Scoping is making that bundle visible, handoff is making it operable by someone else, and support is deciding who looks after it afterwards. It builds on the earlier lessons in this cluster, where hosting, staging and updates were covered (lesson 3.3).</p>
+
+  <h2 id="sec2"><span class="num">2</span> Discovery questions for WordPress</h2>
+  <p>A generic discovery call asks about goals and audience. A WordPress project also needs answers that decide the technical shape of the build. Answer each question for an imagined project. <b>Not sure</b> is a legitimate answer, and each one becomes a flagged unknown in the scope summary that the checklist builds, with the way it can move the estimate. The questions and the consequences are my own list, not an official one.</p>
+  <div class="stage" data-testid="sc-discovery">
+    <div class="sc-two">
+      <div id="dc-qs"></div>
+      <div>
+        <div class="sc-box"><h5>SCOPE SUMMARY SO FAR</h5><div id="dc-sum" data-testid="sc-discovery-summary"></div></div>
+        <div class="sc-box" style="margin-top:10px"><h5>UNKNOWNS TO RESOLVE BEFORE YOU QUOTE</h5><div id="dc-unk" data-testid="sc-discovery-unknowns"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Estimating with visible assumptions</h2>
+  <p>An estimate is a range plus the assumptions that range depends on. Most surprises in WordPress projects come from an assumption nobody said out loud: that the design is final, that the plugin you picked works with the theme, that the old content is tidy. Set the size of a project below, then untick an assumption to see how it moves the range. <b>All hours are invented for illustration</b> and are not a benchmark; use your own history.</p>
+  <div class="stage" data-testid="sc-estimate">
+    <div class="sc-two">
+      <div>
+        <div class="sc-slide"><label for="es-t">Page templates</label><input type="range" id="es-t" min="1" max="20" value="6" data-testid="sc-est-templates"><b id="es-tv"></b></div>
+        <div class="sc-slide"><label for="es-c">Content types with custom fields</label><input type="range" id="es-c" min="0" max="8" value="2" data-testid="sc-est-types"><b id="es-cv"></b></div>
+        <div class="sc-slide"><label for="es-i">Plugin or service integrations</label><input type="range" id="es-i" min="0" max="10" value="3" data-testid="sc-est-integrations"><b id="es-iv"></b></div>
+        <div class="row"><label class="ctl">Content migration<select id="es-m" data-testid="sc-est-migration"><option value="0">None</option><option value="1" selected>Small, tidy</option><option value="2">Large</option></select></label></div>
+        <div class="small" style="margin:8px 0 4px">Assumptions in the proposal (untick one to test what happens if it is false)</div>
+        <div id="es-as"></div>
+      </div>
+      <div>
+        <div class="sc-box"><h5>HOURS RANGE (ILLUSTRATIVE)</h5>
+          <div class="small">If every assumption holds</div><div class="sc-range" id="es-r1" data-testid="sc-est-range-ok"></div>
+          <div class="small">With your unticked assumptions</div><div class="sc-range" id="es-r2" data-testid="sc-est-range-broken"></div>
+          <div class="sc-note" id="es-note" data-testid="sc-est-note"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="small">The method here is simple on purpose: add up parts, give a low and a high, and let each broken assumption grow the affected part. Real estimation also covers project management, review rounds and testing, which many teams add as a percentage. The factors below are illustrative: 8 h a template, 6 h a content type, 5 h an integration, 20 h fixed setup, 0, 10 or 30 h of migration, then a range of minus 10 percent to plus 25 percent.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Change requests</h2>
+  <p>Once scope is written down, a request arrives that is not obviously inside it. A fast way to keep the conversation calm is to sort every request into one of three buckets before replying: a <b>defect</b> against the agreed scope (fix it), <b>new work</b> (estimate it and agree it first), or <b>support</b> (ongoing care, covered by whatever support terms exist). These buckets are my own framing. Sort each request.</p>
+  <div class="stage" data-testid="sc-change-quiz"><div id="cq-box"></div><div class="row"><button class="btn" id="cq-next" data-testid="sc-change-next" disabled>Next</button><span class="small" id="cq-score" data-testid="sc-change-score"></span></div></div>
+
+  <h2 id="sec5"><span class="num">5</span> What clients assume WordPress includes</h2>
+  <p>&ldquo;It&rsquo;s just WordPress&rdquo; hides a list of expectations that the software does not meet by itself. Each of these needs somebody, or some plan, to own it. For each statement, say what is actually true. Where the official documentation speaks to it, the answer says so; the rest is background knowledge and marked as such.</p>
+  <div class="stage" data-testid="sc-assume-quiz"><div id="aq-box"></div><div class="row"><button class="btn" id="aq-next" data-testid="sc-assume-next" disabled>Next</button><span class="small" id="aq-score" data-testid="sc-assume-score"></span></div></div>
+
+  <h2 id="sec6"><span class="num">6</span> Handoff and editor training</h2>
+  <p>A handoff pack is the written answer to &ldquo;how do I run this without you?&rdquo;. Different readers need different parts: an editor needs to know how to publish and what not to touch, the site owner needs to know who pays for what, and the next developer needs to know how code, content and deployment fit together (the ideas from the earlier lessons in this cluster and lesson 3.3). Choose who the pack is for, adjust the sections, and the outline builds underneath. This is a practice template, not an official one.</p>
+  <div class="stage" data-testid="sc-handoff">
+    <div class="row"><label class="ctl">Pack is mainly for<select id="hp-aud" data-testid="sc-handoff-audience"><option value="editor">Editors</option><option value="owner">Site owner</option><option value="dev">Next developer</option></select></label><button class="btn sec" id="hp-def" data-testid="sc-handoff-defaults">Apply suggested sections</button></div>
+    <div class="sc-two">
+      <div id="hp-list"></div>
+      <div class="sc-box"><h5>OUTLINE</h5><div class="sc-code" id="hp-out" data-testid="sc-handoff-outline"></div><div class="sc-note" id="hp-note" data-testid="sc-handoff-note"></div></div>
+    </div>
+  </div>
+  <p>Roles matter in editor training, because the role decides what the person can do. The WordPress roles documentation describes the defaults: Administrator has access to all the administration features; Editor can publish and manage posts including those of other users; Author can publish and manage their own posts; Contributor can write and manage their own posts but not publish them; Subscriber can only manage their own profile. Match the person to the least powerful role that lets them do their job.</p>
+  <div class="stage" data-testid="sc-role-picker">
+    <div class="row"><label class="ctl" style="flex:1;min-width:220px">What does this person need to do?<select id="rl-sel" data-testid="sc-role-select"><option value="0">Only look after their own profile</option><option value="1">Write drafts, but someone else publishes them</option><option value="2">Write and publish their own posts</option><option value="3" selected>Publish and manage everyone&rsquo;s posts</option><option value="4">Manage plugins, themes and users</option></select></label></div>
+    <div class="sc-note" id="rl-out" data-testid="sc-role-output"></div>
+  </div>
+
+  <h2 id="sec7"><span class="num">7</span> Maintenance plans versus ad hoc fixes</h2>
+  <p>After launch, somebody has to run the updates and backups described in lesson 3.3. The WordPress documentation is clear that this matters: the upgrade guide says to keep WordPress up to date, advises backing up before an upgrade, and the hardening guide says to keep plugins updated and to delete the ones you are not using. <b>Maintenance is part of the product, so it is worth pricing</b>; leaving it unplanned means it happens only when something breaks. Tick what is true of the site, and the picker leans one way. The three tiers and their contents are my own illustration, with no prices.</p>
+  <div class="stage" data-testid="sc-plan-picker">
+    <div class="sc-two">
+      <div id="mp-traits"></div>
+      <div><div class="sc-box"><h5>WHERE THE TRAITS POINT</h5><div id="mp-verdict" style="font-weight:800" data-testid="sc-plan-verdict"></div><div id="mp-why" data-testid="sc-plan-why"></div></div></div>
+    </div>
+    <div style="overflow-x:auto;margin-top:10px"><table class="sc-tbl" id="mp-tbl" data-testid="sc-plan-table"></table></div>
+  </div>
+
+  <h2 id="sec8"><span class="num">8</span> Access and offboarding</h2>
+  <p>The end of an engagement is a security event. Every account you created, and every service attached in your name, is still live afterwards. Clean handover means the client owns the things that matter and you no longer hold the keys. Tick items as done; high-risk ones stay flagged until they are. The hardening guide supports several of these habits: avoid a predictable admin username, use strong passwords, enable two-step authentication, and delete plugins you do not use. The checklist itself is my own practice list.</p>
+  <div class="stage" data-testid="sc-offboard">
+    <div class="sc-two">
+      <div id="ob-list"></div>
+      <div class="sc-box"><h5>STATUS</h5><div class="sc-meter"><i id="ob-bar" style="width:0%"></i></div><div id="ob-sum" style="margin-top:8px;font-weight:800" data-testid="sc-offboard-summary"></div><div id="ob-open" style="margin-top:8px" data-testid="sc-offboard-open"></div></div>
+    </div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Discovery is about unknowns:</b> migration, integrations, content structure, editors, hosting and ownership each change the estimate. Write the unknowns down and resolve them before you quote.</li>
+    <li><b>Estimates are ranges with assumptions,</b> and the unspoken assumption is usually the expensive one.</li>
+    <li><b>Sort every request</b> into defect, new work or support before you answer it. Clear boundaries prevent the &ldquo;it&rsquo;s just WordPress&rdquo; scope creep.</li>
+    <li><b>Backups, updates, security and staging do not come free with WordPress;</b> someone has to own each of them.</li>
+    <li><b>A handoff pack is written for particular readers,</b> and editors get the least powerful role that fits their job.</li>
+    <li><b>Maintenance is part of the product; price it.</b> Ad hoc support means nobody is watching until something breaks.</li>
+    <li><b>Offboarding is a checklist:</b> the client owns the domain, hosting and licences, and your access is removed.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> <a href="https://developer.wordpress.org/advanced-administration/upgrade/upgrading/" target="_blank">Updating WordPress</a> · <a href="https://developer.wordpress.org/advanced-administration/security/backup/" target="_blank">WordPress backups</a> · <a href="https://developer.wordpress.org/advanced-administration/security/hardening/" target="_blank">Hardening WordPress</a> · <a href="https://wordpress.org/documentation/article/manage-plugins/" target="_blank">Manage plugins</a> · <a href="https://wordpress.org/documentation/article/roles-and-capabilities/" target="_blank">Roles and capabilities</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> From those pages: minor core updates and translations update automatically by default and plugin and theme updates only in special cases (upgrade guide); automatic plugin updates can be enabled per plugin, introduced in 5.5, and you should back up before updating plugins (manage plugins); a backup needs both database and files (backups); the default role descriptions (roles); and the hardening habits named in section 8. Everything else is my own synthesis or background knowledge: the discovery questions, the estimation method and every hour figure, the request buckets, the claims that WordPress core has no built-in contact form builder or search-engine optimisation tooling, the handoff template, the plan tiers and the offboarding list. There is no official standard for these; adapt them to your own contracts and take proper advice on contract wording.</p>
+
+  <footer>Scoping, Handoff and Supporting a WordPress Site · WordPress for Front-End &amp; UI Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const G=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------- discovery checklist ---------- */
+(function(){
+  const Q=[
+    {k:"mig",t:"Is there an existing site whose content has to move across?",y:"Content migration is in scope (decide volume and how URLs and redirects are handled).",n:"Starting with fresh content only.",u:"Migration is the biggest swing in an estimate. Ask how many pages, where the content lives today, and whether old URLs must keep working."},
+    {k:"des",t:"Is the design finished and approved before the build starts?",y:"Build from an approved design.",n:"Design is still being worked out alongside the build.",u:"Without a settled design you cannot count templates. Estimate design and build separately, or put a limit on revision rounds."},
+    {k:"cust",t:"Does the content need its own structure beyond posts and pages (events, people, products)?",y:"Custom content types and fields needed (the content types lessons cover how these are built).",n:"Standard posts and pages are enough.",u:"Custom structure drives templates, fields and editor screens. List the content types and who edits each."},
+    {k:"plug",t:"Must existing plugins or services keep working (forms, newsletter, payments, booking)?",y:"Integrations are in scope; list each one and who owns the account.",n:"No existing integrations to keep.",u:"Each integration is a compatibility, data and account question. Get the list before you quote."},
+    {k:"ed",t:"Will non-technical editors look after the site day to day?",y:"Editor training and a handoff pack are needed.",n:"A developer maintains content.",u:"Editors change what you design for: block patterns, restricted blocks, roles and training time."},
+    {k:"ml",t:"Does it need several languages, or several sites?",y:"Multilingual or multisite adds structure and testing; scope it explicitly.",n:"A single language, a single site.",u:"Translation and multisite change the architecture, not just the content. Find out before design."},
+    {k:"host",t:"Is the hosting decided, and do you have access to it?",y:"Hosting is known; confirm PHP, database, staging and deploy options (lesson 3.3).",n:"Hosting is yours to recommend.",u:"The host decides staging, backups, deploy method and cost. An unknown host is an unknown deployment plan."},
+    {k:"lic",t:"Are paid plugin or theme licences involved?",y:"Licences are involved; decide whose name they are registered in.",n:"Free software only.",u:"Licences expire and sit in somebody&rsquo;s account. Decide who pays and who holds them, and put it in writing."},
+    {k:"acc",t:"Are there accessibility, privacy or compliance requirements?",y:"Requirements are named; test against them and record the result.",n:"No specific requirements stated.",u:"Name the standard, if any, and who signs it off. Otherwise &ldquo;accessible&rdquo; is undefined and open-ended."},
+    {k:"own",t:"Do you know who owns the domain and DNS, and can you reach them?",y:"Domain and DNS ownership known.",n:"The domain is not yet registered or not yet decided.",u:"Launch can stall waiting on whoever holds the registrar login. Find that person early (lesson 3.3 covers cut-over)."},
+    {k:"sup",t:"Is there an agreed owner for updates and support after launch?",y:"A support owner exists; define terms in section 7.",n:"No support planned after handoff.",u:"If nobody owns updates and backups, the site is unowned the day after launch. Raise it now, not at the invoice."}
+  ];
+  const ans={}; const box=G("dc-qs");
+  box.innerHTML=Q.map(q=>'<div class="sc-q"><div class="t">'+esc(q.t)+'</div><div class="sc-seg" data-k="'+q.k+'"><button type="button" data-v="y" data-testid="sc-disc-'+q.k+'-yes">Yes</button><button type="button" data-v="n" data-testid="sc-disc-'+q.k+'-no">No</button><button type="button" class="unk" data-v="u" data-testid="sc-disc-'+q.k+'-unsure">Not sure</button></div></div>').join("");
+  function draw(){
+    box.querySelectorAll(".sc-seg").forEach(sg=>sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",ans[sg.dataset.k]===b.dataset.v)));
+    const known=Q.filter(q=>ans[q.k]==="y"||ans[q.k]==="n"), unk=Q.filter(q=>ans[q.k]==="u"), left=Q.length-known.length-unk.length;
+    G("dc-sum").innerHTML=known.length?known.map(q=>'<div class="sc-ok">'+(ans[q.k]==="y"?q.y:q.n)+'</div>').join(""):'<span class="small">Answer a question to start the summary.</span>';
+    G("dc-unk").innerHTML=(unk.length?unk.map(q=>'<div class="sc-flag"><b>'+esc(q.t)+'</b><br>'+q.u+'</div>').join(""):'<span class="small">No unknowns flagged.</span>')+(left?'<div class="small" style="margin-top:6px">'+left+' question'+(left>1?"s":"")+' not yet answered.</div>':"");
+  }
+  box.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; ans[b.parentNode.dataset.k]=b.dataset.v; draw(); });
+  draw();
+})();
+
+/* ---------- estimate builder ---------- */
+(function(){
+  const A=[
+    ["a1","The design is final and approved before the build starts","Templates take about 40 percent longer when the design keeps changing."],
+    ["a2","The client supplies final content before launch","Adds about 8 hours of content entry and chasing."],
+    ["a3","The chosen plugins work with the theme and with each other","Integrations take about 60 percent longer when compatibility has to be worked around."],
+    ["a4","The old content is cleanly structured","Migration takes about twice as long when content needs cleaning."],
+    ["a5","The client reviews and approves within the agreed time","Everything stretches by about 10 percent through waiting and re-planning."]
+  ];
+  const st={}; A.forEach(a=>st[a[0]]=true);
+  G("es-as").innerHTML=A.map(a=>'<label class="chk" style="margin:5px 0"><input type="checkbox" checked data-k="'+a[0]+'" data-testid="sc-est-'+a[0]+'"> '+esc(a[1])+'</label>').join("");
+  function calc(holds){
+    const t=+G("es-t").value, c=+G("es-c").value, i=+G("es-i").value, m=+G("es-m").value;
+    let tp=t*8, cp=c*6, ip=i*5, mp=[0,10,30][m], fixed=20, extra=0;
+    if(!holds.a1) tp*=1.4; if(!holds.a3) ip*=1.6; if(!holds.a4) mp*=2; if(!holds.a2) extra+=8;
+    let base=tp+cp+ip+mp+fixed+extra; if(!holds.a5) base*=1.1;
+    return [Math.round(base*0.9), Math.round(base*1.25)];
+  }
+  function bar(el,r,max,cls){ const lo=r[0]/max*100, hi=r[1]/max*100; el.innerHTML='<span class="'+cls+'" style="left:'+lo+'%;width:'+Math.max(hi-lo,1)+'%">'+r[0]+' to '+r[1]+' h</span>'; }
+  function draw(){
+    G("es-tv").textContent=G("es-t").value; G("es-cv").textContent=G("es-c").value; G("es-iv").textContent=G("es-i").value;
+    const all={}; A.forEach(a=>all[a[0]]=true);
+    const r1=calc(all), r2=calc(st), max=Math.max(r1[1],r2[1])*1.05;
+    bar(G("es-r1"),r1,max,"a"); bar(G("es-r2"),r2,max,"b");
+    const broke=A.filter(a=>!st[a[0]]);
+    let msg;
+    if(!broke.length) msg="Every assumption holds, so this is the best case for the range. Put these five lines in the proposal so the client can see what the numbers rest on.";
+    else { const d=r2[1]-r1[1]; msg="With "+broke.length+" assumption"+(broke.length>1?"s":"")+" false, the top of the range moves by about "+d+" hours. "+broke.map(a=>a[2]).join(" ")+(!st.a4&&+G("es-m").value===0?" (There is no migration here, so the content assumption changes nothing.)":""); }
+    G("es-note").textContent=msg+" (All figures illustrative.)";
+  }
+  G("es-as").addEventListener("change",e=>{ const i=e.target; if(i&&i.dataset&&i.dataset.k){ st[i.dataset.k]=i.checked; draw(); } });
+  ["es-t","es-c","es-i"].forEach(id=>G(id).oninput=draw); G("es-m").onchange=draw; draw();
+})();
+
+/* ---------- generic quiz ---------- */
+function mkQuiz(boxId,nextId,scoreId,items,opts,tid,doneMsg){
+  let i=0,score=0,done=false; const box=G(boxId), nx=G(nextId);
+  function show(){
+    if(i>=items.length){ box.innerHTML='<div class="sc-note"><b>'+score+' of '+items.length+' matched.</b> '+doneMsg+'</div>'; nx.textContent="Again"; nx.disabled=false; nx.onclick=()=>{ i=0; score=0; nx.textContent="Next"; nx.onclick=next; G(scoreId).textContent=""; show(); }; return; }
+    const q=items[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="small">'+(i+1)+' of '+items.length+'</div><div style="font:600 1rem var(--font-ui);color:var(--ink);margin:6px 0 10px;border-left:5px solid var(--ochre);padding-left:10px">'+esc(q[0])+'</div><div class="sc-two" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">'+opts.map((o,k)=>'<button type="button" class="sc-item" data-k="'+k+'" data-testid="'+tid+'-option-'+k+'">'+esc(o)+'</button>').join("")+'</div><div class="sc-note" id="'+tid+'-why"></div>';
+    box.querySelectorAll(".sc-item").forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?"good":"bad"); const c=box.querySelector('[data-k="'+q[1]+'"]'); if(c) c.classList.add("good"); G(tid+"-why").innerHTML='<b>'+(ok?"Right. ":"Not quite. ")+'</b>'+esc(q[2]); nx.disabled=false; G(scoreId).textContent=score+" of "+(i+1)+" matched"; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+}
+
+/* ---------- change requests ---------- */
+mkQuiz("cq-box","cq-next","cq-score",[
+  ["The contact form you delivered does not send mail, and it was in the signed-off scope.",0,"A defect against agreed scope. Fix it without a new quote."],
+  ["The client asks for an events section with a calendar. It was not in the proposal.",1,"New work. Estimate it, agree it in writing, then build it. Doing it quietly teaches the client that scope is soft."],
+  ["Three months after launch, a plugin update breaks the gallery. There is no support plan.",2,"Support work. Without a plan it is ad hoc, billed under whatever terms you agreed. This is the case for having a plan (section 7)."],
+  ["The client asks you to write the copy for 40 new service pages.",1,"New work, and a different kind of work from development. Quote it, or say it is outside what you do."],
+  ["An editor cannot find where to change the footer text, which the handover guide documents.",2,"Support: a question the training or documentation should answer. Decide whether short questions are covered or billed, and tell the client."],
+  ["The search page shows no results at launch, and search was in the specification.",0,"A defect against the specification. Fix it."],
+  ["The client wants a staging copy refreshed from live every month.",2,"A recurring service, so it belongs in a support or maintenance plan, not in the build."]
+],["Defect: fix it","New work: estimate first","Support: per the support terms"],"sc-cq","Defect, new work or support: deciding which before replying keeps the conversation about the agreement, not about who is being difficult.");
+
+/* ---------- client assumptions ---------- */
+mkQuiz("aq-box","aq-next","aq-score",[
+  ["The site backs itself up.",3,"It depends on the host or on something you set up. The WordPress backup guide says a backup needs both the database and the files, and recommends checking that automated backups work."],
+  ["WordPress keeps itself up to date.",1,"Partly. The upgrade guide says minor core releases and translations update automatically by default, and plugin and theme updates only in special cases. Plugin auto-updates can be turned on plugin by plugin (since 5.5, per the manage plugins page), so somebody has to decide and watch."],
+  ["WordPress comes with a contact form builder.",2,"Not as far as I know: forms come from a plugin or an outside service (background knowledge, not from the sources). Each one is an integration to scope and maintain."],
+  ["Search engine optimisation is taken care of.",2,"Tools usually come from a plugin, and the larger part is content and structure work (background knowledge). Say plainly what you do and do not do."],
+  ["A staging site is included.",3,"It depends on the host or plan, as lesson 3.3 showed. Do not promise it until you have checked."],
+  ["Editors cannot break the design.",1,"Partly. The role decides what a person can do (the Editor role can manage all posts, only Administrators have all administration features), and your theme and block settings decide how much layout is left open. Setting that up is part of the build."],
+  ["Once launched, the site stays secure.",1,"Partly. The hardening guide says to keep WordPress and plugins updated and to delete plugins you are not using. Security is a habit, not a feature that is switched on once."]
+],["Built in","Partly: someone must own the rest","Needs a plugin or service","Depends on the host"],"sc-aq","If the answer is not &ldquo;built in&rdquo;, there is a line for it in the proposal or the support plan.");
+
+/* ---------- handoff builder ---------- */
+(function(){
+  const S=[
+    ["overview","Site overview","What the site is for, the main sections, and a map of the content types."],
+    ["access","Accounts and access","Who holds the hosting, domain, DNS and admin accounts, and how access is requested."],
+    ["edit","Editing guide","How to publish, edit, schedule and preview; screenshots of the real admin screens."],
+    ["model","Content types and fields","What each content type and field is for, and what editors should leave alone."],
+    ["blocks","Patterns, blocks and layout rules","Which patterns to use, which blocks are restricted, and why."],
+    ["updates","Updates and backups","What is updated and when, who does it, where backups are, how to restore."],
+    ["deploy","Environments and deployment","Local, staging and live; how code gets from git to live; how content is copied (lesson 3.3)."],
+    ["arch","Theme and plugin inventory","Each plugin, its purpose, version and whether it is paid; custom code locations."],
+    ["limits","Known limitations","What was deliberately left out, open bugs, and ideas for later."],
+    ["support","Support and contacts","Who to contact, what is covered, expected response time."],
+    ["train","Training notes","What was covered in the session, recordings, and the questions that came up."],
+    ["lic","Licences and renewals","Paid plugin and theme licences, whose name they are in, renewal dates."]
+  ];
+  const D={editor:["edit","model","blocks","support","train"],owner:["overview","access","updates","support","lic","limits"],dev:["overview","access","model","updates","deploy","arch","limits","lic"]};
+  const AUD={editor:"editors",owner:"the site owner",dev:"the next developer"};
+  const on={}; function apply(){ S.forEach(s=>on[s[0]]=D[G("hp-aud").value].indexOf(s[0])>=0); }
+  G("hp-list").innerHTML=S.map(s=>'<label class="chk" style="margin:6px 0"><input type="checkbox" data-k="'+s[0]+'" data-testid="sc-handoff-'+s[0]+'"> <span><b>'+esc(s[1])+'</b><br><span class="small">'+esc(s[2])+'</span></span></label>').join("");
+  function draw(){
+    G("hp-list").querySelectorAll("input").forEach(i=>i.checked=!!on[i.dataset.k]);
+    const aud=G("hp-aud").value; const chosen=S.filter(s=>on[s[0]]);
+    G("hp-out").textContent="HANDOFF PACK (for "+AUD[aud]+")\n\n"+(chosen.length?chosen.map((s,i)=>(i+1)+". "+s[1]+"\n   "+s[2]).join("\n"):"(no sections chosen)");
+    const miss=D[aud].filter(k=>!on[k]).map(k=>S.find(s=>s[0]===k)[1]);
+    G("hp-note").textContent=miss.length?"Usually wanted by this reader but not included: "+miss.join(", ")+".":"This covers what is usually wanted by this reader. Add a short training session and keep a recording; written guides alone are rarely read.";
+  }
+  G("hp-list").addEventListener("change",e=>{ const i=e.target; if(i&&i.dataset&&i.dataset.k){ on[i.dataset.k]=i.checked; draw(); } });
+  G("hp-aud").onchange=()=>{ apply(); draw(); }; G("hp-def").onclick=()=>{ apply(); draw(); };
+  apply(); draw();
+})();
+
+/* ---------- role picker ---------- */
+(function(){
+  const R=[["Subscriber","somebody who can only manage their profile."],["Contributor","somebody who can write and manage their own posts but not publish them."],["Author","somebody who can publish and manage their own posts."],["Editor","somebody who can publish and manage posts including the posts of other users."],["Administrator","somebody who has access to all the administration features. Keep this for people who truly manage the site."]];
+  function draw(){ const r=R[+G("rl-sel").value]; G("rl-out").innerHTML="<b>"+r[0]+":</b> "+esc(r[1])+" (paraphrasing the WordPress roles documentation.) Giving more than the job needs makes mistakes and account takeovers more costly."; }
+  G("rl-sel").onchange=draw; draw();
+})();
+
+/* ---------- maintenance plan picker ---------- */
+(function(){
+  const T=[["pay","The site takes payments or bookings",2],["crit","Downtime would cost the client money",2],["many","It relies on many plugins",1],["daily","Editors publish most days",1],["norest","Nobody has tested a restore",1],["dev","The client has an in-house developer who will do the updates",-3],["tight","The budget for support is very tight",-1]];
+  const PL=["Ad hoc","Basic care","Managed care"];
+  const ROWS=[["Updates",["When the client asks, or when something breaks","Core, plugins and themes on a set schedule, after a check on staging","As basic, plus prompt handling of urgent security updates"]],["Backups",["Whatever the host provides; restore never tested","Scheduled, stored off the server, restore tested now and then","As basic, with restores tested on a schedule and a written recovery plan"]],["Monitoring",["None","Basic availability check","Availability and error-log review"]],["Small changes",["Billed per request","A small monthly allowance","A larger allowance with priority"]],["Response",["Best effort","Within an agreed working day","Faster for urgent faults, as agreed"]],["Reporting",["None","Short monthly note","Monthly report and review"]]];
+  const on={}; G("mp-traits").innerHTML=T.map(t=>'<label class="chk" style="margin:6px 0"><input type="checkbox" data-k="'+t[0]+'" data-testid="sc-plan-'+t[0]+'"> '+esc(t[1])+'</label>').join("");
+  function draw(){
+    let s=0; const why=[]; T.forEach(t=>{ if(on[t[0]]){ s+=t[2]; why.push(t[1]+(t[2]>0?" (pushes towards more care)":" (pushes towards less)")); } });
+    const idx=s<=0?0:(s<=3?1:2);
+    G("mp-verdict").textContent=PL[idx]+" fits these traits best (score "+s+")";
+    G("mp-why").innerHTML=(why.length?'<div class="small" style="margin-top:6px">'+why.map(esc).join("<br>")+'</div>':'<div class="small" style="margin-top:6px">Tick the traits that apply.</div>')+'<div class="sc-note">'+(idx===0?"Ad hoc suits a low-stakes site with someone competent in charge. Say in writing that updates and backups are then the client&rsquo;s responsibility.":(idx===1?"A set schedule and a tested restore cover the most common risks without a heavy retainer.":"The stakes justify someone watching the site and a rehearsed recovery."))+" The scoring is my own illustration; judge each site on its own."+'</div>';
+    G("mp-tbl").innerHTML="<tr><th></th>"+PL.map((p,k)=>'<th class="'+(k===idx?"pick":"")+'">'+p+"</th>").join("")+"</tr>"+ROWS.map(r=>"<tr><th>"+r[0]+"</th>"+r[1].map((c,k)=>'<td class="'+(k===idx?"pick":"")+'">'+esc(c)+"</td>").join("")+"</tr>").join("");
+  }
+  G("mp-traits").addEventListener("change",e=>{ const i=e.target; if(i&&i.dataset&&i.dataset.k){ on[i.dataset.k]=i.checked; draw(); } }); draw();
+})();
+
+/* ---------- offboarding checklist ---------- */
+(function(){
+  const I=[
+    ["WordPress","The client has their own named Administrator account, not a shared one",1],
+    ["WordPress","Your accounts are removed, or downgraded to the least role needed",1],
+    ["WordPress","Users that are no longer needed are reviewed and removed",0],
+    ["WordPress","Admin accounts use strong passwords and two-step authentication; no account is called admin",0],
+    ["Hosting","The hosting account is owned by the client, with them as account owner",1],
+    ["Hosting","Server, database and deploy credentials you used are rotated",1],
+    ["Hosting","Backup location and restore steps are handed over",1],
+    ["Domain","The domain registrar and DNS accounts are the client&rsquo;s and the login has been confirmed",1],
+    ["Code","The repository is transferred, or access terms are agreed",0],
+    ["Code","Deploy keys and automation secrets are rotated",0],
+    ["Services","Email, analytics, form and other service accounts are in the client&rsquo;s name",0],
+    ["Services","Paid plugin and theme licences are registered to the client",0],
+    ["Handover","The handoff pack is delivered and walked through",0],
+    ["Handover","Unused plugins and themes are deleted, not just deactivated",0]
+  ];
+  const on={}; let html="", g="";
+  I.forEach((it,k)=>{ if(it[0]!==g){ g=it[0]; html+='<div class="small" style="margin:10px 0 2px;font-weight:800;text-transform:uppercase">'+g+'</div>'; } html+='<label class="chk" style="margin:4px 0"><input type="checkbox" data-k="'+k+'" data-testid="sc-offboard-item-'+k+'"> <span>'+it[1]+(it[2]?' <span class="small">(high risk)</span>':'')+'</span></label>'; });
+  G("ob-list").innerHTML=html;
+  function draw(){
+    const n=I.filter((x,k)=>on[k]).length, hi=I.filter((x,k)=>x[2]&&!on[k]);
+    G("ob-bar").style.width=Math.round(n/I.length*100)+"%";
+    G("ob-sum").textContent=n+" of "+I.length+" done";
+    G("ob-open").innerHTML=hi.length?hi.map(x=>'<div class="sc-flag">'+x[1]+'</div>').join(""):'<div class="sc-ok">All high-risk items are done.</div>';
+  }
+  G("ob-list").addEventListener("change",e=>{ const i=e.target; if(i&&i.dataset&&i.dataset.k!=null){ on[i.dataset.k]=i.checked; draw(); } }); draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

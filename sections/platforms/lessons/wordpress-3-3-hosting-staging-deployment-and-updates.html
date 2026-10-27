@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hosting, Staging, Deployment and Updates</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .stage div{min-width:0;}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ctl input[type=text],.ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-mono); text-transform:none; letter-spacing:0; max-width:100%;}
+  .chk{display:flex; gap:6px; align-items:flex-start; font-family:var(--font-ui); font-size:.82rem; color:var(--ink);} .chk input{accent-color:var(--cobalt); margin-top:3px;}
+  .hs-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:14px; align-items:start;} @media(max-width:760px){.hs-two{grid-template-columns:minmax(0,1fr);}}
+  .hs-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); overflow-wrap:anywhere;}
+  .hs-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .hs-code{font-family:var(--font-mono); font-size:.78rem; background:var(--paper-2); color:var(--ink); border:2px solid var(--outline); border-radius:10px; padding:10px 12px; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.55;}
+  .hs-note{font-family:var(--font-ui); font-size:.86rem; color:var(--ink); margin-top:8px; min-height:2.6em; overflow-wrap:anywhere;}
+  .hs-list{display:flex; flex-direction:column; gap:6px;}
+  .hs-item{border:2px solid var(--line-strong); border-radius:8px; padding:7px 10px; background:var(--paper); color:var(--ink); font:600 .8rem var(--font-ui); cursor:pointer; text-align:left; overflow-wrap:anywhere;}
+  .hs-item:hover{border-color:var(--cobalt);} .hs-item.on{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .hs-item.good{border-color:var(--forest); background:var(--forest-soft);} .hs-item.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .hs-seg{display:inline-flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .hs-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:6px 10px; font:700 .76rem var(--font-ui); cursor:pointer;} .hs-seg button:last-child{border-right:0;} .hs-seg button.on{background:var(--cobalt); color:#fff;}
+  .hs-tag{display:inline-block; font:800 .66rem var(--font-ui); text-transform:uppercase; letter-spacing:.05em; padding:2px 7px; border-radius:6px; border:2px solid var(--line-strong); margin-right:6px; color:var(--ink);}
+  .hs-tag.git{border-color:var(--cobalt); background:var(--cobalt-soft);} .hs-tag.db{border-color:var(--ochre); background:var(--ochre-soft);} .hs-tag.fs{border-color:var(--forest); background:var(--forest-soft);}
+  .hs-dir{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px;} @media(max-width:600px){.hs-dir{grid-template-columns:minmax(0,1fr);}}
+  .hs-out{border:2px solid var(--line-strong); border-radius:10px; padding:9px 11px; font-family:var(--font-ui); font-size:.82rem; color:var(--ink); background:var(--paper); overflow-wrap:anywhere;} .hs-out.ok{border-color:var(--forest); background:var(--forest-soft);} .hs-out.no{border-color:var(--vermil); background:var(--vermil-soft);} .hs-out b{display:block; margin-bottom:3px;}
+  .hs-stages{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px;} @media(max-width:600px){.hs-stages{grid-template-columns:minmax(0,1fr);}}
+  .hs-stg{border:2px solid var(--line-strong); border-radius:10px; padding:8px 6px; background:var(--paper); color:var(--ink); font:800 .78rem var(--font-ui); cursor:pointer; text-align:center;} .hs-stg.on{border-color:var(--cobalt); background:var(--cobalt-soft);} .hs-stg small{display:block; font-weight:600; font-size:.66rem; color:var(--ink-mute); margin-top:2px;}
+  .hs-seq{counter-reset:s; display:flex; flex-direction:column; gap:6px; margin:8px 0; padding:0; list-style:none;}
+  .hs-seq li{counter-increment:s; border:2px dashed var(--line-strong); border-radius:8px; padding:7px 10px; font:600 .8rem var(--font-ui); color:var(--ink); min-height:2.2em; overflow-wrap:anywhere;} .hs-seq li::before{content:counter(s) ". "; font-weight:800; color:var(--ink-mute);}
+  .hs-seq li.good{border:2px solid var(--forest); background:var(--forest-soft);} .hs-seq li.bad{border:2px solid var(--vermil); background:var(--vermil-soft);}
+  .hs-bar{display:flex; height:30px; border:2px solid var(--outline); border-radius:8px; overflow:hidden; background:var(--paper);} .hs-bar span{display:flex; align-items:center; justify-content:center; font:800 .7rem var(--font-ui); color:var(--ink); overflow:hidden; white-space:nowrap;} .hs-bar .o{background:var(--ochre-soft);} .hs-bar .n{background:var(--forest-soft);} .hs-bar .w{background:var(--vermil-soft);}
+  .hs-tbl{width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:.74rem; color:var(--ink); table-layout:fixed;} .hs-tbl td,.hs-tbl th{border:1px solid var(--line-strong); padding:5px 7px; text-align:left; vertical-align:top; overflow-wrap:anywhere;} .hs-tbl th{font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; color:var(--ink-mute);} .hs-tbl td.bad{background:var(--vermil-soft);} .hs-tbl td.ok{background:var(--forest-soft);}
+  input[type=range]{width:100%; accent-color:var(--cobalt);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Hosting, Staging, Deployment and Updates</h1>
+  <p class="subtitle">How a WordPress site gets from your laptop to a live server and stays healthy there: what the host must provide, why code and content travel in different directions, a deployment path you can reason about, update day done in a safe order, and the DNS and SSL steps around a launch.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What WordPress needs to run</a></li>
+      <li><a href="#sec2">Choosing a kind of hosting (interactive)</a></li>
+      <li><a href="#sec3">Code in git, content in the database (interactive)</a></li>
+      <li><a href="#sec4">A deployment path and where it fails (interactive)</a></li>
+      <li><a href="#sec5">Moving a database: URLs and search-replace (interactive)</a></li>
+      <li><a href="#sec6">Update day, in the right order (interactive)</a></li>
+      <li><a href="#sec7">Backups you have actually restored (interactive)</a></li>
+      <li><a href="#sec8">Domains, DNS and SSL at cut-over (interactive)</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What WordPress needs to run</h2>
+  <p class="lead">WordPress is PHP code that stores its content in a database. Almost everything in this lesson follows from that: the code is files you can keep in git, and the content is rows in a database that git does not see.</p>
+  <p>The official requirements page lists what a host should support. As read on 27 Oct 2026 it recommends: <b>PHP</b> version 8.3 or greater; <b>MariaDB</b> 10.11 or greater, or <b>MySQL</b> 8.0 or greater; <b>HTTPS</b> support; and Apache or Nginx as the web server. These numbers move with each release, so treat them as a snapshot and check the page when you pick a host.</p>
+  <div class="stage" data-testid="hs-needs">
+    <div class="hs-two">
+      <div class="hs-box" data-testid="hs-needs-code"><h5>THE CODE SIDE (FILES)</h5>WordPress core, your theme, your plugins and <code class="inline">wp-config.php</code>. Core and plugins arrive through updates; the theme and your own plugins are yours and belong in git. Uploaded media also sits on disk, but it is <em>content</em> and does not belong in git (section 3).</div>
+      <div class="hs-box" data-testid="hs-needs-data"><h5>THE CONTENT SIDE (DATABASE)</h5>Posts, pages, menus, settings, plugin options and users live in the database. Anything an editor changes in wp-admin changes a row, not a file. That is why a deploy of your git repository never carries content with it.</div>
+    </div>
+  </div>
+  <p class="small">The settings that tie the two together are in <code class="inline">wp-config.php</code> (database name, user, host). That file differs per environment, so it is normally kept out of the shared code or generated per server.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Choosing a kind of hosting</h2>
+  <p>Hosting for WordPress falls on a spectrum. At one end is <b>general hosting</b>: you get a server or an account and a control panel, and you manage WordPress on it. At the other is <b>managed WordPress hosting</b>: the provider runs the stack for WordPress specifically and often adds backups, staging and update tooling. This is a trade between control and convenience, not a ranking, and the features vary by provider, so the answer is a set of questions to ask rather than a product to name. The picker below is my own heuristic, not a rule from the WordPress documentation.</p>
+  <div class="stage" data-testid="hs-host-picker">
+    <div id="hp-qs"></div>
+    <div class="hs-two" style="margin-top:10px">
+      <div class="hs-box"><h5>WHERE YOUR ANSWERS LEAN</h5><div id="hp-verdict" data-testid="hs-host-verdict" style="font-weight:800"></div><div class="hs-note" id="hp-why" data-testid="hs-host-why"></div></div>
+      <div class="hs-box"><h5>ASK ANY HOST, WHATEVER THE TYPE</h5><ul id="hp-ask" style="margin:0;padding-left:18px"></ul></div>
+    </div>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Code in git, content in the database</h2>
+  <p>Staging is a second copy of the site where you can try changes safely. The difficulty is that a WordPress site has two kinds of state that live in different places and should move in different directions. <b>Code</b> (theme files, your plugin code) is written on your machine, kept in git and flows <em>towards</em> production. <b>Content</b> (posts, settings, uploads) is written by editors on production and, when you need a realistic copy, flows <em>back down</em> to staging and local. Push the wrong thing the wrong way and you either lose editors&rsquo; work or break the site. Choose a kind of change and see both directions. The consequences are my own illustrations of typical outcomes.</p>
+  <div class="stage" data-testid="hs-flow-explorer">
+    <div class="hs-two">
+      <div class="hs-list" id="fx-list"></div>
+      <div>
+        <div class="hs-box"><h5>WHAT IT IS</h5><div id="fx-what" data-testid="hs-flow-what"></div></div>
+        <div class="hs-dir">
+          <div class="hs-out" id="fx-up" data-testid="hs-flow-up"></div>
+          <div class="hs-out" id="fx-down" data-testid="hs-flow-down"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p>Block themes add a wrinkle: changes made in the Site Editor are saved by WordPress in the database rather than in the theme files, so a template edited in wp-admin on production is content in the sense of this table until someone exports it into the theme. That detail is from my background knowledge of how the Site Editor stores edits, not from the pages used for this lesson.</p>
+
+  <h2 id="sec4"><span class="num">4</span> A deployment path and where it fails</h2>
+  <p>A typical path is local, then git, then a build step, then staging, then production. A deploy can be a Git-based push, a CI job that runs when you merge, or a manual upload; the shape is the same. Click each stage, read what happens there, then mark the places you would watch. Reveal the typical failure points at the end. The stages and failure points are my own synthesis of common practice.</p>
+  <div class="stage" data-testid="hs-pipeline">
+    <div class="hs-stages" id="pl-stages"></div>
+    <div class="hs-two" style="margin-top:12px">
+      <div class="hs-box"><h5 id="pl-title">STAGE</h5><div id="pl-desc" data-testid="hs-pipeline-desc"></div><div class="hs-code" id="pl-cmd" style="margin-top:8px" data-testid="hs-pipeline-cmd"></div></div>
+      <div class="hs-box"><h5>WHAT COULD GO WRONG HERE? MARK WHAT YOU WOULD CHECK</h5><div id="pl-fails"></div></div>
+    </div>
+    <div class="row"><button class="btn" id="pl-reveal" data-testid="hs-pipeline-reveal">Reveal typical failure points</button><button class="btn sec" id="pl-clear" data-testid="hs-pipeline-clear">Clear marks</button><span class="small" id="pl-count" data-testid="hs-pipeline-count"></span></div>
+    <div class="hs-note" id="pl-sum" data-testid="hs-pipeline-summary"></div>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Moving a database: URLs and search-replace</h2>
+  <p>When you copy a database from one environment to another, WordPress still contains the old site address in many places. The migration guide says to export the database, move it, then update the WordPress Address and Site Address and fix remaining references. A plain text replace on a SQL dump is risky, because WordPress stores some values as PHP <b>serialized</b> strings that record each value&rsquo;s length. WP-CLI&rsquo;s <code class="inline">search-replace</code> is built to handle serialized data, and the guide says never to change the <code class="inline">guid</code> column. The simulator below uses a made-up row to show why.</p>
+  <div class="hs-code" data-testid="hs-wpcli-code">wp db export before-move.sql
+# ... copy the file, import it on the new environment (wp db import) ...
+wp search-replace 'http://old.test' 'https://new.example' --skip-columns=guid --dry-run
+wp search-replace 'http://old.test' 'https://new.example' --skip-columns=guid</div>
+  <div class="stage" data-testid="hs-sr-sim">
+    <div class="row"><label class="ctl" style="flex:1;min-width:180px">old address<input type="text" id="sr-old" value="http://old.test" data-testid="hs-sr-old"></label><label class="ctl" style="flex:1;min-width:180px">new address<input type="text" id="sr-new" value="https://new.example" data-testid="hs-sr-new"></label></div>
+    <div class="row"><div class="hs-seg" id="sr-mode"><button type="button" class="on" data-m="naive" data-testid="hs-sr-naive">Plain text replace</button><button type="button" data-m="aware" data-testid="hs-sr-aware">Serialization-aware (WP-CLI style)</button></div><label class="chk"><input type="checkbox" id="sr-guid" checked data-testid="hs-sr-skipguid"> skip the guid column</label></div>
+    <table class="hs-tbl" id="sr-tbl" data-testid="hs-sr-table"></table>
+    <div class="hs-code" id="sr-cmd" style="margin-top:10px" data-testid="hs-sr-command"></div>
+    <div class="hs-note" id="sr-note" data-testid="hs-sr-note"></div>
+  </div>
+  <p class="small">The serialized row here is a small invented example, and the length check assumes plain ASCII characters. Transients can keep old addresses too; the guide notes they are safe to delete because WordPress recreates them. After the move, check menus, widgets, plugin settings and template files for hard-coded old URLs.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Update day, in the right order</h2>
+  <p>WordPress core, plugins and themes all need updates. The upgrade guide says to back up the database and files first and verify the backups, to update plugins one at a time and check each, and it describes rollback as possible but discouraged, because it needs a full backup made before the upgrade and database changes can complicate it. Put six steps in order by clicking them. The order below is my synthesis of that guidance plus common practice.</p>
+  <div class="stage" data-testid="hs-update-planner">
+    <div class="hs-two">
+      <div><div class="small" style="margin-bottom:6px">Steps to place (click to add to your plan)</div><div class="hs-list" id="up-pool"></div></div>
+      <div><div class="small">Your plan</div><ol class="hs-seq" id="up-seq" data-testid="hs-update-seq"></ol></div>
+    </div>
+    <div class="row"><button class="btn" id="up-check" data-testid="hs-update-check" disabled>Check my order</button><button class="btn sec" id="up-undo" data-testid="hs-update-undo">Undo last</button><button class="btn sec" id="up-reset" data-testid="hs-update-reset">Reset</button></div>
+    <div class="hs-note" id="up-note" data-testid="hs-update-note"></div>
+  </div>
+  <p>Background updates are a separate matter. Per the upgrade guide, minor core releases and translations update automatically by default, plugin and theme updates only in special cases such as critical security fixes, and new installs since 5.6 also get major core updates by default unless a version control checkout is detected. The guide strongly discourages turning updates off entirely. Whether you leave automatic updates on, or take them over yourself, is a decision to make per site, and to tell the client about.</p>
+
+  <h2 id="sec7"><span class="num">7</span> Backups you have actually restored</h2>
+  <p>The WordPress backup guide says a backup needs both the database and the files, and recommends periodically checking that your automatic backups really work. A file you have never restored is a hope, not a backup. Tick what is true of a site you look after.</p>
+  <div class="stage" data-testid="hs-backup-check">
+    <div class="hs-two">
+      <div id="bk-list"></div>
+      <div class="hs-box"><h5>WHAT YOU CAN SAY ABOUT THIS BACKUP</h5><div id="bk-verdict" style="font-weight:800" data-testid="hs-backup-verdict"></div><div class="hs-note" id="bk-why" data-testid="hs-backup-why"></div></div>
+    </div>
+  </div>
+
+  <h2 id="sec8"><span class="num">8</span> Domains, DNS and SSL at cut-over</h2>
+  <p>A domain name points at a server through DNS records. Visitors do not ask the authoritative DNS every time: resolvers cache the answer for the record&rsquo;s <b>TTL</b> (time to live). So when you point the name at the new server, some visitors keep reaching the old one until their cached answer expires. The new server also needs an HTTPS certificate for the name, or browsers warn. How and when a certificate is issued depends on the host. This part is background knowledge, not something the WordPress documentation covers (its migration guide does not cover DNS). Move the slider; the split is a simplified model that assumes caches were filled evenly across the TTL.</p>
+  <div class="stage" data-testid="hs-dns-sim">
+    <div class="row"><label class="ctl">TTL in force before the change<select id="dn-ttl" data-testid="hs-dns-ttl"><option value="0.0833">5 minutes</option><option value="1" selected>1 hour</option><option value="24">24 hours</option></select></label><label class="chk"><input type="checkbox" id="dn-cert" data-testid="hs-dns-cert"> HTTPS certificate for the name is ready on the new server</label></div>
+    <label class="ctl" style="margin-top:8px">hours since you changed the record: <span id="dn-h" data-testid="hs-dns-hours">0</span><input type="range" id="dn-t" min="0" max="48" step="0.25" value="0" data-testid="hs-dns-slider"></label>
+    <div class="hs-bar" id="dn-bar" style="margin-top:10px" data-testid="hs-dns-bar"></div>
+    <div class="hs-note" id="dn-note" data-testid="hs-dns-note"></div>
+  </div>
+  <div class="flag"><b>A plan that avoids surprises.</b> (My synthesis.) Lower the TTL a day or two before cut-over, get the certificate and the final content sync ready, freeze editing for the sync, change the record, then watch both servers until traffic has moved. Keep the old server untouched for a while so you can switch back.</div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>WordPress needs PHP, a MySQL-compatible database and HTTPS support;</b> check the official requirements page for current versions.</li>
+    <li><b>Hosting is a trade:</b> managed hosting adds convenience, general hosting adds control. Ask every host the same questions about staging, backups, WP-CLI or SSH and git deploys.</li>
+    <li><b>The hard part is the database:</b> code flows up from git, content flows down from production, and mixing the two is how work gets lost.</li>
+    <li><b>Use a serialization-aware tool</b> such as WP-CLI search-replace when changing addresses, and leave the guid column alone.</li>
+    <li><b>Update in order:</b> verified backup, staging, test, production, verify, then decide whether to roll back.</li>
+    <li><b>Test your backup restore before you need it,</b> and write down how long it took.</li>
+    <li><b>DNS moves at the speed of its caches;</b> prepare the certificate and the TTL before cut-over.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> <a href="https://wordpress.org/about/requirements/" target="_blank">WordPress requirements</a> · <a href="https://developer.wordpress.org/advanced-administration/upgrade/migrating/" target="_blank">Moving WordPress</a> · <a href="https://developer.wordpress.org/advanced-administration/upgrade/upgrading/" target="_blank">Updating WordPress</a> · <a href="https://developer.wordpress.org/advanced-administration/security/backup/" target="_blank">WordPress backups</a> · <a href="https://developer.wordpress.org/cli/commands/search-replace/" target="_blank">wp search-replace</a> · <a href="https://developer.wordpress.org/cli/commands/db/export/" target="_blank">wp db export</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> The requirement versions, the migration steps, the backup advice, the update and background-update details and the WP-CLI commands were read from the pages above. Not covered by those pages and from my own background knowledge or synthesis: how Site Editor edits are stored, how DNS caching and TTL behave, certificate issuance, the hosting questions and picker, the pipeline stages and failure points, the update order, and every consequence and percentage in the widgets, which are illustrative. Git-based deploys and CI vary by provider; check your Git host&rsquo;s and your hosting provider&rsquo;s own documentation for specifics. This lesson does not name or rank hosting companies.</p>
+
+  <footer>Hosting, Staging, Deployment and Updates · WordPress for Front-End &amp; UI Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const G=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------- hosting picker ---------- */
+(function(){
+  const Q=[
+    {k:"ops",t:"Who will handle server upkeep, such as PHP versions and security patches?",o:[["The host, ideally",2],["It depends",0],["We will, and we want to",-2]]},
+    {k:"ctl",t:"How much server-level control does the project need (custom config, unusual PHP extensions, other services on the same box)?",o:[["Little",2],["Some",0],["A lot",-2]]},
+    {k:"env",t:"Do you need staging and one-click backups without setting them up yourself?",o:[["Yes, built in",2],["Nice to have",1],["We will build our own",-1]]},
+    {k:"cli",t:"Does your workflow need SSH, WP-CLI and git-based deploys?",o:[["Yes, essential",-1],["Helpful",0],["No, a dashboard is fine",1]]},
+    {k:"bud",t:"Which hurts more, a higher monthly bill or more setup time from the team?",o:[["The bill",-2],["Neither much",0],["The setup time",2]]}
+  ];
+  const ASK=["Can I pick the PHP version, and how do upgrades get announced?","Is there staging, and how do I push staging to production, and back?","How often are backups made, where are they stored, and how do I restore one?","Is shell access with WP-CLI available? Can I deploy from git?","How are HTTPS certificates issued and renewed for my domain?","What happens to caching and file permissions when I deploy?"];
+  const ans={}; const box=G("hp-qs");
+  box.innerHTML=Q.map(q=>'<div style="margin:8px 0"><div class="small" style="color:var(--ink)">'+esc(q.t)+'</div><div class="hs-seg" data-q="'+q.k+'">'+q.o.map((o,i)=>'<button type="button" data-i="'+i+'" data-testid="hs-host-'+q.k+'-'+i+'">'+esc(o[0])+'</button>').join('')+'</div></div>').join('');
+  G("hp-ask").innerHTML=ASK.map(a=>"<li>"+esc(a)+"</li>").join("");
+  function draw(){
+    const n=Object.keys(ans).length; let s=0; Q.forEach(q=>{ if(ans[q.k]!=null) s+=q.o[ans[q.k]][1]; });
+    box.querySelectorAll(".hs-seg").forEach(sg=>sg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",ans[sg.dataset.q]===+b.dataset.i)));
+    if(n<Q.length){ G("hp-verdict").textContent="Answer all "+Q.length+" ("+n+" so far)"; G("hp-why").textContent=""; return; }
+    let v,w;
+    if(s>=4){ v="Leans towards managed WordPress hosting"; w="You value convenience and built-in tooling over server control. Check that the host really provides the staging, restore and deploy features you need, because they differ between providers."; }
+    else if(s<=-4){ v="Leans towards general hosting that you control"; w="You want control and your own workflow. In exchange you own the upkeep: updates, backups, caching and security hardening are yours to set up and test."; }
+    else { v="Mixed: either could work"; w="Your answers pull both ways. List the two or three requirements you cannot compromise on and test each host against them with the questions on the right."; }
+    G("hp-verdict").textContent=v; G("hp-why").textContent=w+" (Score "+s+"; this is an illustrative heuristic.)";
+  }
+  box.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; ans[b.parentNode.dataset.q]=+b.dataset.i; draw(); });
+  draw();
+})();
+
+/* ---------- code vs content explorer ---------- */
+(function(){
+  const I=[
+    {id:"theme",n:"Theme template or CSS file",k:"git",what:"Files in wp-content/themes, written by you and kept in git.",up:["ok","Local to production: correct.","This is the normal deploy. Review it first, since it replaces what is live."],dn:["no","Production to local: not the direction.","Production has no newer theme code than git. Copying it down only risks overwriting your commits, or hiding that someone edited a file on the server."]},
+    {id:"plugin",n:"Your own plugin code",k:"git",what:"Code you wrote, in wp-content/plugins or mu-plugins, kept in git.",up:["ok","Local to production: correct.","Deploy it like the theme. If it changes stored data, plan any migration step too."],dn:["no","Production to local: not the direction.","Same reasoning as theme files. Git is the source of truth for code you own."]},
+    {id:"thirdplugin",n:"Third-party plugin or core update",k:"fs",what:"Code from the plugin author or WordPress. Whether it is in git depends on your team: some commit it, some install it per environment.",up:["ok","Test first, then repeat on production.","Whichever way you manage it, the same version must reach each environment in turn, tested on staging first (section 6)."],dn:["no","Do not copy files down as a method.","Versions drift between environments. Version management should be explicit, in git or in a lock mechanism."]},
+    {id:"post",n:"A post or page",k:"db",what:"Rows in the database, written by editors on the live site.",up:["no","Local to production: usually wrong.","Overwriting the live database with your copy deletes everything editors added since you last pulled. If a page must go live from staging, move that content deliberately, not the whole database."],dn:["ok","Production to local: how you get realistic content.","Pull a copy (with search-replace for addresses, section 5) when you need real data to build against. Consider whether it holds personal data before it leaves production."]},
+    {id:"setting",n:"A plugin or site setting",k:"db",what:"Stored as options in the database, changed in wp-admin.",up:["no","Local to production: risky.","Pushing the database to carry one setting overwrites all other content. Change the setting on production by hand, with WP-CLI, or ship it as code (an activation routine or a documented checklist)."],dn:["ok","Production to local: fine for reproducing a bug.","Copying down shows you the live configuration. Remember the live settings may include live keys for payments or email, which you should not use from a laptop."]},
+    {id:"upload",n:"Uploaded images and files",k:"fs",what:"Files in wp-content/uploads, referenced by rows in the database.",up:["no","Local to production: usually wrong.","The editors upload to production, so it is the source. Pushing your folder over it can delete or replace their media."],dn:["ok","Production to local: copy or proxy as needed.","Media is large, so many teams copy only what they need, or point the local site at production uploads. Missing media after a database pull is a common broken-image cause."]},
+    {id:"se",n:"A Site Editor template edit",k:"db",what:"For block themes, edits made in the Site Editor are saved in the database, not in the theme files (background knowledge, not from this lesson's sources).",up:["no","Local to production: it lives in the database.","An edit made on your local site will not appear in git until you export it to the theme. Decide where templates are authored, and stick to it."],dn:["ok","Production to local: shows what editors changed.","Useful for finding out why live looks different from git. Export what you want to keep into the theme so that it is in code."]}
+  ];
+  const L=G("fx-list"); let cur="theme";
+  L.innerHTML=I.map(i=>'<button type="button" class="hs-item" data-id="'+i.id+'" data-testid="hs-flow-item-'+i.id+'">'+esc(i.n)+'</button>').join("");
+  function out(el,d,lead){ el.className="hs-out "+d[0]; el.innerHTML="<b>"+esc(lead)+" "+esc(d[1])+"</b>"+esc(d[2]); }
+  function draw(){ const i=I.find(x=>x.id===cur); L.querySelectorAll(".hs-item").forEach(b=>b.classList.toggle("on",b.dataset.id===cur));
+    const tags={git:'<span class="hs-tag git">code in git</span>',db:'<span class="hs-tag db">in the database</span>',fs:'<span class="hs-tag fs">files on disk</span>'};
+    G("fx-what").innerHTML=tags[i.k]+esc(i.what); out(G("fx-up"),i.up,"Up:"); out(G("fx-down"),i.dn,"Down:"); }
+  L.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; cur=b.dataset.id; draw(); }); draw();
+})();
+
+/* ---------- pipeline stepper ---------- */
+(function(){
+  const S=[
+    {n:"Local",s:"your machine",d:"You build and test against a local copy of the site. The database here is a copy, and may be out of date.",c:"wp --info   # confirm WP-CLI and PHP versions locally",f:[["l1","Local PHP or database version differs from production",1,"Code that works locally breaks on the host. Match the versions the host runs."],["l2","Working from an old copy of the live database",1,"You build against content that no longer exists or has changed."],["l3","A new setting exists only in your local database",1,"It never reaches git, so staging and production do not have it."]]},
+    {n:"Git",s:"source of truth",d:"Theme and custom plugin code is committed and pushed. Uploads, the database and wp-config.php with secrets stay out of the repository.",c:"git add wp-content/themes/my-theme\ngit commit -m \"Add event card template\"\ngit push",f:[["g1","Secrets or wp-config.php committed",1,"Credentials end up in history. Keep them per environment."],["g2","Uploads or a database dump committed",1,"The repository becomes huge and carries private data."],["g3","Someone edits a file directly on the server",1,"The next deploy overwrites it, or the environments drift apart."]]},
+    {n:"Build",s:"CI or local",d:"If the theme has a build step (compiled CSS and JS, Composer or npm dependencies), it runs here, usually in CI, so that the deployed files are the built ones.",c:"npm ci && npm run build\ncomposer install --no-dev",f:[["b1","Built assets not included in what is deployed",1,"Production serves missing or stale CSS and JS."],["b2","Dev dependencies shipped to production",0,"Unneeded code on the server, which widens what you must keep patched. Annoying, usually not fatal."],["b3","Build differs from the one you tested",1,"The staging test did not test what production gets."]]},
+    {n:"Staging",s:"safe copy",d:"A copy of production's code and a recent copy of its content. DECISION POINT: refreshing staging's database from production overwrites staging-only test content; it should never flow the other way.",c:"wp db export --add-drop-table   # on production\n# import on staging, then:\nwp search-replace 'https://live.example' 'https://staging.example' --skip-columns=guid",f:[["s1","Staging database is stale",1,"You test against old content and miss a real data problem."],["s2","Staging sends real emails or takes real payments",1,"Live integrations copied with the database act on real people. Disable or use test keys."],["s3","Staging gets indexed by search engines",1,"Duplicate content under the wrong address. Block indexing and require a login."]]},
+    {n:"Production",s:"live site",d:"The deploy puts approved code on the live server. DECISION POINT: this step moves code only. Do not overwrite the live database with a copy; run any needed data changes as explicit, tested steps.",c:"# deploy code (git pull, CI release or sync), then, if needed:\nwp cache flush\nwp rewrite flush",f:[["p1","Production database overwritten by an older copy",1,"Content from editors since that copy is lost. This is the costliest mistake."],["p2","No backup taken first",1,"There is nothing to return to if the deploy goes wrong."],["p3","Cache not cleared after the deploy",0,"Visitors may see old pages for a while. Usually minor, but confusing."]]}
+  ];
+  let cur=0, revealed=false; const mk={};
+  G("pl-stages").innerHTML=S.map((s,i)=>'<button type="button" class="hs-stg" data-i="'+i+'" data-testid="hs-pipeline-stage-'+i+'">'+(i+1)+". "+esc(s.n)+"<small>"+esc(s.s)+"</small></button>").join("");
+  function draw(){ const s=S[cur];
+    G("pl-stages").querySelectorAll(".hs-stg").forEach((b,i)=>b.classList.toggle("on",i===cur));
+    G("pl-title").textContent=("STAGE "+(cur+1)+": "+s.n).toUpperCase(); G("pl-desc").textContent=s.d; G("pl-cmd").textContent=s.c;
+    G("pl-fails").innerHTML=s.f.map(f=>{ const on=!!mk[f[0]]; let cls="hs-item"+(on?" on":""); if(revealed){ if(f[2]&&on) cls="hs-item good"; else if(f[2]&&!on) cls="hs-item bad"; }
+      return '<button type="button" class="'+cls+'" style="width:100%;margin-bottom:6px" data-id="'+f[0]+'" data-testid="hs-pipeline-fail-'+f[0]+'">'+(on?"[x] ":"[ ] ")+esc(f[1])+(revealed?'<div class="small" style="margin-top:4px">'+(f[2]?"Typical failure point. ":"Lower risk. ")+esc(f[3])+"</div>":"")+"</button>"; }).join("");
+    let mark=0,hit=0,tot=0,miss=[]; S.forEach(st=>st.f.forEach(f=>{ if(f[2]) tot++; if(mk[f[0]]) mark++; if(f[2]&&mk[f[0]]) hit++; if(f[2]&&!mk[f[0]]) miss.push(st.n+": "+f[1]); }));
+    G("pl-count").textContent=mark+" marked";
+    G("pl-sum").innerHTML=revealed?("<b>You marked "+hit+" of the "+tot+" typical failure points.</b> "+(miss.length?"Not yet marked: "+esc(miss.join("; "))+".":"You marked all of them.")):"Visit every stage, mark what you would check, then reveal."; }
+  G("pl-stages").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; cur=+b.dataset.i; draw(); });
+  G("pl-fails").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; mk[b.dataset.id]=!mk[b.dataset.id]; draw(); });
+  G("pl-reveal").onclick=()=>{ revealed=true; draw(); };
+  G("pl-clear").onclick=()=>{ for(const k in mk) delete mk[k]; revealed=false; draw(); };
+  draw();
+})();
+
+/* ---------- search-replace simulator ---------- */
+(function(){
+  let mode="naive";
+  function ser(v){ return 'a:1:{s:3:"url";s:'+v.length+':"'+v+'";}'; }
+  function valid(str){ const m=/s:(\d+):"(.*)";\}$/.exec(str); return !!m && (+m[1]===m[2].length); }
+  function draw(){
+    const o=G("sr-old").value, n=G("sr-new").value, skip=G("sr-guid").checked;
+    G("sr-mode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
+    const rep=s=>o?s.split(o).join(n):s;
+    const rows=[["wp_options","siteurl",o],["wp_options","widget_data (serialized)",ser(o)],["wp_posts","guid",o+"/?p=12"]];
+    const res=rows.map((r,i)=>{ let v=r[2]; if(i===0) v=rep(v); else if(i===1) v=(mode==="naive")?rep(v):ser(rep(o)); else v=skip?v:rep(v); return v; });
+    const ok=[true, valid(res[1]), skip];
+    const why=["Plain value: either method works.", ok[1]?"Length matches the text.":"Declared length no longer matches the text. WordPress cannot read this value back, so the setting or widget is lost.", skip?"Left unchanged on purpose: the guide says never to change guid.":"Changed. The guide says never to change the guid column."];
+    G("sr-tbl").innerHTML="<tr><th style='width:22%'>table.column</th><th>after the replace</th><th style='width:28%'>result</th></tr>"+rows.map((r,i)=>'<tr><td>'+esc(r[0]+"."+r[1])+'</td><td>'+esc(res[i])+'</td><td class="'+(ok[i]?"ok":"bad")+'">'+esc(why[i])+'</td></tr>').join("");
+    G("sr-cmd").textContent="wp search-replace '"+o+"' '"+n+"'"+(skip?" --skip-columns=guid":"")+" --dry-run";
+    G("sr-note").innerHTML=(mode==="naive"?"<b>Plain replace:</b> if the new address has a different length, the serialized row is damaged. ":"<b>Serialization-aware:</b> the stored length is recalculated. ")+"WP-CLI does the second by default; run with <code class='inline'>--dry-run</code> first to see what would change.";
+  }
+  ["sr-old","sr-new"].forEach(id=>G(id).oninput=draw); G("sr-guid").onchange=draw;
+  G("sr-mode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; mode=b.dataset.m; draw(); }); draw();
+})();
+
+/* ---------- update day planner ---------- */
+(function(){
+  const S=[
+    ["bk","Take a fresh backup of production and confirm it is complete","Everything after this assumes you can go back. The upgrade guide says not to start without a verified backup of the database and files."],
+    ["st","Refresh staging from production and apply the updates there, plugins one at a time","Staging should look like production, and the guide advises updating plugins one at a time so you can find the one that breaks."],
+    ["ts","Test the important journeys on staging","Forms, login, search, checkout or whatever matters to the site. Watch for layout problems and plugin errors."],
+    ["pr","Apply the same updates on production in a quiet window","Only now, with a known-good result and the same versions you tested."],
+    ["vf","Verify production: key pages, forms, logs","A passing staging does not prove production. Check the real site, including the error log."],
+    ["rb","Decide: keep the update, or roll back from the backup","A deliberate decision with a time limit, not an afterthought. The guide notes rollback is possible but discouraged, so catching problems on staging matters most."]
+  ];
+  const ORDER=S.map(s=>s[0]); const shuf=["vf","pr","bk","rb","ts","st"]; let seq=[];
+  function draw(){
+    G("up-pool").innerHTML=shuf.filter(k=>seq.indexOf(k)<0).map(k=>{ const s=S.find(x=>x[0]===k); return '<button type="button" class="hs-item" data-k="'+k+'" data-testid="hs-update-step-'+k+'">'+esc(s[1])+'</button>'; }).join("");
+    G("up-seq").innerHTML=seq.map(k=>'<li data-testid="hs-update-placed-'+k+'">'+esc(S.find(x=>x[0]===k)[1])+'</li>').join("")+(seq.length<6?'<li style="opacity:.5">(next step)</li>':"");
+    G("up-check").disabled=seq.length<6; G("up-note").textContent=""; }
+  G("up-pool").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; seq.push(b.dataset.k); draw(); });
+  G("up-undo").onclick=()=>{ seq.pop(); draw(); }; G("up-reset").onclick=()=>{ seq=[]; draw(); };
+  G("up-check").onclick=()=>{ const lis=G("up-seq").querySelectorAll("li"); let right=0, first="";
+    seq.forEach((k,i)=>{ const ok=ORDER[i]===k; if(ok) right++; else if(!first) first=k; if(lis[i]) lis[i].className=ok?"good":"bad"; });
+    G("up-note").innerHTML=right===6?"<b>Correct order.</b> Backup, staging, test, production, verify, decision. Each step makes the next one safe.":"<b>"+right+" of 6 in place.</b> The first step in the wrong slot is: "+esc(S.find(x=>x[0]===first)[1])+". Why it belongs elsewhere: "+esc(S.find(x=>x[0]===first)[2]); };
+  draw();
+})();
+
+/* ---------- backup check ---------- */
+(function(){
+  const C=[["db","It includes a database export",2],["files","It includes themes, plugins, uploads and wp-config.php",2],["off","A copy is stored away from the server it protects",2],["auto","It runs on a schedule, and one is taken before every update",1],["rest","I restored it into a scratch environment and the site loaded and worked",4],["time","I wrote down how long the restore took and who does it",1]];
+  const st={}; G("bk-list").innerHTML=C.map(c=>'<label class="chk" style="margin:7px 0"><input type="checkbox" data-k="'+c[0]+'" data-testid="hs-backup-'+c[0]+'"> '+esc(c[1])+"</label>").join("");
+  function draw(){ let s=0; C.forEach(c=>{ if(st[c[0]]) s+=c[2]; }); const v=G("bk-verdict"); let w;
+    if(!st.rest){ v.textContent="Unproven: a copy exists, but it is not yet a backup you can rely on"; v.style.color="var(--bad)"; w="The backup guide suggests regularly checking that automated backups work. Until you have restored one, you do not know that it is complete, readable or quick enough. Try a restore on a throwaway environment this week."; }
+    else if(!(st.db&&st.files)){ v.textContent="Restored, but it covers only half the site"; v.style.color="var(--warn)"; w="A site needs both the database and the files. Which half is missing, and what does the site look like without it?"; }
+    else if(!st.off){ v.textContent="Restored and complete, but kept in one place"; v.style.color="var(--warn)"; w="If the server or the account is lost, the backup goes with it. Keep a copy elsewhere."; }
+    else { v.textContent="Reliable"; v.style.color="var(--good)"; w="Complete, stored away from the server, and proven by a restore. Repeat the restore test now and then, since sites and hosts change."; }
+    G("bk-why").textContent=w+" (Checklist score "+s+" of 12; the weights are my own illustration.)"; }
+  G("bk-list").addEventListener("change",e=>{ const i=e.target; if(i&&i.dataset&&i.dataset.k){ st[i.dataset.k]=i.checked; draw(); } }); draw();
+})();
+
+/* ---------- DNS timeline ---------- */
+(function(){
+  function draw(){ const ttl=+G("dn-ttl").value, t=+G("dn-t").value, cert=G("dn-cert").checked;
+    G("dn-h").textContent=t+" h";
+    const oldShare=Math.max(0,1-t/ttl), nw=1-oldShare;
+    const p=x=>Math.round(x*100);
+    G("dn-bar").innerHTML='<span class="o" style="flex:'+oldShare+'">'+(oldShare>0.08?"old server "+p(oldShare)+"%":"")+'</span><span class="'+(cert?"n":"w")+'" style="flex:'+nw+'">'+(nw>0.08?(cert?"new server ":"new server, certificate warning ")+p(nw)+"%":"")+'</span>';
+    const tl=ttl<1?"5 minutes":(ttl+" hour"+(ttl>1?"s":"")); let m;
+    if(t===0) m="At the moment of the change every visitor still holds the old answer. Nothing has moved.";
+    else if(oldShare>0) m=p(oldShare)+"% of visitors in this model are still reaching the old server, until their cached answer expires (TTL "+tl+").";
+    else m="Every cache in this model has expired; all visitors reach the new server. In real life a few resolvers keep answers longer, so keep the old server for a while.";
+    if(nw>0&&!cert) m+=" Without a certificate for the name on the new server, the "+p(nw)+"% who reach it see a browser warning. Have the certificate ready first.";
+    if(oldShare>0&&nw>0) m+=" Editors working on the old server during this window will write content that the new server does not have: freeze editing during cut-over.";
+    G("dn-note").textContent=m+" (Illustrative model; real behaviour varies by resolver.)"; }
+  ["dn-ttl","dn-cert"].forEach(id=>G(id).onchange=draw); G("dn-t").oninput=draw; draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+/* Module styles — "Why AI Helps Some People and Hurts Others" (Lovett 2026)
+   Shared by aidiff-*.html. Builds on ../../../../shared/theme.css tokens. */
+:root{ --accent:var(--vermil); --accent-soft:var(--vermil-soft); }
+svg text{font-family:var(--font-ui);}
+
+/* module strip: where am I in the module + prev/next */
+.mod-strip{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:-8px 0 22px; font-family:var(--font-ui); font-size:.82rem;}
+.mod-strip .mod-name{font-family:var(--font-pixel); font-size:.48rem; letter-spacing:.04em; color:var(--ink); background:#f2cfcf; border:2px solid var(--outline); padding:5px 8px; border-radius:3px;}
+.mod-steps{display:flex; gap:4px;}
+.mod-steps a{width:26px; height:26px; display:grid; place-items:center; border:2px solid var(--outline); border-radius:4px; background:var(--surface);
+  font-family:var(--font-pixel); font-size:.48rem; color:var(--ink); background-image:none !important;}
+.mod-steps a.here{background:var(--gold); transform:translateY(-2px); box-shadow:0 2px 0 var(--outline);}
+.mod-steps a:hover{background:var(--paper-2);}
+.mod-next{display:flex; justify-content:space-between; gap:12px; margin-top:40px;}
+.mod-next a{flex:1; border:3px solid var(--outline); border-radius:6px; padding:12px 16px; background:var(--surface); box-shadow:4px 4px 0 rgba(86,98,138,.16);
+  font-family:var(--font-display); font-size:1.02rem; color:var(--ink); background-image:none !important; transition:transform .1s steps(2);}
+.mod-next a:hover{transform:translate(-2px,-2px);}
+.mod-next a small{display:block; font-family:var(--font-pixel); font-size:.45rem; color:var(--ink-mute); margin-bottom:6px;}
+.mod-next a.nx{text-align:right;}
+
+/* objectives / key idea */
+.objectives{background:var(--paper); border:3px solid var(--outline); border-radius:6px; padding:14px 18px; margin:0 0 24px; box-shadow:4px 4px 0 rgba(86,98,138,.14);}
+.objectives b.h{font-family:var(--font-pixel); font-size:.5rem; letter-spacing:.04em; color:var(--ink); display:block; margin-bottom:8px;}
+.objectives ul{margin:0; padding-left:20px; font-size:.95rem;}
+.keyidea{position:relative; border:3px solid var(--outline); border-radius:6px; background:linear-gradient(180deg,#fff6d8,#fdf0c4); padding:16px 18px 16px 58px; margin:22px 0; font-size:1rem; box-shadow:4px 4px 0 rgba(86,98,138,.14);}
+.keyidea::before{content:""; position:absolute; left:14px; top:16px; width:28px; height:28px; background:var(--spr-star) center/contain no-repeat; image-rendering:pixelated; animation:spin-y 1.6s steps(4) infinite;}
+
+/* evidence-strength chips */
+.ev{display:inline-block; font-family:var(--font-ui); font-size:.66rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:2px 8px; border:2px solid var(--outline); border-radius:999px; vertical-align:middle; margin-right:4px; color:var(--ink);}
+.ev.rct{background:#cfe9d8;} .ev.field{background:#d6e4f7;} .ev.obs{background:#fbe6c2;} .ev.lab{background:#e6ddf8;}
+.ev.pre{background:#f2cfcf;} .ev.self{background:#fde3cf;} .ev.theory{background:#e8edf3;} .ev.review{background:#dff1ef;}
+
+/* stat tiles */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:14px 0;}
+.tile{background:var(--surface); border:3px solid var(--outline); border-radius:6px; padding:12px 14px; box-shadow:3px 3px 0 rgba(86,98,138,.14); animation:win-in .5s steps(5) both;}
+.tile .n{font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ink); line-height:1.1;}
+.tile .n.up{color:var(--good);} .tile .n.down{color:var(--bad);}
+.tile .l{font-family:var(--font-ui); font-size:.8rem; color:var(--ink-mute); margin-top:4px;}
+
+/* generic controls */
+.seg{display:inline-flex; border:3px solid var(--outline); border-radius:6px; overflow:hidden;}
+.seg button{border:none; background:var(--surface); padding:7px 12px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; color:var(--ink-soft); cursor:pointer;}
+.seg button + button{border-left:2px solid var(--outline);}
+.seg button.on{background:var(--accent); color:#fff;}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-family:var(--font-ui); font-size:.84rem; color:var(--ink-mute);}
+.cap{font-family:var(--font-ui); font-size:.8rem; color:var(--ink-mute); margin-top:8px;}
+.stage{background:var(--surface); padding:18px; margin:16px 0;}
+.chart{display:block; width:100%; height:auto; margin-top:10px;}
+
+/* caveat badge used inline */
+.caveat{font-family:var(--font-ui); font-size:.84rem; color:var(--ink-soft); background:var(--paper); border:2px dashed var(--line-strong); border-radius:5px; padding:8px 12px; margin-top:10px;}
+.caveat b{color:var(--ink);}
+
+/* animated bar growth */
+@keyframes grow-w{from{width:0;}}
+@keyframes grow-h{from{height:0;}}
+
+/* walking critter sprite (overview) */
+.sprite-bit{width:100%;height:100%;background:var(--spr-bit) 0 0/calc(var(--sz,32px)*2) var(--sz,32px) no-repeat;image-rendering:pixelated;animation:walk-frames .36s steps(2) infinite;}
+@keyframes walk-frames{to{background-position:calc(var(--sz,32px)*-2) 0;}}
+@media (prefers-reduced-motion:reduce){.sprite-bit{animation:none;}}

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Engineering: Claude Code &amp; Conductor</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); --accent-text:#2c4d82; --cc:var(--cobalt); --cd:var(--plum); --an:var(--ochre); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:700; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  code.inline{white-space:normal;}
+  .part{display:inline-block; margin-left:auto; align-self:center; white-space:nowrap; font-family:var(--font-pixel); font-size:.5rem; letter-spacing:.05em; padding:5px 8px; border:2px solid var(--outline); border-radius:3px; color:#fff;}
+  .part.one{background:var(--cc);} .part.two{background:var(--cd);}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  svg text{font-family:var(--font-ui);}
+  .svgbox{width:100%; height:auto; display:block;}
+  .px{shape-rendering:crispEdges;}
+
+  /* hero svg */
+  .deal{animation:deal .6s steps(5) both;} @keyframes deal{from{transform:translateY(-26px); opacity:0;} to{transform:none; opacity:1;}}
+
+  /* budget grid */
+  .ctrls{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 22px; margin-bottom:14px; font-family:var(--font-ui);}
+  .ctrls label{display:flex; flex-direction:column; gap:4px; font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); font-weight:700;}
+  .ctrls .v{font-family:var(--font-mono); text-transform:none; letter-spacing:0; color:var(--ink); font-size:.8rem;}
+  input[type=range]{accent-color:var(--cobalt); width:100%;}
+  .grid100{display:grid; grid-template-columns:repeat(25,1fr); gap:3px; padding:8px; background:var(--paper-2); border:2px solid var(--outline); border-radius:8px;}
+  .grid100 i{display:block; aspect-ratio:1; border-radius:2px; background:color-mix(in srgb,var(--ink-faint) 22%,transparent);}
+  .legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-family:var(--font-ui); font-size:.76rem; color:var(--ink-soft);}
+  .legend b{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+  .meter-note{font-family:var(--font-ui); font-size:.88rem; margin-top:10px; min-height:3em;}
+
+  /* compaction machine */
+  .machine{display:grid; grid-template-columns:1fr auto 1fr; gap:14px; align-items:start;}
+  @media(max-width:720px){.machine{grid-template-columns:1fr;} .machine .midcol{flex-direction:row !important;}}
+  .col-h{font-family:var(--font-pixel); font-size:.5rem; letter-spacing:.05em; color:var(--ink-mute); margin-bottom:8px;}
+  .midcol{display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:center; align-self:center;}
+  .ch{display:flex; align-items:center; gap:8px; border:2px solid var(--line-strong); border-radius:8px; padding:7px 10px; margin-bottom:6px; background:var(--surface); font-family:var(--font-ui); font-size:.8rem; min-height:38px;}
+  .ch .ic{flex:none; width:18px; height:18px; border-radius:4px; background:var(--cc);}
+  .ch.chat .ic{background:var(--ochre);}
+  .ch.out{opacity:0; transform:translateX(-14px);}
+  .ch.out.in{opacity:1; transform:none; transition:opacity .25s steps(4), transform .25s steps(4);}
+  .ch .st{margin-left:auto; font-size:.66rem; font-weight:800; padding:2px 6px; border-radius:3px; border:2px solid var(--outline); white-space:nowrap;}
+  .st.keep{background:var(--forest-soft); color:var(--good);} .st.demand{background:var(--ochre-soft); color:var(--warn);} .st.gone{background:var(--vermil-soft); color:var(--bad);}
+  .ch.demand{border-style:dashed;} .ch.sum{border-color:var(--vermil);}
+  .ch .why{display:block; font-size:.7rem; color:var(--ink-mute);}
+
+  /* claude.md sheet */
+  .kcwrap{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;}
+  @media(max-width:720px){.kcwrap{grid-template-columns:1fr;}}
+  .edcard{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); box-shadow:var(--shadow-sm); min-height:150px; font-family:var(--font-ui); font-size:.92rem;}
+  .edcard .no{font-family:var(--font-pixel); font-size:.5rem; color:var(--ink-mute); margin-bottom:8px;}
+  .edcard .txt{font-size:1rem; color:var(--ink);} .edcard .txt code{font-size:.88rem;}
+  .edcard .fb{margin-top:10px; font-size:.8rem; color:var(--ink-mute); min-height:3em;}
+  .edcard.ok{border-color:var(--forest);} .edcard.bad{border-color:var(--vermil);}
+  .kcb{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .sheet{border:2px solid var(--outline); border-radius:6px; background:var(--paper-2); padding:10px 12px; font-family:var(--font-mono); font-size:.72rem; color:var(--ink-soft); min-height:150px;}
+  .sheet .hd{font-family:var(--font-pixel); font-size:.5rem; color:var(--ink-mute); margin-bottom:6px; display:flex; justify-content:space-between;}
+  .sheet .ln{padding:2px 6px; margin:2px 0; border-left:3px solid var(--cc); background:color-mix(in srgb,var(--cc) 8%,transparent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .sheet .hk{border-left-color:var(--vermil); background:var(--vermil-soft);}
+  .sheet .empty{color:var(--ink-faint);}
+  .scoreline{font-family:var(--font-ui); font-weight:700; font-size:.9rem; margin-top:10px;}
+
+  /* habits loop */
+  .loop-node{cursor:pointer;} .loop-node rect{transition:fill .15s steps(2);}
+  .loop-node:hover rect,.loop-node.on rect{fill:var(--accent-soft);} .loop-node.on rect{stroke-width:3;}
+  .loop-node text{pointer-events:none;}
+  .hdoc{border:2px solid var(--cc); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; min-height:110px; margin-top:6px;}
+  .hdoc h4{margin:0 0 6px; color:var(--accent-text);}
+  .danger{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;}
+  .dchip{font-family:var(--font-ui); font-size:.8rem; font-weight:700; border:2px solid var(--vermil); border-radius:999px; padding:6px 12px; background:var(--vermil-soft); color:var(--ink); cursor:pointer;}
+  .dchip.on{background:var(--vermil); color:#fff;}
+  .dfix{font-family:var(--font-ui); font-size:.86rem; min-height:2.6em; border-left:4px solid var(--forest); padding:6px 12px; background:var(--forest-soft); border-radius:0 8px 8px 0; display:none;}
+
+  /* sessions */
+  .lanes{display:grid; gap:14px; margin:12px 0;}
+  .lane{border:2px solid var(--line-strong); border-radius:12px; padding:12px; background:var(--surface);}
+  .lane h4{margin:0 0 10px; font-size:.95rem;} .lane.chat h4{color:var(--bad);} .lane.repo h4{color:var(--cd);}
+  .sess3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  @media(max-width:720px){.sess3{grid-template-columns:1fr;}}
+  .scard{border:2px dashed var(--line-strong); border-radius:10px; padding:10px; font-family:var(--font-ui); font-size:.78rem; min-height:132px; opacity:.28; transition:opacity .25s steps(4);}
+  .scard.on{opacity:1; border-style:solid;}
+  .scard .sh{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:6px;}
+  .scard .win{height:10px; border-radius:3px; background:var(--paper-2); border:2px solid var(--outline); overflow:hidden; margin:4px 0 6px;} .scard .win i{display:block; height:100%;}
+  .lane.chat .win i{background:var(--vermil);} .lane.repo .win i{background:var(--cd);}
+  .scard ul{margin:4px 0 0; padding-left:16px;} .scard li{margin:1px 0;}
+  .prog{height:8px; background:var(--paper-2); border:2px solid var(--outline); border-radius:3px; overflow:hidden; margin-top:6px;} .prog i{display:block; height:100%; background:var(--forest);}
+  .sessctl{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+
+  /* conductor lifecycle + file tree */
+  .life{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:8px; align-items:stretch; margin:16px 0;}
+  @media(max-width:720px){.life{grid-template-columns:1fr;} .life .ar{transform:rotate(90deg);}}
+  .life .box{border:2px solid var(--cd); border-radius:12px; padding:12px; background:color-mix(in srgb,var(--cd) 8%,var(--surface)); font-family:var(--font-ui); font-size:.82rem; text-align:center; box-shadow:var(--shadow-sm);}
+  .life .box b{display:block; color:var(--ink); margin-bottom:4px; font-size:.95rem;}
+  .life .ar{align-self:center; color:var(--ink-faint); font-size:1.4rem;}
+  .tree{display:grid; grid-template-columns:minmax(230px,300px) 1fr; gap:14px; margin:14px 0;}
+  @media(max-width:720px){.tree{grid-template-columns:1fr;}}
+  .files{font-family:var(--font-mono); font-size:.8rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 6px; line-height:1.9;}
+  .files .f{display:block; padding:0 10px; border-radius:6px; cursor:pointer; white-space:nowrap; border:0; background:none; color:inherit; font:inherit; text-align:left; width:100%;}
+  .files .f:hover{background:rgba(255,255,255,.1);} .files .f.on{background:var(--cd); color:#fff;}
+  .files .d{padding:0 10px; color:#9fb0e6;}
+  .filedoc{border:2px solid var(--cd); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; min-height:140px;}
+  .filedoc h4{margin:0 0 6px; font-family:var(--font-mono); font-size:.9rem; color:var(--cd);}
+  .filedoc .src{display:block; margin-top:8px; font-size:.74rem; color:var(--ink-mute);}
+  table.tt{width:100%; border-collapse:collapse; font-family:var(--font-ui); font-size:.84rem; margin:12px 0;}
+  table.tt th,table.tt td{padding:7px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top;}
+  table.tt th{font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
+
+  /* bridge */
+  .bridge{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:6px 8px; align-items:stretch; margin:14px 0; font-family:var(--font-ui); font-size:.78rem;}
+  @media(max-width:720px){.bridge{grid-template-columns:1fr; } .bridge .br-ar{transform:rotate(90deg); text-align:center;}}
+  .bridge .hdp{font-family:var(--font-pixel); font-size:.46rem; letter-spacing:.04em; padding:7px 8px; border-radius:6px; text-align:center; color:#fff; border:2px solid var(--outline);}
+  .bridge .hdp.a{background:var(--ochre); color:#2a2000;} .bridge .hdp.c{background:var(--cc);} .bridge .hdp.d{background:var(--cd);}
+  .bridge .cell{border:2px solid var(--line-strong); border-radius:8px; padding:8px 10px; background:var(--surface);}
+  .bridge .cell b{display:block; color:var(--ink); margin-bottom:2px;}
+  .bridge .cell.a{border-color:var(--ochre);} .bridge .cell.c{border-color:var(--cc);} .bridge .cell.d{border-color:var(--cd);}
+  .bridge .br-ar{align-self:center; color:var(--ink-faint); font-size:1.1rem;}
+  .bridge .sp{display:none;}
+
+  /* picker */
+  .q-block{margin:12px 0;} .q-block .q{font-family:var(--font-ui); font-weight:700; font-size:.88rem; margin-bottom:7px;}
+  .opts{display:flex; gap:8px; flex-wrap:wrap;}
+  .opt{font-family:var(--font-ui); font-size:.82rem; padding:7px 13px; border:1.5px solid var(--line); border-radius:999px; background:var(--surface); cursor:pointer;}
+  .opt:hover{border-color:var(--accent);} .opt.on{border-color:var(--accent); background:var(--accent-soft); font-weight:600;}
+  .rec{border:1px solid var(--accent); border-left:4px solid var(--accent); border-radius:12px; padding:16px; margin-top:12px; display:none;}
+  .rec .rm{font-family:var(--font-display); font-size:1.35rem; color:var(--ink); margin:0;}
+  .rec .rw{font-family:var(--font-ui); font-size:.86rem; color:var(--ink-soft); margin-top:8px;}
+  .route{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:10px; font-family:var(--font-ui); font-size:.78rem;}
+  .route span{border:2px solid var(--accent); border-radius:999px; padding:4px 10px; background:var(--accent-soft); color:var(--ink); font-weight:700;} .route em{color:var(--ink-faint); font-style:normal;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Context Engineering: Claude Code &amp; Conductor</h1>
+  <p class="subtitle">The model only knows what is on its desk. Two ways to decide what goes there: the habits Claude Code rewards, and a method that moves project memory out of chat and into the repo.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What context engineering is</a></li>
+      <li><a href="#sec2">The window is a budget (interactive)</a></li>
+      <li><a href="#sec3">Part 1 · What survives compaction (interactive)</a></li>
+      <li><a href="#sec4">Part 1 · A CLAUDE.md that earns its lines (interactive)</a></li>
+      <li><a href="#sec5">Part 1 · The working loop (interactive)</a></li>
+      <li><a href="#sec6">Part 2 · Conductor: memory that lives in the repo (interactive)</a></li>
+      <li><a href="#sec7">Part 2 · What Conductor writes (interactive)</a></li>
+      <li><a href="#sec8">Putting the two parts together</a></li>
+      <li><a href="#sec9">Which tool for which job (interactive)</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What context engineering is</h2>
+  <p class="lead">Prompt engineering is writing good instructions. <strong>Context engineering is curating everything the model sees on each call</strong>: instructions, tool definitions, files and results it has pulled in, and the running message history. Anthropic calls it iterative, because the curation happens again every time something is passed to the model.</p>
+
+  <svg class="svgbox" viewBox="0 0 720 270" role="img" aria-label="A large filing cabinet beside a small desk. Only a few items are pulled from the cabinet onto the desk." data-testid="hero-desk">
+    <!-- cabinet -->
+    <g>
+      <rect x="18" y="26" width="232" height="206" rx="6" style="fill:var(--paper-2);stroke:var(--outline);stroke-width:3"/>
+      <g style="fill:var(--surface);stroke:var(--line-strong);stroke-width:2">
+        <rect x="32" y="40" width="204" height="40" rx="4"/><rect x="32" y="88" width="204" height="40" rx="4"/>
+        <rect x="32" y="136" width="204" height="40" rx="4"/><rect x="32" y="184" width="204" height="36" rx="4"/>
+      </g>
+      <g style="fill:var(--outline)"><rect x="118" y="56" width="32" height="8" rx="2"/><rect x="118" y="104" width="32" height="8" rx="2"/><rect x="118" y="152" width="32" height="8" rx="2"/><rect x="118" y="198" width="32" height="8" rx="2"/></g>
+      <g style="fill:var(--ink-mute);font-size:11px;font-weight:700"><text x="44" y="64">your repo</text><text x="44" y="112">docs &amp; tickets</text><text x="44" y="160">past chats</text><text x="44" y="206">everything else</text></g>
+      <text x="134" y="256" text-anchor="middle" style="fill:var(--ink-mute);font-size:12px;font-weight:700">THE CABINET · huge, cheap to keep</text>
+    </g>
+    <!-- arrow -->
+    <g style="stroke:var(--ink-faint);stroke-width:3;fill:none"><path d="M262 120 H318"/><path d="M308 110 L320 120 L308 130"/></g>
+    <text x="290" y="100" text-anchor="middle" style="fill:var(--ink-mute);font-size:11px;font-weight:700">pull in</text>
+    <text x="290" y="146" text-anchor="middle" style="fill:var(--ink-mute);font-size:11px;font-weight:700">on demand</text>
+    <!-- desk -->
+    <g>
+      <rect x="338" y="120" width="368" height="22" rx="4" style="fill:var(--ochre-soft);stroke:var(--outline);stroke-width:3"/>
+      <rect x="352" y="142" width="14" height="86" style="fill:var(--outline)"/><rect x="678" y="142" width="14" height="86" style="fill:var(--outline)"/>
+      <g class="deal" style="animation-delay:.05s"><rect x="352" y="72" width="62" height="44" rx="5" transform="rotate(-5 383 94)" style="fill:var(--surface);stroke:var(--cc);stroke-width:3"/><text x="383" y="98" text-anchor="middle" style="fill:var(--ink);font-size:10px;font-weight:800">rules</text></g>
+      <g class="deal" style="animation-delay:.2s"><rect x="424" y="66" width="62" height="50" rx="5" transform="rotate(3 455 91)" style="fill:var(--surface);stroke:var(--an);stroke-width:3"/><text x="455" y="95" text-anchor="middle" style="fill:var(--ink);font-size:10px;font-weight:800">tools</text></g>
+      <g class="deal" style="animation-delay:.35s"><rect x="496" y="74" width="62" height="42" rx="5" transform="rotate(-3 527 95)" style="fill:var(--surface);stroke:var(--cd);stroke-width:3"/><text x="527" y="99" text-anchor="middle" style="fill:var(--ink);font-size:10px;font-weight:800">files</text></g>
+      <g class="deal" style="animation-delay:.5s"><rect x="568" y="68" width="62" height="48" rx="5" transform="rotate(4 599 92)" style="fill:var(--surface);stroke:var(--forest);stroke-width:3"/><text x="599" y="96" text-anchor="middle" style="fill:var(--ink);font-size:10px;font-weight:800">notes</text></g>
+      <g class="deal" style="animation-delay:.65s"><rect x="632" y="76" width="60" height="40" rx="5" transform="rotate(-4 662 96)" style="fill:var(--surface);stroke:var(--vermil);stroke-width:3"/><text x="662" y="100" text-anchor="middle" style="fill:var(--ink);font-size:10px;font-weight:800">chat</text></g>
+      <text x="522" y="256" text-anchor="middle" style="fill:var(--ink-mute);font-size:12px;font-weight:700">THE DESK · small, and everything on it competes for attention</text>
+    </g>
+  </svg>
+  <p>The reason to care is a property of the models. Anthropic's engineering team calls it <strong>context rot</strong>: recall accuracy declines as the window fills, so context is a finite resource with diminishing returns, an "attention budget" that each new token draws down. The aim: <em>the smallest set of high-signal tokens that gets the outcome you want.</em></p>
+
+  <h2 id="sec2"><span class="num">2</span> The window is a budget</h2>
+  <p>Claude Code's best-practices guide opens by saying most of its advice follows from one constraint: <strong>the context window fills up fast, and performance degrades as it fills.</strong> Each square below is about 2k tokens of a 200k window. Drag the sliders and watch the desk fill. The numbers are <em>illustrative</em>; run <code class="inline">/context</code> in a real session for yours.</p>
+  <div class="stage" data-testid="budget-sim">
+    <div class="ctrls">
+      <label>CLAUDE.md length <span class="v" id="b-claude-v"></span><input type="range" id="b-claude" min="20" max="600" step="10" value="120" data-testid="budget-claude-md"></label>
+      <label>MCP tools connected <span class="v" id="b-mcp-v"></span><input type="range" id="b-mcp" min="0" max="80" step="1" value="10" data-testid="budget-mcp-tools"></label>
+      <label>Files read this session <span class="v" id="b-files-v"></span><input type="range" id="b-files" min="0" max="60" step="1" value="12" data-testid="budget-files"></label>
+      <label>Delegate reading to sub-agents <span class="v" id="b-sub-v"></span><input type="range" id="b-sub" min="0" max="100" step="5" value="0" data-testid="budget-subagent-share"></label>
+    </div>
+    <div class="grid100" id="b-grid" data-testid="budget-bar"></div>
+    <div class="legend" id="b-legend"></div>
+    <div class="meter-note" id="b-note" data-testid="budget-note"></div>
+    <p class="small" style="margin-bottom:0;">Assumptions: ~25k fixed overhead; ~14 tokens per CLAUDE.md line; ~450 per tool schema; ~3k per file read; a sub-agent returns ~1.5k per ten files it reads, in its own window (Anthropic's post cites 1,000–2,000-token summaries). Some models offer a 1M window; the logic is the same, just later.</p>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> What survives compaction <span class="part one">PART 1</span></h2>
+  <p><strong>Claude Code best practices</strong> are mostly context management. Before you type anything, the window already holds your <strong>CLAUDE.md</strong> files, <strong>auto memory</strong>, the names of connected <strong>MCP tools</strong> and your <strong>skill descriptions</strong>. When a long session compacts (automatically near the limit, or via <code class="inline">/compact</code>), the conversation is replaced by a summary. What comes back depends on how each thing was loaded. Press the button.</p>
+  <div class="stage" data-testid="compaction-machine">
+    <div class="machine">
+      <div><div class="col-h">BEFORE · in the window</div><div id="m-before"></div></div>
+      <div class="midcol"><button class="btn" id="m-go" data-testid="compact-go">/compact ▶</button><button class="btn sec" id="m-reset" data-testid="compact-reset">Reset</button></div>
+      <div><div class="col-h">AFTER · what the next turn sees</div><div id="m-after"></div></div>
+    </div>
+    <p class="small" style="margin:6px 0 0;">Source: the "What survives compaction" table in Anthropic's context-window docs (skill-description rebuild needs v2.1.304+; invoked skill bodies are capped at 5,000 tokens each and 25,000 total).</p>
+  </div>
+  <div class="flag"><b>The practical rule:</b> anything that must survive a long session belongs in a file that gets re-injected (project-root CLAUDE.md, a rule without <code>paths:</code>, auto memory, a plan file), never only in something you typed. You can also steer the summary: <code class="inline">/compact Focus on the API changes</code>, or add a CLAUDE.md line such as "When compacting, always preserve the full list of modified files and any test commands."</div>
+
+  <h2 id="sec4"><span class="num">4</span> A CLAUDE.md that earns its lines <span class="part one">PART 1</span></h2>
+  <p>CLAUDE.md is read at the start of every conversation, so every line is a permanent tax on the budget. The docs' guidance is <strong>under 200 lines per file</strong>, and their test for each line is: <em>"Would removing this cause Claude to make mistakes?"</em> If not, cut it. A bloated file does worse than a short one: rules get lost and Claude starts ignoring half of it. You are the editor. Decide each candidate line and watch your file take shape.</p>
+  <div class="stage" data-testid="keep-or-cut">
+    <div class="kcwrap">
+      <div>
+        <div class="edcard" id="kc-card" data-testid="keep-or-cut-card"></div>
+        <div class="kcb" id="kc-btns"></div>
+        <div class="scoreline" id="kc-score" data-testid="keep-or-cut-score"></div>
+      </div>
+      <div>
+        <div class="sheet" id="kc-sheet" data-testid="keep-or-cut-sheet"></div>
+        <div class="sheet" id="kc-hooks" style="margin-top:10px; min-height:60px;" data-testid="keep-or-cut-hooks"></div>
+      </div>
+    </div>
+  </div>
+  <p><b>Scope by how often a rule applies.</b> Always-true rules → project-root CLAUDE.md. One-area rules → <code class="inline">.claude/rules/</code> with <code class="inline">paths:</code> frontmatter. Sometimes-needed knowledge → a <strong>skill</strong>, loaded on demand. Personal, per-project → <code class="inline">CLAUDE.local.md</code> (gitignored); personal everywhere → <code class="inline">~/.claude/CLAUDE.md</code>. And remember: <b>CLAUDE.md is advice; hooks are enforcement.</b> Claude treats memory files as context, not enforced configuration, so anything that must happen every time belongs in a hook.</p>
+  <p class="small"><code class="inline">/init</code> drafts a starter file · <code class="inline">/memory</code> opens what loaded · <code class="inline">/doctor</code> proposes cuts for content Claude can derive from the codebase · block-level HTML comments are stripped before injection, so maintainer notes are free.</p>
+
+  <h2 id="sec5"><span class="num">5</span> The working loop <span class="part one">PART 1</span></h2>
+  <p>The rest of the guide turns the same idea into a loop. Click any step or side tool to see what the docs recommend.</p>
+  <div class="stage" data-testid="habit-loop">
+    <svg class="svgbox" viewBox="0 0 660 300" role="img" aria-label="The Claude Code loop: explore, plan, implement, verify, commit, with sub-agents, clear and rewind as side tools.">
+      <g style="stroke:var(--ink-faint);stroke-width:3;fill:none">
+        <path d="M150 120 H178"/><path d="M168 112 L180 120 L168 128"/>
+        <path d="M308 120 H336"/><path d="M326 112 L338 120 L326 128"/>
+        <path d="M466 120 H494"/><path d="M484 112 L496 120 L484 128"/>
+        <path d="M400 150 V190"/><path d="M392 180 L400 192 L408 180"/>
+        <path d="M424 192 V150" stroke-dasharray="5 4"/><path d="M416 160 L424 148 L432 160"/>
+      </g>
+      <text x="456" y="176" style="fill:var(--ink-mute);font-size:10px;font-weight:700">until the check passes</text>
+      <g class="loop-node" data-k="explore"><rect x="20" y="92" width="130" height="56" rx="10" style="fill:var(--surface);stroke:var(--cc);stroke-width:2.5"/><text x="85" y="118" text-anchor="middle" style="fill:var(--ink);font-size:14px;font-weight:800">1 Explore</text><text x="85" y="136" text-anchor="middle" style="fill:var(--ink-mute);font-size:10px">plan mode</text></g>
+      <g class="loop-node" data-k="plan"><rect x="180" y="92" width="128" height="56" rx="10" style="fill:var(--surface);stroke:var(--cc);stroke-width:2.5"/><text x="244" y="118" text-anchor="middle" style="fill:var(--ink);font-size:14px;font-weight:800">2 Plan</text><text x="244" y="136" text-anchor="middle" style="fill:var(--ink-mute);font-size:10px">Ctrl+G to edit</text></g>
+      <g class="loop-node" data-k="implement"><rect x="338" y="92" width="128" height="56" rx="10" style="fill:var(--surface);stroke:var(--cc);stroke-width:2.5"/><text x="402" y="118" text-anchor="middle" style="fill:var(--ink);font-size:14px;font-weight:800">3 Implement</text><text x="402" y="136" text-anchor="middle" style="fill:var(--ink-mute);font-size:10px">build to the plan</text></g>
+      <g class="loop-node" data-k="verify"><rect x="338" y="194" width="128" height="56" rx="10" style="fill:var(--forest-soft);stroke:var(--forest);stroke-width:2.5"/><text x="402" y="220" text-anchor="middle" style="fill:var(--ink);font-size:14px;font-weight:800">✓ Verify</text><text x="402" y="238" text-anchor="middle" style="fill:var(--ink-mute);font-size:10px">tests · build · screenshot</text></g>
+      <g class="loop-node" data-k="commit"><rect x="496" y="92" width="128" height="56" rx="10" style="fill:var(--surface);stroke:var(--cc);stroke-width:2.5"/><text x="560" y="118" text-anchor="middle" style="fill:var(--ink);font-size:14px;font-weight:800">4 Commit</text><text x="560" y="136" text-anchor="middle" style="fill:var(--ink-mute);font-size:10px">message + PR</text></g>
+      <g class="loop-node" data-k="subagent"><rect x="20" y="18" width="130" height="44" rx="22" style="fill:var(--surface);stroke:var(--cd);stroke-width:2.5;stroke-dasharray:6 4"/><text x="85" y="45" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:800">sub-agents</text></g>
+      <g class="loop-node" data-k="interview"><rect x="180" y="18" width="128" height="44" rx="22" style="fill:var(--surface);stroke:var(--cd);stroke-width:2.5;stroke-dasharray:6 4"/><text x="244" y="45" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:800">interview → SPEC.md</text></g>
+      <g class="loop-node" data-k="clear"><rect x="20" y="200" width="130" height="44" rx="22" style="fill:var(--vermil-soft);stroke:var(--vermil);stroke-width:2.5"/><text x="85" y="227" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:800">/clear</text></g>
+      <g class="loop-node" data-k="rewind"><rect x="180" y="200" width="128" height="44" rx="22" style="fill:var(--vermil-soft);stroke:var(--vermil);stroke-width:2.5"/><text x="244" y="227" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:800">/rewind</text></g>
+      <g class="loop-node" data-k="specific"><rect x="496" y="18" width="128" height="44" rx="22" style="fill:var(--surface);stroke:var(--an);stroke-width:2.5;stroke-dasharray:6 4"/><text x="560" y="45" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:800">be specific</text></g>
+    </svg>
+    <div class="hdoc" id="hdoc" data-testid="habit-doc"></div>
+  </div>
+  <h3>Five failure patterns the guide names</h3>
+  <div class="danger" id="danger" data-testid="failure-patterns"></div>
+  <div class="dfix" id="dfix"></div>
+
+  <h2 id="sec6"><span class="num">6</span> Conductor: memory that lives in the repo <span class="part two">PART 2</span></h2>
+  <p>Part 1 manages one session's window. <strong>Conductor</strong> asks what happens <em>across</em> sessions. Its premise, from Google's launch post (17 Dec 2025): agents often start building before anyone has pinned down <em>what</em> is being built, and project context lives in chat logs, which are temporary. The fix is <strong>context-driven development</strong>: context, specs and plans live as Markdown <em>in the repository</em>, so they persist across sessions, machines and teammates. It launched as a preview extension for Gemini CLI; the project's repository now describes it as a plugin for several agents, <strong>including Claude Code</strong> ("Measure twice, code once", Apache 2.0).</p>
+  <p>Step through three sessions on the same feature, two ways. <em>(An illustration of the idea, not a measurement.)</em></p>
+  <div class="stage" data-testid="sessions-demo">
+    <div class="sessctl"><button class="btn" id="s-next" data-testid="sessions-next">Next session →</button><button class="btn sec" id="s-reset" data-testid="sessions-reset">Reset</button><span class="small" id="s-label"></span></div>
+    <div class="lanes">
+      <div class="lane chat"><h4>Context lives in chat</h4><div class="sess3" id="lane-chat"></div></div>
+      <div class="lane repo"><h4>Context lives in the repo (the Conductor idea)</h4><div class="sess3" id="lane-repo"></div></div>
+    </div>
+  </div>
+  <div class="life">
+    <div class="box"><b>1 · Context</b>Once per project: product goals and users, guidelines, tech stack, workflow preferences (e.g. TDD, commit strategy).</div>
+    <div class="ar">→</div>
+    <div class="box"><b>2 · Spec &amp; plan</b>Each unit of work is a <em>track</em>. The agent writes a spec and phased plan; <em>you review before any code</em>.</div>
+    <div class="ar">→</div>
+    <div class="box"><b>3 · Implement</b>The agent works through <code class="inline">plan.md</code>, checking off tasks. Progress is saved, so work can pause and resume.</div>
+  </div>
+
+  <h2 id="sec7"><span class="num">7</span> What Conductor writes <span class="part two">PART 2</span></h2>
+  <p>Click a file. The layout and the six commands come from the project's README; the one-line purposes of individual files are a plain reading of the README and launch post (the post names the kinds of context but not each file), so treat them as a guide, not a spec.</p>
+  <div class="tree" data-testid="conductor-tree">
+    <div class="files" id="files"></div>
+    <div class="filedoc" id="filedoc" data-testid="conductor-filedoc"></div>
+  </div>
+  <table class="tt" data-testid="conductor-commands">
+    <tr><th>Command (Claude Code form)</th><th>What it does</th></tr>
+    <tr><td><code class="inline">/conductor:conductor-setup</code></td><td>Scaffold the project context. Run once per project.</td></tr>
+    <tr><td><code class="inline">/conductor:conductor-new-track</code></td><td>Start a feature or bug track and generate its spec and plan for review.</td></tr>
+    <tr><td><code class="inline">/conductor:conductor-implement</code></td><td>Execute the current track's plan, task by task.</td></tr>
+    <tr><td><code class="inline">/conductor:conductor-status</code></td><td>Show progress across tracks.</td></tr>
+    <tr><td><code class="inline">/conductor:conductor-review</code></td><td>Review completed work against the guidelines and the plan; findings are appended as a "Review Fixes" phase.</td></tr>
+    <tr><td><code class="inline">/conductor:conductor-revert</code></td><td>Roll back a track, phase or task using git history.</td></tr>
+  </table>
+  <div class="flag"><b>Read the caveats.</b> Google labels it a preview, and brownfield (existing codebase) support was described as an early first step. The README warns spec-driven work can raise token consumption, especially on larger projects. <code>revert</code> rolls back git commits, so it changes repository history. The launch post is promotional and publishes no quality or performance data, so the case for it rests on the reasoning here, not on measurements.</div>
+
+  <h2 id="sec8"><span class="num">8</span> Putting the two parts together</h2>
+  <p>Conductor looks new, but it is the Part 1 habits made durable. Read each row left to right. <em>The mapping is my synthesis, not a claim from any source.</em></p>
+  <div class="bridge" data-testid="mapping-bridge" id="bridge"></div>
+  <div class="flag"><b>The honest trade-off.</b> Everything Conductor writes down is context you must keep true. A stale <code>tech-stack.md</code> misleads an agent just as an over-long CLAUDE.md does, and extra planning costs tokens and time. The Part 1 test applies to those files too: would removing this line cause a mistake? Use the full method where work spans sessions, people or days; use the lighter habits where it doesn't. <em>(My judgment, consistent with the sources' own warnings about overhead.)</em></div>
+
+  <h2 id="sec9"><span class="num">9</span> Which tool for which job</h2>
+  <p>An opinionated picker. The recommendation is my synthesis of the guidance above, not an official rule.</p>
+  <div class="stage" data-testid="decision-picker">
+    <div class="q-block"><div class="q">How big is the task?</div><div class="opts" id="q-size"></div></div>
+    <div class="q-block"><div class="q">Who is working on it?</div><div class="opts" id="q-who"></div></div>
+    <div class="q-block"><div class="q">How long will it run?</div><div class="opts" id="q-span"></div></div>
+    <div class="rec" id="rec" data-testid="decision-result"></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Context engineering = curating everything in the window</b>, not just writing a prompt. Context rots as it fills, so aim for the smallest high-signal set.</li>
+    <li><b>Claude Code best practices are context management:</b> give it a way to verify, explore then plan then implement, be specific, delegate reading to sub-agents, <code class="inline">/clear</code> early.</li>
+    <li><b>CLAUDE.md is a budget line item:</b> under ~200 lines, only what removal would break, scoped by how often it applies, with hooks for anything that must be enforced.</li>
+    <li><b>Put what must survive in files that get re-injected,</b> not in chat; compaction summarizes the conversation away.</li>
+    <li><b>Conductor makes the habit durable:</b> context, spec and plan live in the repo as Markdown; you review the plan before code; every session starts from the same files.</li>
+    <li><b>Pay for the heavier method only when the work needs it.</b> Both approaches fail the same way: stale or bloated context.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> Anthropic — <a href="https://code.claude.com/docs/en/best-practices" target="_blank">Best practices for Claude Code</a> · <a href="https://code.claude.com/docs/en/context-window" target="_blank">Explore the context window</a> · <a href="https://code.claude.com/docs/en/memory" target="_blank">How Claude remembers your project</a> · <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Effective context engineering for AI agents</a></p>
+  <p class="src"><b>Conductor.</b> Google Developers Blog — <a href="https://developers.googleblog.com/conductor-introducing-context-driven-development-for-gemini-cli/" target="_blank">Conductor: Introducing context-driven development for Gemini CLI</a> (17 Dec 2025) · <a href="https://github.com/gemini-cli-extensions/conductor" target="_blank">gemini-cli-extensions/conductor</a> (README: commands, file layout, caveats)</p>
+  <p class="src"><b>Checked 23 Oct 2026.</b> Claude Code and Conductor are both moving quickly (commands, version thresholds and the list of supported agents change). Version numbers above are as stated in the docs on that date.</p>
+
+  <footer>Context Engineering · AI &amp; Agents · part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- context budget grid ---------- */
+(function(){
+  const WIN=200000, CELL=2000, BASE=25000, PER_LINE=14, PER_TOOL=450, PER_FILE=3000;
+  const grid=$('b-grid'); for(let i=0;i<100;i++) grid.appendChild(document.createElement('i'));
+  const cells=[...grid.children];
+  function fmt(n){ return n>=1000 ? (n/1000).toFixed(n>=100000?0:1)+'k' : String(n); }
+  function render(){
+    const lines=+$('b-claude').value, tools=+$('b-mcp').value, files=+$('b-files').value, share=+$('b-sub').value;
+    $('b-claude-v').textContent=lines+' lines'; $('b-mcp-v').textContent=tools+' tools';
+    $('b-files-v').textContent=files+' files'; $('b-sub-v').textContent=share+'% of reads';
+    const inline=Math.round(files*(1-share/100)), delegated=files-inline;
+    const segs=[['Fixed overhead',BASE,'#7d68b3'],['CLAUDE.md',lines*PER_LINE,'#4a6fa8'],['MCP tool schemas',tools*PER_TOOL,'#c9a24a'],['Files read in-window',inline*PER_FILE,'#b35c5c'],['Sub-agent reports',Math.ceil(delegated/10)*1500,'#437a58']];
+    const used=segs.reduce((s,x)=>s+x[1],0);
+    let n=0; const colors=[]; segs.forEach(s=>{ const c=Math.round(s[1]/CELL); for(let k=0;k<c&&colors.length<100;k++) colors.push(s[2]); });
+    cells.forEach((c,i)=>{ c.style.background=colors[i]||''; });
+    $('b-legend').innerHTML=segs.map(s=>'<span><b style="background:'+s[2]+'"></b>'+s[0]+' '+fmt(s[1])+'</span>').join('');
+    const pct=Math.round(used/WIN*100), left=Math.max(0,WIN-used);
+    let msg='<b>'+pct+'% of the window used</b> (~'+fmt(used)+' of 200k), leaving ~'+fmt(left)+' for the actual work. ';
+    if(pct>=100) msg+='The window is full: compaction would trigger and the conversation would be summarized.';
+    else if(share===0 && files>=20) msg+='Lots of reading is happening in your main window. Try delegating it to sub-agents.';
+    else if(lines>300) msg+='A CLAUDE.md this long is a heavy fixed cost on every session, and per the docs it also reduces adherence.';
+    else if(tools>40) msg+='Many tool schemas load before you type. Prefer CLI tools for external services, or connect fewer servers.';
+    else msg+='Healthy: most of the budget is left for the task itself.';
+    $('b-note').innerHTML=msg;
+  }
+  ['b-claude','b-mcp','b-files','b-sub'].forEach(id=>$(id).addEventListener('input',render)); render();
+})();
+
+/* ---------- compaction machine ---------- */
+(function(){
+  const items=[
+    {t:'Project CLAUDE.md',s:'keep',l:'RE-INJECTED',w:'from disk'},
+    {t:'Auto memory',s:'keep',l:'RE-INJECTED',w:'from disk'},
+    {t:'Skill descriptions',s:'keep',l:'REBUILT',w:'from your current skills'},
+    {t:'Invoked skill bodies',s:'keep',l:'KEPT, CAPPED',w:'5k each / 25k total, oldest dropped'},
+    {t:'The last files you touched',s:'keep',l:'RE-READ',w:'up to 5; over 5k tokens → path only'},
+    {t:'Nested CLAUDE.md · path rules',s:'demand',l:'ON DEMAND',w:'reload when their trigger file is touched again'},
+    {t:'You said: “always use tabs”',s:'gone',chat:1},
+    {t:'Long debugging back-and-forth',s:'gone',chat:1}
+  ];
+  const before=$('m-before'), after=$('m-after'); let timers=[];
+  function mk(it,i){ const d=document.createElement('div'); d.className='ch'+(it.chat?' chat':''); d.innerHTML='<span class="ic"></span><span>'+it.t+'</span>'; return d; }
+  function reset(){ timers.forEach(clearTimeout); timers=[]; before.innerHTML=''; after.innerHTML=''; items.forEach((it,i)=>before.appendChild(mk(it,i))); $('m-go').disabled=false; }
+  function go(){
+    $('m-go').disabled=true; after.innerHTML='';
+    items.filter(i=>!i.chat).forEach((it,k)=>{ timers.push(setTimeout(()=>{
+      const d=document.createElement('div'); d.className='ch out '+(it.s==='demand'?'demand':'');
+      d.innerHTML='<span class="ic"></span><span>'+it.t+'<span class="why">'+it.w+'</span></span><span class="st '+it.s+'">'+it.l+'</span>';
+      after.appendChild(d); requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('in')));
+    }, 220*k)); });
+    timers.push(setTimeout(()=>{
+      const d=document.createElement('div'); d.className='ch out sum chat';
+      d.innerHTML='<span class="ic"></span><span>One summary of the conversation<span class="why">instructions that only lived in chat can be lost or blurred</span></span><span class="st gone">SUMMARIZED</span>';
+      after.appendChild(d); requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('in')));
+    }, 220*6));
+  }
+  $('m-go').addEventListener('click',go); $('m-reset').addEventListener('click',reset); reset();
+})();
+
+/* ---------- keep or cut (editor) ---------- */
+(function(){
+  const items=[
+    ['<code>npm run test:unit -- --watch=false</code> is how we run tests (single file: add the path).','keep','npm run test:unit (+path)','A command Claude can’t guess, and a preferred test runner. Both belong.'],
+    ['Write clean, readable code.','cut','','Self-evident practice. Claude already aims for this, and the line costs budget every session.'],
+    ['Use ES modules (import/export), not CommonJS.','keep','ES modules, not CommonJS','A style rule that differs from the default and isn’t obvious from one file.'],
+    ['A description of every file in <code>src/</code> and what it does…','cut','','File-by-file descriptions go stale and Claude can read the code. Let it explore.'],
+    ['Branches are named <code>feat/&lt;ticket&gt;-short-name</code>; PRs need a linked ticket.','keep','Branch: feat/<ticket>-name; PR needs ticket','Repository etiquette that can’t be inferred from the code.'],
+    ['The full REST API reference for our billing service (400 lines).','cut','','Detailed API docs don’t belong in an every-session file. Link to them, or move them into a skill that loads on demand.'],
+    ['Needs <code>DATABASE_URL</code> set; integration tests fail silently without it.','keep','Needs DATABASE_URL for integration tests','A developer-environment quirk that isn’t self-evident.'],
+    ['Never edit files in <code>migrations/</code>.','hook','Block writes to migrations/ (PreToolUse)','A must-never rule is enforced deterministically by a hook. Advice in CLAUDE.md can be ignored.']
+  ];
+  let i=0, right=0, kept=0; const card=$('kc-card'), btns=$('kc-btns'), sheet=$('kc-sheet'), hooks=$('kc-hooks'), score=$('kc-score');
+  function drawSheet(){ sheet.innerHTML='<div class="hd"><span>CLAUDE.md</span><span>'+kept+' lines kept</span></div>'+(sheet._lines.length?sheet._lines.map(l=>'<div class="ln">'+l+'</div>').join(''):'<div class="empty">(empty — you decide what earns a line)</div>');
+    hooks.innerHTML='<div class="hd"><span>settings.json → hooks</span><span>'+hooks._lines.length+'</span></div>'+(hooks._lines.length?hooks._lines.map(l=>'<div class="ln hk">'+l+'</div>').join(''):'<div class="empty">(none yet)</div>'); }
+  sheet._lines=[]; hooks._lines=[];
+  function show(){
+    if(i>=items.length){ card.className='edcard'; card.innerHTML='<div class="no">DONE</div><div class="txt">Your file: <b>'+kept+' lines</b>, '+hooks._lines.length+' hook'+(hooks._lines.length===1?'':'s')+'.</div><div class="fb">'+right+' of '+items.length+' judged the way the docs would. A short file the agent actually follows beats a long one it half-ignores.</div>'; btns.innerHTML='<button class="btn sec" id="kc-again" data-testid="keep-or-cut-again">Again</button>'; $('kc-again').onclick=()=>{ i=0;right=0;kept=0;sheet._lines=[];hooks._lines=[]; init(); }; return; }
+    const it=items[i]; card.className='edcard'; card.innerHTML='<div class="no">CANDIDATE '+(i+1)+' / '+items.length+'</div><div class="txt">'+it[0]+'</div><div class="fb" id="kc-fb">What should happen to this line?</div>';
+    btns.innerHTML=''; [['keep','Keep in CLAUDE.md'],['cut','Cut it'],['hook','Make it a hook']].forEach(([v,l])=>{ const b=document.createElement('button'); b.className='btn sec'; b.textContent=l; b.setAttribute('data-testid','keep-or-cut-'+v); b.onclick=()=>choose(v); btns.appendChild(b); });
+  }
+  function choose(v){ const it=items[i]; const ok=v===it[1]; if(ok) right++;
+    if(v==='keep'){ kept++; sheet._lines.push(it[2]||'(line)'); } if(v==='hook'){ hooks._lines.push(it[2]||'hook'); }
+    card.classList.add(ok?'ok':'bad'); $('kc-fb').innerHTML=(ok?'✓ ':'✗ The docs’ answer is “'+({keep:'keep',cut:'cut',hook:'make it a hook'})[it[1]]+'”. ')+it[3];
+    btns.innerHTML='<button class="btn" data-testid="keep-or-cut-next">'+(i===items.length-1?'Finish':'Next →')+'</button>'; btns.firstChild.onclick=()=>{ i++; drawSheet(); show(); };
+    score.textContent=right+' of '+(i+1)+' matched'; drawSheet(); }
+  function init(){ score.textContent=''; drawSheet(); show(); } init();
+})();
+
+/* ---------- habit loop ---------- */
+(function(){
+  const H={
+    explore:['1 · Explore (plan mode)','Enter plan mode with <code>Shift+Tab</code>. Claude reads files and answers questions without changing anything. Separating research from implementation avoids solving the wrong problem.'],
+    plan:['2 · Plan','Ask for a detailed plan, and press <code>Ctrl+G</code> to edit it yourself before Claude proceeds. Skip planning if you could describe the diff in one sentence; it pays off when the approach is uncertain, the change spans files, or the code is unfamiliar.'],
+    implement:['3 · Implement','Leave plan mode and build against the plan: write tests, run the suite, fix failures. Provide specific context: scope the task, point to sources, reference an existing pattern, describe the symptom.'],
+    verify:['✓ Verify (the highest-leverage habit)','Give Claude a check it can run: a test suite, build exit code, linter or screenshot comparison. It turns “looks done” into pass/fail it can read and iterate on. Ask for evidence (the output and the command), not an assertion.'],
+    commit:['4 · Commit','Ask for a descriptive commit message and a PR. Reviewing evidence is faster than re-running verification yourself.'],
+    subagent:['Sub-agents: keep reading out of your window','A sub-agent investigates in its own context and returns a summary, so file reads stay out of yours. A reviewer sub-agent also starts fresh, so it isn’t biased toward code it just wrote.'],
+    interview:['Interview → SPEC.md','For bigger features, ask Claude to interview you with the <code>AskUserQuestion</code> tool and write a spec to <code>SPEC.md</code>. Then <b>start a fresh session to implement it</b>: clean window, written spec. This is the manual version of what Part 2 automates.'],
+    clear:['/clear','Reset context between unrelated tasks. If you have corrected Claude twice on the same issue, the window is full of failed approaches: <code>/clear</code> and restart with a better prompt.'],
+    rewind:['/rewind (or Esc Esc)','Restore conversation and/or code to a checkpoint, or summarize from a chosen message. Checkpoints only track Claude’s own file edits, so they are not a substitute for git.'],
+    specific:['Be specific','“Add tests for foo.py” → “write a test for foo.py covering the case where the user is logged out; avoid mocks.” Use <code>@file</code> references, paste screenshots, give URLs, pipe in data.']
+  };
+  const nodes=[...document.querySelectorAll('.loop-node')];
+  function pick(k){ nodes.forEach(n=>n.classList.toggle('on',n.dataset.k===k)); $('hdoc').innerHTML='<h4>'+H[k][0]+'</h4>'+H[k][1]; }
+  nodes.forEach(n=>{ n.setAttribute('data-testid','habit-node-'+n.dataset.k); n.addEventListener('click',()=>pick(n.dataset.k)); }); pick('verify');
+  const D=[['The kitchen-sink session','Unrelated tasks mixed together. Fix: /clear between tasks.'],['Correcting over and over','Failed approaches pollute the window. Fix: after two misses, /clear and write a better prompt.'],['The over-specified CLAUDE.md','Rules get lost in noise. Fix: prune ruthlessly, or convert to a hook.'],['Trust-then-verify gap','A plausible implementation that misses edge cases. Fix: always provide a check Claude can run.'],['The infinite exploration','An unscoped “investigate” reads hundreds of files. Fix: scope it narrowly, or use sub-agents.']];
+  const dz=$('danger'), df=$('dfix');
+  D.forEach(([t,f],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='dchip'; b.textContent=t; b.setAttribute('data-testid','failure-'+i);
+    b.onclick=()=>{ dz.querySelectorAll('.dchip').forEach(x=>x.classList.remove('on')); b.classList.add('on'); df.style.display='block'; df.textContent=f; }; dz.appendChild(b); });
+})();
+
+/* ---------- sessions: chat vs repo ---------- */
+(function(){
+  const chat=[
+    {h:'SESSION 1',fill:30,l:['You explain the project','You explain the decisions','Agent builds the first part']},
+    {h:'SESSION 2',fill:35,l:['Window starts empty','Re-explain project & decisions','Agent guesses what is done']},
+    {h:'SESSION 3',fill:35,l:['Window starts empty','Re-explain again','Earlier choices contradicted']}
+  ];
+  const repo=[
+    {h:'SESSION 1',fill:30,pr:15,l:['Setup writes product.md, tech-stack.md, workflow.md','New track → spec.md + plan.md','You review the plan; build begins']},
+    {h:'SESSION 2',fill:18,pr:60,l:['Starts by loading the same files','Resumes plan.md at the next task','Checks off tasks as it goes']},
+    {h:'SESSION 3',fill:16,pr:100,l:['Starts by loading the same files','Finishes the plan; review runs','Plan fully checked off']}
+  ];
+  let step=0;
+  function lane(el,data,isRepo){ el.innerHTML=''; data.forEach((d,i)=>{ const c=document.createElement('div'); c.className='scard'+(i<step?' on':''); c.innerHTML='<div class="sh">'+d.h+'</div><div class="win"><i style="width:'+d.fill+'%"></i></div><ul>'+d.l.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+(isRepo?'<div class="prog"><i style="width:'+d.pr+'%"></i></div>':''); el.appendChild(c); }); }
+  function render(){ lane($('lane-chat'),chat,false); lane($('lane-repo'),repo,true);
+    $('s-label').textContent = step===0?'Press “Next session” to begin.':(step<3?'Session '+step+' of 3':'Session 3 of 3. The chat lane re-pays the setup cost each time; the repo lane carries it forward.');
+    $('s-next').disabled = step>=3; }
+  $('s-next').addEventListener('click',()=>{ if(step<3){ step++; render(); } });
+  $('s-reset').addEventListener('click',()=>{ step=0; render(); }); render();
+})();
+
+/* ---------- conductor file tree ---------- */
+(function(){
+  const F=[
+    {k:'dir',t:'conductor/'},
+    {k:'f',id:'product',t:'  product.md',d:'Product context: what is being built and for whom, the goals and users captured during setup.',s:'Launch post: setup defines product goals and users.'},
+    {k:'f',id:'guidelines',t:'  product-guidelines.md',d:'Product guidelines: the standards work is reviewed against (the review command checks completed work against these and the plan).',s:'README: structure; review checks work against guidelines and the plan.'},
+    {k:'f',id:'stack',t:'  tech-stack.md',d:'The technical stack: languages, frameworks, services. Exactly the context an agent would otherwise rediscover, or guess, every session.',s:'Launch post: setup defines the tech stack.'},
+    {k:'f',id:'workflow',t:'  workflow.md',d:'How you want the work done: preferences such as test-driven development and commit strategy.',s:'Launch post: workflow preferences, e.g. TDD.'},
+    {k:'f',id:'styles',t:'  code_styleguides/',d:'Language style guides the agent follows when writing code.',s:'README: directory listed in the generated structure.'},
+    {k:'f',id:'tracks',t:'  tracks.md',d:'The index of tracks. The status command reports progress from this file and the active tracks.',s:'README: status shows progress of the tracks file and active tracks.'},
+    {k:'dir',t:'  tracks/<track_id>/'},
+    {k:'f',id:'spec',t:'    spec.md',d:'The specification for one track: what is being built and why. Generated by the new-track command and reviewed by you before any code is written.',s:'Launch post: per-track specs; README: new-track generates spec and plan.'},
+    {k:'f',id:'plan',t:'    plan.md',d:'The phased plan of tasks and sub-tasks for the track. Implement works through it, checking items off; review can append a “Review Fixes” phase; revert can reset tasks to pending.',s:'Launch post and README.'},
+    {k:'f',id:'meta',t:'    metadata.json',d:'Machine-readable bookkeeping for the track. (The README lists the file but does not document its fields.)',s:'README: listed in the generated structure.'}
+  ];
+  const files=$('files'), doc=$('filedoc');
+  F.forEach(x=>{ if(x.k==='dir'){ const d=document.createElement('div'); d.className='d'; d.textContent=x.t; files.appendChild(d); return; }
+    const b=document.createElement('button'); b.type='button'; b.className='f'; b.textContent=x.t; b.setAttribute('data-testid','conductor-file-'+x.id);
+    b.addEventListener('click',()=>{ files.querySelectorAll('.f').forEach(e=>e.classList.remove('on')); b.classList.add('on'); doc.innerHTML='<h4>'+x.t.trim()+'</h4>'+x.d+'<span class="src">Basis: '+x.s+'</span>'; }); files.appendChild(b); });
+  files.querySelector('[data-testid="conductor-file-stack"]').click();
+})();
+
+/* ---------- bridge ---------- */
+(function(){
+  const R=[
+    ['Structured note-taking','write state outside the window, reload it later','CLAUDE.md · auto memory · SPEC.md or a plan file','product.md · tech-stack.md · workflow.md · tracks.md'],
+    ['Right altitude','specific enough to steer, not a brittle script','Short CLAUDE.md · specific prompts · interview → spec','spec says what and why; plan breaks it into phases and tasks'],
+    ['Just-in-time loading','keep light references, load detail when needed','Skills · path-scoped rules · @-imports','per-track folders: only the active track needs loading'],
+    ['Clean context per task','don’t carry old clutter forward','/clear · fresh session to implement a spec · sub-agents','every session starts from the same files; chat is disposable'],
+    ['Human gate before building','you decide before code is written','Plan mode · edit the plan with Ctrl+G','spec and plan are reviewed before implement'],
+    ['Independent check','someone other than the author grades it','Verification step · reviewer sub-agent','conductor-review against guidelines and plan']
+  ];
+  const b=$('bridge');
+  b.innerHTML='<div class="hdp a">THE IDEA (Anthropic)</div><div class="sp"></div><div class="hdp c">CLAUDE CODE HABIT · PART 1</div><div class="sp"></div><div class="hdp d">CONDUCTOR · PART 2</div>'+
+    R.map(r=>'<div class="cell a"><b>'+r[0]+'</b>'+r[1]+'</div><div class="br-ar">→</div><div class="cell c">'+r[2]+'</div><div class="br-ar">→</div><div class="cell d">'+r[3]+'</div>').join('');
+  b.querySelectorAll('.sp').forEach(s=>s.style.display='block');
+})();
+
+/* ---------- decision picker ---------- */
+(function(){
+  const Q={ size:[['A small, clear change','small'],['A feature touching several files','med'],['A large or ambiguous piece of work','big']],
+            who:[['Just me','solo'],['A team sharing the repo','team']],
+            span:[['One sitting','one'],['Several sessions or days','multi']] };
+  const st={size:null,who:null,span:null};
+  Object.keys(Q).forEach(k=>{ const w=$('q-'+k);
+    Q[k].forEach(([label,val])=>{ const b=document.createElement('div'); b.className='opt'; b.textContent=label; b.setAttribute('data-testid','decision-'+k+'-'+val);
+      b.addEventListener('click',()=>{ w.querySelectorAll('.opt').forEach(x=>x.classList.remove('on')); b.classList.add('on'); st[k]=val; go(); }); w.appendChild(b); }); });
+  function go(){
+    if(!st.size||!st.who||!st.span) return;
+    let t,why,steps;
+    if(st.size==='small' && st.span==='one'){ t='Just ask, with a way to verify'; why='If you could describe the diff in one sentence, skip planning. Give Claude a check it can run (a test or build) and let it work.'; steps=['Specific prompt','verification step','commit']; }
+    else if(st.size==='big' || st.span==='multi' || st.who==='team'){
+      if(st.size==='small'){ t='Part 1 habits, plus a durable note'; why='The task is small but spans time or people. A short plan file or a few CLAUDE.md lines carries it; a full spec workflow is more than it needs.'; steps=['Plan mode','write the plan to a file','fresh session to continue']; }
+      else { t='Conductor-style track (or a hand-rolled spec)'; why='Work that is large, ambiguous, long-running or shared benefits from context that lives in the repo: a reviewed spec and plan, with each session starting from the same files. Use Conductor itself, or imitate it with interview → SPEC.md → fresh session.'; steps=['Set up project context once','new track','review spec + plan','implement in fresh sessions','review']; }
+    }
+    else { t='Plan mode, then implement'; why='A multi-file change in one sitting by one person. Explore and plan in plan mode, then implement against the plan. If the approach is unclear, have Claude interview you first and write SPEC.md.'; steps=['Explore','plan (Ctrl+G)','implement','verify','commit']; }
+    const r=$('rec'); r.style.display='block';
+    r.innerHTML='<p class="rm">'+t+'</p><p class="rw">'+why+'</p><div class="route">'+steps.map(s=>'<span>'+s+'</span>').join('<em>→</em>')+'</div>';
+  }
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

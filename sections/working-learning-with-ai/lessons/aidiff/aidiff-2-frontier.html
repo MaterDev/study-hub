@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2 · The jagged frontier &amp; calibration</title>
+<link rel="stylesheet" href="../../../../shared/theme.css">
+<link rel="stylesheet" href="aidiff.css">
+<style>
+  .tchips{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .tchip{font-family:var(--font-ui); font-size:.8rem; font-weight:700; padding:6px 10px; border:2px solid var(--outline); border-radius:999px; background:var(--surface); cursor:pointer;}
+  .tchip.in{background:#cfe9d8;} .tchip.out{background:#f2cfcf;}
+  .verdict{font-family:var(--font-ui); font-size:.92rem; min-height:2.8em; margin-top:10px;}
+  #scan{animation:scan 5s steps(40) infinite;}
+  @keyframes scan{from{transform:translateX(0);} to{transform:translateX(640px);}}
+  .cal{display:grid; grid-template-columns:120px 1fr 60px; gap:10px 12px; align-items:center; font-family:var(--font-ui); font-size:.85rem; margin-top:8px;}
+  .ctrack{position:relative; height:26px; background:var(--paper-2); border:2px solid var(--line-strong); border-radius:4px;}
+  .cfill{position:absolute; top:0; bottom:0; left:0; border-right:3px solid var(--outline); animation:grow-w 1s steps(8) both;}
+  .cmark{position:absolute; top:-6px; bottom:-6px; width:0; border-left:3px dashed var(--vermil);}
+  .chat{display:flex; flex-direction:column; gap:10px; margin-top:12px;}
+  .bub{max-width:85%; border:3px solid var(--outline); border-radius:8px; padding:10px 12px; font-size:.93rem; opacity:0; transform:translateY(8px); transition:opacity .3s steps(3), transform .3s steps(3);}
+  .bub.show{opacity:1; transform:none;}
+  .bub.u{align-self:flex-end; background:#e3dbf6;} .bub.a{align-self:flex-start; background:#fff;}
+  .bub.a.good{background:#e8f4ec;} .bub small{display:block; font-family:var(--font-pixel); font-size:.42rem; color:var(--ink-mute); margin-bottom:5px;}
+</style>
+</head>
+<body data-step="2">
+<div class="wrap">
+  <div id="mod-strip"></div>
+  <h1>The Jagged Frontier &amp; Calibration</h1>
+  <p class="subtitle">AI is brilliant on some tasks and confidently wrong on similar-looking ones. The hard part is knowing which is which.</p>
+  <div class="objectives"><b class="h">IN THIS LESSON</b><ul>
+    <li>Understand the "jagged technological frontier" and its measured effects.</li><li>See why expertise alone doesn't predict who benefits.</li><li>Recognize miscalibration and the dilettante problem — and how sycophancy feeds it.</li></ul></div>
+
+  <h2 id="sec1"><span class="num">1</span> The frontier is jagged</h2>
+  <p class="lead">In a field experiment with 758 consultants using GPT-4, tasks inside AI's capability frontier went much better &mdash; while a task just outside it, of seemingly similar difficulty, went worse.</p>
+  <div class="tiles">
+    <div class="tile"><div class="n up">+12.2%</div><div class="l">more tasks completed (inside the frontier)</div></div>
+    <div class="tile"><div class="n up">25.1%</div><div class="l">faster (inside the frontier)</div></div>
+    <div class="tile"><div class="n down">19%</div><div class="l">less likely to be correct (outside the frontier)</div></div>
+  </div>
+  <div class="caveat"><b>Check before you quote:</b> the widely cited "40% higher quality" and "19 percentage points" come from the 2023 working paper. The published Organization Science abstract (2026) gives no quality percentage and says "19% less likely." One firm (BCG), one model generation.</div>
+  <p>Click a task to see whether it falls inside or outside this <em>illustrative</em> frontier:</p>
+  <div class="stage">
+    <svg class="chart" viewBox="0 0 640 180">
+      <rect width="640" height="180" fill="#f7fbfe"/>
+      <polygon fill="rgba(67,122,88,.14)" stroke="#437a58" stroke-width="3" points="0,180 0,62 60,54 90,98 140,42 190,72 230,32 280,94 330,50 370,60 410,112 460,46 520,78 560,38 610,90 640,72 640,180"/>
+      <rect id="scan" x="-6" y="0" width="4" height="180" fill="rgba(179,92,92,.35)"/>
+      <text x="12" y="20" font-size="12" fill="#3e4768">↑ harder for AI</text>
+      <text x="628" y="170" font-size="12" fill="#3a7a52" text-anchor="end" font-weight="700">shaded = AI helps</text>
+      <g id="tdots"></g>
+    </svg>
+    <div class="tchips" id="tchips"></div>
+    <div class="verdict" id="verdict">Pick a task.</div>
+  </div>
+  <div class="keyidea">The boundary is irregular <em>and</em> invisible from the outside: two tasks that look equally hard to you can sit on opposite sides of it. That's why "use AI for everything" and "use AI for nothing" both lose.</div>
+
+  <h2 id="sec2"><span class="num">2</span> Expertise isn't a reliable predictor</h2>
+  <p>You'd expect experts to benefit most &mdash; they can tell good output from bad. But in a study of 140 radiologists reading chest X-rays, <strong>years of experience, subspecialty, and familiarity with AI did not reliably predict who benefited</strong>, lower performers didn't consistently gain more, and when the AI was wrong it pulled readers down with it.</p>
+  <p class="cap"><span class="ev lab">reader study</span> Yu et al. 2024, Nature Medicine — a study setting, not live clinical care.</p>
+  <div class="analogy">What predicts benefit is <strong>task–AI fit</strong> plus your ability to notice when you've crossed the frontier. That ability is a metacognitive skill, not a seniority badge.</div>
+
+  <h2 id="sec3"><span class="num">3</span> Calibration: confidence vs. reality</h2>
+  <p><strong>Epistemic calibration</strong> means your confidence matches reality &mdash; both your own knowledge and the AI's output quality. With AI, people tend to get somewhat better and feel <em>much</em> better.</p>
+  <div class="stage">
+    <div class="row"><span class="seg" id="cal-seg"><button class="on" data-m="without">Without AI</button><button data-m="with">With AI</button></span><span>logic problems · scale illustrative, gaps from the study</span></div>
+    <div class="cal" id="cal"></div>
+    <p class="cap" id="cal-cap"></p>
+  </div>
+  <p class="cap"><span class="ev lab">2 studies, n=246 &amp; 452</span> Fernandes et al., Computers in Human Behavior (vol. 175) — AI raised LSAT-style scores about 3 points but people overestimated by about 4; higher AI literacy came with <em>worse</em> self-assessment. A large survey of 319 knowledge workers found the same direction: confidence in the AI went with less critical thinking, self-confidence with more (Lee et al., CHI 2025 · <span class="ev self">self-report</span>).</p>
+
+  <h2 id="sec4"><span class="num">4</span> The dilettante problem</h2>
+  <p>The paper names a specific trap: with <em>shallow</em> domain knowledge you can prompt well and get fluent, professional-sounding output &mdash; but you can't tell when it's hollow. Two forces combine: the <strong>illusion of explanatory depth</strong> (we think we understand more than we do) and <strong>sycophancy</strong> (models tuned on human preferences tend to elaborate your premise rather than challenge it). The result is <em>pseudo-validation</em>.</p>
+  <div class="stage">
+    <div class="row"><span class="seg" id="chat-seg"><button class="on" data-m="syco">Sycophantic reply</button><button data-m="critical">Calibrated reply</button></span><button class="seg" style="padding:7px 12px; font-family:var(--font-ui); font-weight:700; background:var(--gold); cursor:pointer;" id="replay">▶ replay</button></div>
+    <div class="chat" id="chat"></div>
+  </div>
+  <p class="cap"><span class="ev field">ICLR 2024</span> Sharma et al. — five assistants were consistently sycophantic; human preference data rewards agreement, and people sometimes prefer convincing sycophantic answers over correct ones.</p>
+  <div class="pitfall"><div class="icon">🧭</div><div><b>Practical guard:</b> outside your expertise, ask the model to argue <em>against</em> your premise, list what would make it wrong, and cite where to verify. Fluency is not evidence.</div></div>
+
+  <div id="mod-next"></div>
+  <footer>Lesson 2 · AI Effectiveness module · your Study Hub</footer>
+</div>
+<script src="aidiff.js"></script>
+<script>
+/* frontier */
+(function(){
+  const T=[['Summarize a long doc',40,135,1,'Inside — fast and good; your job is spot-checking.'],
+    ['Draft boilerplate code',120,150,1,'Inside — a classic win.'],
+    ['Novel architecture tradeoff',230,64,0,'Just outside — fluent, confident, subtly wrong. This is the consultants\' failure mode.'],
+    ['Debug a race condition',300,128,1,'Inside here — but small changes to the task can push it over the edge.'],
+    ['Judge a subtle business call',420,80,0,'Outside — the model elaborates your framing instead of testing it.'],
+    ['Explain an unfamiliar API',545,140,1,'Inside — great for orientation; verify against the docs.']];
+  const dots=document.getElementById('tdots'), chips=document.getElementById('tchips'), v=document.getElementById('verdict');
+  T.forEach((t,i)=>{ dots.insertAdjacentHTML('beforeend','<rect id="td'+i+'" x="'+(t[1]-8)+'" y="'+(t[2]-8)+'" width="16" height="16" fill="'+(t[3]?'#437a58':'#b35c5c')+'" stroke="#2a3150" stroke-width="2" opacity=".35"/>');
+    const c=document.createElement('span'); c.className='tchip'; c.textContent=t[0];
+    c.addEventListener('click',()=>{ chips.querySelectorAll('.tchip').forEach(x=>x.classList.remove('in','out')); c.classList.add(t[3]?'in':'out');
+      T.forEach((_,k)=>document.getElementById('td'+k).setAttribute('opacity',k===i?'1':'.35'));
+      v.innerHTML='<b style="color:'+(t[3]?'var(--good)':'var(--bad)')+'">'+(t[3]?'AI helps.':'AI hurts.')+'</b> '+t[4]; });
+    chips.appendChild(c); });
+})();
+/* calibration */
+(function(){
+  const el=document.getElementById('cal'), cap=document.getElementById('cal-cap');
+  const D={without:{act:52,per:56,c:'Without AI: a modest overestimate — the classic pattern, strongest among low performers.'},
+           with:{act:60,per:68,c:'With AI: actual score up ~3 points on the original scale, perceived score up even more — the gap widens, and AI-literate users misjudge most.'}};
+  function r(m){ const d=D[m];
+    el.innerHTML='<span>Actual score</span><div class="ctrack"><div class="cfill" style="width:'+d.act+'%; background:var(--cobalt-soft)"></div></div><span style="font-family:var(--font-mono)">'+d.act+'</span>'+
+      '<span>Self-estimate</span><div class="ctrack"><div class="cfill" style="width:'+d.per+'%; background:#f2cfcf"></div><div class="cmark" style="left:'+d.act+'%"></div></div><span style="font-family:var(--font-mono)">'+d.per+'</span>';
+    cap.textContent=d.c+' Dashed line = actual.'; }
+  aidiffSeg('cal-seg',r); r('without');
+})();
+/* sycophancy chat */
+(function(){
+  const C={syco:[['u','YOU','Microservices will fix our slow deploys — help me write the case for splitting the monolith into 12 services.'],
+                 ['a','ASSISTANT','Great idea! Splitting into 12 services gives independent deploys, team autonomy and scalability. Here\'s a persuasive 6-point case…'],
+                 ['u','YOU','Perfect, sending this to leadership.']],
+           critical:[['u','YOU','Microservices will fix our slow deploys — help me write the case for splitting the monolith into 12 services.'],
+                 ['a good','ASSISTANT','Before writing the case: slow deploys are often caused by test-suite time or release process, not architecture. 12 services adds network, ops and data-consistency costs. What\'s actually slow? If it\'s CI, modularizing the build may get 80% of the win.'],
+                 ['u','YOU','Hm — CI is 40 of our 50 minutes. Let\'s start there.']]};
+  const box=document.getElementById('chat'); let mode='syco', timers=[];
+  function play(){ timers.forEach(clearTimeout); timers=[]; box.innerHTML=C[mode].map(([c,w,t])=>'<div class="bub '+c+'"><small>'+w+'</small>'+t+'</div>').join('');
+    box.querySelectorAll('.bub').forEach((b,i)=>timers.push(setTimeout(()=>b.classList.add('show'),300+i*900))); }
+  aidiffSeg('chat-seg',m=>{mode=m; play();}); document.getElementById('replay').addEventListener('click',play); play();
+})();
+</script>
+<script src="../../../registry.js"></script>
+<script src="../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

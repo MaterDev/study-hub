@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snapshots, Serialization &amp; Interpolation</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--vermil); --accent-soft:var(--vermil-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:600; font-size:.85rem; cursor:pointer;}
+  .controls{display:flex; gap:10px; margin-top:14px; align-items:center; flex-wrap:wrap; font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute);}
+  /* serialization ladder bars */
+  .sbar-row{display:grid; grid-template-columns:120px 1fr 70px; gap:12px; align-items:center; margin:8px 0; font-family:var(--font-ui); font-size:.82rem;}
+  .sbar-track{height:22px; background:var(--paper-2); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .sbar-fill{height:100%; border-radius:5px; width:0; transition:width .9s cubic-bezier(.2,.8,.2,1);}
+  .sbar-fill.json{background:var(--vermil);} .sbar-fill.bin{background:var(--ochre);} .sbar-fill.delta{background:var(--forest);}
+  .sbar-val{font-family:var(--font-mono); color:var(--ink); text-align:right;}
+  /* interp timeline */
+  .interp{position:relative; height:120px; background:var(--paper-2); border:1px solid var(--line); border-radius:12px; margin:8px 0; overflow:hidden;}
+  .tline{position:absolute; left:0; right:0; height:1px; background:var(--line-strong);}
+  .snap-dot{position:absolute; width:12px; height:12px; border-radius:50%; background:var(--cobalt); transform:translate(-50%,-50%);}
+  .render-dot{position:absolute; width:16px; height:16px; border-radius:50%; background:var(--vermil); transform:translate(-50%,-50%); box-shadow:0 0 0 4px var(--vermil-soft);}
+  .interp-lbl{position:absolute; font-family:var(--font-ui); font-size:.7rem; color:var(--ink-mute);}
+  .fidelity{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0;}
+  @media(max-width:700px){.fidelity{grid-template-columns:1fr;}}
+  .fcol{border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:var(--shadow-sm);}
+  .fcol.ok{background:var(--good-soft); border-color:rgba(67,122,88,.35);}
+  .fcol.no{background:var(--bad-soft); border-color:rgba(179,92,92,.3);}
+  .fcol h4{margin:0 0 6px;} .fcol.ok h4{color:var(--good);} .fcol.no h4{color:var(--bad);}
+  .fcol ul{margin:6px 0 0; padding-left:18px; font-family:var(--font-ui); font-size:.84rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Snapshots, Serialization &amp; Interpolation</h1>
+  <p class="subtitle">How you fit a whole fight into a few dozen bytes — and the price of smoothing it out.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What a snapshot is</a></li>
+      <li><a href="#sec2">Your spike's actual snapshot schema</a></li>
+      <li><a href="#sec3">The serialization ladder: JSON → binary → delta</a></li>
+      <li><a href="#sec4">The interpolation buffer</a></li>
+      <li><a href="#sec5">Hitting the opponent where they were</a></li>
+      <li><a href="#sec6">The fidelity gap your spike found</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What a snapshot is</h2>
+  <p class="lead">A <strong>snapshot</strong> is the complete <em>logical</em> state of the game at one tick, packed into a small message you can send across the network. Not the pixels, not the animations &mdash; just the facts: where each fighter is, how much health they have, what state they're in. It's the "chess notation" idea from Lesson 1, made concrete.</p>
+  <div class="analogy">
+    <span class="emoji">📸</span><strong>Analogy:</strong> A film reel is 24 photos a second. You don't mail someone the movie theater &mdash; you mail the photos, and their projector recreates the motion. A snapshot is one photo of the fight's <em>state</em>; the guest's "projector" (its renderer) turns a stream of them back into a moving match.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> Your spike's actual snapshot schema</h2>
+  <p>This is the real <code class="inline">Snapshot</code> type from your spike's <code class="inline">contracts.ts</code> &mdash; the exact shape that goes on the wire each tick:</p>
+<pre><span class="c-kw">interface</span> <span class="c-fn">Snapshot</span> {
+  tick: <span class="c-kw">number</span>;              <span class="c-comment">// which sim step this is</span>
+  hostTime: <span class="c-kw">number</span>;          <span class="c-comment">// producer's clock (for timing)</span>
+  p1LastInputSeq: <span class="c-kw">number</span>;    <span class="c-comment">// "I've applied your input up to #N"</span>
+  p2LastInputSeq: <span class="c-kw">number</span>;
+  round: <span class="c-kw">number</span>;
+  countdown: <span class="c-kw">number</span>;
+  winner: <span class="c-num">0</span> | <span class="c-num">1</span> | <span class="c-num">2</span>;
+  fighters: [FighterSnap, FighterSnap];  <span class="c-comment">// one per player</span>
+}
+
+<span class="c-kw">interface</span> <span class="c-fn">FighterSnap</span> {
+  x: <span class="c-kw">number</span>; vx: <span class="c-kw">number</span>;        <span class="c-comment">// position + horizontal velocity</span>
+  health: <span class="c-kw">number</span>; confidence: <span class="c-kw">number</span>; special: <span class="c-kw">number</span>;  <span class="c-comment">// HUD meters</span>
+  state: <span class="c-str">"idle"|"walk"|"attack"|"block"|"hitstun"|"ko"</span>;
+  facingRight: <span class="c-kw">boolean</span>;
+  attackTimer: <span class="c-kw">number</span>; hitstunTimer: <span class="c-kw">number</span>; chargeMs: <span class="c-kw">number</span>;
+}</pre>
+  <p>That's the entire fight, per tick: two fighters &times; a dozen fields, plus a little match metadata. Notice what's <em>not</em> here &mdash; no sprites, no animation frames, no particle effects. Just numbers and a couple of enums. That's what makes it tiny.</p>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">the seq numbers</div>
+    <h4>Why <code class="inline">p1LastInputSeq</code> matters</h4>
+    <p>Each input the guest sends is numbered (<code class="inline">seq</code>). When a snapshot comes back saying <code class="inline">p2LastInputSeq: 47</code>, the guest knows "the host has processed my input up through #47." That's how the guest confirms its button presses landed &mdash; and it's the hook a fancier model would use to reconcile prediction. Sequence numbers are the quiet backbone of every netcode protocol.</p>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> The serialization ladder: JSON → binary → delta</h2>
+  <p>"Serialization" means turning that structure into bytes to send. Your spike climbs a three-rung ladder, each smaller than the last. Press play to see the byte counts it actually measured:</p>
+  <div class="stage">
+    <div class="sbar-row"><span>JSON</span><div class="sbar-track"><div class="sbar-fill json" data-w="100"></div></div><span class="sbar-val" id="v-json">—</span></div>
+    <div class="sbar-row"><span>Hand-packed binary</span><div class="sbar-track"><div class="sbar-fill bin" data-w="15"></div></div><span class="sbar-val" id="v-bin">—</span></div>
+    <div class="sbar-row"><span>Delta (vs last)</span><div class="sbar-track"><div class="sbar-fill delta" data-w="5"></div></div><span class="sbar-val" id="v-delta">—</span></div>
+    <div class="controls"><button class="btn" id="ser-run">▶ Measure the ladder</button><span>bars scaled to JSON = 100%</span></div>
+  </div>
+  <ul>
+    <li><strong>JSON (~427B):</strong> human-readable, native to JavaScript, trivial to debug. The right first rung: prove the loop works before optimizing.</li>
+    <li><strong>Hand-packed binary (63B):</strong> write each field into a raw byte buffer (a <code class="inline">DataView</code>) at fixed offsets. ~7&times; smaller than JSON.</li>
+    <li><strong>Delta (~18&ndash;25B/tick):</strong> only send the fields that <em>changed</em> since the last snapshot. Between two ticks a fighter barely moves, so most of the packet is unchanged &mdash; skip it.</li>
+  </ul>
+  <div class="flag">
+    <strong>The counter-intuitive part:</strong> your research found binary is smaller but <em>not faster to build</em> &mdash; userland binary packing was measured <code class="inline">1.6&ndash;3.2&times; slower</code> than native JSON, because browsers' JSON is heavily optimized C++. So binary wins on <em>size</em> (bandwidth), not <em>CPU</em>. You climb the ladder for bandwidth, not speed &mdash; and only as far as you need. For 2 players, even JSON fits under one network packet.
+  </div>
+  <p>How small is small enough? Under one <strong>MTU</strong> (~1192B for a WebRTC unreliable channel &mdash; Lesson 3), so the whole snapshot rides in a single packet and can't be split into losable fragments. At 63B, your spike is comfortably under. Encode cost is a couple hundredths of a millisecond &mdash; the deployed build measures <code class="inline">~0.016ms/frame</code> against a <code class="inline">16.67ms</code> frame budget &mdash; effectively free (the exact figure drifts run to run; it's always ~1000&times; under budget).</p>
+
+  <h2 id="sec4"><span class="num">4</span> The interpolation buffer</h2>
+  <p>Snapshots arrive with irregular timing &mdash; network jitter means one is 12ms late, the next 4ms early. If the guest drew each the instant it arrived, fighters would stutter and teleport. The fix: the guest holds a small <strong>buffer</strong> of recent snapshots and renders a smooth path <em>between</em> them, deliberately a little behind real time.</p>
+  <div class="stage">
+    <div class="interp" id="interp">
+      <div class="tline" style="top:60px;"></div>
+      <div class="interp-lbl" style="left:8px; top:8px;">time →</div>
+    </div>
+    <div class="controls"><button class="btn" id="interp-run">▶ Show interpolation</button>
+      <span>Blue = snapshots arriving (jittery). Red = what the guest draws (smooth, but behind).</span></div>
+  </div>
+  <p>The guest renders at the red marker, always trailing the newest blue snapshot by the buffer amount. This <em>hides the jitter</em> &mdash; the render is always interpolating between two snapshots it already has, so it never has to guess or stutter. Your spike uses a <code class="inline">50ms</code> interpolation buffer.</p>
+  <div class="analogy">
+    It's like a video stream's few seconds of "buffering." A small delay you accept up front buys you smooth playback despite an uneven network. The tradeoff is right there: <strong>a bigger buffer is smoother but adds directly to how far behind the guest is.</strong></div>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">field notes · from the refactor</div>
+    <h4>Two ways an interp buffer bites back</h4>
+    <p><strong>1. It assumes snapshots arrive in order.</strong> The spike's sampler walked the list and stopped at the first future sample &mdash; fine over ordered TCP, but under an <em>unreliable</em> WebRTC channel (Lesson 2) snapshots can arrive out of order, so it must insert them sorted by <code class="inline">tick</code>/<code class="inline">hostTime</code>. Reordering is the price of the fast transport.</p>
+    <p><strong>2. It's where cross-tab clock skew actually bites.</strong> The sampler decides "which two snapshots straddle <em>now</em>?" by comparing the guest's own <code class="inline">performance.now()</code> against the host-stamped <code class="inline">hostTime</code>. But per MDN, each tab has its own <em>time origin</em> &mdash; two tabs' <code class="inline">performance.now()</code> clocks differ by seconds and aren't comparable. So the gate can decide every snapshot is in the future (or past), attribute <strong>zero</strong> samples, and silently render nothing useful. (Subtle point a later review pinned down: the felt-lag <em>subtraction</em> is epoch-safe &mdash; both values use the guest clock &mdash; so the real fix is feeding the sampler a measured clock <em>offset</em>, not touching the timestamp math.)</p>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Hitting the opponent where they were</h2>
+  <p>That deliberate delay has a sharp consequence. Because the guest renders <em>the past</em>, the opponent it sees on screen is where they were ~one buffer-length ago &mdash; not where they are now. This is called the <strong>stale opponent</strong> problem, and it's the deep reason fighting games struggle with this model.</p>
+  <div class="pitfall"><div class="icon">🥊</div><div>You see the opponent begin an attack. You react and block. But you were reacting to a <em>stale</em> position &mdash; on the host's authoritative timeline, they'd already moved. For a shooter, "server rewind" forgives this. For a fighting game's frame-perfect blocks and throws, being ~100ms behind can mean your correct read still loses.</div></div>
+  <p>Valve's Source engine famously runs a 66-tick sim but sends only 20 snapshots/second, so the guest interpolates ~100ms in the past (<code class="inline">cl_interp 0.1</code>). Shooters live with it; frame-1 fighting-game interactions can't. Your spike measured stale-opponent lag as roughly equal to the interpolation delay &mdash; a direct, unavoidable cost of smoothing.</p>
+
+  <h2 id="sec6"><span class="num">6</span> The fidelity gap your spike found</h2>
+  <p>Here's the most important spike-specific finding of this whole topic. A snapshot carries the <em>logical</em> state &mdash; but your game's <em>visual pose</em> (the exact animation frame, the tween mid-flight) isn't stored as data anywhere; it's a side-effect of calling sim methods. So the guest can reproduce the HUD perfectly but <strong>not the exact pose</strong> from state alone:</p>
+  <div class="fidelity">
+    <div class="fcol ok">
+      <h4>✓ Reproduces exactly</h4>
+      <ul><li>Position &amp; velocity (<code class="inline">x</code>, <code class="inline">vx</code>)</li><li>Health, confidence, special meter</li><li>Logical state (idle/attack/block/hitstun/ko)</li><li>Round, countdown, winner</li></ul>
+    </div>
+    <div class="fcol no">
+      <h4>✗ Does NOT reproduce from state</h4>
+      <ul><li>Exact animation pose / tween position</li><li>Move identity (<code class="inline">moveId</code>) &mdash; not in the schema</li><li>Per-hit damage amounts</li><li>Particle/visual effects (fire-and-forget)</li></ul>
+    </div>
+  </div>
+  <p>A later review put the fidelity gap even more bluntly: because the guest's <code class="inline">SnapshotGuestScene.update()</code> is <em>empty</em>, the guest never runs its own tweens or timers &mdash; it's a <strong>teleporting puppet</strong> that snaps between received states rather than animating between them. Faithful motion would need that production state&rarr;render path.</p>
+  <p>Why? Because in your Phaser game "pose/tweens are side-effects of private mutators" &mdash; there's no <em>state → render</em> path (Lesson 1). Faithful guest pose would need a production snapshot/state-render API added to <code class="inline">src/</code>. The spike is honest about this: it's documented as a <strong>finding</strong>, not silently patched. (It also caught a real bug in passing: <code class="inline">Fighter.chargeMs</code> is a dead field &mdash; the schema implies charge lives on the fighter, but it actually lives on the scene.)</p>
+  <div class="flag">The practical read: snapshotting is <strong>bandwidth-cheap but render-lossy</strong>. For a HUD-first fighting game, "lossy pose" may be perfectly acceptable &mdash; but it's a real decision, and now it's measured rather than assumed.</div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li>A <b>snapshot</b> is the logical fight state for one tick &mdash; numbers and enums, no pixels.</li>
+    <li>Climb the <b>serialization ladder</b> (JSON → binary → delta) for <em>bandwidth</em>; binary is smaller but not faster. Stay under one MTU.</li>
+    <li>The guest holds an <b>interpolation buffer</b> to smooth jitter &mdash; at the cost of rendering the past (<b>stale opponent</b>).</li>
+    <li>Your spike's snapshots are tiny (<code class="inline">63B</code> full / <code class="inline">~25B</code> delta, <code class="inline">~0.016ms</code> to build) but <b>render-lossy</b>: HUD reproduces exactly, exact pose does not.</li>
+  </ul>
+  <p class="src"><b>Primary sources.</b> MDN — <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels" target="_blank">Using data channels (message size / HOL)</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin" target="_blank">Performance.timeOrigin</a> (why two tabs' clocks differ)</p>
+  <p class="src">Games — Valve — <a href="https://gist.github.com/CoolOppo/fe0586836de3fb2f90f9" target="_blank">Source multiplayer networking</a> · Gambetta — <a href="https://www.gabrielgambetta.com/entity-interpolation.html" target="_blank">Entity interpolation</a></p>
+  <p class="src">Your spike — <code class="inline">src/lib/contracts.ts</code> (§3 schema), <code class="inline">snapshotCodec.ts</code>, <code class="inline">interpBuffer.ts</code>, <code class="inline">guestScene.ts</code>, <code class="inline">research.md §C</code></p>
+
+  <footer>Snapshots &amp; Interpolation · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+/* serialization ladder */
+document.getElementById('ser-run').addEventListener('click',()=>{
+  const map={'.json':['427 B','v-json'],'.bin':['63 B','v-bin'],'.delta':['~22 B','v-delta']};
+  document.querySelectorAll('.sbar-fill').forEach(f=>{ f.style.width=f.dataset.w+'%'; });
+  document.getElementById('v-json').textContent='427 B';
+  document.getElementById('v-bin').textContent='63 B';
+  document.getElementById('v-delta').textContent='~22 B';
+});
+
+/* interpolation viz */
+document.getElementById('interp-run').addEventListener('click',()=>{
+  const box=document.getElementById('interp');
+  [...box.querySelectorAll('.snap-dot,.render-dot')].forEach(d=>d.remove());
+  const w=box.clientWidth||600;
+  // jittery snapshot arrivals (blue) along the timeline
+  const jitter=[0.08,0.19,0.27,0.41,0.5,0.63,0.72,0.86,0.95];
+  jitter.forEach((p,i)=>{
+    setTimeout(()=>{
+      const d=document.createElement('div'); d.className='snap-dot';
+      d.style.left=(p*w)+'px'; d.style.top='40px'; box.appendChild(d);
+    }, i*180);
+  });
+  // smooth render marker (red), trailing behind
+  const r=document.createElement('div'); r.className='render-dot'; r.style.top='80px'; r.style.left='0'; box.appendChild(r);
+  setTimeout(()=>{ r.style.transition='left 1.6s linear'; r.style.left=(0.8*w)+'px'; }, 350);
+});
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

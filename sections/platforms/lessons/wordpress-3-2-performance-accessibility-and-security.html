@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Performance, Accessibility and Security</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); --accent-text:#2c4d82; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); min-width:0;}
+  .ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-ui); text-transform:none; letter-spacing:0; max-width:100%;}
+  .chk{display:flex; gap:6px; align-items:center; font-family:var(--font-ui); font-size:.8rem; color:var(--ink);} .chk input{accent-color:var(--cobalt);}
+  .pf-src{font-family:var(--font-mono); font-size:.78rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 14px; overflow-x:auto; line-height:1.6; white-space:pre;}
+  .pf-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.pf-two{grid-template-columns:minmax(0,1fr);}}
+  .pf-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .pf-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .pf-note{font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .pf-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .pf-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:6px 10px; font:700 .76rem var(--font-ui); cursor:pointer;} .pf-seg button.on{background:var(--cobalt); color:#fff;}
+  .pf-list{display:flex; flex-direction:column; gap:6px; margin:0 0 8px; padding:0; list-style:none;}
+  .pf-li{display:flex; justify-content:space-between; gap:8px; border:2px solid var(--line-strong); border-radius:8px; padding:6px 10px; background:var(--paper); font-family:var(--font-ui); font-size:.82rem; color:var(--ink);}
+  .pf-li.off{opacity:.55;}
+  .pf-bar{height:14px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden;} .pf-bar i{display:block; height:100%; background:var(--forest); width:0; transition:width .2s;}
+  .pf-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;}
+  .pf-big{font:800 1.5rem var(--font-ui); color:var(--ink);}
+  .pf-st{font-weight:800; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); display:inline-block;} .pf-st.ok{border-color:var(--forest); background:var(--forest-soft);} .pf-st.mid{border-color:var(--ochre); background:var(--ochre-soft);} .pf-st.no{border-color:var(--vermil); background:var(--vermil-soft);}
+  .pf-tbl{width:100%; border-collapse:collapse; font-family:var(--font-ui); font-size:.8rem; color:var(--ink);} .pf-tbl th{font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); text-align:left; padding:4px 6px;} .pf-tbl td{border-top:1px solid var(--line); padding:6px; vertical-align:middle; overflow-wrap:anywhere;}
+  .pf-tblwrap{overflow-x:auto;}
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tg{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .78rem var(--font-ui); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--cobalt);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em; font-family:var(--font-ui);} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+  .pf-chain{display:flex; flex-wrap:wrap; gap:6px; align-items:stretch; margin:10px 0;}
+  .pf-node{flex:1 1 110px; min-width:0; border:2px solid var(--line-strong); border-radius:10px; padding:8px; background:var(--paper); font-family:var(--font-ui); font-size:.76rem; color:var(--ink); text-align:center; overflow-wrap:anywhere;}
+  .pf-node.off{opacity:.45; border-style:dashed;} .pf-node.pass{border-color:var(--ochre);} .pf-node.hit{border-color:var(--forest); background:var(--forest-soft); font-weight:800;} .pf-node.skip{opacity:.35;}
+  .pf-form{border:2px solid var(--outline); border-radius:12px; padding:14px; background:var(--paper-2); font-family:var(--font-ui); color:var(--ink);}
+  .pf-form nav{display:flex; gap:12px; margin-bottom:10px; font-size:.82rem;}
+  .pf-form input[type=text],.pf-form input[type=email]{display:block; width:100%; box-sizing:border-box; margin:6px 0 10px; padding:8px; border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); font:inherit;}
+  .pf-form label{display:block; font-size:.84rem; font-weight:700;}
+  .pf-form.lowc label,.pf-form.lowc nav,.pf-form.lowc p{color:var(--ink); opacity:.4;}
+  .pf-form.nofocus a:focus,.pf-form.nofocus input:focus,.pf-form.nofocus button:focus{outline:none; box-shadow:none;}
+  .pf-form .ph{font-size:.8rem; color:var(--ink-mute);}
+  .pf-chk{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .pf-chk li{display:flex; gap:8px; align-items:flex-start; font-family:var(--font-ui); font-size:.82rem; color:var(--ink);}
+  .pf-chk .mk{flex:none; min-width:3.2em; text-align:center; font-weight:800; border:2px solid var(--line-strong); border-radius:6px; padding:0 4px;} .pf-chk .mk.ok{border-color:var(--forest); background:var(--forest-soft);} .pf-chk .mk.no{border-color:var(--vermil); background:var(--vermil-soft);}
+  .pf-meter{display:flex; flex-direction:column; gap:8px; margin:10px 0;}
+  .pf-meter .r{display:grid; grid-template-columns:minmax(0,8em) minmax(0,1fr) 3.5em; gap:8px; align-items:center; font-family:var(--font-ui); font-size:.8rem; color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Performance, Accessibility and Security</h1>
+  <p class="subtitle">The three things clients assume you handled: where a request is answered and why that makes a site fast, which fixes move which Core Web Vitals metric, what breaks accessibility in theme output, how sites are usually compromised and which habits stop it, and a baseline audit to run on any site.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Caching layers: where a request is answered (interactive)</a></li>
+      <li><a href="#sec2">Core Web Vitals: what moves which metric (interactive)</a></li>
+      <li><a href="#sec3">Accessibility in theme output (interactive)</a></li>
+      <li><a href="#sec4">How a site gets compromised (interactive)</a></li>
+      <li><a href="#sec5">Three code habits: validate, escape, authorise (interactive)</a></li>
+      <li><a href="#sec6">A baseline audit worksheet (interactive)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Caching layers: where a request is answered</h2>
+  <p class="lead">A WordPress page is built on demand: PHP runs, the database is queried, the theme's template prints HTML. That is expensive to repeat for every visitor, so sites add caches that answer earlier in the chain. The WordPress optimization guide describes several: <b>page caching</b> saves pages as static files so PHP barely runs, <b>browser caching</b> lets a returning visitor reuse files they already hold, a persistent <b>object cache</b> reduces trips to the database, and a <b>CDN</b> serves static files from servers closer to the visitor.</p>
+  <p>Switch layers on and off and choose a request. The chain shows where it is answered. The "work" figure is a made-up scale to show relative effort, not a measurement.</p>
+  <div class="stage" data-testid="cache-explorer">
+    <div class="row">
+      <label class="ctl">what is requested<select id="ca-res" data-testid="ca-resource"><option value="page">A page (HTML)</option><option value="img">An image file</option></select></label>
+      <label class="ctl">who is asking<select id="ca-who" data-testid="ca-visitor"><option value="first">A first-time visitor</option><option value="back">A returning visitor</option><option value="editor">A logged-in editor</option></select></label>
+    </div>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="ca-b" data-testid="ca-browser"> browser caching headers</label>
+      <label class="chk"><input type="checkbox" id="ca-c" data-testid="ca-cdn"> CDN for static files</label>
+      <label class="chk"><input type="checkbox" id="ca-p" data-testid="ca-page"> page cache plugin</label>
+      <label class="chk"><input type="checkbox" id="ca-o" data-testid="ca-object"> persistent object cache</label>
+    </div>
+    <div class="pf-chain" id="ca-chain" data-testid="ca-chain"></div>
+    <div class="pf-box"><h5>RESULT</h5><div id="ca-out" data-testid="ca-out"></div></div>
+  </div>
+  <p class="small">Source for the layer descriptions: the WordPress optimization guide. My own simplifications in the model: the CDN serves static files only (some CDNs can also cache whole pages), and a logged-in editor bypasses the page cache. Caching plugins commonly skip cached pages for logged-in people, but that is a setting and varies, so treat it as typical rather than guaranteed.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Core Web Vitals: what moves which metric</h2>
+  <p>web.dev defines three Core Web Vitals. <b>Largest Contentful Paint (LCP)</b> measures loading and is good at 2.5 seconds or less. <b>Interaction to Next Paint (INP)</b> measures responsiveness and is good at 200 milliseconds or less. <b>Cumulative Layout Shift (CLS)</b> measures visual stability and is good at 0.1 or less. A page passes when it meets those targets for at least 75 percent of visits, measured separately for mobile and desktop.</p>
+  <p>Most WordPress performance work is images, fonts, scripts and caching. The skill is knowing which fix helps which number. Themes queue scripts and styles with the enqueue functions, and that is where the loading strategy lives: loading a script only where it is needed, and deferring it where possible, keeps the main thread free. Match each problem to the metric it mainly hurts.</p>
+  <div class="stage" data-testid="vitals-matcher">
+    <div class="scn" id="cw-box" data-testid="cw-box"></div>
+    <div class="scn-nav"><button class="btn" id="cw-next" data-testid="cw-next" disabled>Next</button><span class="small" id="cw-score" data-testid="cw-score"></span></div>
+  </div>
+  <p class="small">The three metric names and thresholds are from web.dev. Which problem maps to which metric is my own simplified teaching mapping; real pages often affect more than one metric, and the answers note where.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Accessibility in theme output</h2>
+  <p>Accessibility is mostly decided by the markup your theme prints, which makes it a front-end developer's job in WordPress. The W3C's WCAG 2.2 is the standard. Four failures show up in themes again and again: form fields without a real label, text without enough contrast, no visible keyboard focus, and no landmarks or skip link to jump past the menu. The contrast criterion (1.4.3, Level AA) asks for at least 4.5:1 for normal text and 3:1 for large text.</p>
+  <p>Toggle the problems on the mock form. Press Tab to move through the form with the keyboard yourself, then read the checklist.</p>
+  <div class="stage" data-testid="a11y-lab">
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="ac-label" data-testid="ac-label"> remove the visible labels (placeholder only)</label>
+      <label class="chk"><input type="checkbox" id="ac-low" data-testid="ac-contrast"> low-contrast text</label>
+      <label class="chk"><input type="checkbox" id="ac-focus" data-testid="ac-focus"> remove focus styles</label>
+      <label class="chk"><input type="checkbox" id="ac-land" data-testid="ac-landmarks"> remove landmarks and skip link</label>
+    </div>
+    <div class="pf-two">
+      <div class="pf-form" id="ac-form" data-testid="ac-form"></div>
+      <div class="pf-box"><h5>CHECKLIST</h5><ul class="pf-chk" id="ac-list" data-testid="ac-list"></ul><div class="pf-note" id="ac-note" data-testid="ac-note"></div></div>
+    </div>
+  </div>
+  <p class="small">WCAG 1.4.3 and its 4.5:1 and 3:1 ratios are from the W3C quick reference. The levels and wording I give for the other three checks (labels, focus visible, bypass blocks) are from background knowledge of WCAG, not re-read on the page. Colour is only one of the contrast factors; the lab fades the text with opacity to stand in for a failing colour pair, so the ratio is not calculated.</p>
+
+  <h2 id="sec4"><span class="num">4</span> How a site gets compromised</h2>
+  <p>Most compromises are not clever. The common routes are ordinary: software with a known, already-fixed flaw that was never updated, a plugin that is no longer maintained, and credentials that are weak, reused or shared. The WordPress hardening guide's advice follows from that: keep WordPress and plugins updated, delete plugins you do not use, install from trusted sources, use strong generated passwords with two-step authentication, and keep tested backups of the files and database.</p>
+  <p>Below are four conceptual routes and six defences. Switch defences on and off and see which routes stay open. This is a teaching model of habits, not a threat assessment, and it contains no technique for attacking anything.</p>
+  <div class="stage" data-testid="attack-explorer">
+    <div class="pf-grid" id="at-def" data-testid="at-defences"></div>
+    <div class="pf-tblwrap" style="margin-top:10px"><table class="pf-tbl"><thead><tr><th>Route</th><th>Status</th><th>What decides it</th></tr></thead><tbody id="at-rows"></tbody></table></div>
+    <div class="pf-box" style="margin-top:10px"><h5>IF ONE ROUTE IS STILL OPEN</h5><div id="at-out" data-testid="at-out"></div></div>
+  </div>
+  <p class="small">The hardening guide supports the defences themselves (updates, removing unused plugins, trusted sources, strong passwords with two-step authentication, backups). That the first two are the most common routes into real sites is widely reported, but I did not verify a statistic, so none is given. The route list, which defence covers which route, and the Open, Reduced and Closed labels are my own simplification.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Three code habits: validate, escape, authorise</h2>
+  <p>You met escaping in lesson 2.1: escape late, at the moment of output. The WordPress security handbook states the principle as never trusting user input, prefers validating and rejecting bad data over cleaning it, and says to escape as late as possible. Two more habits sit beside it. A <b>nonce</b> is a token that helps protect a form or link from being triggered by someone else's page (a forged request). It is not a login check: the handbook says nonces should not be relied on for authorisation, and to protect actions with a capability check such as <code class="inline">current_user_can()</code>. Pick the habit that fits each situation.</p>
+  <div class="stage" data-testid="habit-picker">
+    <div class="scn" id="hb-box" data-testid="hb-box"></div>
+    <div class="scn-nav"><button class="btn" id="hb-next" data-testid="hb-next" disabled>Next</button><span class="small" id="hb-score" data-testid="hb-score"></span></div>
+  </div>
+  <p class="small">The principles are from the handbook's security overview and nonce pages. The scenarios and answers are my own examples.</p>
+
+  <h2 id="sec6"><span class="num">6</span> A baseline audit worksheet</h2>
+  <p>Before handing a site over, run the same short audit every time. Tick what is true. The worksheet totals each area and tells you where to start. The twelve checks are my own synthesis of this lesson, a starting point and not an official standard.</p>
+  <div class="stage" data-testid="audit-worksheet">
+    <div class="pf-grid" id="wk-groups"></div>
+    <div class="pf-meter" id="wk-meter" data-testid="wk-meter"></div>
+    <div class="pf-box"><h5>TOTAL</h5><div class="pf-big" id="wk-total" data-testid="wk-total"></div><div class="pf-note" id="wk-next" data-testid="wk-next"></div></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Performance work is mostly images, scripts and caching.</b> Cache so PHP and the database run less; fix the metric that is actually failing.</li>
+    <li><b>Core Web Vitals:</b> LCP 2.5 s or less, INP 200 ms or less, CLS 0.1 or less, at the 75th percentile (web.dev).</li>
+    <li><b>Accessibility is theme markup:</b> real labels, 4.5:1 text contrast, visible focus, landmarks and a skip link.</li>
+    <li><b>Most compromises are ordinary:</b> unpatched or abandoned plugins and weak credentials. Updates, fewer plugins, strong credentials with two-step authentication, least-privilege roles and tested backups cover most of it.</li>
+    <li><b>In code:</b> validate input, escape late, and protect actions with a nonce plus a capability check. A nonce alone is not authorisation.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> <a href="https://web.dev/articles/vitals" target="_blank">web.dev: Core Web Vitals</a> · <a href="https://developer.wordpress.org/advanced-administration/performance/optimization/" target="_blank">WordPress: optimization</a> · <a href="https://www.w3.org/WAI/WCAG22/quickref/" target="_blank">W3C WCAG 2.2 quick reference</a> · <a href="https://developer.wordpress.org/advanced-administration/security/hardening/" target="_blank">WordPress: hardening</a> · <a href="https://developer.wordpress.org/apis/security/" target="_blank">Common APIs: security</a> · <a href="https://developer.wordpress.org/apis/security/nonces/" target="_blank">Nonces</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> Read for this lesson: the web.dev vitals page, the WordPress optimization and hardening pages, the security overview and nonce pages, and the start of the WCAG quick reference. From background knowledge, not confirmed on a page I read: the WCAG levels for labels, focus visible and bypass blocks, the layered cache model's simplifications, the claim that fonts and late-injected content shift layout, and where caching plugins skip logged-in visitors. My own synthesis: every widget model, the made-up work figures, the attack-route table and the audit checks.</p>
+
+  <footer>Performance, Accessibility and Security · WordPress for Front-End &amp; UI Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const g=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* generic one-question-at-a-time quiz */
+function makeQuiz(P){
+  const box=g(P.box), nx=g(P.next), sc=g(P.score); let i=0,score=0,done=false;
+  function show(){
+    if(i>=P.Q.length){ box.innerHTML='<div class="tg">DONE</div><div class="say" style="border-left-color:var(--forest)">You matched '+score+' of '+P.Q.length+'.</div><p class="small">'+P.end+'</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{i=0;score=0;nx.textContent='Next';nx.onclick=next;show();}; sc.textContent=''; return; }
+    const q=P.Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tg">'+P.label+' '+(i+1)+' / '+P.Q.length+'</div><div class="say">'+esc(q[0])+'</div><div class="opts">'+P.O.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'" data-testid="'+P.tid+'-option-'+k+'">'+esc(o)+'</button>').join('')+'</div><div class="why" data-testid="'+P.tid+'-why"></div>';
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); box.querySelector('.why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+esc(q[2]); nx.disabled=false; sc.textContent=score+' of '+(i+1)+' matched'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+}
+
+/* ---------- cache explorer ---------- */
+(function(){
+  const ids=['ca-res','ca-who','ca-b','ca-c','ca-p','ca-o'];
+  function draw(){
+    const res=g('ca-res').value, who=g('ca-who').value, b=g('ca-b').checked, c=g('ca-c').checked, p=g('ca-p').checked, o=g('ca-o').checked;
+    const img=res==='img', editor=who==='editor', back=who==='back';
+    let hit='php', work=10;
+    if(img){
+      if(b&&back){ hit='browser'; work=0; } else if(c){ hit='cdn'; work=1; } else { hit='server'; work=3; }
+    } else {
+      if(p&&!editor){ hit='page'; work=2; } else { hit='php'; work=o?6:10; }
+    }
+    const N=[['browser','Browser cache'],['cdn','CDN'],['page','Page cache'],['server','Web server file'],['php','WordPress PHP'],['object','Object cache'],['db','Database']];
+    const on={browser:b,cdn:c&&img,page:p&&!img,server:true,php:true,object:o,db:true};
+    const order=['browser','cdn','page','server','php','object','db'];
+    const stopAt=order.indexOf(hit);
+    g('ca-chain').innerHTML=N.map((n,k)=>{
+      let cls='pf-node';
+      if(k===stopAt) cls+=' hit'; else if(k>stopAt) cls+=' skip'; else if(!on[n[0]]) cls+=' off'; else cls+=' pass';
+      const note= k===stopAt?' (answers)':(k>stopAt?'':(on[n[0]]?' (miss)':' (off)'));
+      return '<div class="'+cls+'" data-testid="ca-node-'+n[0]+'">'+n[1]+note+'</div>';
+    }).join('');
+    const names={browser:'the visitor browser, with no request sent',cdn:'the CDN edge',page:'the page cache, without running PHP',server:'the web server, from disk',php:'WordPress itself (PHP builds the page)'};
+    let msg='Answered by '+names[hit]+'. Relative work: '+work+' out of 10 (illustrative).';
+    if(hit==='php') msg+=' '+(o?'The object cache lets PHP skip some database queries.':'Every query goes to the database.');
+    if(!img&&editor&&p) msg+=' A logged-in editor skips the page cache in this model, so editing always shows fresh content.';
+    if(img&&back&&!b) msg+=' Browser caching is off, so the returning visitor asks again.';
+    g('ca-out').textContent=msg;
+  }
+  ids.forEach(id=>g(id).onchange=draw); draw();
+})();
+
+/* ---------- vitals matcher ---------- */
+makeQuiz({box:'cw-box',next:'cw-next',score:'cw-score',tid:'cw',label:'PROBLEM',
+  O:['LCP (loading)','INP (responsiveness)','CLS (visual stability)'],
+  end:'Loading, responsiveness and stability are separate problems with separate fixes.',
+  Q:[
+    ['The main banner photo is a very large file that appears late, and it is the biggest thing on screen.',0,'LCP. The largest element paints late. Resize and compress the image and serve a modern format.'],
+    ['Images are printed without width and height attributes, so the text jumps down when each one loads.',2,'CLS. The browser cannot reserve space. Declaring dimensions reserves it.'],
+    ['Tapping the menu button waits almost half a second because a large script is busy.',1,'INP. The page is slow to respond to input. Load less script, split long tasks, and enqueue scripts only on the pages that need them.'],
+    ['A cookie banner is injected above the content after load and pushes everything down.',2,'CLS. Late content that shifts what is already visible counts against stability. Reserve its space or place it where it does not shift content.'],
+    ['The server takes a long time to send the HTML, so everything starts late.',0,'LCP, mainly. A slow first response delays every paint. A page cache is the usual fix, as in section 1.'],
+    ['A web font arrives late and the text reflows when it swaps in.',2,'CLS can result from the swap, and LCP too if the largest element is text. Preload the key font and choose a close fallback. This is background knowledge rather than from the web.dev page I read.']
+  ]});
+
+/* ---------- accessibility lab ---------- */
+(function(){
+  const T={label:g('ac-label'),low:g('ac-low'),focus:g('ac-focus'),land:g('ac-land')};
+  function draw(){
+    const nl=T.label.checked, lo=T.low.checked, nf=T.focus.checked, nd=T.land.checked;
+    const f=g('ac-form'); f.className='pf-form'+(lo?' lowc':'')+(nf?' nofocus':'');
+    const skip= nd?'':'<a href="#ac-name" data-testid="ac-skip">Skip to form</a>';
+    const navTag= nd?'div':'nav', mainTag= nd?'div':'main';
+    f.innerHTML='<'+navTag+' style="display:flex;gap:12px;margin-bottom:10px">'+skip+'<a href="#ac-name">Home</a><a href="#ac-name">About</a><a href="#ac-name">Contact</a></'+navTag+'><'+mainTag+'>'
+      +(nl?'<span class="ph">Your name</span>':'<label for="ac-name">Your name</label>')+'<input type="text" id="ac-name" data-testid="ac-name-input" placeholder="Your name">'
+      +(nl?'<span class="ph">Email</span>':'<label for="ac-mail">Email</label>')+'<input type="email" id="ac-mail" data-testid="ac-mail-input" placeholder="Email">'
+      +'<button type="button" class="btn" data-testid="ac-send">Send</button></'+mainTag+'>';
+    const rows=[
+      [!nl,'Fields have real labels','WCAG 1.3.1 / 3.3.2: a placeholder disappears when typing and is not a reliable label.'],
+      [!lo,'Text contrast is at least 4.5:1','WCAG 1.4.3 (Level AA): 4.5:1 for normal text, 3:1 for large text.'],
+      [!nf,'Keyboard focus is visible','WCAG 2.4.7: keyboard users must see where they are. Never remove the outline without a replacement.'],
+      [!nd,'Landmarks and a skip link exist','WCAG 2.4.1: a way to bypass repeated blocks. In a theme: nav and main elements, plus a skip link.']
+    ];
+    let pass=0; g('ac-list').innerHTML=rows.map((r,k)=>{ if(r[0]) pass++; return '<li data-testid="ac-check-'+k+'"><span class="mk '+(r[0]?'ok':'no')+'">'+(r[0]?'Pass':'Fail')+'</span><span><b>'+r[1]+'.</b> '+(r[0]?'':r[2])+'</span></li>'; }).join('');
+    g('ac-note').textContent= pass===4 ? 'All four checks pass. Real audits cover far more; this is the start.' : pass+' of 4 pass. Each failure is a one-line theme fix, but only if someone looks.';
+  }
+  Object.keys(T).forEach(k=>T[k].onchange=draw); draw();
+})();
+
+/* ---------- attack-path explorer ---------- */
+(function(){
+  const D=[
+    ['upd','Updates applied promptly'],
+    ['rm','Unused and abandoned plugins removed'],
+    ['pw','Strong, unique credentials'],
+    ['tf','Two-step authentication'],
+    ['roles','Narrow role for each person'],
+    ['bk','Tested backup kept off the server']
+  ];
+  const on={upd:true,rm:true,pw:true,tf:false,roles:false,bk:false};
+  const box=g('at-def');
+  box.innerHTML=D.map(d=>'<label class="chk"><input type="checkbox" data-d="'+d[0]+'" data-testid="at-def-'+d[0]+'"'+(on[d[0]]?' checked':'')+'> '+d[1]+'</label>').join('');
+  const R=[
+    {n:'A plugin or theme with a known, fixed flaw that was never updated',why:'Updates close it. Removing what you do not use shrinks it.',closed:()=>on.upd&&on.rm,reduced:()=>on.upd||on.rm},
+    {n:'A plugin that its author has abandoned, so no fix will ever come',why:'Only removing or replacing it closes it. Updates cannot help.',closed:()=>on.rm,reduced:()=>false},
+    {n:'A weak or reused password that someone else can work out',why:'Strong unique passwords close most of it. Two-step authentication covers the rest.',closed:()=>on.pw&&on.tf,reduced:()=>on.pw||on.tf},
+    {n:'One low-level account falling into the wrong hands',why:'Least-privilege roles limit what that account can do. Two-step authentication makes it harder to happen.',closed:()=>on.roles&&on.tf,reduced:()=>on.roles||on.tf}
+  ];
+  function status(r){
+    if(r.closed()) return ['Closed','ok']; if(r.reduced()) return ['Reduced','mid']; return ['Open','no'];
+  }
+  function draw(){
+    let open=0;
+    g('at-rows').innerHTML=R.map((r,i)=>{ const s=status(r); if(s[1]==='no') open++; return '<tr data-testid="at-route-'+i+'"><td>'+esc(r.n)+'</td><td><span class="pf-st '+s[1]+'">'+s[0]+'</span></td><td>'+esc(r.why)+'</td></tr>'; }).join('');
+    const out=g('at-out');
+    if(open===0) out.textContent='Every route is closed or reduced. Keep the habits going, because each one decays if nobody renews it.';
+    else out.textContent=(on.bk?'You have a tested backup off the server, so recovery means restoring a clean copy, finding the cause, and then fixing it.':'There is no tested backup off the server. Recovery now means cleaning or rebuilding by hand, and you cannot be sure the clean-up is complete.')+' '+open+' route'+(open===1?' is':'s are')+' still open.';
+  }
+  box.querySelectorAll('input').forEach(c=>c.onchange=()=>{ on[c.dataset.d]=c.checked; draw(); }); draw();
+})();
+
+/* ---------- habit picker ---------- */
+makeQuiz({box:'hb-box',next:'hb-next',score:'hb-score',tid:'hb',label:'SITUATION',
+  O:['Validate and sanitise','Escape on output','Nonce','Capability check'],
+  end:'Validate on the way in, escape on the way out, and authorise every action.',
+  Q:[
+    ['A visitor submits a form and you are about to save one of the values.',0,'Validate it (reject what is not expected) and sanitise what you keep, before saving.'],
+    ['A template prints a value that was saved earlier in the database.',1,'Escape at the moment of output, with the function that fits the place, as in lesson 2.1.'],
+    ['A delete link in the admin could be triggered by a forged request from another site.',2,'A nonce in the link helps protect the request from forgery.'],
+    ['Only editors should be able to run a bulk action in the admin.',3,'Check the capability with current_user_can(). A nonce is not an access check.'],
+    ['A colleague says the nonce in the form already proves the person is allowed to do it.',3,'No. The handbook says not to rely on nonces for authorisation. Add a capability check.']
+  ]});
+
+/* ---------- audit worksheet ---------- */
+(function(){
+  const G=[
+    ['Speed',['A page cache is active','Images are sized and compressed','Scripts load only where needed','PHP and WordPress are on current versions']],
+    ['Accessibility',['Every field has a label','Text contrast is at least 4.5:1','Keyboard focus is visible','Landmarks and a skip link exist']],
+    ['Safety',['Core, themes and plugins are updated','Unused plugins are deleted','Strong credentials with two-step authentication','A tested backup is kept off the server']]
+  ];
+  const st=G.map(x=>x[1].map(()=>false));
+  g('wk-groups').innerHTML=G.map((x,gi)=>'<div class="pf-box"><h5>'+x[0].toUpperCase()+'</h5>'+x[1].map((t,ti)=>'<label class="chk" style="margin:4px 0"><input type="checkbox" data-g="'+gi+'" data-t="'+ti+'" data-testid="wk-'+x[0].toLowerCase()+'-'+ti+'"> '+t+'</label>').join('')+'</div>').join('');
+  function draw(){
+    let tot=0, worst=-1, worstv=9;
+    g('wk-meter').innerHTML=G.map((x,gi)=>{ const n=st[gi].filter(Boolean).length; tot+=n; if(n<worstv){worstv=n;worst=gi;} return '<div class="r"><span>'+x[0]+'</span><div class="pf-bar"><i style="width:'+(n*25)+'%"></i></div><span>'+n+' / 4</span></div>'; }).join('');
+    g('wk-total').textContent=tot+' / 12';
+    g('wk-next').textContent= tot===12 ? 'Baseline met. Schedule the next review.' : 'Start with '+G[worst][0]+' (lowest score): '+G[worst][1][st[worst].indexOf(false)]+'.';
+  }
+  g('wk-groups').querySelectorAll('input').forEach(c=>c.onchange=()=>{ st[+c.dataset.g][+c.dataset.t]=c.checked; draw(); }); draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

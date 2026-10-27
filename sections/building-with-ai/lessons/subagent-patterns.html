@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sub-Agent Patterns</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{
+    --accent:var(--vermil); --accent-soft:var(--vermil-soft);
+    --panel:var(--surface); --panel2:var(--paper-2); --border:var(--line);
+    --text:var(--ink); --muted:var(--ink-mute); --accent2:var(--forest); --code-bg:#353d5e;
+  }
+  /* pattern gallery */
+  .pat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:18px 0;}
+  @media(max-width:760px){.pat-grid{grid-template-columns:repeat(2,1fr);}}
+  .pat-tile{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px;
+    cursor:pointer; text-align:center; transition:transform .12s ease, border-color .12s; box-shadow:var(--shadow-sm);}
+  .pat-tile:hover{transform:translateY(-3px); border-color:var(--accent);}
+  .pat-tile.sel{border-color:var(--accent); background:var(--accent-soft);}
+  .pat-tile .mini{height:56px; margin-bottom:8px;}
+  .pat-tile .pname{font-family:var(--font-ui); font-size:.8rem; font-weight:600; color:var(--ink);}
+  .pat-detail{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; margin-top:14px; box-shadow:var(--shadow-sm);}
+  .pat-detail h3{margin-top:0;}
+  .pat-diagram{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:16px; margin:12px 0; text-align:center;}
+  .pc-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+  @media(max-width:700px){.pc-grid{grid-template-columns:1fr;}}
+  .pros,.cons{border-radius:10px; padding:12px 14px; font-family:var(--font-ui); font-size:.86rem;}
+  .pros{background:var(--good-soft); border:1px solid rgba(67,122,88,.3);}
+  .cons{background:var(--bad-soft); border:1px solid rgba(179,92,92,.3);}
+  .pros b{color:var(--good);} .cons b{color:var(--bad);}
+  .pros ul,.cons ul{margin:8px 0 0; padding-left:18px;} .pros li,.cons li{margin-bottom:4px; color:var(--ink-soft);}
+  .whenbox{font-family:var(--font-ui); font-size:.9rem; color:var(--ink-mute); margin-top:10px;}
+  .whenbox b{color:var(--ink);}
+
+  /* token bar chart */
+  .bars{display:flex; align-items:flex-end; gap:26px; height:220px; padding:16px 10px 0; margin:16px 0;}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .bar{width:70%; border-radius:8px 8px 0 0; height:0; transition:height 1s cubic-bezier(.2,.8,.2,1); position:relative;
+    background:linear-gradient(180deg,var(--cobalt),#3f5f96);}
+  .bar.b2{background:linear-gradient(180deg,var(--ochre),#a98636);}
+  .bar.b3{background:linear-gradient(180deg,var(--vermil),#9a4c4c);}
+  .bar .val{position:absolute; top:-24px; left:0; right:0; text-align:center; font-family:var(--font-ui); font-size:.85rem; font-weight:700; color:var(--ink);}
+  .bar-label{margin-top:10px; font-family:var(--font-ui); font-size:.8rem; color:var(--ink-mute); text-align:center;}
+
+  /* effort ladder */
+  .ladder{display:flex; flex-direction:column; gap:8px; margin:16px 0;}
+  .rung{display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; padding:12px 16px; font-family:var(--font-ui); font-size:.9rem;}
+  .rung .step{width:34px; height:34px; border-radius:8px; background:var(--cobalt); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; flex:none;}
+  .rung.r2 .step{background:var(--ochre);} .rung.r3 .step{background:var(--vermil);}
+
+  /* flappy strip */
+  .strip{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0;}
+  @media(max-width:700px){.strip{grid-template-columns:1fr;}}
+  .panel-x{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; text-align:center; box-shadow:var(--shadow-sm);}
+  .panel-x .cap{font-family:var(--font-ui); font-size:.84rem; color:var(--ink-mute); margin-top:8px;}
+  .panel-x .big-emoji{font-size:1.8rem;}
+
+  /* decision map */
+  .map{position:relative; height:360px; background:var(--paper-2); border:1px solid var(--line); border-radius:14px; margin:18px 0; overflow:hidden;}
+  .map .axis-x{position:absolute; bottom:14px; left:0; right:0; text-align:center; font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute);}
+  .map .axis-y{position:absolute; left:12px; top:0; bottom:0; writing-mode:vertical-rl; transform:rotate(180deg);
+    display:flex; align-items:center; font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute);}
+  .map .quad{position:absolute; font-family:var(--font-ui); font-size:.7rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.05em;}
+  .dot-item{position:absolute; transform:translate(-50%,50%); background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:20px; padding:5px 11px; font-family:var(--font-ui); font-size:.78rem; white-space:nowrap; box-shadow:var(--shadow-sm);}
+  .dot-item.hot{border-color:var(--forest); color:var(--forest);}
+  .dot-item.cold{border-color:var(--cobalt); color:var(--cobalt);}
+  .map .divider{position:absolute; background:var(--line-strong);}
+
+  .recipe .rtag{background:var(--accent-soft); color:var(--accent); border-color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sub-Agent Patterns</h1>
+  <p class="subtitle">Coordinating many agents from one parent thread — for research and prompt execution, not just coding.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What "orchestration" actually means</a></li>
+      <li><a href="#sec2">The pattern gallery (interactive)</a></li>
+      <li><a href="#sec3">Anthropic's design principles</a></li>
+      <li><a href="#sec4">The counter-case: when NOT to</a></li>
+      <li><a href="#sec5">A decision map</a></li>
+      <li><a href="#sec6">Recipes you can steal</a></li>
+      <li><a href="#sec7">Sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What "orchestration" actually means</h2>
+  <p class="lead">"Multi-agent" is not one thing. Before the patterns, hold onto one distinction that runs through everything: <strong>who decides the flow?</strong></p>
+  <div class="grid2">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">🧠 Orchestrated by the LLM</h3>
+      <p style="font-size:.95rem;">You hand a model tools and other agents, and let <em>it</em> decide who runs, in what order, and when to stop. Flexible, handles open-ended work &mdash; but less predictable.</p>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">⚙️ Orchestrated by code</h3>
+      <p style="font-size:.95rem;">You define the flow in software: route on outputs, chain step to step, loop an evaluator, fan out in parallel. More deterministic in cost, speed, and behavior.</p>
+    </div>
+  </div>
+  <div class="analogy">
+    <strong>The one rule everyone agrees on:</strong> start with the <em>simplest</em> thing that could work &mdash; usually a single agent with good tools &mdash; and only add multi-agent complexity when it <em>demonstrably</em> improves the outcome. Anthropic, Cognition, OpenAI and LangChain all say versions of this. Multi-agent is a cost you pay for a specific benefit, not a default.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> The pattern gallery</h2>
+  <p>Click any pattern to see its topology, when to reach for it, and the honest pros and cons. Blue nodes are orchestrators/leads; green are workers/specialists.</p>
+  <div class="pat-grid" id="pat-grid"></div>
+  <div class="pat-detail" id="pat-detail"></div>
+
+  <h2 id="sec3"><span class="num">3</span> Anthropic's design principles</h2>
+  <p>Anthropic's <em>"How we built our multi-agent research system"</em> (June 2025) is the most detailed production account we have. It uses an <strong>orchestrator-worker</strong> setup: a lead (Opus) plans and spawns worker subagents (Sonnet) that search in their own context windows and return condensed findings. It beat single-agent Opus by <strong>90.2%</strong> on their internal research eval.</p>
+
+  <h3>The central tradeoff: tokens</h3>
+  <p>Multi-agent systems are, bluntly, a way to <em>spend more tokens productively</em> &mdash; in parallel, across separate context windows. That only pays off when the task is valuable enough to justify the burn.</p>
+  <div class="card">
+    <div class="bars" id="token-bars">
+      <div class="bar-col"><div class="bar b1" data-h="30"><span class="val">1×</span></div><div class="bar-label">Plain chat</div></div>
+      <div class="bar-col"><div class="bar b2" data-h="70"><span class="val">~4×</span></div><div class="bar-label">Single agent<br>(tools + loop)</div></div>
+      <div class="bar-col"><div class="bar b3" data-h="100"><span class="val">~15×</span></div><div class="bar-label">Multi-agent<br>system</div></div>
+    </div>
+    <p style="font-family:var(--font-ui); font-size:.86rem; color:var(--ink-mute); margin:6px 0 0;">In Anthropic's BrowseComp analysis, <b style="color:var(--ink)">token usage alone explained ~80% of the performance variance</b>; adding tool-call count and model choice explained ~95%. Upgrading the model was a bigger lever than doubling the token budget.</p>
+  </div>
+
+  <h3>Scale effort to complexity</h3>
+  <p>Early versions spawned <em>50 subagents for simple queries</em>. The fix was baking explicit effort rules into the orchestrator's prompt:</p>
+  <div class="ladder">
+    <div class="rung"><div class="step">S</div><div><b>Simple fact-finding</b> &mdash; 1 agent, 3&ndash;10 tool calls</div></div>
+    <div class="rung r2"><div class="step">M</div><div><b>Direct comparison</b> &mdash; 2&ndash;4 subagents, 10&ndash;15 calls each</div></div>
+    <div class="rung r3"><div class="step">L</div><div><b>Complex research</b> &mdash; 10+ subagents with clearly divided responsibilities</div></div>
+  </div>
+
+  <h3>The delegation lessons</h3>
+  <p>Vague instructions ("research the semiconductor shortage") caused two subagents to redundantly research 2025 supply chains while a third wandered into the 2021 crisis. The lessons that fixed it:</p>
+  <ul>
+    <li><strong>Give each subagent a full spec:</strong> objective, output format, tool/source guidance, and explicit task boundaries.</li>
+    <li><strong>Start wide, then narrow</strong> &mdash; broad queries first, then progressively focus, like an expert researcher.</li>
+    <li><strong>Parallelize deliberately</strong> &mdash; lead spins up 3&ndash;5 subagents at once, each calling 3+ tools in parallel. Cut research time up to 90% on complex queries.</li>
+    <li><strong>Write big outputs to a filesystem</strong> and pass lightweight <em>references</em> back &mdash; avoid the "game of telephone" of piping everything through the coordinator's context.</li>
+    <li><strong>Save the plan to memory</strong> so it survives context-window truncation past 200K tokens.</li>
+    <li><strong>Verify separately:</strong> a dedicated CitationAgent attributes every claim to a source; an LLM-as-judge rubric (accuracy, citations, completeness, source quality) gates the output.</li>
+  </ul>
+
+  <h2 id="sec4"><span class="num">4</span> The counter-case: when NOT to</h2>
+  <p>One day before Anthropic's post, Cognition published <em>"Don't Build Multi-Agents."</em> It's not a strawman &mdash; it's a sharp, opposed argument, and taking it seriously will make you better at this.</p>
+  <p>Its thesis: <strong>reliability comes from context engineering</strong>, and parallel subagents fragment context. Two principles it says you should rarely violate: <em>share full agent traces, not just messages</em>; and <em>actions carry implicit decisions, and conflicting decisions produce bad results.</em></p>
+
+  <h3>The Flappy Bird failure</h3>
+  <div class="strip">
+    <div class="panel-x"><div class="big-emoji">✂️</div><div class="cap">Task "build Flappy Bird" is split: subagent A does the background + pipes, subagent B does the bird.</div></div>
+    <div class="panel-x"><div class="big-emoji">🎨 🐦</div><div class="cap">A builds a <em>Super Mario</em>-style background; B builds a bird that moves wrong. Neither can see the other's work, so their <b>implicit style decisions conflict</b>.</div></div>
+    <div class="panel-x"><div class="big-emoji">🧩💥</div><div class="cap">The final agent is stuck reconciling two mismatched halves. Even copying the full task to both doesn't help &mdash; they still can't see each other.</div></div>
+  </div>
+  <p>Cognition's prescription: default to a <strong>single-threaded linear agent</strong> (continuous context, no cross-agent conflicts). When it overflows the context window, <em>don't fan out &mdash; compress</em> the history with a dedicated summarizer model.</p>
+
+  <div class="flag">
+    <strong>The reconciliation.</strong> These two posts agree more than they look. Both say context engineering is everything. Both agree tightly-coupled work like most <em>coding</em> is a poor fit for parallel subagents. The real disagreement is narrow: for <b>breadth-first research with genuinely independent sub-questions</b>, fan-out works (Anthropic). For <b>tightly-coupled long tasks</b>, it fails (Cognition). The deciding variable is how independent your subtasks truly are, and how much shared context they need.
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> A decision map</h2>
+  <p>That reconciliation plots onto two axes.</p>
+  <div class="map">
+    <div class="divider" style="left:50%; top:0; bottom:0; width:1px;"></div>
+    <div class="divider" style="top:50%; left:0; right:0; height:1px;"></div>
+    <div class="quad" style="left:16px; top:12px;">single thread + compress</div>
+    <div class="quad" style="right:16px; top:12px;">orchestrator-worker shines</div>
+    <div class="quad" style="left:16px; bottom:40px;">just use one agent</div>
+    <div class="quad" style="right:16px; bottom:40px;">parallel fan-out</div>
+    <div class="dot-item cold" style="left:24%; top:30%;">Most coding</div>
+    <div class="dot-item cold" style="left:30%; top:20%;">Collaborative editing</div>
+    <div class="dot-item hot" style="left:78%; top:26%;">Breadth-first research</div>
+    <div class="dot-item hot" style="left:72%; top:70%;">Fact-gathering across sources</div>
+    <div class="dot-item hot" style="left:80%; top:58%;">Content moderation (voting)</div>
+    <div class="dot-item" style="left:26%; top:72%;">Simple Q&amp;A</div>
+    <div class="axis-x">→ subtask independence (low → high) →</div>
+    <div class="axis-y">→ shared-context need (low → high) →</div>
+  </div>
+  <p style="font-family:var(--font-ui); font-size:.88rem; color:var(--ink-mute);">Green = good fit for splitting into subagents. Blue = keep it in one coherent thread. The top-right corner (independent subtasks, low shared-context need) is exactly where orchestrator-worker earns its 15× token cost.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Recipes you can steal</h2>
+
+  <div class="recipe">
+    <span class="rtag">Breadth-first research</span>
+    <p style="margin:0;">Orchestrator-worker. Best when sub-questions are independent and the task is high-value.</p>
+    <div class="flow">Lead plans → saves plan to memory → spawns 3–5 subagents (each: scoped objective + output format)
+→ subagents search in parallel, return condensed findings → lead synthesizes, spawns more if gaps
+→ CitationAgent attributes claims → LLM-judge rubric gate → deliver</div>
+  </div>
+  <div class="recipe">
+    <span class="rtag">Deep single-topic research</span>
+    <p style="margin:0;">Single-threaded + compression. Best when the topic is deep and interdependent, not broad.</p>
+    <div class="flow">One agent searches iteratively → when context fills, a summarizer compresses
+history into key decisions/findings → agent continues with the compressed context</div>
+  </div>
+  <div class="recipe">
+    <span class="rtag">Report generation</span>
+    <p style="margin:0;">Sequential pipeline + evaluator-optimizer. Best when quality criteria are explicit.</p>
+    <div class="flow">Research → outline (gate: covers the brief?) → draft → evaluator critiques on a rubric
+→ revise → loop until pass or retry-cap</div>
+  </div>
+  <div class="recipe">
+    <span class="rtag">Mixed prompt workloads</span>
+    <p style="margin:0;">Router with model tiering. Best for a stream of differently-shaped requests.</p>
+    <div class="flow">Classify incoming prompt → route (quick-lookup→Haiku · analysis→Sonnet · hard→Opus)
+→ specialist executes → optional critic pass</div>
+  </div>
+  <div class="recipe">
+    <span class="rtag">High-confidence judgment</span>
+    <p style="margin:0;">Voting. Best for contested calls: moderation, vuln flagging, disputed facts.</p>
+    <div class="flow">Run the same eval prompt N times (or N variant prompts) in parallel
+→ aggregate by threshold / majority vote</div>
+  </div>
+
+  <h3>Failure modes to name out loud</h3>
+  <div class="pitfall"><div class="icon">🔁</div><div><b>Compounding errors</b> &mdash; agents are stateful; one bad step derails the run. Add checkpoints, retries, and let the model adapt to tool failures.</div></div>
+  <div class="pitfall"><div class="icon">🧩</div><div><b>Context fragmentation</b> &mdash; parallel agents making conflicting implicit decisions (the Flappy Bird problem).</div></div>
+  <div class="pitfall"><div class="icon">📈</div><div><b>Over-spawning</b> &mdash; 50 agents for a trivial query. Fix with explicit effort-scaling rules.</div></div>
+  <div class="pitfall"><div class="icon">🎲</div><div><b>Non-determinism</b> &mdash; tiny orchestrator-prompt tweaks ripple unpredictably. Needs tracing and end-state (not step-by-step) evaluation.</div></div>
+
+  <h2 id="sec7"><span class="num">7</span> Sources</h2>
+  <p class="src">Anthropic — <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">How we built our multi-agent research system</a> (Jun 2025)</p>
+  <p class="src">Anthropic — <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank">Building Effective Agents</a></p>
+  <p class="src">Cognition (Walden Yan) — <a href="https://cognition.com/blog/dont-build-multi-agents" target="_blank">Don't Build Multi-Agents</a> (Jun 2025)</p>
+  <p class="src">OpenAI — <a href="https://openai.github.io/openai-agents-python/multi_agent/" target="_blank">Agents SDK: Agent orchestration</a> · <a href="https://github.com/openai/swarm" target="_blank">Swarm</a></p>
+  <p class="src">Anthropic — <a href="https://docs.claude.com/en/docs/claude-code/sub-agents" target="_blank">Claude Code: Subagents</a></p>
+  <p class="src">LangGraph patterns — <a href="https://dev.to/focused_dot_io/multi-agent-orchestration-in-langgraph-supervisor-vs-swarm-tradeoffs-and-architecture-1b7e" target="_blank">Supervisor vs Swarm tradeoffs</a> · <a href="https://www.langchain.com/blog/reflection-agents" target="_blank">Reflection agents</a></p>
+  <div class="flag" style="margin-top:16px;">
+    <strong>Accuracy notes.</strong> All quantitative figures (90.2%, 15×, 4×, ~80% variance, effort tiers) are Anthropic's own internal-eval numbers, not independent benchmarks. The Cognition and Anthropic posts landed a day apart, which is why they read like a direct debate.
+  </div>
+
+  <footer>Sub-Agent Patterns · part of your Study Hub</footer>
+</div>
+
+<script>
+/* ---------- pattern data ---------- */
+function svg(inner){ return '<svg viewBox="0 0 260 90" width="100%" height="70" xmlns="http://www.w3.org/2000/svg">'+inner+'</svg>'; }
+const A='#4a6fa8', W='#437a58', L='#7ea6c9', TX='#56628a';
+function node(x,y,c,r){r=r||12;return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+c+'"/>';}
+function line(x1,y1,x2,y2,dash){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+L+'" stroke-width="2"'+(dash?' stroke-dasharray="4 3"':'')+'/>';}
+
+const PATTERNS = [
+  { key:"single", name:"Single agent + tools",
+    mini: svg(node(60,45,A,14)+line(80,45,150,45)+'<rect x="150" y="33" width="24" height="24" rx="4" fill="'+L+'"/><rect x="182" y="33" width="24" height="24" rx="4" fill="'+L+'"/>'),
+    diagram: svg(node(60,45,A,16)+line(82,45,150,30)+line(82,45,150,60)+'<rect x="150" y="20" width="26" height="20" rx="4" fill="'+L+'"/><rect x="150" y="50" width="26" height="20" rx="4" fill="'+L+'"/><text x="60" y="80" fill="'+TX+'" font-size="9" text-anchor="middle">one loop, one context</text>'),
+    when:"Most tasks. Especially anything needing tight coherence, frequent back-and-forth, or a shared evolving context.",
+    ex:"A research query answerable by one agent doing 5–10 sequential searches then writing it up.",
+    pros:["Continuous context — nothing lost between steps","Cheapest, easiest to debug","No conflicting decisions — one decision-maker"],
+    cons:["Bounded by a single context window","Sequential (slow) when work has independent branches","One overloaded prompt degrades across mixed subtasks"] },
+
+  { key:"chain", name:"Prompt chain / pipeline",
+    mini: svg(node(40,45,A)+line(52,45,90,45)+node(102,45,A)+line(114,45,152,45)+node(164,45,A)+line(176,45,214,45)+node(226,45,W)),
+    diagram: svg(node(40,45,A)+line(52,45,88,45)+node(100,45,A)+line(112,45,148,45)+node(160,45,A)+line(172,45,208,45)+node(220,45,W)+'<text x="130" y="80" fill="'+TX+'" font-size="9" text-anchor="middle">each step feeds the next; optional gates between</text>'),
+    when:"The task cleanly decomposes into fixed, ordered steps and you're trading latency for accuracy by making each call easier.",
+    ex:"Research → outline → draft → critique → revise. Or Claude Code chaining a reviewer subagent then an optimizer.",
+    pros:["Predictable, easy to trace","Each step is a focused, higher-accuracy call","Natural checkpoints for validation"],
+    cons:["Higher latency (serial)","Rigid — doesn't adapt to a different task shape","An early error propagates downstream"] },
+
+  { key:"router", name:"Router / supervisor",
+    mini: svg(node(130,20,A)+line(130,32,60,70)+line(130,32,130,70)+line(130,32,200,70)+node(60,72,W,10)+node(130,72,W,10)+node(200,72,W,10)),
+    diagram: svg(node(130,22,A,14)+line(130,36,60,68)+line(130,36,130,68)+line(130,36,200,68)+node(60,70,W,11)+node(130,70,W,11)+node(200,70,W,11)+'<text x="130" y="88" fill="'+TX+'" font-size="9" text-anchor="middle">classify input → route to the right specialist</text>'),
+    when:"Distinct input categories are better handled by separate prompts/tools and classification is reliable. Also for cost routing (cheap model for easy, capable for hard).",
+    ex:"A research assistant routing 'quick lookup' vs 'deep analysis' vs 'analyze this file' to differently-configured agents.",
+    pros:["Clean separation of concerns","Each specialist prompt stays focused","Centralized, visible control flow — easiest multi-agent to debug"],
+    cons:["Misroutes cause silent failures","The supervisor adds a latency + token hop","Only worth it when routing needs real reasoning"] },
+
+  { key:"parallel", name:"Parallel fan-out",
+    mini: svg(node(40,45,A)+line(52,45,110,20)+line(52,45,110,45)+line(52,45,110,70)+node(120,20,W,10)+node(120,45,W,10)+node(120,70,W,10)+line(132,20,200,45)+line(132,45,200,45)+line(132,70,200,45)+node(212,45,A)),
+    diagram: svg(node(36,45,A,13)+line(49,45,108,18)+line(49,45,108,45)+line(49,45,108,72)+node(120,18,W,11)+node(120,45,W,11)+node(120,72,W,11)+line(132,18,198,45)+line(132,45,198,45)+line(132,72,198,45)+node(212,45,A,13)+'<text x="130" y="88" fill="'+TX+'" font-size="9" text-anchor="middle">split (map) → run in parallel → combine (reduce)</text>'),
+    when:"Subtasks are genuinely independent and parallelizable for speed (sectioning), OR you want multiple attempts/perspectives for confidence (voting).",
+    ex:"Sectioning: 'research the auth, DB, and API modules in parallel,' then synthesize. Voting: three prompts screen the same content; flag if any/majority trip.",
+    pros:["Big latency wins","Each subagent gets a clean context window","Voting improves reliability on judgment calls"],
+    cons:["Duplicated work/cost if subtasks overlap","The reduce step is where inconsistencies surface","Many verbose returns can flood the parent's context"] },
+
+  { key:"orch", name:"Orchestrator-worker",
+    mini: svg(node(130,18,A,13)+line(130,31,55,68)+line(130,31,130,68)+line(130,31,205,68)+node(55,70,W,10)+node(130,70,W,10)+node(205,70,W,10)),
+    diagram: svg(node(130,18,A,15)+line(130,33,50,66)+line(130,33,110,66)+line(130,33,170,66)+line(130,33,215,66)+node(50,70,W,10)+node(110,70,W,10)+node(170,70,W,10)+node(215,70,W,10)+'<text x="130" y="88" fill="'+TX+'" font-size="9" text-anchor="middle">lead DYNAMICALLY decides subtasks, then synthesizes</text>'),
+    when:"Open-ended tasks where you can't predict the subtasks in advance; work exceeds one context window; heavy parallelization across independent directions. Anthropic's Research feature.",
+    ex:"'Find all board members of the IT companies in the S&P 500.' Lead decomposes per-company, subagents search in parallel, lead reconciles + citations.",
+    pros:["Adapts subtask shape to the query","Parallelism + separate context windows compress a huge corpus","Beat single-agent Opus by 90.2% on research"],
+    cons:["~15× more tokens than chat — needs high-value tasks","Poor fit where agents must share context (most coding)","Coordination complexity grows fast"] },
+
+  { key:"eval", name:"Evaluator-optimizer",
+    mini: svg(node(80,45,A)+node(180,45,W)+'<path d="M92 40 H168" stroke="'+L+'" stroke-width="2"/><path d="M168 55 H92" stroke="'+L+'" stroke-width="2"/>'),
+    diagram: svg(node(75,45,A,13)+node(185,45,W,13)+'<path d="M90 38 H170" stroke="'+L+'" stroke-width="2"/><path d="M170 52 H90" stroke="'+L+'" stroke-width="2"/><text x="130" y="30" fill="'+TX+'" font-size="8" text-anchor="middle">generate →</text><text x="130" y="66" fill="'+TX+'" font-size="8" text-anchor="middle">← critique</text><text x="130" y="86" fill="'+TX+'" font-size="9" text-anchor="middle">loop until it passes or hits a retry cap</text>'),
+    when:"Clear evaluation criteria exist and iterative refinement measurably helps. Sign of fit: a human articulating feedback would clearly improve the output, and the model can produce that feedback.",
+    ex:"A research report where an evaluator checks factual + citation accuracy, completeness, and source quality, and sends it back for another round if short.",
+    pros:["Substantial quality gains on refinable work","Catches errors a single pass misses","The critic doubles as a verification layer"],
+    cons:["Extra cost/latency per loop","Can loop unproductively without a hard stop","A weak critic caps the ceiling"] },
+
+  { key:"swarm", name:"Handoff / swarm",
+    mini: svg(node(50,45,A)+node(130,45,W)+node(210,45,A)+'<path d="M62 45 H118" stroke="'+L+'" stroke-width="2"/><path d="M142 45 H198" stroke="'+L+'" stroke-width="2"/>'),
+    diagram: svg(node(50,45,A,12)+node(130,30,W,12)+node(210,55,A,12)+'<path d="M61 43 L119 32" stroke="'+L+'" stroke-width="2"/><path d="M141 33 L199 52" stroke="'+L+'" stroke-width="2"/><text x="130" y="86" fill="'+TX+'" font-size="9" text-anchor="middle">no central hub — agents hand control to each other</text>'),
+    when:"Routing is part of the workflow and you want the chosen specialist to OWN the rest of the interaction (e.g. triage → billing specialist replies directly).",
+    ex:"A support/triage flow handing the conversation to a 'refunds' or 'technical' specialist who continues directly. Rarer for pure research.",
+    pros:["Faster than a supervisor (no intermediary hop)","Prompts stay focused per specialist","Instructions swap cleanly on handoff"],
+    cons:["No single point of control — harder to trace/debug","Dispersed decision-making (Cognition's fragility warning)","Choose supervisor if misroutes hurt, swarm if latency hurts"] },
+
+  { key:"network", name:"Group-chat / network",
+    mini: svg(node(80,30,W)+node(180,30,W)+node(80,70,W)+node(180,70,W)+line(92,30,168,30)+line(80,42,80,58)+line(180,42,180,58)+line(92,66,168,34)+line(92,34,168,66)),
+    diagram: svg(node(75,30,W,11)+node(185,30,W,11)+node(75,68,W,11)+node(185,68,W,11)+line(86,30,174,30)+line(75,41,75,57)+line(185,41,185,57)+line(86,64,174,34)+line(86,34,174,64)+'<text x="130" y="88" fill="'+TX+'" font-size="9" text-anchor="middle">many-to-many; a manager may pick who speaks</text>'),
+    when:"Genuinely collaborative problems where diverse personas debating improves the answer, and you accept lower predictability. The least production-proven pattern here.",
+    ex:"A red-team / blue-team debate on a strategy question, or domain experts negotiating a plan.",
+    pros:["Surfaces diverse perspectives","Flexible topology"],
+    cons:["Highest coordination overhead","Hardest to debug; emergent, unpredictable","Cognition explicitly warns against this style in 2025"] },
+
+  { key:"hier", name:"Hierarchical",
+    mini: svg(node(130,16,A,11)+line(130,27,80,44)+line(130,27,180,44)+node(80,46,A,9)+node(180,46,A,9)+line(80,55,55,72)+line(80,55,105,72)+line(180,55,155,72)+line(180,55,205,72)+node(55,74,W,7)+node(105,74,W,7)+node(155,74,W,7)+node(205,74,W,7)),
+    diagram: svg(node(130,16,A,12)+line(130,28,80,44)+line(130,28,180,44)+node(80,46,A,10)+node(180,46,A,10)+line(80,56,55,72)+line(80,56,105,72)+line(180,56,155,72)+line(180,56,205,72)+node(55,74,W,8)+node(105,74,W,8)+node(155,74,W,8)+node(205,74,W,8)+'<text x="130" y="89" fill="'+TX+'" font-size="9" text-anchor="middle">supervisors of supervisors — nest the above</text>'),
+    when:"Very large tasks that decompose into distinct sub-domains, each itself worth delegating. Use only when flatter shapes demonstrably fail.",
+    ex:"A market-research lead delegates to a 'competitors' sub-supervisor and a 'regulatory' sub-supervisor, each spawning its own searchers.",
+    pros:["Manages scale and context","Contains verbose intermediate output at each level"],
+    cons:["Compounds every downside — cost, latency, complexity","Hardest of all to debug"] },
+];
+
+const grid = document.getElementById("pat-grid");
+PATTERNS.forEach((p,i) => {
+  const t = document.createElement("div");
+  t.className = "pat-tile" + (i===0?" sel":"");
+  t.innerHTML = '<div class="mini">'+p.mini+'</div><div class="pname">'+p.name+'</div>';
+  t.addEventListener("click", () => { showPattern(p);
+    document.querySelectorAll(".pat-tile").forEach(x=>x.classList.remove("sel")); t.classList.add("sel"); });
+  grid.appendChild(t);
+});
+function showPattern(p){
+  document.getElementById("pat-detail").innerHTML =
+    '<h3>'+p.name+'</h3>'+
+    '<div class="pat-diagram">'+p.diagram+'</div>'+
+    '<div class="whenbox"><b>When to use:</b> '+p.when+'</div>'+
+    '<div class="whenbox" style="margin-top:8px;"><b>Example (research / prompts):</b> '+p.ex+'</div>'+
+    '<div class="pc-grid">'+
+      '<div class="pros"><b>Pros</b><ul>'+p.pros.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>'+
+      '<div class="cons"><b>Cons</b><ul>'+p.cons.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>'+
+    '</div>';
+}
+showPattern(PATTERNS[0]);
+
+/* ---------- animate token bars on scroll ---------- */
+const barBox = document.getElementById("token-bars");
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){ barBox.querySelectorAll(".bar").forEach(b => { b.style.height = b.dataset.h + "%"; }); io.disconnect(); } });
+}, {threshold:.4});
+io.observe(barBox);
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

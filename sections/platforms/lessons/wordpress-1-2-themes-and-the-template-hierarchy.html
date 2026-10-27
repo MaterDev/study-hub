@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Themes and the Template Hierarchy</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); --accent-text:#2c4d82; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .code{font-family:var(--font-mono); font-size:.76rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 14px; overflow-x:auto; white-space:pre; line-height:1.55;}
+  .code .k{color:#8fb8ff;} .code .s{color:#c3d98a;} .code .n{color:#e0a3d6;} .code .c{color:#8b96d0;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ctl select,.ctl input[type=text]{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:5px 8px; font:600 .8rem var(--font-mono); text-transform:none; letter-spacing:0; width:140px;}
+  .seg{display:flex; gap:0; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .seg button{border:0; background:var(--paper); color:var(--ink); padding:7px 12px; font:700 .78rem var(--font-ui); cursor:pointer; border-right:2px solid var(--outline);} .seg button:last-child{border-right:0;} .seg button.on{background:var(--cobalt); color:#fff;}
+
+  /* trees */
+  .ftree{display:grid; grid-template-columns:minmax(220px,300px) 1fr; gap:14px; margin-top:10px;}
+  @media(max-width:760px){.ftree{grid-template-columns:1fr;}}
+  .files{font-family:var(--font-mono); font-size:.8rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 6px; line-height:1.9;}
+  .files button{display:block; padding:0 10px; border-radius:6px; cursor:pointer; white-space:nowrap; border:0; background:none; color:inherit; font:inherit; text-align:left; width:100%;}
+  .files button:hover{background:rgba(255,255,255,.1);} .files button.on{background:var(--cobalt); color:#fff;} .files .ind{padding-left:22px;}
+  .fdoc{border:2px solid var(--cobalt); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; min-height:150px;}
+  .fdoc h4{margin:0 0 6px; font-family:var(--font-mono); color:var(--accent-text);} .tag{display:inline-block; font-size:.66rem; font-weight:800; padding:2px 7px; border:2px solid var(--outline); border-radius:3px; margin-bottom:6px;}
+  .tag.req{background:var(--vermil-soft);} .tag.opt{background:var(--forest-soft);}
+
+  /* explorer */
+  .hx{display:grid; grid-template-columns:1fr 1.25fr; gap:16px; align-items:start;}
+  @media(max-width:820px){.hx{grid-template-columns:1fr;}}
+  .reqs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+  .rq{font-family:var(--font-ui); font-size:.76rem; font-weight:700; padding:6px 10px; border:2px solid var(--line-strong); border-radius:999px; background:var(--paper); color:var(--ink); cursor:pointer;}
+  .rq.on{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .cands{display:flex; flex-direction:column; gap:6px;}
+  .cand{display:grid; grid-template-columns:28px 1fr auto; gap:10px; align-items:center; border:2px solid var(--line-strong); border-radius:10px; padding:7px 10px; background:var(--paper); font-family:var(--font-mono); font-size:.8rem; color:var(--ink);}
+  .cand .no{font-family:var(--font-pixel); font-size:.5rem; color:var(--ink-mute);} .cand small{font-family:var(--font-ui); font-size:.68rem; color:var(--ink-mute);}
+  .cand.win{border-color:var(--forest); background:var(--forest-soft); font-weight:700;} .cand.skip{opacity:.4;} .cand.miss{color:var(--ink-mute);}
+  .cand input{accent-color:var(--cobalt);}
+  .verdict{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; margin-top:10px; min-height:60px;}
+  .verdict b{color:var(--ink);}
+
+
+  /* explorer guide (hxg-) */
+  .hxg{border:2px dashed var(--cobalt); border-radius:12px; padding:12px 16px; background:var(--cobalt-soft); font-family:var(--font-ui); font-size:.86rem; margin-bottom:14px; color:var(--ink);}
+  .hxg h4{margin:0 0 6px; font-size:.95rem;} .hxg ol{margin:6px 0 8px; padding-left:20px;} .hxg li{margin-bottom:4px;}
+  .hxg .key{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;} .hxg .key span{font-family:var(--font-mono); font-size:.72rem; border:2px solid var(--line-strong); border-radius:6px; padding:2px 8px; background:var(--surface);}
+  .hxg .key .g{border-color:var(--forest); background:var(--forest-soft);} .hxg .key .d{opacity:.55;} .hxg .key .f{opacity:.4;}
+  .hxg details{margin-top:6px;} .hxg summary{cursor:pointer; font-weight:800;}
+
+  /* child vs parent differentiation (who-) */
+  .wbadge{display:inline-block; font-family:var(--font-pixel); font-size:.42rem; letter-spacing:.04em; padding:3px 6px; border:2px solid var(--outline); border-radius:3px; margin-right:6px; color:#fff;}
+  .wbadge.c{background:var(--plum);} .wbadge.p{background:var(--cobalt);}
+  .cand.isc{border-left:8px solid var(--plum);} .cand.isp{border-left:8px solid var(--cobalt);}
+  .cand .pth{display:block; font-family:var(--font-mono); font-size:.74rem; word-break:break-all;} .cand .pth b{color:var(--ink);} .cand .pth .fd{color:var(--ink-mute);}
+  .folders{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 14px; font-family:var(--font-ui);} @media(max-width:700px){.folders{grid-template-columns:1fr;}}
+  .fold{border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--paper); font-size:.8rem; color:var(--ink);}
+  .fold.c{border-color:var(--plum); background:var(--plum-soft);} .fold.p{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .fold b{display:block; font-family:var(--font-mono); font-size:.8rem; margin-bottom:3px;} .fold > span:not(.wbadge){display:block; font-family:var(--font-mono); font-size:.72rem; color:var(--ink-soft);}
+  .twocol{display:grid; grid-template-columns:1fr 1fr; gap:14px;} @media(max-width:760px){.twocol{grid-template-columns:1fr;}}
+  .cand.p2{grid-template-columns:28px 1fr auto auto;}
+
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tg{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .themefiles{font-family:var(--font-mono); font-size:.76rem; background:var(--paper-2); border:2px solid var(--outline); border-radius:8px; padding:8px 12px; margin-bottom:10px; color:var(--ink);}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .8rem var(--font-mono); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--cobalt);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em; font-family:var(--font-ui);} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+  .check{display:flex; gap:6px; align-items:center; font-family:var(--font-mono); font-size:.76rem; color:var(--ink);} .check input{accent-color:var(--cobalt);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Themes and the Template Hierarchy</h1>
+  <p class="subtitle">What a theme is made of, and the rule WordPress uses to decide which of your template files renders a given page: the map you consult every time you ask "where is this rendered?"</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What a theme is made of (interactive)</a></li>
+      <li><a href="#sec2">The template hierarchy explorer (interactive)</a></li>
+      <li><a href="#sec3">Template parts and get_template_part() (interactive)</a></li>
+      <li><a href="#sec4">functions.php and enqueuing assets (interactive)</a></li>
+      <li><a href="#sec5">Child themes: who wins? (interactive)</a></li>
+      <li><a href="#sec6">Detective practice (interactive)</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What a theme is made of</h2>
+  <p class="lead">A theme is a folder in <code class="inline">wp-content/themes/</code> that controls how the site looks and which template renders each kind of page. There are two main shapes. <strong>Classic themes</strong> are PHP: template files, a <code class="inline">functions.php</code>, and the loop. <strong>Block themes</strong> describe templates as HTML made of blocks, configured through <code class="inline">theme.json</code>. You will meet both, and this course is code-first, so it concentrates on classic themes and treats block themes as something to recognise. Switch the view and click through.</p>
+  <div class="stage" data-testid="theme-anatomy">
+    <div class="seg" id="kindseg"><button type="button" data-k="classic" class="on" data-testid="kind-classic">Classic theme</button><button type="button" data-k="block" data-testid="kind-block">Block theme</button></div>
+    <div class="ftree"><div class="files" id="tfiles"></div><div class="fdoc" id="tdoc" data-testid="theme-doc"></div></div>
+  </div>
+  <p class="small">You will also hear "hybrid theme" for a classic theme that adopts some block-theme features. The documentation used for this lesson doesn't define it, so check the current handbook before leaning on the term.</p>
+
+  <h2 id="sec2"><span class="num">2</span> The template hierarchy explorer</h2>
+  <p>When a request arrives, WordPress reads the query to work out what kind of page it is (a single post, a category archive, a search), then looks in your theme for template files with matching names, <strong>from most specific to most general</strong>, and uses the first one it finds. If nothing matches, it falls back to <code class="inline">index.php</code>, the only template every theme must have. Pick a kind of request and tick the files your theme has. The winner is highlighted.</p>
+  <div class="stage" data-testid="hierarchy-explorer">
+    <div class="hxg" data-testid="explorer-guide">
+      <h4>How to use this explorer</h4>
+      <ol>
+        <li><b>Pick a kind of page</b> from the buttons. A "single" is one individual entry, such as one blog post or one book.</li>
+        <li><b>Fill in the boxes</b> that appear (the post type, the slug and so on). They change the file names.</li>
+        <li><b>Tick the files your theme has.</b> Each row is a file name WordPress looks for. Start with the presets if you are unsure.</li>
+        <li><b>Read the green row.</b> It is the file WordPress uses. The sentence underneath explains why.</li>
+      </ol>
+      <div class="key"><span class="g">green: the file that wins</span><span class="d">dimmed: not in your theme, skipped</span><span class="f">faded: never reached</span></div>
+      <details><summary>Try this with "Single post / custom post type"</summary>
+        <ol>
+          <li>Choose <b>Only index.php</b>. Every single entry uses index.php, because nothing more specific exists.</li>
+          <li>Tick <b>single.php</b>. Now single.php wins for every post and every book.</li>
+          <li>Also tick <b>single-book.php</b> (type "book"). Books use that file, while ordinary posts still use single.php.</li>
+        </ol>
+        The specific file only overrides the general one where you need a different look.
+      </details>
+    </div>
+    <div class="reqs" id="reqs"></div>
+    <div class="row" id="params"></div>
+    <div class="hx">
+      <div>
+        <div class="small" style="margin-bottom:6px"><b>Priority order</b> (tick the files your theme contains)</div>
+        <div class="cands" id="cands"></div>
+      </div>
+      <div>
+        <div class="row" style="margin-top:0"><button class="btn sec" id="pre-min" data-testid="preset-min">Only index.php</button><button class="btn sec" id="pre-typ" data-testid="preset-typical">A typical theme</button><button class="btn sec" id="pre-rich" data-testid="preset-rich">Lots of specific files</button></div>
+        <div class="row"><label class="check"><input type="checkbox" id="blockview" data-testid="block-view"> show as a block theme (.html in templates/)</label></div>
+        <div class="verdict" id="verdict" data-testid="hx-verdict"></div>
+      </div>
+    </div>
+  </div>
+  <div class="analogy">The hierarchy is a chain of fallbacks. Specific files (<code class="inline">category-news.php</code>) beat group files (<code class="inline">category.php</code>), which beat general ones (<code class="inline">archive.php</code>), which beat <code class="inline">index.php</code>. A good theme stays small by relying on the general files and adds specific ones only where a page genuinely differs.</div>
+
+  <div class="flag" data-testid="who-decides"><b>Who decides the order?</b> WordPress itself, not your files. The priority lists are built into WordPress core: for each kind of request, core builds the list of file names, then looks for each one in turn, in the child theme first and then the parent theme, and uses the first it finds. Nothing inside a template file says "I rank above that one." Your only part is the file name: naming a file the way core expects is how you opt in. (A page's custom template, chosen in the editor through a "Template Name" comment at the top of the file, is the one exception, because the page itself points to it. Developers can also change the lists with filters, but that is an advanced topic.)</div>
+
+  <h2 id="sec3"><span class="num">3</span> Template parts and <code class="inline">get_template_part()</code></h2>
+  <p>Repeated chunks (a card, a header, a loop item) live in separate files and are pulled in with <code class="inline">get_template_part( $slug, $name, $args )</code>. It looks for <code class="inline">{slug}-{name}.php</code> first, then <code class="inline">{slug}.php</code>, and loads the first it finds. If neither exists it quietly does nothing and returns <code class="inline">false</code>, so a typo fails silently. Since WordPress 5.5 the <code class="inline">$args</code> array is available inside the part. It is for classic themes; block themes use their own template-part mechanism. A commonly cited lookup order when a child theme is active is shown below, but it comes from a user note on the reference page, not the official description.</p>
+  <div class="stage" data-testid="template-part-tester">
+    <div class="small" style="margin-bottom:6px">When a child theme is active, two theme folders sit side by side in <code class="inline">wp-content/themes/</code>. The file names inside them can be identical; <b>the folder is what differs</b>.</div>
+    <div class="folders" data-testid="tp-folders">
+      <div class="fold c"><span class="wbadge c">CHILD</span><b>themes/my-child/</b><span>the active theme: checked first</span></div>
+      <div class="fold p"><span class="wbadge p">PARENT</span><b>themes/my-parent/</b><span>the theme the child extends: checked second</span></div>
+    </div>
+    <div class="row"><label class="ctl">slug<input type="text" id="tp-slug" value="template-parts/card" data-testid="tp-slug"></label><label class="ctl">name<input type="text" id="tp-name" value="event" data-testid="tp-name"></label></div>
+    <div class="code" id="tp-call" data-testid="tp-call"></div>
+    <div class="small" style="margin:10px 0 6px"><b>Search order</b> (tick the files that exist)</div>
+    <div class="cands" id="tp-cands"></div>
+    <div class="verdict" id="tp-verdict" data-testid="tp-verdict"></div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> functions.php and enqueuing assets</h2>
+  <p><code class="inline">functions.php</code> behaves like a plugin that belongs to your theme. Only the <b>active</b> theme's file runs, and it loads after the plugin files. Typical contents: a setup function hooked to <code class="inline">after_setup_theme</code> that calls <code class="inline">add_theme_support()</code>, registers navigation menus and loads translations, plus your own hooks and helper functions. The handbook's guidance on the plugin question matches the code-placement idea from the last lesson: features that should exist whatever the site looks like belong in a plugin, because theme features vanish when the theme is switched.</p>
+  <p>The most common job in it is adding CSS and JavaScript. You <b>enqueue</b> them on the <code class="inline">wp_enqueue_scripts</code> hook instead of hard-coding <code class="inline">&lt;link&gt;</code> and <code class="inline">&lt;script&gt;</code> tags into templates, so WordPress can manage load order, avoid duplicates and resolve dependencies. Build a call:</p>
+  <div class="stage" data-testid="enqueue-builder">
+    <div class="row">
+      <label class="ctl">asset<select id="q-type" data-testid="q-type"><option value="style">stylesheet</option><option value="script">script</option></select></label>
+      <label class="ctl">handle<input type="text" id="q-handle" value="mytheme-main" data-testid="q-handle"></label>
+      <label class="ctl">depends on<select id="q-dep" data-testid="q-deps"><option value="">nothing</option><option value="jquery">jquery</option><option value="mytheme-style">mytheme-style</option></select></label>
+      <label class="ctl" id="q-foot-w">footer?<select id="q-foot" data-testid="q-footer"><option value="false">head</option><option value="true" selected>footer</option></select></label>
+      <label class="ctl" id="q-strat-w">strategy<select id="q-strat" data-testid="q-strategy"><option value="">default</option><option value="defer" selected>defer</option><option value="async">async</option></select></label>
+    </div>
+    <div class="code" id="q-code" data-testid="q-code"></div>
+    <div class="verdict" id="q-note" data-testid="q-note"></div>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Child themes: who wins?</h2>
+  <p>A <b>child theme</b> extends a parent so you can change it without editing its files, and your changes survive parent updates. The minimum is a <code class="inline">style.css</code> whose header has a <code class="inline">Template</code> field matching the parent's folder name exactly; <code class="inline">functions.php</code> is optional. Two rules matter. For templates, <b>a child file with the same name overrides the parent's</b>, but a more specific template in the parent still beats a more general one in the child, because the hierarchy order comes first. For <code class="inline">functions.php</code>, the child's file loads <em>just before</em> the parent's and does not replace it, so never copy parent functions into the child: duplicate function names cause fatal errors. Tick which theme has each file:</p>
+  <div class="stage" data-testid="child-sim">
+    <div class="row"><label class="ctl">request<select id="cs-req" data-testid="cs-request"><option value="category">Category archive (slug: news)</option><option value="page">Page (slug: about)</option><option value="single">Single post (slug: hello)</option></select></label><span class="small">Tick which theme has each file. <span class="wbadge p" style="margin:0">PARENT</span> is <code class="inline">themes/my-parent/</code>; <span class="wbadge c" style="margin:0">CHILD</span> is <code class="inline">themes/my-child/</code>.</span></div>
+    <div class="cands" id="cs-cands"></div>
+    <div class="verdict" id="cs-verdict" data-testid="cs-verdict"></div>
+    <p class="small" style="margin:8px 0 0">For parent styles there is no single fixed method: if the parent loads its own stylesheet and the child's, the child needs no extra code; otherwise you enqueue the parent's (or the child's) <code class="inline">style.css</code> yourself, so check what the parent actually loads.</p>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> Detective practice</h2>
+  <p>Here is a theme's file list. For each request, which file renders it?</p>
+  <div class="stage" data-testid="detective">
+    <div class="scn" id="scn"></div>
+    <div class="scn-nav"><button class="btn" id="scn-next" data-testid="detective-next" disabled>Next →</button><span class="small" id="scn-score" data-testid="detective-score"></span></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>A theme is a folder with conventions.</b> Classic themes require <code class="inline">index.php</code> and <code class="inline">style.css</code>; block themes require <code class="inline">index.html</code> (in <code class="inline">templates/</code>) and <code class="inline">style.css</code>, with <code class="inline">theme.json</code> as the foundation of block theming.</li>
+    <li><b>The template hierarchy picks the file:</b> most specific to most general, falling back to <code class="inline">index.php</code>. Learn the chains for the page types you use most.</li>
+    <li><b>Use template parts</b> for repeated chunks; remember <code class="inline">get_template_part()</code> fails silently if nothing matches.</li>
+    <li><b>Put theme setup and enqueues in functions.php,</b> hook assets to <code class="inline">wp_enqueue_scripts</code>, and don't hard-code asset tags.</li>
+    <li><b>Child themes override by filename,</b> but hierarchy specificity still wins; their <code class="inline">functions.php</code> adds to the parent's rather than replacing it.</li>
+  </ul>
+  <p class="src"><b>Primary (WordPress Theme Handbook).</b> <a href="https://developer.wordpress.org/themes/basics/template-hierarchy/" target="_blank">Template hierarchy</a> · <a href="https://developer.wordpress.org/themes/basics/organizing-theme-files/" target="_blank">Organizing theme files</a> · <a href="https://developer.wordpress.org/themes/basics/theme-functions/" target="_blank">Theme functions (functions.php)</a> · <a href="https://developer.wordpress.org/themes/basics/including-css-javascript/" target="_blank">Including CSS &amp; JavaScript</a> · <a href="https://developer.wordpress.org/themes/advanced-topics/child-themes/" target="_blank">Child themes</a> · <a href="https://developer.wordpress.org/themes/global-settings-and-styles/" target="_blank">Global settings and styles (theme.json)</a> · <a href="https://developer.wordpress.org/reference/functions/get_template_part/" target="_blank">get_template_part()</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> The hierarchy chains are as listed in the handbook; the front-page case depends on the Reading setting. The explorer, the child-theme simulator and the quiz are my own. The child-theme lookup order for <code class="inline">get_template_part()</code> is from a user note on the reference page. Verify details for the WordPress version you target.</p>
+
+  <footer>Themes and the Template Hierarchy · WordPress for Front-End &amp; UI Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- theme anatomy ---------- */
+(function(){
+  const T={
+    classic:[
+      ['style.css','',"The one stylesheet WordPress requires. It must sit in the theme's root folder, not in a css/ subfolder.",'req','Required'],
+      ['index.php','',"The final fallback template. If no more specific template matches a request, WordPress uses this one.",'req','Required'],
+      ['functions.php','',"Works like a plugin that belongs to this theme: setup, theme supports, menus, translations, enqueues and helper functions. Only the active theme's file runs.",'opt','Optional'],
+      ['single.php, page.php, archive.php …','',"Template files for specific kinds of page, named by the template hierarchy. They live in the root.",'opt','Optional'],
+      ['template-parts/','',"Conventional home for reusable pieces (header, footer, navigation, post cards), pulled in with get_template_part().",'opt','Optional'],
+      ['assets/','',"Conventional home for CSS, JavaScript and images, in subfolders.",'opt','Optional'],
+      ['inc/','',"Conventional home for PHP files that group functions by theme feature.",'opt','Optional'],
+      ['languages/','',"Conventionally holds the .pot file and translated .mo files, used with load_theme_textdomain().",'opt','Optional']
+    ],
+    block:[
+      ['style.css','',"Still required, and still in the root. It holds the theme's header information.",'req','Required'],
+      ['templates/','',"Block templates as HTML files. index.html is the required fallback. The template hierarchy is the same as for classic themes, with HTML files instead of PHP.",'req','Required'],
+      ['parts/','',"Reusable template parts, also HTML, such as header and footer.",'opt','Optional'],
+      ['theme.json','',"The foundation of block theming: configure colours, default typography and front-end styles through settings and styles. Not strictly required, but nearly every theme project will want one.",'opt','Optional'],
+      ['functions.php','',"Block themes can use it too, for setup and hooks. Some things that live here in a classic theme, such as content width, are set in theme.json instead.",'opt','Optional']
+    ]
+  };
+  let kind='classic'; const box=$('tfiles'), doc=$('tdoc');
+  function draw(){ box.innerHTML=''; T[kind].forEach(([n,ind,d,tag,lab],i)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=n; b.setAttribute('data-testid','tfile-'+kind+'-'+i); b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); doc.innerHTML='<span class="tag '+tag+'">'+lab.toUpperCase()+'</span><h4>'+n+'</h4>'+d; }; box.appendChild(b); }); box.children[0].click(); }
+  document.querySelectorAll('#kindseg button').forEach(b=>b.onclick=()=>{ kind=b.dataset.k; document.querySelectorAll('#kindseg button').forEach(x=>x.classList.toggle('on',x===b)); draw(); });
+  draw();
+})();
+
+/* ---------- hierarchy data ---------- */
+const HX={
+  front:{label:'Front page',params:['reading'],cands:p=>['front-page.php'].concat(p.reading==='posts'?['home.php']:['page.php'],['index.php'])},
+  home:{label:'Blog posts index',params:[],cands:p=>['home.php','index.php']},
+  single:{label:'Single post / custom post type',params:['pt','slug'],cands:p=>['single-'+p.pt+'-'+p.slug+'.php','single-'+p.pt+'.php','single.php','singular.php','index.php']},
+  page:{label:'Page',params:['slug','id','tpl'],cands:p=>(p.tpl?[p.tpl]:[]).concat(['page-'+p.slug+'.php','page-'+p.id+'.php','page.php','singular.php','index.php'])},
+  category:{label:'Category',params:['slug','id'],cands:p=>['category-'+p.slug+'.php','category-'+p.id+'.php','category.php','archive.php','index.php']},
+  tag:{label:'Tag',params:['slug','id'],cands:p=>['tag-'+p.slug+'.php','tag-'+p.id+'.php','tag.php','archive.php','index.php']},
+  tax:{label:'Custom taxonomy',params:['tax','term'],cands:p=>['taxonomy-'+p.tax+'-'+p.term+'.php','taxonomy-'+p.tax+'.php','taxonomy.php','archive.php','index.php']},
+  cpt:{label:'Post type archive',params:['pt'],cands:p=>['archive-'+p.pt+'.php','archive.php','index.php']},
+  author:{label:'Author',params:['nice','id'],cands:p=>['author-'+p.nice+'.php','author-'+p.id+'.php','author.php','archive.php','index.php']},
+  date:{label:'Date',params:[],cands:p=>['date.php','archive.php','index.php']},
+  search:{label:'Search',params:[],cands:p=>['search.php','index.php']},
+  nf:{label:'404',params:[],cands:p=>['404.php','index.php']}
+};
+const PARAMS={pt:['post type','book'],slug:['slug','hello'],id:['id','42'],tpl:['custom template file (optional)',''],tax:['taxonomy','genre'],term:['term','scifi'],nice:['author nicename','key']};
+let EXIST=new Set(['index.php','single.php','page.php','archive.php','404.php']);
+const state={req:'category',vals:{pt:'book',slug:'news',id:'42',tpl:'',tax:'genre',term:'scifi',nice:'key',reading:'posts'},block:false};
+
+(function(){
+  const reqs=$('reqs'), params=$('params'), cands=$('cands'), verdict=$('verdict');
+  Object.entries(HX).forEach(([k,v])=>{ const b=document.createElement('button'); b.type='button'; b.className='rq'+(k===state.req?' on':''); b.textContent=v.label; b.setAttribute('data-testid','req-'+k); b.onclick=()=>{ state.req=k; reqs.querySelectorAll('.rq').forEach(x=>x.classList.toggle('on',x===b)); drawParams(); render(); }; reqs.appendChild(b); });
+  function drawParams(){ params.innerHTML=''; HX[state.req].params.forEach(p=>{ if(p==='reading'){ const l=document.createElement('label'); l.className='ctl'; l.innerHTML='Reading setting<select data-testid="param-reading"><option value="posts">latest posts</option><option value="page">a static page</option></select>'; l.querySelector('select').value=state.vals.reading; l.querySelector('select').onchange=e=>{ state.vals.reading=e.target.value; render(); }; params.appendChild(l); return; }
+    const l=document.createElement('label'); l.className='ctl'; l.innerHTML=PARAMS[p][0]+'<input type="text" value="'+state.vals[p]+'" data-testid="param-'+p+'">'; l.querySelector('input').oninput=e=>{ state.vals[p]=e.target.value.trim(); render(); }; params.appendChild(l); }); }
+  function name(f){ return state.block ? 'templates/'+f.replace(/\.php$/,'.html') : f; }
+  function render(){
+    const list=HX[state.req].cands(state.vals).filter(f=>!/--|-\.php$/.test(f)); let win=-1;
+    list.forEach((f,i)=>{ if(win<0 && EXIST.has(f)) win=i; });
+    cands.innerHTML=''; list.forEach((f,i)=>{ const d=document.createElement('label'); d.className='cand '+(i===win?'win':(win>=0&&i>win?'skip':(EXIST.has(f)?'':'miss'))); d.innerHTML='<span class="no">'+(i+1)+'</span><span>'+name(f)+(i===list.length-1&&f==='index.php'?' <small>(required fallback)</small>':'')+'</span><input type="checkbox" '+(EXIST.has(f)?'checked':'')+' data-testid="cand-'+i+'">'; d.querySelector('input').onchange=e=>{ if(e.target.checked) EXIST.add(f); else EXIST.delete(f); render(); }; cands.appendChild(d); });
+    verdict.innerHTML = win<0 ? '<b>No template found.</b> '+(state.block?'index.html':'index.php')+' is the only template every theme must have; without it this page cannot render.' : '<b>'+name(list[win])+' renders this page.</b> '+(win===0?'It is the most specific match.':'The '+win+' more specific file'+(win>1?'s':'')+' above '+(win>1?'are':'is')+' not in your theme, so WordPress fell through to it.')+(win<list.length-1?' Everything after it is never reached.':'');
+  }
+  function preset(files){ EXIST=new Set(files); render(); }
+  $('pre-min').onclick=()=>preset(['index.php']); $('pre-typ').onclick=()=>preset(['index.php','single.php','page.php','archive.php','404.php']);
+  $('pre-rich').onclick=()=>preset(['index.php','single.php','singular.php','page.php','archive.php','category.php','category-news.php','page-about.php','single-book.php','search.php','404.php','front-page.php','home.php']);
+  $('blockview').onchange=e=>{ state.block=e.target.checked; render(); };
+  drawParams(); render();
+})();
+
+/* ---------- template parts ---------- */
+(function(){
+  const E={cn:false,pn:true,cs:false,ps:false};
+  function render(){
+    const slug=$('tp-slug').value.trim()||'slug', name=$('tp-name').value.trim();
+    $('tp-call').innerHTML='<span class="k">get_template_part</span>( <span class="s">\''+slug+'\'</span>'+(name?', <span class="s">\''+name+'\'</span>':'')+' );';
+    const DIR={child:'themes/my-child/',parent:'themes/my-parent/'};
+    const list=[]; if(name){ list.push(['cn','child',slug+'-'+name+'.php']); list.push(['pn','parent',slug+'-'+name+'.php']); } list.push(['cs','child',slug+'.php']); list.push(['ps','parent',slug+'.php']);
+    const box=$('tp-cands'); box.innerHTML=''; let win=-1; list.forEach(([k],i)=>{ if(win<0&&E[k]) win=i; });
+    list.forEach(([k,who,f],i)=>{ const d=document.createElement('label'); d.className='cand '+(who==='child'?'isc ':'isp ')+(i===win?'win':(win>=0&&i>win?'skip':'miss')); d.innerHTML='<span class="no">'+(i+1)+'</span><span><span class="wbadge '+(who==='child'?'c':'p')+'">'+who.toUpperCase()+'</span><span class="pth"><span class="fd">'+DIR[who]+'</span><b>'+f+'</b></span></span><input type="checkbox" '+(E[k]?'checked':'')+' data-testid="tp-'+k+'">'; d.querySelector('input').onchange=e=>{ E[k]=e.target.checked; render(); }; box.appendChild(d); });
+    $('tp-verdict').innerHTML = win<0 ? '<b>Nothing loads, and nothing complains.</b> get_template_part() returns false and does nothing. A typo in the slug or name fails silently, so check the return value if you need to know.' : '<b>'+DIR[list[win][1]]+list[win][2]+' is loaded</b> (from the '+list[win][1]+' theme).'+(name&&win>=2?' The name-specific variant was not found, so it fell back to the plain slug.':'');
+  }
+  ['tp-slug','tp-name'].forEach(id=>$(id).oninput=render); render();
+})();
+
+/* ---------- enqueue builder ---------- */
+(function(){
+  function render(){
+    const type=$('q-type').value, h=$('q-handle').value.trim()||'handle', dep=$('q-dep').value; $('q-foot-w').style.display=$('q-strat-w').style.display=type==='script'?'':'none';
+    const deps=dep?'array( \''+dep+'\' )':'array()'; let call;
+    if(type==='style') call='<span class="k">wp_enqueue_style</span>(\n    <span class="s">\''+h+'\'</span>,\n    <span class="k">get_stylesheet_uri</span>(),\n    '+deps+',\n    <span class="s">\'1.0\'</span>\n  );';
+    else { const parts=[]; if($('q-foot').value==='true') parts.push("'in_footer' => true"); if($('q-strat').value) parts.push("'strategy' => '"+$('q-strat').value+"'"); call='<span class="k">wp_enqueue_script</span>(\n    <span class="s">\''+h+'\'</span>,\n    <span class="k">get_template_directory_uri</span>() . <span class="s">\'/assets/js/main.js\'</span>,\n    '+deps+',\n    <span class="s">\'1.0\'</span>'+(parts.length?',\n    <span class="k">array</span>( '+parts.join(', ')+' )':'')+'\n  );'; }
+    $('q-code').innerHTML='<span class="k">function</span> mytheme_enqueue_assets() {\n  '+call+'\n}\n<span class="k">add_action</span>( <span class="s">\'wp_enqueue_scripts\'</span>, <span class="s">\'mytheme_enqueue_assets\'</span> );';
+    const notes=[]; notes.push('<b>Hooked to wp_enqueue_scripts,</b> which runs before wp_head prints the tags.'); if(dep) notes.push('<b>'+dep+'</b> is listed as a dependency, so WordPress loads it first (and only once).');
+    if(type==='style') notes.push('<code class="inline">get_stylesheet_uri()</code> points at the active theme\'s required <code class="inline">style.css</code>. For other files, build the path with <code class="inline">get_template_directory_uri()</code>.');
+    else notes.push('Footer placement and the loading strategy go in an options array (WordPress 6.3 and later); older code used a boolean <code class="inline">$in_footer</code> parameter.');
+    notes.push('The version string (<code class="inline">\'1.0\'</code>) busts caches when the file changes. Hard-coding tags in <code class="inline">header.php</code> skips all of this management.');
+    $('q-note').innerHTML=notes.join('<br>');
+  }
+  ['q-type','q-handle','q-dep','q-foot','q-strat'].forEach(id=>$(id).addEventListener('input',render)); render();
+})();
+
+/* ---------- child theme simulator ---------- */
+(function(){
+  const R={category:['category-news.php','category.php','archive.php','index.php'],page:['page-about.php','page.php','singular.php','index.php'],single:['single-post-hello.php','single-post.php','single.php','singular.php','index.php']};
+  const S={category:{P:new Set(['category.php','index.php']),C:new Set(['archive.php'])},page:{P:new Set(['page-about.php','index.php']),C:new Set(['page.php'])},single:{P:new Set(['single.php','index.php']),C:new Set()}};
+  function render(){
+    const k=$('cs-req').value, list=R[k], P=S[k].P, C=S[k].C; const box=$('cs-cands'); box.innerHTML=''; let win=-1, owner='';
+    list.forEach((f,i)=>{ if(win<0&&(C.has(f)||P.has(f))){ win=i; owner=C.has(f)?'child':'parent'; } });
+    list.forEach((f,i)=>{ const d=document.createElement('div'); d.className='cand p2 '+(i===win?'win':(win>=0&&i>win?'skip':'miss')); d.innerHTML='<span class="no">'+(i+1)+'</span><span class="pth"><b>'+f+'</b></span><label class="check"><input type="checkbox" '+(P.has(f)?'checked':'')+' data-testid="cs-p-'+i+'"><span class="wbadge p" style="margin:0">PARENT has it</span></label><label class="check"><input type="checkbox" '+(C.has(f)?'checked':'')+' data-testid="cs-c-'+i+'"><span class="wbadge c" style="margin:0">CHILD has it</span></label>';
+      d.querySelectorAll('input')[0].onchange=e=>{ e.target.checked?P.add(f):P.delete(f); render(); }; d.querySelectorAll('input')[1].onchange=e=>{ e.target.checked?C.add(f):C.delete(f); render(); }; box.appendChild(d); });
+    const later=list.slice(win+1).some(f=>C.has(f));
+    $('cs-verdict').innerHTML = win<0 ? '<b>No template.</b> Neither theme has index.php.' : '<b>'+(owner==='child'?'themes/my-child/':'themes/my-parent/')+list[win]+' renders this page</b> (from the '+owner+' theme).'+(owner==='parent'&&later?' Notice the parent\'s more specific file beats a more general file in the child: the hierarchy order is checked first, and only then which theme supplies the file.':(C.has(list[win])&&P.has(list[win])?' Both themes have it, so the child\'s version overrides the parent\'s.':''));
+  }
+  $('cs-req').onchange=render; render();
+})();
+
+/* ---------- detective ---------- */
+(function(){
+  const FILES=['index.php','single.php','page.php','archive.php','category.php','single-book.php','page-about.php'];
+  const Q=[
+    ['The category archive for "news" (/category/news).','category.php','The category chain is category-news, category-{id}, category, archive, index. Of those, category.php is present and wins.'],
+    ['The "About" page (slug: about).','page-about.php','Pages check a custom template, then page-{slug}.php. That slug-specific file exists, so it beats page.php.'],
+    ['A single entry of the "book" custom post type.','single-book.php','The chain starts with single-book-{slug}.php, then single-book.php. The second is in the theme.'],
+    ['The tag archive for "php" (/tag/php).','archive.php','There is no tag.php, so the tag chain falls to archive.php, the generic archive template.'],
+    ['A search results page.','index.php','The search chain is search.php then index.php. This theme has no search.php, so index.php renders it.'],
+    ['A blog post titled "Hello" (post type: post).','single.php','The post chain tries single-post-hello.php and single-post.php, then single.php. single.php exists.']
+  ];
+  let i=0, score=0, done=false; const box=$('scn'), nx=$('scn-next');
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="tg">DONE</div><div class="say" style="border-left-color:var(--forest)">You traced '+score+' of '+Q.length+' correctly.</div><p class="small">When in doubt: write down the chain for the page type, then take the first file that exists.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{ i=0; score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; $('scn-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tg">REQUEST '+(i+1)+' / '+Q.length+'</div><div class="themefiles">theme files: '+FILES.join(' · ')+'</div><div class="say">'+q[0]+'</div><div class="opts">'+FILES.map((f,k)=>'<button type="button" class="opt" data-f="'+f+'" data-testid="detective-option-'+k+'">'+f+'</button>').join('')+'</div><div class="why" id="why"></div>';
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const ok=b.dataset.f===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-f="'+q[1]+'"]').classList.add('good'); $('why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+q[2]; nx.disabled=false; $('scn-score').textContent=score+' of '+(i+1)+' correct'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

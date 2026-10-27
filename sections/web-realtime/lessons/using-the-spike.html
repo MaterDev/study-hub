@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Using the Spike</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--plum); --accent-soft:var(--plum-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  /* architecture diagram */
+  .arch{display:flex; flex-direction:column; gap:10px; font-family:var(--font-ui); font-size:.8rem;}
+  .arch-row{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
+  .anode{border:1.5px solid var(--line-strong); border-radius:10px; padding:10px 12px; text-align:center; background:var(--paper-2); min-width:120px;}
+  .anode b{display:block; color:var(--ink);} .anode span{font-size:.72rem; color:var(--ink-mute);}
+  .anode.host{border-color:var(--cobalt);} .anode.guest{border-color:var(--forest);} .anode.server{border-color:var(--plum); background:var(--plum-soft);}
+  .aar{color:var(--ink-faint); font-family:var(--font-mono);}
+  /* page cards */
+  .page-card{display:grid; grid-template-columns:130px 1fr; gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:10px 0; box-shadow:var(--shadow-sm);}
+  @media(max-width:600px){.page-card{grid-template-columns:1fr;}}
+  .page-card .route{font-family:var(--font-mono); font-size:.8rem; color:var(--plum); align-self:start;}
+  .page-card h4{margin:0 0 4px;} .page-card p{margin:0; font-family:var(--font-ui); font-size:.86rem; color:var(--ink-mute);}
+  .page-card .maps{font-family:var(--font-ui); font-size:.74rem; color:var(--ink-faint); margin-top:6px;}
+  /* steps */
+  .steps{counter-reset:s; list-style:none; padding:0;}
+  .steps li{position:relative; padding-left:44px; margin-bottom:14px; font-family:var(--font-ui);}
+  .steps li::before{counter-increment:s; content:counter(s); position:absolute; left:0; top:-2px; width:30px; height:30px;
+    border-radius:50%; background:var(--plum-soft); border:2px solid var(--plum); color:var(--plum); font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display); transform:rotate(-4deg);}
+  .kbd{font-family:var(--font-mono); font-size:.82rem; background:var(--sunken); border:1px solid var(--line); border-radius:5px; padding:1px 6px;}
+  .verdict-tiles{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:14px 0;}
+  @media(max-width:600px){.verdict-tiles{grid-template-columns:1fr;}}
+  .vt{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; box-shadow:var(--shadow-sm);}
+  .vt .n{font-family:var(--font-mono); font-size:1.5rem; color:var(--ink);} .vt.bad .n{color:var(--bad);} .vt.mid .n{color:var(--warn);}
+  .vt .l{font-family:var(--font-ui); font-size:.72rem; color:var(--ink-mute);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Using the Spike</h1>
+  <p class="subtitle">The capstone — every concept so far, assembled into the tool you actually clicked on. Now you can read it.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What this spike is asking</a></li>
+      <li><a href="#sec2">The architecture, end to end</a></li>
+      <li><a href="#sec3">The five pages</a></li>
+      <li><a href="#sec4">Running it: host + guest</a></li>
+      <li><a href="#sec5">Reading a result</a></li>
+      <li><a href="#sec6">The verdict &amp; what's still needed</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What this spike is asking</h2>
+  <p class="lead">One deployed app answers one question: <strong>is host-authoritative multiplayer feasible and performant enough for this fighting game &mdash; measured end-to-end in the real problem space, not in theory?</strong> It breaks into four sub-questions, one per experiment:</p>
+  <ul>
+    <li><strong>Transport</strong> &mdash; does WebSocket-over-TCP deliver acceptable latency, or does WebRTC beat it? <em>(Lessons 2&ndash;3)</em></li>
+    <li><strong>Sim-snapshot</strong> &mdash; can the real Phaser fight state be captured, relayed, and rendered on a second client with no local sim? <em>(Lessons 1, 5)</em></li>
+    <li><strong>Remote-input</strong> &mdash; can guest input slot into the real input path without touching the combat code, and what's the felt lag? <em>(Lessons 4, 6)</em></li>
+    <li><strong>Determinism cost</strong> &mdash; how expensive would it be to make the sim deterministic so rollback reopens? <em>(Lesson 7)</em></li>
+  </ul>
+  <p>Plus a <strong>Summary</strong> that scores it all honestly <em>(Lesson 8)</em>. Every idea in this whole series exists somewhere in this app.</p>
+
+  <h2 id="sec2"><span class="num">2</span> The architecture, end to end</h2>
+  <p>Here's the full host-authoritative loop the app runs. Trace a button press from guest, around to the host, and back as a rendered snapshot:</p>
+  <div class="stage">
+    <div class="arch">
+      <div class="arch-row">
+        <div class="anode guest"><b>GUEST browser</b><span>renders snapshots · no sim</span></div>
+        <div class="aar">— input →</div>
+        <div class="anode server"><b>SERVER</b><span>WS relay / signaling + loss proxy</span></div>
+        <div class="aar">— input →</div>
+        <div class="anode host"><b>HOST browser</b><span>runs the real Phaser sim</span></div>
+      </div>
+      <div class="arch-row"><div class="aar">↑ snapshot (state) ← &nbsp;&nbsp; ← &nbsp;&nbsp; ← ← ← relayed back ← ← ←</div></div>
+    </div>
+  </div>
+  <p>The moving parts, each tied to a concept you now know:</p>
+  <div class="page-card"><div class="route">Transport port</div><div><h4>The swappable pipe</h4><p>A single <code class="inline">Transport</code> interface (<code class="inline">send</code>/<code class="inline">onMessage</code>/<code class="inline">close</code>, <code class="inline">kind: ws | webrtc-unreliable | ...</code>). <code class="inline">WebSocketTransport</code> and <code class="inline">WebRTCTransport</code> both implement it, so every experiment runs unchanged on either. Fire-and-forget: no ordering or reliability assumed.</p><div class="maps">→ Lessons 2 &amp; 3 · <code class="inline">src/lib/contracts.ts §1</code></div></div></div>
+  <div class="page-card"><div class="route">server/</div><div><h4>The relay + loss proxy</h4><p>One Node process: a <code class="inline">/ws</code> relay (forwards frames verbatim), a <code class="inline">/signal</code> relay for WebRTC setup, and a <code class="inline">LossProxy</code> in front that injects real <code class="inline">link-loss</code> to expose TCP head-of-line blocking. Toggle via <code class="inline">/api/loss</code>.</p><div class="maps">→ Lessons 2 &amp; 3 · <code class="inline">server/PROTOCOL.md</code></div></div></div>
+  <div class="page-card"><div class="route">RemoteInput</div><div><h4>The input seam</h4><p><code class="inline">RemoteInput implements InputProvider</code> feeds the guest's relayed buttons into the sim through the game's existing input interface &mdash; <em>zero changes to <code class="inline">CombatSystem</code></em>. An input-delay buffer sits here as a tunable knob.</p><div class="maps">→ Lessons 4 &amp; 6 · <code class="inline">NetFightScene</code> subclass</div></div></div>
+  <div class="page-card"><div class="route">snapshotCodec</div><div><h4>The snapshot capture + codec</h4><p>Reads the live <code class="inline">FightScene</code>'s logical fields into the frozen <code class="inline">Snapshot</code> shape each tick, encodes (JSON → binary → delta), ships it, and the guest applies it through an interpolation buffer.</p><div class="maps">→ Lessons 1 &amp; 5 · <code class="inline">snapshotCodec.ts</code>, <code class="inline">interpBuffer.ts</code></div></div></div>
+  <div class="page-card"><div class="route">determinismHarness</div><div><h4>The offline determinism analysis</h4><p>Seeds the 3 RNG sites + a fixed timestep and proves same-seed → identical outcome headlessly, then scores how expensive full determinism would be.</p><div class="maps">→ Lesson 7 · <code class="inline">determinismHarness.ts</code></div></div></div>
+
+  <h2 id="sec3"><span class="num">3</span> The five pages</h2>
+  <p>The app is a hash-routed dashboard (that's the <code class="inline">#/home</code> in your URL). Each experiment is one page, all built to the identical skeleton so learning one teaches the rest:</p>
+  <div class="page-card"><div class="route">#/transport</div><div><h4>Transport</h4><p>WebSocket vs WebRTC RTT/jitter/loss. Sweeps loss settings, reports <code class="inline">p50/p95/p99</code>. The HOL-blocking test.</p></div></div>
+  <div class="page-card"><div class="route">#/sim-snapshot</div><div><h4>Sim-snapshot</h4><p>Captures the real fight state, relays it, renders on a second client. Measures byte size &amp; encode cost; surfaces the pose-fidelity gap.</p></div></div>
+  <div class="page-card"><div class="route">#/e2e-remote-input</div><div><h4>Remote input (E2E)</h4><p>The decisive one: real fight, guest input over the wire, measures <strong>felt input lag</strong> vs the ~3-frame ceiling.</p></div></div>
+  <div class="page-card"><div class="route">#/determinism-cost</div><div><h4>Determinism</h4><p>Offline. Proves reproducibility where cheap; prices the structural rewrite rollback would need.</p></div></div>
+  <div class="page-card"><div class="route">#/summary</div><div><h4>Summary</h4><p>The honest composite: geometric-mean + min-gate, every sub-score with band/weight/rationale, feasibility and determinism on separate axes.</p></div></div>
+
+  <h2 id="sec4"><span class="num">4</span> Running it: host + guest</h2>
+  <p>The URL you opened &mdash; <code class="inline">?room=probe2&amp;role=guest#/home</code> &mdash; is the whole pairing model in three query params. Here's how a real two-machine run works:</p>
+  <div class="stage">
+    <ol class="steps">
+      <li><strong>Machine A opens the host.</strong> Visit the app with <span class="kbd">?room=myroom&amp;role=host</span>. The <code class="inline">room</code> is any shared id; <code class="inline">role=host</code> means "this browser runs the real sim."</li>
+      <li><strong>Machine B opens the guest.</strong> Same URL, same <code class="inline">room</code>, but <span class="kbd">?role=guest</span>. Matching <code class="inline">room</code> ids is how the server pairs the two into one session.</li>
+      <li><strong>They connect.</strong> Over <code class="inline">/ws</code> (WebSocket) or, for the WebRTC path, the <code class="inline">/signal</code> handshake opens a direct DataChannel (Lesson 3).</li>
+      <li><strong>Run an experiment.</strong> On any page, press its primary <em>Run</em> button. Both halves execute; the guest presses keys in its canvas, the host simulates, snapshots flow back.</li>
+      <li><strong>Read the result</strong> (next section), then hit the sidebar's <em>Run all</em> for the composite Summary.</li>
+    </ol>
+    <div class="flag" style="margin-top:4px;"><strong>Solo mode.</strong> Open with no <code class="inline">?room</code> and the app runs both halves locally over a loopback pair with a <em>simulated</em> network &mdash; great for a demo, but the numbers are indicative only. That's why loopback runs wear an amber <code class="inline">simulated network</code> badge and a warning callout: a real WS-vs-WebRTC verdict needs two actual machines.</div>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Reading a result</h2>
+  <p>Every experiment renders the same result block, and the app's design philosophy is the "three-second page": glance and know <em>what it measures, whether it ran, and if the answer is good or bad</em>. What you're looking at:</p>
+  <ul>
+    <li><strong>Verdict strip</strong> &mdash; a status chip (<code class="inline">completed</code>/<code class="inline">failed</code>) + a one-sentence judgment + topology/loss chips.</li>
+    <li><strong>Stat tiles</strong> &mdash; the decisive numbers (<code class="inline">p50/p95/p99</code>, byte size, felt lag) each with a Good/Acceptable/Bad <strong>band color</strong>. A red tile means bad; you can trust that without reading a word.</li>
+    <li><strong>Details accordion</strong> &mdash; the full prose, sub-score rationale, caveats, raw tables. Collapsed by default (for the engineer-skeptic who wants to audit).</li>
+    <li><strong>Mode badge</strong> &mdash; green <code class="inline">real</code> vs amber <code class="inline">simulated</code>: always check this before trusting a number.</li>
+  </ul>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">reading tip</div>
+    <h4>The colors are the message</h4>
+    <p>The app is built so a non-technical teammate can glance at any page and read the traffic-light verdict correctly. As someone who now understands the internals, you get both layers: the band color for the instant read, and the accordion + raw cells to verify <em>why</em>. When in doubt, expand the details &mdash; every number's provenance is one click away.</p>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> The verdict &amp; the refactor in progress</h2>
+  <p>Where the spike stands after two review passes (the Fable failure-diagnosis + an independent Opus pass) &mdash; all still on loopback/simulated data; real cross-network runs pending:</p>
+  <div class="verdict-tiles">
+    <div class="vt"><div class="n">KEEP</div><div class="l">host-authoritative<br>confirmed by every pass — nothing reopens rollback</div></div>
+    <div class="vt mid"><div class="n">not yet</div><div class="l">commit the track?<br>infrastructure-complete, evidence-incomplete</div></div>
+    <div class="vt"><div class="n">63 B</div><div class="l">snapshot size (25B delta)<br>trustworthy &amp; cheap (~0.016ms/frame vs 16.67ms budget)</div></div>
+    <div class="vt mid"><div class="n">2–3.5f</div><div class="l">guest felt lag at the 20–60ms target<br>borderline — not the "6.4f wall" the default showed</div></div>
+  </div>
+  <p><strong>The reframe that matters.</strong> The dashboard's headline &mdash; <code class="inline">49/100 "not feasible"</code>, min-gated by a <code class="inline">bad</code> ~7-frame input-lag score &mdash; is <em>not decision-grade</em>. That number came from a pessimistic default (80ms RTT = 2&times; the project's own target) measured over just 4&ndash;5 samples of a button-ack that never landed a hit (Lessons 6, 8). At target-consistent settings the (still simulated) felt lag is ~2&ndash;3.5 frames. The outlook shifts from "feared past the edge" to "the fear is largely an artifact &mdash; likelier to pass on real hardware than the red implied." The <em>action</em> doesn't change: measure first.</p>
+  <p>The robust findings (unchanged &mdash; and these are what actually support the decision):</p>
+  <ol>
+    <li><strong>Snapshotting is bandwidth-cheap</strong> &mdash; tiny, near-free to encode (Lesson 5).</li>
+    <li><strong>...but render is structurally lossy</strong> &mdash; the guest is a "teleporting puppet"; faithful pose needs a production state&rarr;render API (Lessons 1, 5).</li>
+    <li><strong>The input seam is clean</strong> &mdash; swappable entirely harness-side, zero <code class="inline">src/</code> combat edits (Lesson 4).</li>
+    <li><strong>Rollback stays closed</strong> &mdash; the determinism retrofit is structural/expensive; host-authoritative wins on cost (Lesson 7).</li>
+  </ol>
+
+  <h3>Known issues &amp; the refactor (in progress)</h3>
+  <p>Since you're mid-refactor, here's the punch-list the reviews converged on &mdash; each item tracing to a lesson so you know <em>why</em> it matters:</p>
+  <div class="page-card"><div class="route">measurement</div><div><h4>Make felt-lag decision-grade</h4><p>The one gating number needs: a <strong>presence barrier</strong> (don't drive until both peers are subscribed &mdash; today a host-drives-first run leaves a late guest hanging forever), an <strong>internal stall timeout</strong>, a <strong>clock offset</strong> feeding the interp sampler, a <code class="inline">visibilitychange</code> guard (a backgrounded tab's rAF throttling gave 466ms from 1 sample), a <strong>sample-count floor</strong> + hundreds of samples, and <strong>in-range inputs</strong> so a hit actually lands. → Lessons 5, 6, 8.</p></div></div>
+  <div class="page-card"><div class="route">transport</div><div><h4>Fair WS-vs-WebRTC</h4><p>The in-app loss proxy can't reach the peer-to-peer leg, so the head-of-line comparison is structurally unfair. A real verdict needs an <strong>OS-level network conditioner on both legs</strong>. → Lesson 2.</p></div></div>
+  <div class="page-card"><div class="route">connectivity</div><div><h4>Add TURN + buffer ICE</h4><p>STUN-only fails for symmetric/CGNAT users; add a config-injectable TURN server, and queue ICE candidates that arrive before <code class="inline">setRemoteDescription</code>. → Lesson 3.</p></div></div>
+  <div class="page-card"><div class="route">deploy</div><div><h4>Render build + cold-start UI</h4><p>Copy <code class="inline">render.yaml</code> to the repo root; install the root <code class="inline">phaser</code> dep (the prod build depends on it); move <code class="inline">tsx</code> into dependencies; pin one instance (rooms are in-memory); and build the "waking server…" UI the free tier's spin-down needs.</p></div></div>
+  <div class="page-card"><div class="route">stability</div><div><h4>Tame WebGL context churn</h4><p>Each E2E run spins up several throwaway <code class="inline">Phaser.Game</code>s; Chrome caps live WebGL contexts (~16) and evicts the oldest, blanking a long-running canvas. Reuse one pair and/or use <code class="inline">Phaser.CANVAS</code> for offscreen measurement games.</p></div></div>
+  <div class="flag">
+    <strong>Consolidated verdict (all passes):</strong> <em>infrastructure-complete, evidence-incomplete.</em> Keep host-authoritative; don't commit the track yet. Fix the paired measurement instrument, then take <strong>one trustworthy felt-lag reading on two real machines at 20&ndash;60ms RTT</strong> (interp swept), and add an OS conditioner on both legs for the transport question. Then re-read the verdict &mdash; every word of which you now understand.
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> You now know the whole map</h2>
+  <p>Every piece of this spike traces to a lesson: the <a href="game-loops-ticks.html">game loop</a> under the sim, the <a href="realtime-transports.html">transports</a> and <a href="webrtc-signaling.html">signaling</a> carrying it, the <a href="netcode-models.html">model</a> it implements, the <a href="snapshots-interpolation.html">snapshots</a> on the wire, the <a href="latency-feel-ceiling.html">felt lag</a> that decides it, the <a href="determinism-cost.html">determinism</a> that would (or wouldn't) unlock rollback, and the <a href="scoring-feasibility.html">honest scoring</a> that turns it into a verdict. Open the app again &mdash; it should read like a language you speak now.</p>
+  <p class="src">Your spike — <code class="inline">README.md</code>, <code class="inline">DESIGN-PHILOSOPHY.md</code>, <code class="inline">src/App.tsx</code> (routes), <code class="inline">server/PROTOCOL.md</code></p>
+
+  <footer>Using the Spike · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

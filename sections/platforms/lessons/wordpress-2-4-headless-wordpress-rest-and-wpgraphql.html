@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Headless WordPress: REST and WPGraphQL</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .stage div{min-width:0;}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-mono); text-transform:none; letter-spacing:0; max-width:100%;}
+  .chk{display:flex; gap:6px; align-items:center; font-family:var(--font-mono); font-size:.76rem; color:var(--ink);} .chk input{accent-color:var(--cobalt);}
+  .hl-src{font-family:var(--font-mono); font-size:.78rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:8px 0; overflow-x:auto; line-height:1.6;}
+  .hl-src .ln{display:block; padding:0 14px; white-space:pre; border-left:4px solid transparent;} .hl-src .ln.on{background:rgba(143,184,255,.22); border-left-color:#ffd23f;}
+  .hl-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.hl-two{grid-template-columns:minmax(0,1fr);}}
+  .hl-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); overflow-wrap:anywhere;}
+  .hl-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .hl-box ul{margin:0; padding-left:18px;} .hl-box li{margin-bottom:4px;}
+  .hl-note{font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-height:2.6em; margin-top:8px; overflow-wrap:anywhere;}
+  .hl-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .hl-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:6px 10px; font:700 .76rem var(--font-ui); cursor:pointer;} .hl-seg button:last-child{border-right:0;} .hl-seg button.on{background:var(--cobalt); color:#fff;}
+  .hl-ok{color:var(--forest); font-weight:800;} .hl-bad{color:var(--vermil); font-weight:800;} .hl-warn{color:var(--ochre); font-weight:800;}
+  .hl-url{font-family:var(--font-mono); font-size:.76rem; color:var(--ink); background:var(--paper-2); border:2px solid var(--outline); border-radius:8px; padding:6px 10px; overflow-wrap:anywhere; margin:8px 0;}
+  .hl-page{border:2px solid var(--outline); border-radius:10px; padding:10px; background:var(--paper-2); font-family:var(--font-ui); font-size:.84rem; color:var(--ink);} .hl-page h4{margin:0 0 6px; font-size:.95rem;} .hl-page ul{margin:0; padding-left:18px;} .hl-page li{margin-bottom:3px;}
+  .hl-flow{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:10px 0;}
+  .hl-node{border:2px solid var(--line-strong); border-radius:10px; padding:8px 10px; background:var(--paper); color:var(--ink); font-family:var(--font-ui); font-size:.78rem; opacity:.55;} .hl-node b{display:block; font-family:var(--font-mono); font-size:.72rem; margin-bottom:3px;} .hl-node.on{opacity:1; border-color:var(--cobalt); background:var(--cobalt-soft);} .hl-node.done{opacity:1; border-color:var(--forest);}
+  .hl-rows{display:flex; flex-direction:column; margin-top:8px;}
+  .hl-r{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,2fr); gap:8px; align-items:start; font-family:var(--font-ui); font-size:.78rem; border-top:1px solid var(--line); padding:6px 0; color:var(--ink);} .hl-r.h{font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); border-top:0; font-weight:800;}
+  .hl-r .res{font-weight:800; text-align:center; padding:2px 6px; border-radius:6px; border:2px solid var(--line-strong);} .hl-r .res.hit{border-color:var(--forest); background:var(--forest-soft);} .hl-r .res.bad{border-color:var(--vermil); background:var(--vermil-soft);} .hl-r .res.mid2{border-color:var(--ochre); background:var(--ochre-soft);}
+  @media(max-width:600px){.hl-r{grid-template-columns:minmax(0,1fr);}}
+  .hl-check{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:4px 14px; margin:8px 0;} .hl-check label{display:flex; gap:6px; align-items:flex-start; font-family:var(--font-ui); font-size:.82rem; color:var(--ink);} .hl-check input{accent-color:var(--cobalt); margin-top:3px;}
+  .hl-score{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;} .hl-bar{height:14px; border-radius:6px; background:var(--sunken); border:1px solid var(--line-strong); overflow:hidden;} .hl-bar span{display:block; height:100%; background:var(--cobalt);} .hl-bar.neg span{background:var(--vermil);}
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tg{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .78rem var(--font-mono); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--cobalt);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em; font-family:var(--font-ui);} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Headless WordPress: REST and WPGraphQL</h1>
+  <p class="subtitle">Using WordPress only as a content backend: pulling posts over the REST API or WPGraphQL into a separate front end, and the honest list of what that changes for authentication, previews, plugins, SEO and hosting.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What "headless" means</a></li>
+      <li><a href="#sec2">The REST API: ask for posts</a></li>
+      <li><a href="#sec3">Authentication: who is asking?</a></li>
+      <li><a href="#sec4">REST or WPGraphQL?</a></li>
+      <li><a href="#sec5">Drafts, previews and fresh content</a></li>
+      <li><a href="#sec6">What breaks when the theme goes away</a></li>
+      <li><a href="#sec7">Is headless worth it?</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What "headless" means</h2>
+  <p class="lead">In a classic site, WordPress does two jobs: it stores and edits content, and it renders the HTML that visitors see through a theme. <b>Headless</b> removes the second job. WordPress stays the place editors write and manage content; a separate application (a JavaScript framework, a static site, a mobile app) fetches that content over an API and renders the pages itself.</p>
+  <p>The WordPress REST API is the built-in way to do this. The handbook describes it as a feature that lets external applications and your own code read and write site data, using JSON, and that also powers the block editor. Endpoints are URLs that represent WordPress data types such as posts, pages and taxonomies. <b>WPGraphQL</b> is a plugin that offers a GraphQL schema as an alternative. Lesson 2.2's custom post types and fields are exactly the data this chapter pulls out.</p>
+  <p>The attraction is front-end freedom: any framework, any hosting, and a team that never touches PHP. The cost is everything the theme used to do for you. The rest of the lesson makes that cost visible, so you can decide with open eyes.</p>
+
+  <h2 id="sec2"><span class="num">2</span> The REST API: ask for posts</h2>
+  <p>The list-posts endpoint is <code class="inline">GET /wp/v2/posts</code> under the site's <code class="inline">wp-json</code> path. The reference documents parameters such as <code class="inline">page</code> (default 1), <code class="inline">per_page</code> (default 10), <code class="inline">search</code>, <code class="inline">status</code> (default <code class="inline">publish</code>) and <code class="inline">context</code>. Two global parameters shape the response: <code class="inline">_fields</code> limits it to the properties you name, and <code class="inline">_embed</code> adds linked resources, such as the author, under an <code class="inline">_embedded</code> key so you can avoid extra requests. Build a request below. The site and every value in the payload are <b>made up for illustration</b>.</p>
+  <div class="stage" data-testid="hl-rest">
+    <div class="row">
+      <label class="ctl">per_page<select id="rq-n" data-testid="rq-per-page"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+      <label class="ctl">status<select id="rq-status" data-testid="rq-status"><option value="publish">publish (the default)</option><option value="draft">draft</option></select></label>
+      <label class="ctl">credentials<select id="rq-auth" data-testid="rq-auth"><option value="none">none</option><option value="app">application password</option></select></label>
+      <label class="chk"><input type="checkbox" id="rq-fields" data-testid="rq-fields"> _fields=id,slug,title</label>
+      <label class="chk"><input type="checkbox" id="rq-embed" data-testid="rq-embed"> _embed</label>
+    </div>
+    <div class="hl-url" id="rq-url" data-testid="rq-url"></div>
+    <div class="hl-two">
+      <div class="hl-src" id="rq-json" data-testid="rq-json"></div>
+      <div>
+        <div class="hl-box"><h5>THE SAME DATA IN A PLAIN PAGE</h5><div class="hl-page" id="rq-page" data-testid="rq-page"></div>
+          <div class="row"><span class="small">insert titles as:</span><div class="hl-seg" id="rq-mode" data-testid="rq-mode"><button type="button" class="on" data-v="text" data-testid="rq-as-text">text</button><button type="button" data-v="html" data-testid="rq-as-html">HTML</button></div></div></div>
+      </div>
+    </div>
+    <div class="hl-note" id="rq-note" data-testid="rq-note"></div>
+  </div>
+  <p>The page on the right is what the stretch goal looks like: fetch the JSON, loop over the posts, write each title into the page. In a plain page that is a few lines of <code class="inline">fetch()</code> and <code class="inline">map()</code>. One detail bites everyone once. WordPress returns titles and content as <em>rendered</em> HTML, so a title can contain entities such as <code class="inline">&amp;#038;</code>. Insert it as text and you see the entity; insert it as HTML and it displays properly, but now you are putting markup from a database into your page, so only do that for content you trust or after sanitising it (the escaping habit from lesson 2.1 does not go away just because WordPress is no longer printing the page).</p>
+  <p class="small">What the handbook confirms: the endpoint, the parameters above, and that the schema lists id, date, slug, status, link, title, content, excerpt and featured_media. That title, content and excerpt carry a <code class="inline">rendered</code> string, that entities appear in rendered titles, and that responses carry total-count headers for paging, are background knowledge here.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Authentication: who is asking?</h2>
+  <p>Public content is readable without logging in; private and password-protected content needs authentication, as does writing. The handbook describes two main routes for your own code. <b>Cookie authentication</b> is built into WordPress: it works for code running inside WordPress as a logged-in user, and requests need a nonce created for the action <code class="inline">wp_rest</code>, sent as <code class="inline">X-WP-Nonce</code> (the safest way) or <code class="inline">_wpnonce</code>. Without the nonce the current user is set to 0, so the request is unauthenticated even if you are logged in. <b>Application passwords</b>, available from WordPress 5.6, are generated on the user's Edit User screen and sent with Basic Auth, only over https. For a separate front-end server, application passwords are the natural fit. The handbook also mentions authentication plugins (OAuth 1.0a, JSON Web Tokens) and a Basic Auth plugin that it says should only be used for development and testing. Match the method to the caller:</p>
+  <div class="stage" data-testid="hl-auth">
+    <div class="scn" id="au-scn"></div>
+    <div class="scn-nav"><button class="btn" id="au-next" data-testid="au-next" disabled>Next &rarr;</button><span class="small" id="au-score" data-testid="au-score"></span></div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> REST or WPGraphQL?</h2>
+  <p>WPGraphQL is described on its own site as a free, open-source plugin that provides an extendable GraphQL schema and API for WordPress, with types and fields generated from registered post types and taxonomies. With GraphQL the client writes a query naming exactly the fields it wants, so one request can reach across relationships. REST returns whole resources, but <code class="inline">_fields</code> and <code class="inline">_embed</code> narrow that gap. Choose what a page needs and compare.</p>
+  <div class="stage" data-testid="hl-cmp">
+    <div class="hl-check" id="cm-checks"></div>
+    <div class="hl-two">
+      <div><div class="hl-box"><h5>REST</h5><div class="hl-src" id="cm-rest" data-testid="cm-rest"></div><div class="row"><label class="chk"><input type="checkbox" id="cm-opt" checked data-testid="cm-optimise"> use _embed and _fields</label></div></div></div>
+      <div><div class="hl-box"><h5>WPGRAPHQL (ILLUSTRATIVE SHAPE)</h5><div class="hl-src" id="cm-gql" data-testid="cm-gql"></div></div></div>
+    </div>
+    <div class="hl-note" id="cm-note" data-testid="cm-note"></div>
+  </div>
+  <p class="small">The REST URLs follow the handbook. The GraphQL query shows the usual WPGraphQL shape (a <code class="inline">posts</code> connection with <code class="inline">nodes</code>) from background knowledge; the WPGraphQL introduction page I read links to its guides but does not include an example query, so check the field names against your own schema in its explorer. Fetching media and author details separately in REST is also how it behaves without <code class="inline">_embed</code> (background knowledge).</p>
+
+  <h2 id="sec5"><span class="num">5</span> Drafts, previews and fresh content</h2>
+  <p>Two things that a theme gave you for free now have to be built. The first is <b>fresh content</b>. A front end like Next.js builds pages ahead of time and caches them. Its Incremental Static Regeneration documentation describes two ways to refresh: <b>time-based</b> (a <code class="inline">revalidate</code> interval, after which the next request still receives the stale page while a new one is generated in the background) and <b>on-demand</b> (calling <code class="inline">revalidatePath</code> or <code class="inline">revalidateTag</code> to invalidate cached entries). Something has to tell the front end that WordPress changed; a webhook sent when a post is updated is the usual answer (background knowledge, you build it). The second is <b>preview</b>. Walk through what happens when an editor updates a post, and what changes if they click Preview on a draft.</p>
+  <div class="stage" data-testid="hl-fresh">
+    <div class="row"><div class="hl-seg" id="fr-mode" data-testid="fr-mode"><button type="button" class="on" data-v="time" data-testid="fr-time">time-based revalidate</button><button type="button" data-v="demand" data-testid="fr-demand">on-demand revalidate</button></div><label class="chk"><input type="checkbox" id="fr-prev" data-testid="fr-preview"> the editor clicks Preview on a draft instead</label></div>
+    <div class="hl-flow" id="fr-flow" data-testid="fr-flow"></div>
+    <div class="row"><button class="btn" id="fr-next" data-testid="fr-next">Next step &rarr;</button><button class="btn sec" id="fr-reset" data-testid="fr-reset">Reset</button></div>
+    <div class="hl-note" id="fr-note" data-testid="fr-note"></div>
+  </div>
+  <p class="small">The revalidation behaviour is from the Next.js ISR guide (Next.js is one example of a front end; others have equivalents). The webhook and the preview route are my own description of the usual design: to preview an unpublished post, the front end must fetch the draft with credentials (the REST posts reference lists <code class="inline">draft</code> among the allowed <code class="inline">status</code> values but does not say what authentication it needs) and must skip its cache for that request. WPGraphQL lists a Previews guide, which I did not read.</p>
+
+  <h2 id="sec6"><span class="num">6</span> What breaks when the theme goes away</h2>
+  <p>A classic site works because everything runs through the theme: plugins print their output, add scripts and styles, and hook into the same page. A separate front end has none of that. Tick the things your site relies on and switch between the two architectures. The verdicts are <b>my own synthesis</b> from how the pieces work, not a compatibility list; check each plugin you actually use.</p>
+  <div class="stage" data-testid="hl-break">
+    <div class="row"><div class="hl-seg" id="bk-mode" data-testid="bk-mode"><button type="button" class="on" data-v="classic" data-testid="bk-classic">WordPress theme front end</button><button type="button" data-v="head" data-testid="bk-headless">Separate front end (headless)</button></div></div>
+    <div class="hl-check" id="bk-checks"></div>
+    <div class="hl-rows" id="bk-rows" data-testid="bk-rows"></div>
+    <div class="hl-note" id="bk-note" data-testid="bk-note"></div>
+  </div>
+  <p class="small">One point is from the docs: a custom post type is only exposed to the REST API when <code class="inline">show_in_rest</code> is true (lesson 2.2, from the register_post_type reference). Everything else in the table is background knowledge.</p>
+
+  <h2 id="sec7"><span class="num">7</span> Is headless worth it?</h2>
+  <p>Headless is a good answer to some problems and an expensive answer to most. Tick what describes your project. The scoring is <b>my own rough heuristic</b>, meant to make the trade visible rather than to decide for you.</p>
+  <div class="stage" data-testid="hl-pick">
+    <div class="hl-check" id="pk-checks"></div>
+    <div class="hl-score"><div><div class="small">Reasons for</div><div class="hl-bar"><span id="pk-for" style="width:0%"></span></div></div><div><div class="small">Reasons against</div><div class="hl-bar neg"><span id="pk-against" style="width:0%"></span></div></div></div>
+    <div class="hl-box" style="margin-top:10px"><h5>VERDICT</h5><div id="pk-out" data-testid="pk-out"></div></div>
+  </div>
+  <div class="flag"><b>The two-systems cost.</b> A headless project is two deployments joined by an API: WordPress needs a PHP and database host, regular updates and backups, and a locked-down admin; the front end needs its own hosting and build pipeline; between them sit credentials, cross-origin settings and a webhook. Each has its own monitoring and its own way to fail at 2 a.m. If the team cannot own both, the savings in front-end flexibility are spent on operations. (My own summary of the costs.)</div>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Headless</b> means WordPress stores and edits content while a separate application fetches it and renders the pages.</li>
+    <li><b>REST:</b> <code class="inline">GET /wp/v2/posts</code> with parameters like <code class="inline">per_page</code>, <code class="inline">status</code>, <code class="inline">_fields</code> and <code class="inline">_embed</code>; custom types need <code class="inline">show_in_rest</code>.</li>
+    <li><b>Authentication:</b> public content needs none; cookie plus nonce is for code inside WordPress; application passwords (WordPress 5.6 onwards) over https suit a separate server.</li>
+    <li><b>WPGraphQL</b> offers a schema-based alternative where the client names the fields it wants; REST can narrow responses with <code class="inline">_fields</code> and <code class="inline">_embed</code>.</li>
+    <li><b>Freshness and previews are yours to build:</b> time-based or on-demand revalidation, and an authenticated draft fetch for preview.</li>
+    <li><b>Headless trades plugin compatibility and editor previews for front-end freedom.</b> If the team cannot own two deployments, do not.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> <a href="https://developer.wordpress.org/rest-api/" target="_blank">REST API Handbook</a> &middot; <a href="https://developer.wordpress.org/rest-api/using-the-rest-api/authentication/" target="_blank">REST API authentication</a> &middot; <a href="https://developer.wordpress.org/rest-api/reference/posts/" target="_blank">REST reference: Posts</a> &middot; <a href="https://developer.wordpress.org/rest-api/using-the-rest-api/global-parameters/" target="_blank">REST global parameters</a> &middot; <a href="https://www.wpgraphql.com/docs/introduction" target="_blank">WPGraphQL introduction</a> &middot; <a href="https://nextjs.org/docs/app/guides/incremental-static-regeneration" target="_blank">Next.js: Incremental Static Regeneration</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> I read the six pages above directly (the REST handbook home, authentication, the posts reference, global parameters, the WPGraphQL introduction and the Next.js ISR guide). The WPGraphQL page did not show an endpoint, a query example, or how previews work, so the query shape and the preview design are background knowledge. Also background knowledge or my own synthesis: the <code class="inline">rendered</code> fields and entity behaviour, paging headers, the webhook design, the compatibility table, the hosting-cost list and the scoring. The site, posts and names in the request explorer are invented for illustration. No claims are made about WPGraphQL version or plugin compatibility.</p>
+
+  <footer>Headless WordPress: REST and WPGraphQL &middot; WordPress for Front-End &amp; UI Developers &middot; part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id => document.getElementById(id);
+const esc=s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const seg=(root,fn) => { root.querySelectorAll('button').forEach(b => b.addEventListener('click',() => { root.querySelectorAll('button').forEach(x => x.classList.toggle('on',x===b)); fn(b.dataset.v); })); };
+const lines=(el,txt) => { el.innerHTML=txt.split('\n').map(l => '<span class="ln">'+esc(l)+'</span>').join(''); };
+const checks=(box,items,fn) => items.forEach(it => { const l=document.createElement('label'); const i=document.createElement('input'); i.type='checkbox'; i.checked=!!it.on; i.setAttribute('data-testid',it.tid); i.addEventListener('change',() => { it.on=i.checked; fn(); }); l.appendChild(i); l.appendChild(document.createTextNode(' '+it.label)); box.appendChild(l); });
+
+/* ---------- REST request explorer ---------- */
+(function(){
+  const P=[
+    {id:41,date:'2026-10-20T09:00:00',slug:'fish-and-chips-night',status:'publish',link:'https://example.test/fish-and-chips-night/',title:{rendered:'Fish &#038; chips night'},excerpt:{rendered:'<p>Join us on Friday.</p>'},featured_media:7,author:3},
+    {id:42,date:'2026-10-22T09:00:00',slug:'spring-menu',status:'publish',link:'https://example.test/spring-menu/',title:{rendered:'Spring menu'},excerpt:{rendered:'<p>New dishes arrive.</p>'},featured_media:8,author:3},
+    {id:43,date:'2026-10-25T09:00:00',slug:'winter-plans',status:'draft',link:'https://example.test/?p=43',title:{rendered:'Winter plans (draft)'},excerpt:{rendered:'<p>Not announced yet.</p>'},featured_media:0,author:3}
+  ];
+  const mode={v:'text'};
+  function pick(p,fields){ if(!fields) return p; return {id:p.id,slug:p.slug,title:p.title}; }
+  function draw(){
+    const n=+$('rq-n').value, st=$('rq-status').value, au=$('rq-auth').value, f=$('rq-fields').checked, em=$('rq-embed').checked;
+    let q=['per_page='+n]; if(st!=='publish') q.push('status='+st); if(f) q.push('_fields=id,slug,title'); if(em) q.push('_embed');
+    $('rq-url').textContent='GET https://example.test/wp-json/wp/v2/posts?'+q.join('&')+(au==='app'?'   (Authorization: Basic ...)':'');
+    let rows=P.filter(p => p.status===st).slice(0,n);
+    let note='';
+    if(st==='draft' && au==='none'){ rows=[]; note='Drafts are not public. The posts reference lists draft as an allowed status value but does not say what an unauthenticated request returns, so treat it as needing credentials. Switch credentials to an application password.'; }
+    else if(st==='draft'){ note='With an application password sent over https, the request is made as a user, so the draft can be returned (the reference does not state the capability needed, so check it).'; }
+    else { note='Published posts are public, so no credentials are needed.'; }
+    if(st==='publish' && au==='app') note+=' (Credentials were sent but not required here.)';
+    const out=rows.map(p => { const o=pick(p,f); if(em){ o._embedded={author:[{id:3,name:'Alex'}]}; } return o; });
+    if(st==='draft' && au==='none') lines($('rq-json'),'// nothing useful returned without credentials\n// (see the note below)');
+    else lines($('rq-json'),JSON.stringify(out,null,2));
+    if(f) note+=' _fields trimmed each post to the properties named, which saves payload.';
+    if(em) note+=' _embed added an _embedded key with the linked author, saving a second request.';
+    $('rq-note').textContent=note;
+    const ul=document.createElement('ul'); rows.forEach(p => { const li=document.createElement('li'); const a=document.createElement('a'); a.href='#'; a.onclick=e => { e.preventDefault(); }; if(mode.v==='text') a.textContent=p.title.rendered; else a.innerHTML=p.title.rendered; li.appendChild(a); ul.appendChild(li); });
+    const pg=$('rq-page'); pg.innerHTML=''; const h=document.createElement('h4'); h.textContent='Latest posts'; pg.appendChild(h); if(rows.length) pg.appendChild(ul); else { const e=document.createElement('div'); e.className='small'; e.textContent='(no posts to show)'; pg.appendChild(e); }
+  }
+  'rq-n rq-status rq-auth rq-fields rq-embed'.split(' ').forEach(i => $(i).addEventListener('change',draw));
+  seg($('rq-mode'),v => { mode.v=v; draw(); }); draw();
+})();
+
+/* ---------- auth quiz ---------- */
+(function(){
+  const O='No authentication|Cookie + X-WP-Nonce|Application password|Basic Auth plugin'.split('|');
+  const Q=[
+    'A build script on your front-end server needs to read draft posts.~2~A separate server is not logged in to WordPress, so cookies do not apply. Application passwords are sent with Basic Auth over https.',
+    'A custom screen inside wp-admin calls the REST API as the logged-in editor.~1~Code running inside WordPress as a logged-in user uses cookie authentication. It must send a nonce for the wp_rest action, preferably in the X-WP-Nonce header, or the user is treated as 0.',
+    'Your home page lists published posts and nothing private.~0~Public content stays accessible through the API without credentials.',
+    'Which does the handbook prefer over the Basic Auth plugin, which sends the username and password with every request and is only for development and testing?~2~Application passwords (WordPress 5.6 onwards) are the preferred route.'
+  ].map(s => { const p=s.split('~'); return [p[0],+p[1],p[2]]; });
+  let i=0,score=0,done=false; const box=$('au-scn'), nx=$('au-next');
+  function next(){ i++; show(); }
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="tg">DONE</div><div class="say" style="border-left-color:var(--forest)">You matched '+score+' of '+Q.length+'.</div><p class="small">Remember: the handbook also lists OAuth 1.0a and JSON Web Token plugins for remote apps.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=() => { i=0; score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; $('au-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tg">CALLER '+(i+1)+' / '+Q.length+'</div><div class="say">'+esc(q[0])+'</div><div class="opts">'+O.map((o,k) => '<button type="button" class="opt" data-k="'+k+'" data-testid="au-option-'+k+'">'+esc(o)+'</button>').join('')+'</div><div class="why" id="au-why"></div>';
+    box.querySelectorAll('.opt').forEach(b => b.onclick=() => { if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); $('au-why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+esc(q[2]); nx.disabled=false; $('au-score').textContent=score+' of '+(i+1)+' matched'; });
+  }
+  nx.onclick=next; show();
+})();
+
+/* ---------- REST vs GraphQL ---------- */
+(function(){
+  const F='title|t|1;excerpt|e|1;author name|a|1;featured image URL|i|0;category names|c|0'.split(';').map(x => { const p=x.split('|'); return {label:p[0],k:p[1],on:p[2]==='1',tid:'cm-want-'+p[0].split(' ')[0]}; });
+  checks($('cm-checks'),F,draw);
+  function draw(){
+    const w={}; F.forEach(f => { w[f.k]=f.on; });
+    const rel=[]; if(w.a) rel.push('users'); if(w.i) rel.push('media'); if(w.c) rel.push('categories');
+    const opt=$('cm-opt').checked; let rest=[]; let count;
+    const V='GET /wp/v2/';
+    if(opt){
+      if(rel.length){ rest.push(V+'posts?_embed'); count=1; }
+      else { const fl=['id']; if(w.t) fl.push('title'); if(w.e) fl.push('excerpt'); rest.push(V+'posts?_fields='+fl.join(',')); count=1; }
+    } else {
+      rest.push(V+'posts'); rel.forEach(r => rest.push(V+r+'?include=...')); count=rest.length;
+    }
+    lines($('cm-rest'),rest.join('\n'));
+    let g='{\n  posts {\n    nodes {\n'; if(w.t) g+='      title\n'; if(w.e) g+='      excerpt\n';
+    if(w.a) g+='      author { node { name } }\n'; if(w.i) g+='      featuredImage { node { sourceUrl } }\n'; if(w.c) g+='      categories { nodes { name } }\n';
+    g+='    }\n  }\n}'; lines($('cm-gql'),g);
+    $('cm-note').textContent='REST: '+count+' request'+(count>1?'s':'')+(opt?(rel.length?', each post returned whole with linked items embedded.':', trimmed to the fields named.'):'; related items need their own requests.')+' GraphQL: 1 request that returns only the fields named. The gap is smaller than it first looks once REST uses _embed and _fields; the real difference is that GraphQL describes the shape in one place and lets the client change it without a server change.';
+  }
+  $('cm-opt').addEventListener('change',draw); draw();
+})();
+
+/* ---------- freshness and preview ---------- */
+(function(){
+  const FL={
+    time:'Editor updates~Visitor, within interval~Interval passes~Later visitor|WordPress saves the change. The front end does not know yet.~The cached page is served, so the visitor still sees the old version.~After the revalidate interval, the next request still gets the stale page while a new one is generated in the background (per the ISR guide).~Once regeneration succeeds, the next visitor gets the updated page.',
+    demand:'Editor updates~Webhook~Revalidate call~Next visitor|WordPress saves the change. The front end does not know yet.~WordPress calls a URL on the front end (a webhook; you have to build it and secure it).~The front end calls revalidatePath or revalidateTag, which invalidates the cached entries. Per the guide, regeneration happens on the next request.~That visitor triggers regeneration and gets fresh data, without waiting for a timer.',
+    prev:'Editor clicks Preview~Front end preview route~Fetch the draft~Render, skip the cache|In a classic site the theme renders the draft at once. Here the button has to send the editor to your front end.~The front end needs a route that recognises a preview request, protected by a secret so the public cannot use it.~It fetches the draft with credentials: the REST status parameter accepts draft, and an application password can authenticate the request.~It renders that one response without using the cache, so the editor sees unpublished content. Until this is built, Preview shows nothing useful.'
+  };
+  let mode='time', step=0;
+  function cur(){ const k=$('fr-prev').checked?'prev':mode; const p=FL[k].split('|'); return {names:p[0].split('~'),notes:p[1].split('~')}; }
+  function draw(){
+    const d=cur(); if(step>=d.names.length) step=d.names.length-1;
+    $('fr-flow').innerHTML=d.names.map((n,i) => '<div class="hl-node '+(i===step?'on':(i<step?'done':''))+'"><b>'+(i+1)+'</b>'+esc(n)+'</div>').join('');
+    $('fr-note').textContent=d.notes[step];
+    $('fr-next').disabled = step>=d.names.length-1;
+  }
+  const rs=() => { step=0; draw(); };
+  seg($('fr-mode'),v => { mode=v; rs(); }); $('fr-prev').addEventListener('change',rs);
+  $('fr-next').onclick=() => { step++; draw(); }; $('fr-reset').onclick=rs; draw();
+})();
+
+/* ---------- what breaks ---------- */
+(function(){
+  const RAW='cpt~Custom post types and fields~Served by your theme templates.~mid~Exposed to the API only if registered with show_in_rest (per the reference); field plugin data needs its own exposure.#preview~Editor Preview button~The theme renders the draft.~bad~Needs a preview route built in your front end (see the section above).#seo~SEO plugin~The plugin prints meta tags and canonical URLs through the theme.~mid~Its data may be available over the API, but your front end must output the tags, and canonical URLs and sitemaps must point at the new domain.#forms~Forms plugin~A shortcode or block renders the form and handles the submission.~bad~Its markup and scripts are not delivered to your app: you rebuild the form or call the plugin\'s own endpoint.#builder~Block or page-builder layouts~The theme loads the styles and scripts the layouts need.~mid~You receive rendered HTML but not the theme\'s CSS and JavaScript, so you style it yourself.#menus~Menus~The theme prints them.~mid~Fetch the menu data and render it yourself.#search~Site search~WordPress search and the search template.~mid~Use the search parameter on the endpoints, or an external search service.#comments~Comments~The theme comment template.~mid~Rebuild the display and the submission through the API.#cache~Caching and CDN plugins~A page cache serves the theme pages.~mid~Cache the API responses and the front end separately: two layers to manage.';
+  const IT=RAW.split('#').map(s => { const p=s.split('~'); return {k:p[0],label:p[1],cl:p[2],v:p[3],ht:p[4],on:true,tid:'bk-use-'+p[0]}; });
+  let mode='classic';
+  checks($('bk-checks'),IT,draw);
+  function draw(){
+    let h='<div class="hl-r h"><div>Thing you rely on</div><div>Result</div><div>What happens</div></div>', mid=0, bad=0, n=0;
+    IT.forEach(it => { if(!it.on) return; n++; let cls='hit', lab='works', txt=it.cl; if(mode==='head'){ if(it.v==='bad'){ cls='bad'; lab='breaks'; bad++; } else { cls='mid2'; lab='needs work'; mid++; } txt=it.ht; } h+='<div class="hl-r"><div>'+esc(it.label)+'</div><div class="res '+cls+'">'+lab+'</div><div>'+esc(txt)+'</div></div>'; });
+    $('bk-rows').innerHTML=h;
+    $('bk-note').textContent = mode==='classic' ? 'With the theme front end, these all run through the same page, so each plugin does its job without extra work.' : (n? bad+' of '+n+' selected items break outright and '+mid+' need you to build or rebuild something. Nothing here is impossible; each item is work that the theme used to do for you.' : 'Tick at least one item.');
+  }
+  seg($('bk-mode'),v => { mode=v; draw(); }); draw();
+})();
+
+/* ---------- is it worth it ---------- */
+(function(){
+  const RAW='f1~A JavaScript team that already builds with a framework~2#f2~The same content must feed several channels (site, app, kiosk)~3#f3~The design needs an app-like, highly interactive front end~2#f4~You need front-end hosting or performance options a theme cannot give~1#a1~A small team that cannot own two deployments~3#a2~Editors rely on live preview and page-builder layouts~2#a3~Heavy use of plugins that print on the front end (forms, SEO, commerce)~2#a4~The budget or timeline is tight~2#a5~It is mostly a brochure site with a few pages~1';
+  const IT=RAW.split('#').map(s => { const p=s.split('~'); return {k:p[0],label:p[1],w:+p[2],on:false,tid:'pk-'+p[0]}; });
+  checks($('pk-checks'),IT,draw);
+  function draw(){
+    let f=0,a=0,n=0; IT.forEach(it => { if(!it.on) return; n++; if(it.k.charAt(0)==='f') f+=it.w; else a+=it.w; });
+    $('pk-for').style.width=Math.min(100,f/8*100)+'%'; $('pk-against').style.width=Math.min(100,a/10*100)+'%';
+    let out;
+    if(!n) out='Tick what applies to your project.';
+    else if(a>=f) out='<b>Stay with a WordPress theme.</b> The costs you ticked outweigh the benefits. If one part of the site needs a rich interactive widget, you can fetch from the REST API inside a theme without going fully headless.';
+    else if(f>a+2) out='<b>Headless deserves a serious look.</b> The reasons for clearly outweigh the costs, but plan for two deployments, a preview route and a plan for each plugin you rely on.';
+    else out='<b>Close call: take the smaller step first.</b> Keep the theme and use the API for the one place that needs it, then revisit when the case is clearer.';
+    $('pk-out').innerHTML=out+'<br><span class="small">For: '+f+'. Against: '+a+'. My own heuristic, not an official rule.</span>';
+  }
+  draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

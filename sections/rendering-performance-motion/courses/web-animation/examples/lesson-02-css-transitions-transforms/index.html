@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 2 — CSS Transitions & Transforms</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-header-inner">
+    <span class="lesson-badge">Lesson 02</span>
+    <h1>CSS Transitions & Transforms — Interactive Playground</h1>
+    <p class="subtitle">Four sandboxes to explore every concept hands-on.</p>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="transition">① Transition Explorer</button>
+    <button class="tab" data-tab="order">② Transform Order</button>
+    <button class="tab" data-tab="origin">③ Transform Origin</button>
+    <button class="tab" data-tab="threed">④ 3D Playground</button>
+  </nav>
+</header>
+
+<main class="app-main">
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 1: TRANSITION EXPLORER
+       ══════════════════════════════════════════════════ -->
+  <section class="tab-content active" id="tab-transition">
+    <div class="layout">
+
+      <!-- LEFT: controls -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Property -->
+        <div class="panel">
+          <div class="panel-header">transition-property</div>
+          <div class="panel-body">
+            <div class="prop-cards" id="prop-cards">
+              <label class="prop-card selected">
+                <input type="radio" name="tp" value="transform" checked hidden>
+                <div>
+                  <div class="prop-card-name">transform <span class="tag tag-free">compositor</span></div>
+                  <div class="prop-card-desc">GPU only — zero layout or paint cost</div>
+                </div>
+              </label>
+              <label class="prop-card">
+                <input type="radio" name="tp" value="opacity" hidden>
+                <div>
+                  <div class="prop-card-name">opacity <span class="tag tag-free">compositor</span></div>
+                  <div class="prop-card-desc">Alpha-blended by the GPU per frame</div>
+                </div>
+              </label>
+              <label class="prop-card">
+                <input type="radio" name="tp" value="background-color" hidden>
+                <div>
+                  <div class="prop-card-name">background-color <span class="tag tag-paint">paint</span></div>
+                  <div class="prop-card-desc">Repaints every frame — enable Paint Flashing in DevTools</div>
+                </div>
+              </label>
+              <label class="prop-card">
+                <input type="radio" name="tp" value="width" hidden>
+                <div>
+                  <div class="prop-card-name">width <span class="tag tag-layout">layout</span></div>
+                  <div class="prop-card-desc">Full reflow every frame — most expensive</div>
+                </div>
+              </label>
+              <label class="prop-card">
+                <input type="radio" name="tp" value="all" hidden>
+                <div>
+                  <div class="prop-card-name">all <span class="tag tag-avoid">avoid</span></div>
+                  <div class="prop-card-desc">Watches everything — unpredictable cost</div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Pipeline indicator -->
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+              <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px;">Pipeline hit per frame</div>
+              <div class="pipeline-row">
+                <div class="pip" id="pip-layout">Layout</div>
+                <div class="pip-arrow">→</div>
+                <div class="pip" id="pip-paint">Paint</div>
+                <div class="pip-arrow">→</div>
+                <div class="pip on-composite" id="pip-composite">Composite</div>
+              </div>
+              <div style="font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.5;" id="pip-note"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timing -->
+        <div class="panel">
+          <div class="panel-header">timing</div>
+          <div class="panel-body">
+            <div class="ctrl-row">
+              <span class="ctrl-label">duration</span>
+              <input type="range" id="dur" min="0.1" max="3" step="0.1" value="0.5">
+              <span class="ctrl-val" id="dur-val">0.5s</span>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">delay</span>
+              <input type="range" id="delay" min="0" max="1" step="0.05" value="0">
+              <span class="ctrl-val" id="delay-val">0s</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toggle -->
+        <button class="btn btn-primary" id="btn-toggle" style="width:100%;padding:12px;">Toggle state</button>
+
+        <!-- CSS output -->
+        <div class="code-block">
+          <div class="code-block-head">Generated CSS</div>
+          <pre id="css-out"></pre>
+        </div>
+
+      </div>
+
+      <!-- CENTRE: easing curve + stage -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Easing selector -->
+        <div class="panel">
+          <div class="panel-header">transition-timing-function</div>
+          <div class="panel-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">
+            <div>
+              <select id="easing-preset" style="width:100%;margin-bottom:10px;">
+                <option value="ease">ease</option>
+                <option value="ease-in">ease-in</option>
+                <option value="ease-out" selected>ease-out</option>
+                <option value="ease-in-out">ease-in-out</option>
+                <option value="linear">linear</option>
+                <option value="custom">custom cubic-bezier ↓</option>
+                <option value="steps(6,end)">steps(6, end)</option>
+              </select>
+              <!-- Custom bezier inputs -->
+              <div id="custom-bezier-row" style="display:none;gap:6px;flex-wrap:wrap;">
+                <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;width:100%;">Drag handles on curve or type values:</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;width:100%;">
+                  <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px;">x1</div><input type="number" id="bz-x1" min="0" max="1" step="0.01" value="0.34" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;font-family:var(--font-mono);"></div>
+                  <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px;">y1</div><input type="number" id="bz-y1" min="-1" max="2" step="0.01" value="1.56" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;font-family:var(--font-mono);"></div>
+                  <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px;">x2</div><input type="number" id="bz-x2" min="0" max="1" step="0.01" value="0.64" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;font-family:var(--font-mono);"></div>
+                  <div><div style="font-size:9px;color:var(--text-faint);margin-bottom:2px;">y2</div><input type="number" id="bz-y2" min="-1" max="2" step="0.01" value="1.0" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 6px;font-size:11px;font-family:var(--font-mono);"></div>
+                </div>
+              </div>
+              <!-- Easing info -->
+              <div class="easing-card" id="easing-card"></div>
+            </div>
+            <!-- Curve SVG -->
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:8px;">
+              <svg id="curve-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto;overflow:visible;">
+                <!-- grid -->
+                <line x1="40" y1="20" x2="40" y2="180" class="curve-grid-line"/>
+                <line x1="160" y1="20" x2="160" y2="180" class="curve-grid-line"/>
+                <line x1="40" y1="20" x2="160" y2="20" class="curve-grid-line"/>
+                <line x1="40" y1="100" x2="160" y2="100" class="curve-grid-line"/>
+                <line x1="40" y1="180" x2="160" y2="180" class="curve-grid-line"/>
+                <!-- axis labels -->
+                <text x="96" y="196" text-anchor="middle" fill="#6a7396" font-size="8" font-family="monospace">time →</text>
+                <text x="10" y="104" text-anchor="middle" fill="#6a7396" font-size="8" font-family="monospace" transform="rotate(-90,14,100)">progress</text>
+                <!-- handle lines (dashed) -->
+                <line id="h1-line" x1="40" y1="180" x2="40" y2="180" class="curve-handle-line"/>
+                <line id="h2-line" x1="160" y1="20" x2="160" y2="20" class="curve-handle-line"/>
+                <!-- curve path -->
+                <path id="curve-path" class="curve-path"/>
+                <!-- dot track (vertical position trace) -->
+                <path id="dot-track" class="curve-dot-track"/>
+                <!-- moving dot -->
+                <circle id="curve-dot" r="5" class="curve-dot" opacity="0"/>
+                <!-- handle points (draggable) -->
+                <circle id="h1-dot" r="6" class="curve-handle" opacity="0"/>
+                <circle id="h2-dot" r="6" class="curve-handle" opacity="0"/>
+              </svg>
+              <div style="font-size:10px;color:var(--text-faint);text-align:center;margin-top:4px;">drag handles to edit custom curve</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demo stage -->
+        <div class="panel" style="flex:1;">
+          <div class="panel-header"><span class="live-dot"></span> Demo</div>
+          <div class="stage" style="height:220px;">
+            <div class="axis-h"></div>
+            <div class="axis-v"></div>
+            <div class="stage-inner">
+              <div class="demo-subject" id="demo-subject">
+                <span id="demo-label">A</span>
+              </div>
+            </div>
+            <div class="stage-label" style="bottom:8px;left:10px;" id="state-label">State A</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: easing comparison strip -->
+      <div class="panel">
+        <div class="panel-header">All easings — same distance, same duration</div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:8px;" id="easing-strip"></div>
+        <div style="padding:0 16px 14px;font-size:10px;color:var(--text-faint);line-height:1.4;">
+          All balls travel the same distance in the same time — only the pace differs.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 2: TRANSFORM ORDER
+       ══════════════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-order">
+    <div class="layout">
+
+      <!-- LEFT: function list -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div class="panel">
+          <div class="panel-header">Transform functions — drag to reorder</div>
+          <div class="panel-body">
+            <div class="fn-list" id="fn-list"></div>
+            <div class="add-fn-row" style="margin-top:10px;">
+              <select id="add-fn-select">
+                <option value="">— add a function —</option>
+                <option value="translateX">translateX</option>
+                <option value="translateY">translateY</option>
+                <option value="rotate">rotate</option>
+                <option value="scaleX">scaleX</option>
+                <option value="scaleY">scaleY</option>
+                <option value="scale">scale</option>
+                <option value="skewX">skewX</option>
+              </select>
+              <button class="btn btn-ghost" id="add-fn-btn">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text-dim);line-height:1.7;">
+          <strong style="color:var(--text);">How it works:</strong> each transform shifts the local coordinate axes before the next one runs. <code style="color:var(--accent2);">rotate → translateX</code> moves along the <em>rotated</em> axis — diagonally from the page's view.
+        </div>
+
+        <!-- CSS output -->
+        <div class="code-block">
+          <div class="code-block-head">Current transform</div>
+          <pre id="order-css-out"></pre>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: stage -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="panel">
+          <div class="panel-header"><span class="live-dot"></span> Result — ghost shows original position</div>
+          <div class="transform-stage" id="transform-stage">
+            <!-- grid lines injected by JS -->
+            <div class="transform-ghost" id="t-ghost"></div>
+            <div class="transform-box" id="t-box">Box</div>
+            <!-- Axis arrows injected by JS -->
+            <svg id="axis-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;"></svg>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;">
+            <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px;">Local X axis</div>
+            <div style="font-size:12px;color:var(--red);" id="axis-x-desc">→ points screen-right</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;">
+            <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px;">Local Y axis</div>
+            <div style="font-size:12px;color:var(--green);" id="axis-y-desc">↓ points screen-down</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 3: TRANSFORM ORIGIN SANDBOX
+       ══════════════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-origin">
+    <div class="layout">
+
+      <!-- LEFT -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div class="panel">
+          <div class="panel-header">transform-origin</div>
+          <div class="panel-body">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">Click a preset or click anywhere on the element</div>
+            <div class="origin-presets">
+              <button class="origin-btn" data-ox="0%" data-oy="0%">top left</button>
+              <button class="origin-btn" data-ox="50%" data-oy="0%">top center</button>
+              <button class="origin-btn" data-ox="100%" data-oy="0%">top right</button>
+              <button class="origin-btn" data-ox="0%" data-oy="50%">center left</button>
+              <button class="origin-btn active" data-ox="50%" data-oy="50%">center</button>
+              <button class="origin-btn" data-ox="100%" data-oy="50%">center right</button>
+              <button class="origin-btn" data-ox="0%" data-oy="100%">bottom left</button>
+              <button class="origin-btn" data-ox="50%" data-oy="100%">bottom center</button>
+              <button class="origin-btn" data-ox="100%" data-oy="100%">bottom right</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">transforms</div>
+          <div class="panel-body">
+            <div class="ctrl-row">
+              <span class="ctrl-label">rotate</span>
+              <input type="range" id="o-rotate" min="-180" max="180" step="1" value="0">
+              <span class="ctrl-val" id="o-rotate-val">0°</span>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">scale</span>
+              <input type="range" id="o-scale" min="0.1" max="2.5" step="0.05" value="1">
+              <span class="ctrl-val" id="o-scale-val">1.00</span>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">skewX</span>
+              <input type="range" id="o-skew" min="-40" max="40" step="1" value="0">
+              <span class="ctrl-val" id="o-skew-val">0°</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="play-btn-row">
+          <button class="btn btn-primary" id="origin-play" style="flex:1;">▶ Auto-animate</button>
+          <button class="btn btn-ghost" id="origin-reset">Reset</button>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-head">Current CSS</div>
+          <pre id="origin-css-out"></pre>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: stage -->
+      <div class="panel">
+        <div class="panel-header"><span class="live-dot"></span> Click element to set origin · Orange dot = pivot</div>
+        <div class="origin-stage" id="origin-stage">
+          <div class="axis-h"></div>
+          <div class="axis-v"></div>
+          <div class="origin-subject" id="origin-subject">
+            <span>Click to set pivot</span>
+            <div class="origin-crosshair-h" id="o-ch"></div>
+            <div class="origin-crosshair-v" id="o-cv"></div>
+            <div class="origin-pivot-dot" id="o-dot"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 4: 3D PLAYGROUND
+       ══════════════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-threed">
+    <div class="layout">
+
+      <!-- LEFT: controls -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div class="panel">
+          <div class="panel-header">perspective (parent)</div>
+          <div class="panel-body">
+            <div class="ctrl-row">
+              <span class="ctrl-label">value</span>
+              <input type="range" id="persp" min="100" max="2000" step="50" value="800">
+              <span class="ctrl-val" id="persp-val">800px</span>
+            </div>
+            <div class="persp-ruler">
+              <div class="persp-ruler-pip" id="persp-pip" style="left:37%;"></div>
+            </div>
+            <div class="persp-ruler-labels">
+              <span style="color:var(--red);">100 extreme</span>
+              <span>800 natural</span>
+              <span style="color:var(--green);">2000 subtle</span>
+            </div>
+            <div class="ctrl-row" style="margin-top:12px;">
+              <span class="ctrl-label">origin-x</span>
+              <input type="range" id="persp-ox" min="0" max="100" value="50">
+              <span class="ctrl-val" id="persp-ox-val">50%</span>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">origin-y</span>
+              <input type="range" id="persp-oy" min="0" max="100" value="50">
+              <span class="ctrl-val" id="persp-oy-val">50%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">card rotation</div>
+          <div class="panel-body">
+            <div class="rot-grid">
+              <div class="rot-cell">
+                <div class="rot-axis rot-axis-x">rotateX</div>
+                <div class="ctrl-row" style="margin:0;flex-direction:column;align-items:stretch;gap:4px;">
+                  <input type="range" id="rx" min="-180" max="180" value="0">
+                  <span class="rot-val" id="rx-val">0°</span>
+                </div>
+              </div>
+              <div class="rot-cell">
+                <div class="rot-axis rot-axis-y">rotateY</div>
+                <div class="ctrl-row" style="margin:0;flex-direction:column;align-items:stretch;gap:4px;">
+                  <input type="range" id="ry" min="-180" max="180" value="0">
+                  <span class="rot-val" id="ry-val">0°</span>
+                </div>
+              </div>
+              <div class="rot-cell">
+                <div class="rot-axis rot-axis-z">rotateZ</div>
+                <div class="ctrl-row" style="margin:0;flex-direction:column;align-items:stretch;gap:4px;">
+                  <input type="range" id="rz" min="-180" max="180" value="0">
+                  <span class="rot-val" id="rz-val">0°</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button class="btn btn-primary" id="btn-flip" style="flex:1;">Flip card (Y)</button>
+              <button class="btn btn-ghost" id="btn-reset-rot">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">backface-visibility</div>
+          <div class="panel-body">
+            <div class="radio-row">
+              <label class="radio-opt">
+                <input type="radio" name="bfv" value="hidden" checked> hidden <span style="font-size:.7rem;color:var(--text-dim);">(correct flip)</span>
+              </label>
+              <label class="radio-opt">
+                <input type="radio" name="bfv" value="visible"> visible <span style="font-size:.7rem;color:var(--text-dim);">(see through)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">transition</div>
+          <div class="panel-body">
+            <div class="ctrl-row">
+              <span class="ctrl-label">duration</span>
+              <input type="range" id="flip-dur" min="0.1" max="2" step="0.1" value="0.6">
+              <span class="ctrl-val" id="flip-dur-val">0.6s</span>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">easing</span>
+              <select id="flip-ease">
+                <option value="ease-in-out" selected>ease-in-out</option>
+                <option value="ease">ease</option>
+                <option value="ease-out">ease-out</option>
+                <option value="linear">linear</option>
+                <option value="cubic-bezier(0.34,1.56,0.64,1)">spring</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-head">Current CSS</div>
+          <pre id="threed-css-out"></pre>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: stage -->
+      <div class="panel">
+        <div class="panel-header"><span class="live-dot"></span> 3D scene — drag sliders or click Flip</div>
+        <div class="threed-stage" id="threed-stage">
+          <div class="flip-scene" id="flip-scene">
+            <div class="flip-card-wrap" id="flip-card">
+              <div class="flip-face flip-front">
+                <div class="flip-face-title">Front</div>
+                <div class="flip-face-sub">transform-style: preserve-3d</div>
+              </div>
+              <div class="flip-face flip-back" style="transform:rotateY(180deg);">
+                <div class="flip-face-title">Back</div>
+                <div class="flip-face-sub">backface-visibility: hidden</div>
+              </div>
+            </div>
+          </div>
+          <!-- Annotation labels -->
+          <div class="stage-label" style="top:10px;left:12px;font-size:9px;color:var(--text-faint);" id="persp-label">perspective: 800px</div>
+          <div class="stage-label" style="bottom:10px;left:12px;font-size:9px;color:var(--text-faint);">transform-style: preserve-3d</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="main.js"></script>
+
+<link rel="stylesheet" href="../../../skin-anim.css">
+</body>
+</html>

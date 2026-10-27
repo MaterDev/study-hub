@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3 · The loop: use reshapes the user</title>
+<link rel="stylesheet" href="../../../../shared/theme.css">
+<link rel="stylesheet" href="aidiff.css">
+<style>
+  .off{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0;}
+  @media(max-width:700px){.off{grid-template-columns:1fr;}}
+  .offc{border:3px solid var(--outline); border-radius:6px; padding:14px; background:var(--surface); box-shadow:4px 4px 0 rgba(86,98,138,.14);}
+  .offc h4{margin:0 0 8px;} .pipe{display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-family:var(--font-ui); font-size:.8rem;}
+  .pipe span{border:2px solid var(--outline); border-radius:4px; padding:5px 8px; background:var(--paper);}
+  .pipe span.ai{background:#e3dbf6;} .pipe span.you{background:#cfe9d8;} .pipe span.lost{background:#f2cfcf; text-decoration:line-through;}
+  .ring{position:relative; width:320px; height:320px; margin:10px auto;}
+  .ring .rn{position:absolute; width:130px; margin-left:-65px; margin-top:-30px; text-align:center; border:3px solid var(--outline); border-radius:6px; padding:8px; background:var(--surface);
+    font-family:var(--font-ui); font-size:.8rem; transition:transform .2s steps(2), background .2s steps(2);}
+  .ring .rn b{display:block; font-family:var(--font-display); font-size:1rem; color:var(--ink);}
+  .ring.vicious .rn.hot{background:#f2cfcf; transform:scale(1.08);} .ring.virtuous .rn.hot{background:#cfe9d8; transform:scale(1.08);}
+  .ring .orbit{position:absolute; left:50%; top:50%; width:22px; height:22px; margin:-11px; background:var(--spr-coin) center/contain no-repeat; image-rendering:pixelated; animation:orbit 3.6s steps(36) infinite;}
+  @keyframes orbit{from{transform:rotate(0deg) translateX(118px) rotate(0deg);} to{transform:rotate(360deg) translateX(118px) rotate(-360deg);}}
+  .gb{display:flex; gap:22px; align-items:flex-end; height:210px; border-bottom:3px solid var(--outline); padding:0 8px; position:relative;}
+  .gb .zero{position:absolute; left:0; right:0; border-top:2px dashed var(--ink-faint);}
+  .grp{flex:1; display:flex; gap:8px; align-items:flex-end; justify-content:center; height:100%; position:relative;}
+  .gbar{width:44px; border:3px solid var(--outline); border-radius:3px; position:absolute; animation:grow-h .8s steps(8) both;}
+  .gl{display:flex; gap:22px; padding:6px 8px 0;} .gl span{flex:1; text-align:center; font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute);}
+</style>
+</head>
+<body data-step="3">
+<div class="wrap">
+  <div id="mod-strip"></div>
+  <h1>The Loop: Use Reshapes the User</h1>
+  <p class="subtitle">The paper's key move: your traits shape how you use AI &mdash; and sustained use reshapes those traits.</p>
+  <div class="objectives"><b class="h">IN THIS LESSON</b><ul>
+    <li>Explain why offloading <em>generation</em> is different from offloading retrieval.</li><li>See how vicious and virtuous loops form.</li>
+    <li>Separate assisted performance from independent capability.</li><li>Name the different risks for novices and experts — and read the evidence for each carefully.</li></ul></div>
+
+  <h2 id="sec1"><span class="num">1</span> What gets offloaded</h2>
+  <p class="lead">People naturally push mental work onto tools, guided by judgments about their own memory and ability that are often wrong. What's new with generative AI is <em>what</em> gets offloaded.</p>
+  <div class="off">
+    <div class="offc"><h4>🔎 Search / calculator era</h4><div class="pipe"><span class="ai">tool: retrieve</span>→<span class="you">you: frame</span>→<span class="you">you: generate</span>→<span class="you">you: judge</span></div><p class="cap">The tool fetches facts; you still do the thinking that builds skill.</p></div>
+    <div class="offc"><h4>✨ Generative AI era</h4><div class="pipe"><span class="you">you: prompt</span>→<span class="ai">AI: generate</span>→<span class="lost">you: generate</span>→<span class="you">you: judge?</span></div><p class="cap">The act most tied to building skill — generating — moves to the model.</p></div>
+  </div>
+  <div class="tangent-block"><div class="tangent-eyebrow">under the hood</div><h4>Desirable difficulties &amp; the generation effect</h4>
+    <p>Durable skill forms through effortful retrieval and generation &mdash; "desirable difficulties" that make practice feel harder and make capability stronger (Bjork &amp; Bjork 2011; Roediger &amp; Karpicke 2006). Information you <em>generate</em> is remembered better than information you merely read (Slamecka &amp; Graf 1978). So delegating drafting, diagnosis or problem decomposition doesn't just store knowledge elsewhere &mdash; it skips the work through which competence is built and maintained.</p></div>
+
+  <h2 id="sec2"><span class="num">2</span> Vicious and virtuous loops</h2>
+  <p>The paper calls individual differences <strong>loop selectors</strong>: rather than fixed predictors, they pick which loop you enter &mdash; and the loop then amplifies them.</p>
+  <div class="stage">
+    <div class="row" style="justify-content:center"><span class="seg" id="loop-seg"><button class="on" data-m="vicious">Vicious circle</button><button data-m="virtuous">Virtuous circle</button></span></div>
+    <div class="ring vicious" id="ring"><div class="orbit"></div></div>
+    <p class="cap" id="ring-cap" style="text-align:center"></p>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Performance is not learning</h2>
+  <p>This resolves an apparent contradiction: workplace studies say AI lifts weaker performers most; learning studies say erosion concentrates in similar users. Both hold because they measure different things &mdash; <strong>performance while assisted</strong> vs. <strong>capability once the tool is gone</strong> (Soderstrom &amp; Bjork 2015). The clearest test is a field experiment with about 1,000 high-school maths students:</p>
+  <div class="stage">
+    <div class="gb" id="gb"><div class="zero" id="zero"></div></div>
+    <div class="gl"><span>Practice (with AI)</span><span>Later exam (no AI)</span></div>
+    <div class="row" style="margin-top:10px;"><span class="lg" style="display:inline-flex;gap:6px;align-items:center"><i style="width:14px;height:14px;background:#f2cfcf;border:2px solid var(--outline);display:inline-block"></i>GPT Base (gives answers)</span>
+      <span style="display:inline-flex;gap:6px;align-items:center"><i style="width:14px;height:14px;background:#cfe9d8;border:2px solid var(--outline);display:inline-block"></i>GPT Tutor (gives hints)</span></div>
+    <p class="cap">Each bar is the difference vs. the no-AI control group. Practice: Base <b>+48%</b>, Tutor <b>+127%</b>. Exam: Base <b>−17%</b>, Tutor no significant difference. <span class="ev rct">field RCT</span> Bastani et al. 2025, PNAS.</p>
+  </div>
+  <div class="keyidea">The tool that "helped" most during practice left students <em>worse off</em> when it was gone. The hint-giving version kept the learner doing the generating &mdash; it removed the harm (though it didn't produce an exam gain either).</div>
+
+  <h2 id="sec4"><span class="num">4</span> Novices vs. experts: different harms</h2>
+  <p>"Novices are harmed by what AI gives them; experts by what AI relieves them of." The evidence for each comes from medicine, and both need careful reading.</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;"><h3 style="margin-top:0;">Experts: deskilling</h3>
+      <svg class="chart" viewBox="0 0 300 170"><rect width="300" height="170" fill="#f7fbfe"/>
+        <rect x="55" y="40" width="70" height="105" fill="#e3dbf6" stroke="#56628a" stroke-width="3"><animate attributeName="height" from="0" to="105" dur=".8s" fill="freeze"/><animate attributeName="y" from="145" to="40" dur=".8s" fill="freeze"/></rect>
+        <rect x="175" y="62" width="70" height="83" fill="#f2cfcf" stroke="#56628a" stroke-width="3"><animate attributeName="height" from="0" to="83" dur=".8s" begin=".3s" fill="freeze"/><animate attributeName="y" from="145" to="62" dur=".8s" begin=".3s" fill="freeze"/></rect>
+        <text x="90" y="32" font-size="13" text-anchor="middle" fill="#2a3150" font-weight="700">28.4%</text><text x="210" y="54" font-size="13" text-anchor="middle" fill="#2a3150" font-weight="700">22.4%</text>
+        <text x="90" y="162" font-size="11" text-anchor="middle" fill="#525c83">before AI</text><text x="210" y="162" font-size="11" text-anchor="middle" fill="#525c83">after AI exposure</text></svg>
+      <p class="cap">Experienced endoscopists' adenoma detection rate in procedures done <em>without</em> AI, 3 months before vs. after AI became routine. 4 Polish centres, 19 endoscopists. <span class="ev obs">observational</span> Budzyń et al. 2025.</p>
+      <div class="caveat"><b>Association, not proof:</b> a before/after comparison; critics point to patient-mix differences. Odds ratio 0.69 (95% CI 0.53–0.89).</div></div>
+    <div class="card" style="margin:0;"><h3 style="margin-top:0;">It's conditional</h3>
+      <svg class="chart" viewBox="0 0 300 170"><rect width="300" height="170" fill="#f7fbfe"/>
+        <rect x="100" y="10" width="100" height="135" fill="rgba(125,104,179,.12)"/><text x="150" y="26" font-size="11" text-anchor="middle" fill="#5b4a94" font-weight="700">AI on</text>
+        <polyline points="20,110 100,108 120,70 180,66 200,104 280,106" fill="none" stroke="#b35c5c" stroke-width="3"/>
+        <polyline points="20,60 100,60 200,58 280,60" fill="none" stroke="#4a6fa8" stroke-width="3" stroke-dasharray="6 4"/>
+        <text x="282" y="122" font-size="10" text-anchor="end" fill="#b35c5c">less experienced</text><text x="282" y="52" font-size="10" text-anchor="end" fill="#4a6fa8">experienced</text>
+        <text x="20" y="162" font-size="10" fill="#525c83">baseline</text><text x="280" y="162" font-size="10" text-anchor="end" fill="#525c83">after withdrawal</text></svg>
+      <p class="cap">Illustrative shape. A trial that introduced, then withdrew AI found <b>no sustained deskilling or upskilling</b>: less-experienced endoscopists improved with AI and returned to baseline after; experienced ones didn't change. <span class="ev rct">prospective trial</span> Pedersen et al. 2026.</p>
+      <div class="caveat"><b>Different outcome:</b> detection of polyps ≥5 mm, not ADR — so it can't share an axis with the chart on the left.</div></div>
+  </div>
+  <div class="analogy">The paper's reading: erosion is a property of <strong>the person, the tool and the design configuration</strong> &mdash; not of AI itself. That's the hopeful part: if it's about design, it's fixable (Lesson 4).</div>
+
+  <h2 id="sec5"><span class="num">5</span> Two more signals &mdash; read with care</h2>
+  <div class="pitfall"><div class="icon">🇮🇹</div><div><b>The Italy ChatGPT ban (natural experiment).</b> When Italy briefly banned ChatGPT in 2023, less-experienced GitHub users' output <em>rose</em> in quantity and quality for a couple of days; experienced users showed no overall change. The paper cites this as "novices did worse with AI on complex coding." <span class="ev pre">preprint · observational</span> Kreitmeir &amp; Raschky 2024 — short window, activity as a stand-in for productivity, not peer-reviewed.</div></div>
+  <div class="pitfall"><div class="icon">🧠</div><div><b>"Your brain on ChatGPT."</b> EEG showed weaker brain connectivity when essays were written with an LLM than with search or no tools; the authors call the effect "cognitive debt." <span class="ev pre">preprint · 54 people, 18 in final session</span> Kosmyna et al. 2025 — intriguing, small, and not yet peer-reviewed.</div></div>
+  <div class="pitfall"><div class="icon">🔁</div><div><b>Skill erosion in the wild.</b> A case study of one organization's (pre-generative) automation traced reliance → complacency → unnoticed skill erosion that neither staff nor managers saw coming. <span class="ev obs">qualitative case study</span> Rinta-Kahila et al. 2023.</div></div>
+
+  <div id="mod-next"></div>
+  <footer>Lesson 3 · AI Effectiveness module · your Study Hub</footer>
+</div>
+<script src="aidiff.js"></script>
+<script>
+/* loop ring */
+(function(){
+  const L={vicious:[['Reliance','hand the hard part to AI'],['Disuse','skip the practice'],['Erosion','skill & vigilance fade'],['More reliance','you need it more now']],
+           virtuous:[['Attempt','try it yourself first'],['Feedback','AI checks & shapes it'],['Growth','schemas get built'],['Better use','you judge AI better']]};
+  const C={vicious:'Performance-oriented dependence feeds deskilling (Yang et al. 2026); named the "vicious circle of skill erosion" in IS research.',
+           virtuous:'Mastery-oriented users turn the same tool into reskilling and upskilling (Yang et al. 2026). Same tool — different loop.'};
+  const ring=document.getElementById('ring'), cap=document.getElementById('ring-cap'); let i=0;
+  const pos=[[160,40],[290,160],[160,282],[30,160]];
+  function r(m){ ring.className='ring '+m; ring.querySelectorAll('.rn').forEach(n=>n.remove());
+    L[m].forEach(([a,b],k)=>ring.insertAdjacentHTML('beforeend','<div class="rn" style="left:'+pos[k][0]+'px; top:'+pos[k][1]+'px"><b>'+a+'</b>'+b+'</div>')); cap.textContent=C[m]; }
+  aidiffSeg('loop-seg',r); r('vicious');
+  setInterval(()=>{ const n=ring.querySelectorAll('.rn'); n.forEach(x=>x.classList.remove('hot')); n[i%4].classList.add('hot'); i++; },900);
+})();
+/* Bastani grouped bars (vs control) */
+(function(){
+  const gb=document.getElementById('gb'); const H=210, top=20, maxUp=130, maxDown=20; const unit=(H-top-30)/(maxUp+maxDown);
+  const zeroY=top+maxUp*unit; document.getElementById('zero').style.top=zeroY+'px';
+  const groups=[[48,127],[-17,0]];
+  groups.forEach((g,gi)=>{ const grp=document.createElement('div'); grp.className='grp';
+    g.forEach((v,k)=>{ const b=document.createElement('div'); b.className='gbar'; const h=Math.max(4,Math.abs(v)*unit);
+      b.style.background=k?'#cfe9d8':'#f2cfcf'; b.style.left=(k?'calc(50% + 4px)':'calc(50% - 48px)'); b.style.height=h+'px';
+      if(v>=0){ b.style.bottom=(H-zeroY)+'px'; } else { b.style.top=zeroY+'px'; b.style.transformOrigin='top'; }
+      b.style.animationDelay=(gi*0.3+k*0.15)+'s'; b.title=(v>0?'+':'')+v+'%';
+      const lab=document.createElement('div'); lab.style.cssText='position:absolute;font-family:var(--font-mono);font-size:.8rem;color:var(--ink);width:48px;text-align:center;'+(k?'left:calc(50% + 2px);':'left:calc(50% - 50px);')+(v>=0?'bottom:'+(H-zeroY+h+4)+'px':'top:'+(zeroY+h+4)+'px');
+      lab.textContent=v===0?'≈0':(v>0?'+':'')+v+'%'; grp.appendChild(b); grp.appendChild(lab); });
+    gb.appendChild(grp); });
+})();
+</script>
+<script src="../../../registry.js"></script>
+<script src="../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

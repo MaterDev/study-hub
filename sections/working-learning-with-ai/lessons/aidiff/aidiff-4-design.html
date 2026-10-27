@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4 · Designing for capability</title>
+<link rel="stylesheet" href="../../../../shared/theme.css">
+<link rel="stylesheet" href="aidiff.css">
+<style>
+  .hz{display:grid; grid-template-columns:1fr 60px 1fr; align-items:center; gap:8px; margin:14px 0;}
+  @media(max-width:700px){.hz{grid-template-columns:1fr;}}
+  .hzc{border:3px solid var(--outline); border-radius:6px; padding:16px; background:var(--surface); box-shadow:4px 4px 0 rgba(86,98,138,.14); text-align:center;}
+  .hzc .big{font-size:2rem;} .hzc h4{margin:6px 0 4px;} .hzc p{font-size:.9rem; margin:0;}
+  .hz .plus{text-align:center; font-family:var(--font-pixel); font-size:1rem; color:var(--vermil);}
+  .race{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:700px){.race{grid-template-columns:1fr;}}
+  .lane{border:3px solid var(--outline); border-radius:6px; padding:12px; background:var(--paper);}
+  .lane h4{margin:0 0 8px; font-size:1rem;}
+  .stp{display:flex; gap:8px; align-items:center; border:2px solid var(--line-strong); border-radius:5px; padding:7px 9px; margin-bottom:6px; background:var(--surface);
+    font-family:var(--font-ui); font-size:.84rem; opacity:.25; transition:opacity .25s steps(2);}
+  .stp.on{opacity:1;} .stp .who{font-family:var(--font-pixel); font-size:.42rem; padding:3px 5px; border:2px solid var(--outline); border-radius:3px; flex:none;}
+  .stp .who.ai{background:#e3dbf6;} .stp .who.you{background:#cfe9d8;}
+  .meter{display:flex; align-items:center; gap:8px; margin-top:8px; font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute);}
+  .meter .t{flex:1; height:12px; border:2px solid var(--outline); border-radius:3px; background:#fff; overflow:hidden;}
+  .meter .f{height:100%; width:0; transition:width .5s steps(5);}
+  .mx{display:grid; grid-template-columns:90px 1fr 1fr; gap:8px; margin:14px 0; font-family:var(--font-ui);}
+  .mx .h{font-size:.74rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-mute); text-align:center; align-self:end;}
+  .mx .rh{font-size:.8rem; font-weight:800; color:var(--ink); align-self:center;}
+  .mx .c{border:3px solid var(--outline); border-radius:6px; padding:10px 12px; font-size:.86rem; background:var(--surface);}
+  .mx .c.good{background:#e8f4ec;} .mx .c.bad{background:#f8e4e4;}
+  .mx .c b{display:block; color:var(--ink); font-family:var(--font-display); font-size:.98rem;}
+  .lever{display:grid; grid-template-columns:52px 1fr; gap:14px; align-items:start; border:3px solid var(--outline); border-radius:6px; padding:14px 16px; margin:12px 0; background:var(--surface); box-shadow:4px 4px 0 rgba(86,98,138,.14);}
+  .lever .ic{width:48px; height:48px; display:grid; place-items:center; font-size:1.6rem; border:3px solid var(--outline); border-radius:6px; background:var(--gold);}
+  .lever h4{margin:0 0 4px;} .lever p{margin:0 0 6px; font-size:.94rem;} .lever .dev{font-family:var(--font-ui); font-size:.86rem; color:var(--ink-soft); background:var(--paper); border-left:4px solid var(--plum); padding:8px 10px; border-radius:3px;}
+</style>
+</head>
+<body data-step="4">
+<div class="wrap">
+  <div id="mod-strip"></div>
+  <h1>Designing for Capability</h1>
+  <p class="subtitle">If erosion is a property of design, design is the fix. Keep the productivity &mdash; protect the skill.</p>
+  <div class="objectives"><b class="h">IN THIS LESSON</b><ul>
+    <li>Judge AI use on two horizons, not one.</li><li>Apply the three levers: AI-free zones, preserved generation, matched scaffolding.</li><li>Translate them into a developer's daily workflow.</li></ul></div>
+
+  <h2 id="sec1"><span class="num">1</span> Two horizons of effective use</h2>
+  <p class="lead">Information-systems research defines effective use as use that advances the task at hand. The paper adds a second horizon: use is only truly effective if it also preserves or builds the capability you'll need when the tool is absent.</p>
+  <div class="hz">
+    <div class="hzc"><div class="big">⏱️</div><h4>Horizon 1 · the task</h4><p>Did this work get done well and fast? What productivity metrics &mdash; and most AI training &mdash; optimize.</p></div>
+    <div class="plus">+</div>
+    <div class="hzc"><div class="big">🌱</div><h4>Horizon 2 · the capability</h4><p>Could you still do it, or judge it, without the tool? A habit that only wins Horizon 1 can quietly lose Horizon 2.</p></div>
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> Preserved generation, side by side</h2>
+  <p>The single most evidence-backed lever: keep <em>your</em> attempt first, then let AI shape or check it. Press play to watch the same task done both ways:</p>
+  <div class="stage">
+    <div class="race">
+      <div class="lane"><h4>Ask-first</h4><div id="laneA"></div>
+        <div class="meter">task done<div class="t"><div class="f" id="mA1" style="background:#cfe9d8"></div></div></div>
+        <div class="meter">skill built<div class="t"><div class="f" id="mA2" style="background:#f2cfcf"></div></div></div></div>
+      <div class="lane"><h4>Attempt-first</h4><div id="laneB"></div>
+        <div class="meter">task done<div class="t"><div class="f" id="mB1" style="background:#cfe9d8"></div></div></div>
+        <div class="meter">skill built<div class="t"><div class="f" id="mB2" style="background:#cfe9d8"></div></div></div></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="seg" style="padding:7px 14px; font-family:var(--font-ui); font-weight:700; background:var(--gold); cursor:pointer;" id="play">▶ Play</button><span>Illustrative · grounded in the hint-vs-answer result from Lesson 3 (Bastani et al. 2025).</span></div>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Match the scaffolding to the person</h2>
+  <p>Decades of instructional research say one policy can't fit everyone. <strong>Aptitude–treatment interactions</strong>: structured environments help people with lower self-regulation, minimal structure suits high-ability learners (Cronbach &amp; Snow 1977). The <strong>expertise reversal effect</strong>: scaffolding that novices need can become redundant or harmful for experts (Kalyuga et al. 2003). Applied to AI:</p>
+  <div class="mx">
+    <span></span><span class="h">Full answers</span><span class="h">Hints / critique of your attempt</span>
+    <span class="rh">Novice in this domain</span>
+    <div class="c bad"><b>Risky</b>Succeeds at the task, skips the schema-building. Upskilling inhibition.</div>
+    <div class="c good"><b>Best</b>Structure plus your own generation — the least expert gain the most.</div>
+    <span class="rh">Expert in this domain</span>
+    <div class="c good"><b>Fine inside the frontier</b>Efficient — but schedule unassisted practice to keep vigilance.</div>
+    <div class="c"><b>Often redundant</b>Useful at the jagged edge, or to stress-test your reasoning.</div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> The three levers, for a developer</h2>
+  <p>The paper offers three immediately actionable levers for organizations. Here's each one translated into an individual developer's practice:</p>
+  <div class="lever"><div class="ic">✍️</div><div><h4>Preserved generation</h4><p>Configure tools (and habits) to elicit your own attempt before offering help.</p>
+    <div class="dev">Write the function signature, the bug hypothesis, or the outline first. Then ask "what's wrong with this?" or "finish this", not "write this".</div></div></div>
+  <div class="lever"><div class="ic">🚧</div><div><h4>AI-free zones</h4><p>Protect selected tasks from full automation so core skills keep getting practiced.</p>
+    <div class="dev">Pick 2–3 skills you want to stay sharp at — reading stack traces, reviewing diffs, writing migrations — and do them unassisted on a rhythm.</div></div></div>
+  <div class="lever"><div class="ic">🎚️</div><div><h4>Matched scaffolding</h4><p>Give novices the structure that builds schemas; give experts the unassisted practice that maintains vigilance.</p>
+    <div class="dev">New framework? Ask for explanations and hints. Home turf? Delegate freely inside the frontier, and spot-check harder where it's jagged.</div></div></div>
+  <div class="analogy">None of these give up AI. Each changes <em>how</em> it's deployed so that today's speed isn't bought with tomorrow's skill. A cheap Horizon-2 test: every so often, redo a recent AI-assisted task without AI. If you can't, that's a capability you offloaded rather than built.</div>
+
+  <h2 id="sec5"><span class="num">5</span> For teams and leads</h2>
+  <p>The paper's HRD implications apply directly to anyone onboarding people onto AI tools:</p>
+  <div class="pitfall"><div class="icon">🧪</div><div><b>Assess before training.</b> AI literacy isn't universal — a financial analyst, a writer and a developer need different competencies. Profile metacognitive awareness, calibration and domain depth rather than issuing one course.</div></div>
+  <div class="pitfall"><div class="icon">🌱</div><div><b>Protect the entry-level path.</b> If junior tasks are fully delegated, the work that used to build seniors disappears. Decide deliberately which tasks stay human for learning's sake.</div></div>
+  <div class="pitfall"><div class="icon">📏</div><div><b>Measure both horizons.</b> Track assisted output <em>and</em> unassisted capability; a dashboard of only the first will look great while the second slips.</div></div>
+
+  <div id="mod-next"></div>
+  <footer>Lesson 4 · AI Effectiveness module · your Study Hub</footer>
+</div>
+<script src="aidiff.js"></script>
+<script>
+(function(){
+  const A=[['you','Read the bug report'],['ai','"Fix this bug" → AI writes the patch'],['you','Skim it, tests pass, ship']];
+  const B=[['you','Read the bug report'],['you','Form a hypothesis, sketch the fix'],['ai','"Critique my fix" → AI spots an edge case'],['you','Revise, tests pass, ship']];
+  const la=document.getElementById('laneA'), lb=document.getElementById('laneB'); let timers=[];
+  function draw(el,s){ el.innerHTML=s.map(([w,t])=>'<div class="stp"><span class="who '+w+'">'+(w==='ai'?'AI':'YOU')+'</span>'+t+'</div>').join(''); }
+  function play(){ timers.forEach(clearTimeout); timers=[]; draw(la,A); draw(lb,B); ['mA1','mA2','mB1','mB2'].forEach(id=>document.getElementById(id).style.width='0');
+    la.querySelectorAll('.stp').forEach((s,i)=>timers.push(setTimeout(()=>s.classList.add('on'),400+i*900)));
+    lb.querySelectorAll('.stp').forEach((s,i)=>timers.push(setTimeout(()=>s.classList.add('on'),400+i*900)));
+    timers.push(setTimeout(()=>{ mA1.style.width='100%'; mA2.style.width='15%'; },400+3*900));
+    timers.push(setTimeout(()=>{ mB1.style.width='100%'; mB2.style.width='80%'; },400+4*900)); }
+  const mA1=document.getElementById('mA1'),mA2=document.getElementById('mA2'),mB1=document.getElementById('mB1'),mB2=document.getElementById('mB2');
+  document.getElementById('play').addEventListener('click',play); play();
+})();
+</script>
+<script src="../../../registry.js"></script>
+<script src="../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

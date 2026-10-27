@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modern WordPress Tooling: Timber, Sage, Vite and Composer</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .stage div{min-width:0;}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .chk{display:flex; gap:6px; align-items:center; font-family:var(--font-mono); font-size:.76rem; color:var(--ink);} .chk input{accent-color:var(--cobalt);}
+  .tl-src{font-family:var(--font-mono); font-size:.78rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:8px 0; overflow-x:auto; line-height:1.6;}
+  .tl-src .ln{display:block; padding:0 14px; white-space:pre; border-left:4px solid transparent;} .tl-src .ln.on{background:rgba(143,184,255,.22); border-left-color:#ffd23f;} .tl-src .ln.cap{color:#9fb0e8; font-style:italic;}
+  .tl-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.tl-two{grid-template-columns:minmax(0,1fr);}}
+  .tl-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); overflow-wrap:anywhere;}
+  .tl-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .tl-box ul{margin:0; padding-left:18px;} .tl-box li{margin-bottom:4px;}
+  .tl-note{font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-height:2.6em; margin-top:8px; overflow-wrap:anywhere;}
+  .tl-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .tl-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:6px 10px; font:700 .76rem var(--font-ui); cursor:pointer;} .tl-seg button:last-child{border-right:0;} .tl-seg button.on{background:var(--cobalt); color:#fff;}
+  .tl-ok{color:var(--forest); font-weight:800;} .tl-bad{color:var(--vermil); font-weight:800;}
+  .tl-chip{display:inline-block; font-family:var(--font-mono); font-size:.74rem; border:2px solid var(--line-strong); border-radius:6px; padding:2px 8px; margin:2px 4px 2px 0; background:var(--paper); color:var(--ink); cursor:pointer;} .tl-chip.on{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .tl-flow{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:10px 0;}
+  .tl-node{border:2px solid var(--line-strong); border-radius:10px; padding:8px 10px; background:var(--paper); color:var(--ink); font-family:var(--font-ui); font-size:.78rem; opacity:.55;} .tl-node b{display:block; font-family:var(--font-mono); font-size:.72rem; margin-bottom:3px;} .tl-node.on{opacity:1; border-color:var(--cobalt); background:var(--cobalt-soft);} .tl-node.done{opacity:1; border-color:var(--forest);} .tl-node.err{opacity:1; border-color:var(--vermil); background:var(--vermil-soft);}
+  .tl-files{font-family:var(--font-mono); font-size:.76rem; color:var(--ink); line-height:1.7; white-space:pre-wrap; overflow-wrap:anywhere;}
+  .tl-files .hl{background:var(--ochre-soft); border-radius:4px; padding:0 4px;}
+  .tl-row3{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;}
+  .tl-bug{display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.7fr); gap:6px; align-items:center; font-family:var(--font-ui); font-size:.78rem; border-top:1px solid var(--line); padding:6px 0; color:var(--ink);} .tl-bug.h{font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); border-top:0; font-weight:800;}
+  .tl-bug .res{font-weight:800; text-align:center; padding:2px 6px; border-radius:6px; border:2px solid var(--line-strong);} .tl-bug .res.hit{border-color:var(--forest); background:var(--forest-soft);} .tl-bug .res.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .tl-pick{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px;} .tl-pick fieldset{border:2px solid var(--outline); border-radius:12px; padding:8px 12px; margin:0; min-width:0;} .tl-pick legend{font-family:var(--font-pixel); font-size:.44rem; color:var(--ink-mute); padding:0 6px;} .tl-pick label{display:flex; gap:6px; align-items:flex-start; font-family:var(--font-ui); font-size:.82rem; color:var(--ink); padding:3px 0;} .tl-pick input{accent-color:var(--cobalt); margin-top:3px;}
+  .tl-meter{display:flex; gap:4px; margin:10px 0;} .tl-meter span{flex:1; height:12px; border-radius:4px; background:var(--sunken); border:1px solid var(--line-strong);} .tl-meter span.on{background:var(--cobalt);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Modern WordPress Tooling: Timber, Sage, Vite and Composer</h1>
+  <p class="subtitle">What a "professional" WordPress stack adds on top of a classic theme: a templating layer, a build step for assets, dependency management, and automated checks, plus what each one costs the next person who inherits the project.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What problem each tool solves</a></li>
+      <li><a href="#sec2">The same template, three ways</a></li>
+      <li><a href="#sec3">From source assets to enqueued files</a></li>
+      <li><a href="#sec4">Composer and the Bedrock layout</a></li>
+      <li><a href="#sec5">Linting, formatting and a pull request gate</a></li>
+      <li><a href="#sec6">What the next developer inherits</a></li>
+      <li><a href="#sec7">Does the extra tooling pay off?</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What problem each tool solves</h2>
+  <p class="lead">A classic theme (lessons 1.2 and 2.1) needs nothing but PHP, HTML and CSS files in a folder. That is its strength. Modern tooling answers four specific complaints that show up as a project grows.</p>
+  <p>Think of each tool as an answer to one question, and notice that you can adopt them separately:</p>
+  <ul>
+    <li><b>PHP and HTML are tangled in templates.</b> <b>Timber</b> keeps the PHP in one file that gathers data, and puts the markup in a Twig template. Its docs describe it as separating logic from markup, and it can be adopted gradually, replacing one part of a theme at a time.</li>
+    <li><b>The front-end has outgrown a hand-written stylesheet.</b> <b>Sage</b>, from the Roots team, is a starter theme built on Laravel's Blade templates, Tailwind CSS and block editor support. Its installation uses Composer and an npm build.</li>
+    <li><b>Assets need compiling.</b> A <b>bundler</b> (Vite, or webpack through <code class="inline">@wordpress/scripts</code>) turns modern source files into the files the browser loads.</li>
+    <li><b>Dependencies are copied by hand.</b> <b>Composer</b> declares libraries in a file and installs the exact versions for everyone. The Roots project <b>Bedrock</b> goes further and manages WordPress core and plugins with Composer too.</li>
+  </ul>
+  <p class="small">Lesson 2.1 covered the Loop and escaping inside classic templates; this lesson assumes that and looks at what wraps around it. If you know a theme with no build step, such as a Shopify theme, the classic WordPress theme is the same situation: files you edit are files that run.</p>
+
+  <h2 id="sec2"><span class="num">2</span> The same template, three ways</h2>
+  <p>Here is one small piece of a template, a list of posts each with a linked title, an image and an excerpt, written three ways. Pick a style, then click a concern (the loop, the title, the image, the excerpt) to see where it lands in each syntax. The right-hand box says what the style asks of the project.</p>
+  <div class="stage" data-testid="tl-tpl">
+    <div class="row"><div class="tl-seg" id="tp-style" data-testid="tp-style"><button type="button" class="on" data-v="php" data-testid="tp-php">Classic PHP</button><button type="button" data-v="twig" data-testid="tp-twig">Timber (Twig)</button><button type="button" data-v="blade" data-testid="tp-blade">Sage (Blade)</button></div><span id="tp-chips"></span></div>
+    <div class="tl-two">
+      <div class="tl-src" id="tp-code" data-testid="tp-code"></div>
+      <div class="tl-box"><h5>WHAT THIS STYLE ASKS OF THE PROJECT</h5><ul id="tp-needs" data-testid="tp-needs"></ul></div>
+    </div>
+    <div class="tl-note" id="tp-note" data-testid="tp-note"></div>
+  </div>
+  <p class="small">The Timber PHP and Twig lines follow the example on Timber's own site (<code class="inline">Timber::context()</code>, <code class="inline">Timber::render()</code>, <code class="inline">post.title</code>, <code class="inline">post.thumbnail.src</code>). The list variable <code class="inline">posts</code>, and the Blade code, are my own illustration from background knowledge of how these tools are usually written, so check the current docs before copying. Do not assume the output of a Twig or Blade expression is escaped the way you want; read each tool's escaping rules, then apply the lesson 2.1 habit: escape late and match the function to the place.</p>
+
+  <h2 id="sec3"><span class="num">3</span> From source assets to enqueued files</h2>
+  <p>A bundler takes your source JavaScript and CSS and writes the files the browser will load. The WordPress side then has to put the right tags in the page. The route differs between development, where a server rebuilds as you type, and production, where you build once. Choose a tool and a mode and step through it.</p>
+  <div class="stage" data-testid="tl-pipe">
+    <div class="row"><div class="tl-seg" id="pp-tool" data-testid="pp-tool"><button type="button" class="on" data-v="vite" data-testid="pp-vite">Vite</button><button type="button" data-v="wps" data-testid="pp-wps">@wordpress/scripts (webpack)</button></div><div class="tl-seg" id="pp-mode" data-testid="pp-mode"><button type="button" class="on" data-v="prod" data-testid="pp-prod">production build</button><button type="button" data-v="dev" data-testid="pp-dev">development</button></div><label class="chk"><input type="checkbox" id="pp-skip" data-testid="pp-skip-build"> forgot to run the build</label></div>
+    <div class="tl-flow" id="pp-flow" data-testid="pp-flow"></div>
+    <div class="row"><button class="btn" id="pp-next" data-testid="pp-next">Next step &rarr;</button><button class="btn sec" id="pp-reset" data-testid="pp-reset">Reset</button></div>
+    <div class="tl-note" id="pp-note" data-testid="pp-note"></div>
+  </div>
+  <p>What the sources say. For Vite, the backend integration guide describes production as: run the build, read the generated <code class="inline">manifest</code> to find the hashed file names, then output the stylesheet links followed by the script tag. In development, the page instead loads the <code class="inline">@vite/client</code> script and your entry file from the dev server. For <code class="inline">@wordpress/scripts</code>, <code class="inline">build</code> makes one production build and <code class="inline">start</code> runs an incremental build that rebuilds on change; the default output folder is <code class="inline">build/</code>, and it uses webpack. Sage's install page warns that the site will not load without built assets and shows a missing Vite manifest error. Which tool is right depends on what you are building: <code class="inline">@wordpress/scripts</code> is aimed at blocks and plugins, Sage uses Vite for a whole theme.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Composer and the Bedrock layout</h2>
+  <p>Composer reads a <code class="inline">composer.json</code> that lists what the project <code class="inline">require</code>s. Running <code class="inline">composer update</code> resolves the versions, writes the exact ones into <code class="inline">composer.lock</code>, and installs into <code class="inline">vendor/</code>. Running <code class="inline">composer install</code> instead installs exactly what the lock file says, so everyone gets the same code. The Composer docs advise committing the lock file and keeping <code class="inline">vendor/</code> out of git. Try it with two machines.</p>
+  <div class="stage" data-testid="tl-comp">
+    <div class="row"><button class="btn" id="cp-req" data-testid="cp-require">You: composer require a package</button><button class="btn" id="cp-upd" data-testid="cp-update">You: composer update</button><button class="btn sec" id="cp-inst" data-testid="cp-install">Teammate: git pull, composer install</button><button class="btn sec" id="cp-reset" data-testid="cp-reset">Reset</button></div>
+    <div class="tl-row3">
+      <div class="tl-box"><h5>composer.json (in git)</h5><div class="tl-files" id="cp-json" data-testid="cp-json"></div></div>
+      <div class="tl-box"><h5>composer.lock (in git)</h5><div class="tl-files" id="cp-lock" data-testid="cp-lock"></div></div>
+      <div class="tl-box"><h5>vendor/ on your machine</h5><div class="tl-files" id="cp-v1" data-testid="cp-vendor-you"></div></div>
+      <div class="tl-box"><h5>vendor/ on teammate's machine</h5><div class="tl-files" id="cp-v2" data-testid="cp-vendor-team"></div></div>
+    </div>
+    <div class="tl-note" id="cp-note" data-testid="cp-note"></div>
+  </div>
+  <p class="small">The package name and "resolution" numbers above are illustrative; real lock files record real version numbers. Your own code loads libraries through the autoloader that Composer generates, <code class="inline">vendor/autoload.php</code>, and PSR-4 autoloading maps a namespace to a source folder so classes load without manual <code class="inline">require</code> lines.</p>
+  <p>Bedrock applies the same idea to the whole site. According to the Roots page, it keeps only your own code, configuration and dependency list in git; WordPress core, plugins and themes are installed by Composer; the public document root is a <code class="inline">web/</code> folder; and secrets such as database credentials live in a <code class="inline">.env</code> file outside the repository. Compare the two layouts:</p>
+  <div class="stage" data-testid="tl-bed">
+    <div class="row"><div class="tl-seg" id="bd-seg" data-testid="bd-layout"><button type="button" class="on" data-v="std" data-testid="bd-standard">Standard WordPress</button><button type="button" data-v="bed" data-testid="bd-bedrock">Bedrock</button></div></div>
+    <div class="tl-two"><div class="tl-box"><h5>FOLDERS</h5><div class="tl-files" id="bd-tree" data-testid="bd-tree"></div></div><div class="tl-box"><h5>WHAT IS IN GIT, AND WHERE SECRETS LIVE</h5><ul id="bd-list" data-testid="bd-list"></ul></div></div>
+  </div>
+  <p class="small">The Bedrock folder names come from the Roots page. The standard layout shown is the usual WordPress arrangement (background knowledge).</p>
+
+  <h2 id="sec5"><span class="num">5</span> Linting, formatting and a pull request gate</h2>
+  <p>Tooling is also how a team agrees on quality without arguing in review. <code class="inline">@wordpress/scripts</code> bundles several checks as commands: <code class="inline">lint-js</code> (ESLint for JavaScript and TypeScript), <code class="inline">lint-style</code> (stylelint for CSS and Sass), <code class="inline">lint-pkg-json</code> for <code class="inline">package.json</code>, <code class="inline">format</code> for formatting, and <code class="inline">build</code>. A continuous integration (CI) service can run the ones you choose on every pull request. Turn checks on and see which of these seeded mistakes would be stopped before merge.</p>
+  <div class="stage" data-testid="tl-ci">
+    <div class="row" id="ci-checks"></div>
+    <div id="ci-table" data-testid="ci-table"></div>
+    <div class="tl-note" id="ci-note" data-testid="ci-note"></div>
+  </div>
+  <p class="small">Which check catches which mistake follows from what each command is described to do. The mistakes are my own examples. "Your own tests" means tests you wrote, such as PHP unit tests; none ships with this lesson, and running PHP lint or coding-standard tools is a further option this lesson did not research.</p>
+
+  <h2 id="sec6"><span class="num">6</span> What the next developer inherits</h2>
+  <p>Every tool above is also something a future maintainer must understand, install and run. This is the cost side. Tick what a project uses and read the list that the next developer, and the deploy process, now carry. A classic theme with none of it is the baseline.</p>
+  <div class="stage" data-testid="tl-inh">
+    <div class="row" id="in-checks"></div>
+    <div class="tl-two"><div class="tl-box"><h5>THE NEXT DEVELOPER MUST KNOW OR INSTALL</h5><ul id="in-know" data-testid="in-know"></ul></div><div class="tl-box"><h5>THE DEPLOY AND HOSTING MUST HANDLE</h5><ul id="in-deploy" data-testid="in-deploy"></ul></div></div>
+    <div class="tl-note" id="in-note" data-testid="in-note"></div>
+  </div>
+  <p class="small">The items come from the tools' own docs where cited above (Sage needs Composer and an npm build; Bedrock uses <code class="inline">web/</code>, <code class="inline">.env</code> and Composer for core; Composer docs on <code class="inline">install</code> and the lock file). Statements about hosting needs, such as Node being needed at build time rather than at run time, are background knowledge.</p>
+
+  <h2 id="sec7"><span class="num">7</span> Does the extra tooling pay off?</h2>
+  <p>There is no official rule here, so this picker is <b>my own rough heuristic, not a standard</b>. It counts three things that tend to decide the question: how many developers work on the project, how long it will live, and who maintains it after you. Answer for a real project you have in mind.</p>
+  <div class="stage" data-testid="tl-pick">
+    <div class="tl-pick">
+      <fieldset><legend>TEAM</legend>
+        <label><input type="radio" name="pk-team" value="0" checked data-testid="pk-team-solo"> One developer</label>
+        <label><input type="radio" name="pk-team" value="1" data-testid="pk-team-small"> Two to five developers</label>
+        <label><input type="radio" name="pk-team" value="2" data-testid="pk-team-large"> A larger or rotating team</label></fieldset>
+      <fieldset><legend>PROJECT LIFE</legend>
+        <label><input type="radio" name="pk-life" value="0" checked data-testid="pk-life-short"> A campaign or small site, under a year</label>
+        <label><input type="radio" name="pk-life" value="1" data-testid="pk-life-mid"> One to three years</label>
+        <label><input type="radio" name="pk-life" value="2" data-testid="pk-life-long"> Many years, with regular releases</label></fieldset>
+      <fieldset><legend>HANDOFF</legend>
+        <label><input type="radio" name="pk-hand" value="-2" checked data-testid="pk-hand-client"> The client's next developer is unknown and expects a classic theme</label>
+        <label><input type="radio" name="pk-hand" value="1" data-testid="pk-hand-us"> You or your team keep maintaining it</label>
+        <label><input type="radio" name="pk-hand" value="2" data-testid="pk-hand-agency"> An agency or team that already shares this stack</label></fieldset>
+    </div>
+    <div class="tl-meter" id="pk-meter" data-testid="pk-meter"></div>
+    <div class="tl-box"><h5>SUGGESTED STARTING POINT</h5><div id="pk-out" data-testid="pk-out"></div></div>
+  </div>
+  <p>Read the result as a conversation starter. Two honest caveats: the tools can be adopted one at a time (Composer or a bundler on their own is a far smaller step than a full Sage and Bedrock stack), and the real cost is rarely the first week. It is the second developer, the hosting change, and the year when nobody remembers why the build step exists.</p>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Each tool answers one problem:</b> Timber for tangled templates, a bundler for assets, Composer for dependencies, linters and CI for agreed quality.</li>
+    <li><b>Timber</b> keeps PHP that gathers data (<code class="inline">Timber::context()</code>, <code class="inline">Timber::render()</code>) apart from Twig markup, and can be adopted gradually.</li>
+    <li><b>Sage</b> brings Blade, Tailwind and Vite; its install uses Composer and an npm build, and the site will not load without built assets.</li>
+    <li><b>Dev and production differ:</b> a dev server during development, a build plus manifest lookup in production.</li>
+    <li><b>Composer:</b> commit <code class="inline">composer.lock</code>, install from it, keep <code class="inline">vendor/</code> out of git; Bedrock extends this to core and plugins.</li>
+    <li><b>It pays off on long-lived, multi-developer projects,</b> and costs you when the client's next developer expects a classic theme.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> <a href="https://timber.github.io/docs/v2/" target="_blank">Timber documentation</a> &middot; <a href="https://roots.io/sage/docs/installation/" target="_blank">Sage installation (Roots)</a> &middot; <a href="https://roots.io/bedrock/" target="_blank">Bedrock (Roots)</a> &middot; <a href="https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/" target="_blank">@wordpress/scripts</a> &middot; <a href="https://vite.dev/guide/backend-integration" target="_blank">Vite: backend integration</a> &middot; <a href="https://getcomposer.org/doc/01-basic-usage.md" target="_blank">Composer: basic usage</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> I read each page above directly. No version numbers are stated in this lesson on purpose: the tools change quickly, so check each project's current requirements. Not confirmed by those pages, so background knowledge or my own synthesis: the Blade example and the <code class="inline">posts</code> variable in the Twig example, escaping behaviour of Twig and Blade, the claim that <code class="inline">@wordpress/scripts</code> is aimed at blocks and plugins, hosting and Node build-time requirements, the standard WordPress folder layout, the CI mistake table, the cost lists and the scoring in the picker (all illustrative).</p>
+
+  <footer>Modern WordPress Tooling: Timber, Sage, Vite and Composer &middot; WordPress for Front-End &amp; UI Developers &middot; part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id => document.getElementById(id);
+const esc=s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const seg=(root,fn) => { root.querySelectorAll('button').forEach(b => b.addEventListener('click',() => { root.querySelectorAll('button').forEach(x => x.classList.toggle('on',x===b)); fn(b.dataset.v); })); };
+const li=arr => arr.map(t => '<li>'+t+'</li>').join('');
+
+/* ---------- templates three ways ---------- */
+(function(){
+  const CON=[['loop','the loop'],['title','linked title'],['thumb','image'],['text','excerpt']];
+  const S={
+    php:{ lines:[['<?php while ( have_posts() ) : the_post(); ?>','loop'],['  <article>',''],['    <h2><a href="<?php echo esc_url( get_permalink() ); ?>">','title'],['      <?php echo esc_html( get_the_title() ); ?></a></h2>','title'],['    <?php the_post_thumbnail( \'medium\' ); ?>','thumb'],['    <?php the_excerpt(); ?>','text'],['  </article>',''],['<?php endwhile; ?>','loop']],
+      needs:['PHP and WordPress template tags only','Nothing to install or build','Logic and markup share one file, which is the tangle Timber targets'],
+      note:'You escape by hand, with the functions from lesson 2.1. the_post_thumbnail() prints a ready-made image tag.' },
+    twig:{ lines:[['// archive.php','cap'],['$context = Timber::context();','loop'],['Timber::render( \'archive.twig\', $context );','loop'],['// archive.twig','cap'],['{% for post in posts %}','loop'],['  <article>',''],['    <h2><a href="{{ post.link }}">','title'],['      {{ post.title }}</a></h2>','title'],['    <img src="{{ post.thumbnail.src }}" alt="{{ post.thumbnail.alt }}">','thumb'],['    {{ post.excerpt }}','text'],['  </article>',''],['{% endfor %}','loop']],
+      needs:['The Timber library (installed with Composer; see the Timber docs for the current method)','Twig syntax for designers and front-end developers','A PHP file plus a Twig file per template'],
+      note:'The PHP file gathers data and calls render; the Twig file only displays it. Posts become objects, so post.thumbnail.src replaces several lines of WordPress PHP.' },
+    blade:{ lines:[['@while ( have_posts() ) @php( the_post() )','loop'],['  <article>',''],['    <h2><a href="{{ get_permalink() }}">','title'],['      {!! get_the_title() !!}</a></h2>','title'],['    {!! get_the_post_thumbnail( null, \'medium\' ) !!}','thumb'],['    {!! get_the_excerpt() !!}','text'],['  </article>',''],['@endwhile','loop']],
+      needs:['Sage, installed with Composer and built with npm (Vite)','Blade syntax from Laravel','A build step before the theme will load its assets'],
+      note:'Blade templates live in the theme and compile to PHP. In Blade, double curly braces escape and the bang form prints raw, which is why raw output needs care (background knowledge, verify in the Blade docs).' }
+  };
+  let st='php', con='';
+  const chips=$('tp-chips');
+  CON.forEach(c => { const s=document.createElement('button'); s.type='button'; s.className='tl-chip'; s.textContent=c[1]; s.setAttribute('data-testid','tp-concern-'+c[0]); s.onclick=() => { con = con===c[0] ? '' : c[0]; draw(); }; chips.appendChild(s); });
+  function draw(){
+    const d=S[st];
+    $('tp-code').innerHTML=d.lines.map(l => '<span class="ln'+(l[1]==='cap'?' cap':(con&&l[1]===con?' on':''))+'">'+esc(l[0])+'</span>').join('');
+    $('tp-needs').innerHTML=li(d.needs.map(esc));
+    $('tp-note').textContent=d.note;
+    Array.from(chips.children).forEach((b,i) => b.classList.toggle('on',CON[i][0]===con));
+  }
+  seg($('tp-style'),v => { st=v; draw(); }); draw();
+})();
+
+/* ---------- pipeline ---------- */
+(function(){
+  const T={
+    vite:{
+      prod:[['Source','src/app.js, app.css'],['vite build','writes hashed files and a manifest'],['Read manifest','PHP looks up the hashed names'],['Enqueue','CSS links, then the script tag'],['Browser','loads the built files']],
+      dev:[['Source','src/app.js, app.css'],['Dev server','serves and rebuilds on change'],['Page tags','@vite/client and the entry, from the dev server'],['Browser','loads from the dev server, updates as you edit']]},
+    wps:{
+      prod:[['Source','src/index.js'],['wp-scripts build','webpack writes build/'],['Enqueue','your PHP enqueues the built file'],['Browser','loads the build output']],
+      dev:[['Source','src/index.js'],['wp-scripts start','incremental build, rebuilds on change'],['Enqueue','same PHP, pointing at build/'],['Browser','reload to see the rebuilt files']]}
+  };
+  const NOTE={
+    vite:{prod:['Your source files are what you edit.','The build bundles and minifies, and (with the manifest enabled) records which hashed file belongs to which entry.','Because file names are hashed, PHP cannot hard-code them: it reads the manifest.','Per the Vite guide: stylesheet links for the entry first, then the script tag for its file.','The browser gets plain built files.'],dev:['Your source files are what you edit.','A dev server rebuilds on change instead of writing final files.','Per the Vite guide the page loads @vite/client and your entry from that server.','You see changes without a production build.']},
+    wps:{prod:['Your source files are what you edit.','build makes one production build with webpack; default output folder is build/.','You write the PHP that enqueues the output (this lesson did not confirm the exact files WordPress generates beside it).','The browser gets plain built files.'],dev:['Your source files are what you edit.','start runs an incremental development build that rebuilds on change.','The same enqueue code points at build/.','You reload to see the rebuilt output.']}
+  };
+  let tool='vite', mode='prod', step=0;
+  function draw(){
+    const nodes=T[tool][mode], skip=$('pp-skip').checked && mode==='prod';
+    $('pp-flow').innerHTML=nodes.map((n,i) => { let c=i===step?'on':(i<step?'done':''); if(skip&&i>=1&&i<=2&&i<=step) c='err'; return '<div class="tl-node '+c+'"><b>'+(i+1)+'. '+esc(n[0])+'</b>'+esc(n[1])+'</div>'; }).join('');
+    let msg=NOTE[tool][mode][step];
+    if(skip&&step>=1&&step<=2) msg = tool==='vite' ? 'The build was skipped, so there is no manifest to read. Sage reports this as a missing Vite manifest error and the site will not load its assets.' : 'The build was skipped, so build/ is empty or stale and the enqueue points at files that do not exist.';
+    if(skip&&step>2) msg='The page renders with no styles or scripts: the browser asks for files that were never built. A deploy process that runs the build is part of the cost of this tooling.';
+    $('pp-note').textContent=msg;
+    $('pp-next').disabled = step>=nodes.length-1;
+  }
+  const rs=() => { step=0; draw(); };
+  seg($('pp-tool'),v => { tool=v; rs(); }); seg($('pp-mode'),v => { mode=v; rs(); });
+  $('pp-skip').addEventListener('change',rs);
+  $('pp-next').onclick=() => { step++; draw(); }; $('pp-reset').onclick=rs; draw();
+})();
+
+/* ---------- composer ---------- */
+(function(){
+  let json=false, lock=0, v1=0, v2=0, last='';
+  function draw(){
+    $('cp-json').innerHTML = json ? '{\n  "require": {\n    <span class="hl">"acme/forms-helper": "^1.0"</span>\n  }\n}' : '{\n  "require": {}\n}';
+    $('cp-lock').innerHTML = lock ? 'acme/forms-helper\n<span class="hl">resolved on run '+lock+'</span>' : '(no lock file yet)';
+    $('cp-v1').textContent = v1 ? 'vendor/acme/forms-helper\n(from resolution '+v1+')\nvendor/autoload.php' : '(empty)';
+    $('cp-v2').textContent = v2 ? 'vendor/acme/forms-helper\n(from resolution '+v2+')\nvendor/autoload.php' : '(empty: fresh clone)';
+    let m=last||'Start with composer require.';
+    if(lock && v2 && v2!==lock) m+=' The teammate\'s vendor/ is out of step with the lock file: they should run composer install.';
+    if(lock && v1!==lock) m+=' Your vendor/ no longer matches the lock file.';
+    $('cp-note').textContent=m;
+  }
+  $('cp-req').onclick=() => { if(json){ last='The package is already required.'; draw(); return; } json=true; lock++; v1=lock; last='composer require added it to composer.json, resolved a version into composer.lock and installed it into your vendor/.'; draw(); };
+  $('cp-upd').onclick=() => { if(!json){ last='Nothing is required yet, so there is nothing to update.'; draw(); return; } lock++; v1=lock; last='composer update re-resolved within the constraint, rewrote composer.lock and installed the result. Commit the new lock file.'; draw(); };
+  $('cp-inst').onclick=() => { if(!lock){ last='There is no lock file yet, so the teammate has nothing to install.'; draw(); return; } v2=lock; last='composer install used the lock file as written, so the teammate now has exactly the same code as you, without re-resolving anything.'; draw(); };
+  $('cp-reset').onclick=() => { json=false; lock=0; v1=0; v2=0; last=''; draw(); };
+  draw();
+})();
+
+/* ---------- bedrock ---------- */
+(function(){
+  const D={
+    std:{tree:'my-site/\n  wp-admin/\n  wp-includes/\n  wp-config.php\n  wp-content/\n    themes/\n    plugins/\n    uploads/',list:['A typical project keeps the whole WordPress install together, so core files sit beside your code','Plugins are installed from the admin screen or copied in','Settings and secrets are commonly in wp-config.php (background knowledge)']},
+    bed:{tree:'my-site/\n  composer.json\n  config/application.php\n  .env\n  vendor/\n  web/            (document root)\n    wp/           (WordPress core)\n    app/          (content directory)\n      mu-plugins/\n      plugins/\n      themes/\n      uploads/',list:['In git: your custom code, configuration and the dependency list','Not in git: WordPress core, plugins and themes, which Composer installs','Secrets such as database credentials live in .env, outside the repository','Config and vendor/ sit outside the public web/ folder']}
+  };
+  function draw(v){ $('bd-tree').textContent=D[v].tree; $('bd-list').innerHTML=li(D[v].list.map(esc)); }
+  seg($('bd-seg'),draw); draw('std');
+})();
+
+/* ---------- CI gate ---------- */
+(function(){
+  const pairs=s => s.split(';').map(x => x.split('|'));
+  const CK=pairs('lintjs|wp-scripts lint-js;lintstyle|wp-scripts lint-style;lintpkg|wp-scripts lint-pkg-json;build|wp-scripts build;tests|your own tests');
+  const BUGS=pairs('A script defines a variable and never uses it|lintjs;A stylesheet has a misspelled property|lintstyle;package.json has invalid content|lintpkg;A script imports a file that does not exist|build;A function returns the wrong value for an edge case|tests');
+  const on={}; const box=$('ci-checks');
+  CK.forEach(c => { on[c[0]]=false; const l=document.createElement('label'); l.className='chk'; const i=document.createElement('input'); i.type='checkbox'; i.setAttribute('data-testid','ci-check-'+c[0]); i.addEventListener('change',() => { on[c[0]]=i.checked; draw(); }); l.appendChild(i); l.appendChild(document.createTextNode(' '+c[1])); box.appendChild(l); });
+  function draw(){
+    let caught=0;
+    let h='<div class="tl-bug h"><div>Mistake in a pull request</div><div>Caught by</div><div>Result</div></div>';
+    BUGS.forEach(b => { const ok=on[b[1]]; if(ok) caught++; const by=CK.filter(c => c[0]===b[1])[0][1]; h+='<div class="tl-bug"><div>'+esc(b[0])+'</div><div>'+esc(by)+'</div><div class="res '+(ok?'hit':'bad')+'">'+(ok?'stopped':'merged')+'</div></div>'; });
+    $('ci-table').innerHTML=h;
+    $('ci-note').textContent = caught===0 ? 'With no checks, every mistake reaches the main branch and a reviewer has to spot it by eye.' : caught===BUGS.length ? 'Everything is caught, at the price of more to configure, run and keep passing.' : caught+' of '+BUGS.length+' stopped automatically. The rest depend on a reviewer or on a check you have not turned on.';
+  }
+  draw();
+})();
+
+/* ---------- inheritance ---------- */
+(function(){
+  const IT=[
+    ['timber','Timber',['Twig syntax, plus where the PHP data-gathering file and the Twig file each live','The Timber library as a dependency'],['Composer must run on deploy (or vendor/ must be shipped)']],
+    ['sage','Sage',['Blade syntax and Laravel conventions','Composer and npm commands to set the theme up'],['An npm build must run so the Vite manifest exists, or the site will not load its assets','Composer install on deploy']],
+    ['bundler','A bundler on its own (Vite or wp-scripts)',['Node, npm and the build commands','Where source files end and built files begin'],['A build step before release','A decision on whether built files are committed']],
+    ['composer','Composer dependencies',['How composer.json, composer.lock and the autoloader work'],['composer install from the lock file; vendor/ is normally not committed']],
+    ['bedrock','Bedrock layout',['The web/ document root, the .env file and config per environment','Core and plugins are Composer packages, not files you drop in'],['The host must point its document root at web/','Environment variables for secrets']],
+    ['ci','Lint and CI checks',['What the checks are and how to make them pass locally'],['A CI service and its configuration']]
+  ];
+  const box=$('in-checks'), on={};
+  IT.forEach(t => { on[t[0]]=false; const l=document.createElement('label'); l.className='chk'; const i=document.createElement('input'); i.type='checkbox'; i.setAttribute('data-testid','in-check-'+t[0]); i.addEventListener('change',() => { on[t[0]]=i.checked; draw(); }); l.appendChild(i); l.appendChild(document.createTextNode(' '+t[1])); box.appendChild(l); });
+  function draw(){
+    let know=['PHP, the template hierarchy and the Loop (the classic baseline)'], dep=['Copy the theme and plugin files to the server'], n=0;
+    IT.forEach(t => { if(on[t[0]]){ n++; know=know.concat(t[2]); dep=dep.concat(t[3]); } });
+    $('in-know').innerHTML=li(know.map(esc)); $('in-deploy').innerHTML=li(dep.map(esc));
+    $('in-note').textContent = n===0 ? 'Baseline: anyone who knows WordPress themes can open this project and start. Nothing to build.' : n+' tool(s) chosen: that is '+(know.length-1)+' extra thing(s) to learn and '+(dep.length-1)+' extra thing(s) for deploy. None is hard alone; together they are the handoff friction.';
+  }
+  draw();
+})();
+
+/* ---------- decision picker ---------- */
+(function(){
+  const val=name => { const r=document.getElementsByName(name); for(let i=0;i<r.length;i++) if(r[i].checked) return +r[i].value; return 0; };
+  function draw(){
+    const s=val('pk-team')+val('pk-life')+val('pk-hand');
+    let out;
+    if(s<=0) out='<b>Stay classic.</b> A small or short-lived project, or one that will be handed to someone expecting a classic theme, gains little from a larger stack. If you want one thing, a linter or <code class="inline">@wordpress/scripts</code> for a custom block is a small, contained step.';
+    else if(s<=2) out='<b>Add one tool, not the stack.</b> Composer for dependencies, or a bundler for assets, solves a real problem on its own. Keep classic templates unless the PHP and HTML tangle is hurting.';
+    else if(s<=4) out='<b>Timber or Sage is reasonable.</b> A team that will live with the code for a while gets agreed structure from a templating layer, plus a bundler and Composer. Write the setup down for the next person.';
+    else out='<b>The full stack can pay off.</b> Sage with Vite, Composer (Bedrock if you want core managed too) and CI checks suit a long-lived project with a team that shares the stack. Budget for onboarding and for a deploy that runs builds.';
+    $('pk-out').innerHTML=out+'<br><span class="small">Score '+s+' on a scale of -2 to 6. My own heuristic, not an official one.</span>';
+    const m=$('pk-meter'); m.innerHTML=''; for(let i=-2;i<=6;i++){ const e=document.createElement('span'); if(i<=s) e.className='on'; m.appendChild(e); }
+  }
+  'pk-team pk-life pk-hand'.split(' ').forEach(n => { const r=document.getElementsByName(n); for(let i=0;i<r.length;i++) r[i].addEventListener('change',draw); });
+  draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

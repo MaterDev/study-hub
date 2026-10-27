@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 1 — Browser Rendering Pipeline</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="app-header-inner">
+      <span class="lesson-badge">Lesson 01</span>
+      <h1>Browser Rendering Pipeline</h1>
+      <p class="subtitle">Observe the real cost difference between expensive and compositor-only animations.</p>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="compare">Side-by-side comparison</button>
+      <button class="tab" data-tab="thrashing">Layout thrashing demo</button>
+      <button class="tab" data-tab="layers">Layer promotion</button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ── TAB 1: Side-by-side comparison ─────────────────── -->
+    <section class="tab-content active" id="tab-compare">
+
+      <div class="instructions">
+        <h2>Step 1 — Enable Paint Flashing in DevTools</h2>
+        <p>Open DevTools (F12) → More tools → Rendering → check <strong>Paint flashing</strong>. Click Animate and watch the tracks. The left box has a gradient + box-shadow to make its repaint region larger and more visible. The right box uses <code>will-change: transform</code> so it gets its own layer — no paint flash at all.</p>
+        <p style="margin-top: 8px; color: var(--yellow);">💡 If flashing looks similar: use the <strong>Performance panel</strong> instead. Record while animating and compare the purple "Layout" bars in the flame chart — they only appear for the left box.</p>
+      </div>
+
+      <div class="compare-grid">
+        <!-- Expensive -->
+        <div class="demo-card">
+          <div class="demo-card-header">
+            <span class="cost-badge cost-high">❌ Expensive</span>
+            <code>left: 200px</code>
+          </div>
+          <div class="stage-tags">
+            <span class="stage stage-layout">Layout</span>
+            <span class="stage-arrow">→</span>
+            <span class="stage stage-paint">Paint</span>
+            <span class="stage-arrow">→</span>
+            <span class="stage stage-composite">Composite</span>
+          </div>
+          <div class="demo-track demo-track-bad">
+            <div class="demo-box" id="box-bad">
+              <span>left</span>
+            </div>
+            <div class="track-sibling">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <p class="demo-note">Gradient + box-shadow makes the repaint region large and visible. Watch for the green flash covering the whole track.</p>
+          <ul class="demo-detail">
+            <li>Every frame, the browser recalculates the geometry of the entire page (Layout)</li>
+            <li>It then redraws the box's gradient and shadow into a bitmap (Paint) — this is what causes the green flash</li>
+            <li>Only then does it hand the result to the GPU (Composite)</li>
+            <li>On a complex page, Layout alone can take 5–10ms — eating most of your 16ms frame budget</li>
+          </ul>
+        </div>
+
+        <!-- Performant -->
+        <div class="demo-card">
+          <div class="demo-card-header">
+            <span class="cost-badge cost-low">✅ Performant</span>
+            <code>transform: translateX()</code>
+          </div>
+          <div class="stage-tags">
+            <span class="stage stage-composite">Composite only</span>
+          </div>
+          <div class="demo-track">
+            <div class="demo-box" id="box-good">
+              <span>transform</span>
+            </div>
+            <div class="track-sibling">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <p class="demo-note">Runs on the compositor thread. No paint flash — the box is on its own GPU layer.</p>
+          <ul class="demo-detail">
+            <li>The box was already painted once when the page loaded — that bitmap lives on the GPU</li>
+            <li>Each frame, the GPU simply repositions the existing texture — no Layout, no Paint</li>
+            <li><code>will-change: transform</code> tells the browser to promote this element to its own layer upfront</li>
+            <li>This animation stays smooth even if your JavaScript is busy doing other work on the main thread</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="btn-animate">▶ Animate both</button>
+        <button class="btn" id="btn-reset">Reset</button>
+      </div>
+
+      <div class="instructions" style="margin-top: 32px;">
+        <h2>Step 2 — Check the Performance panel</h2>
+        <p>Click Record in the Performance panel, click Animate, wait 2 seconds, stop recording. Find the Frames row. Click a frame to see the Layout/Paint/Composite breakdown in the flame chart.</p>
+      </div>
+    </section>
+
+    <!-- ── TAB 2: Layout Thrashing ─────────────────────────── -->
+    <section class="tab-content" id="tab-thrashing">
+
+      <div class="instructions">
+        <h2>What is layout thrashing?</h2>
+        <p>When you <strong>read</strong> a layout property like <code>offsetWidth</code>, the browser needs an up-to-date layout to answer you. If you've just written a style change, the browser hasn't recalculated layout yet — so it's forced to do it <em>right now</em>, synchronously, before returning your value. If you then write again and read again in a loop, you force a full layout recalculation on every single iteration. With 50 elements, that's 50 layouts per frame instead of 1.</p>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="thrash-stats">
+        <div class="stat-card">
+          <span class="stat-label">FPS</span>
+          <span class="stat-value" id="fps-value">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Frame time</span>
+          <span class="stat-value" id="frame-time-value">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Layouts / frame</span>
+          <span class="stat-value" id="layouts-value">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Mode</span>
+          <span class="stat-value" id="mode-value">idle</span>
+        </div>
+      </div>
+
+      <!-- Frame time sparkline -->
+      <div class="sparkline-wrap">
+        <canvas id="sparkline" width="836" height="60"></canvas>
+        <div class="sparkline-labels">
+          <span>16ms (60fps)</span>
+          <span>33ms (30fps)</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls" style="margin-bottom: 16px;">
+        <button class="btn btn-danger" id="btn-thrash">❌ Run thrashing version</button>
+        <button class="btn btn-primary" id="btn-no-thrash">✅ Run optimised version</button>
+        <button class="btn" id="btn-stop-thrash">■ Stop</button>
+      </div>
+
+      <!-- Box grid -->
+      <div class="thrash-grid-wrap">
+        <div class="thrash-grid" id="thrash-grid"></div>
+      </div>
+
+      <!-- Code + explanation side by side -->
+      <div class="code-compare">
+        <div class="code-block">
+          <div class="code-label cost-high">❌ Thrashing — interleaved reads &amp; writes</div>
+          <pre><code>boxes.forEach(box => {
+  // READ — browser must flush pending
+  // style changes and recalculate
+  // layout right now to answer this
+  const w = box.offsetWidth;
+
+  // WRITE — invalidates layout again
+  box.style.width = w + delta + 'px';
+  box.style.height = box.offsetHeight
+                     + delta + 'px';
+
+  // Next iteration: same thing again.
+  // 50 boxes = 50 layout recalcs/frame
+});</code></pre>
+          <div class="code-annotation bad">
+            With 50 elements this forces <strong>~100 layout recalculations per frame</strong> — each one potentially taking milliseconds. You will drop frames.
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-label cost-low">✅ Optimised — batch reads, then writes</div>
+          <pre><code>// Phase 1: batch ALL reads
+// Browser calculates layout once
+const measurements = boxes.map(box => ({
+  w: box.offsetWidth,
+  h: box.offsetHeight
+}));
+
+// Phase 2: batch ALL writes
+// No reads follow, so layout isn't
+// forced to recalculate mid-loop
+boxes.forEach((box, i) => {
+  box.style.width  = measurements[i].w
+                     + delta + 'px';
+  box.style.height = measurements[i].h
+                     + delta + 'px';
+});</code></pre>
+          <div class="code-annotation good">
+            <strong>1 layout recalculation per frame</strong> regardless of how many elements. Frame time stays well within the 16ms budget.
+          </div>
+        </div>
+      </div>
+
+      <div class="instructions" style="margin-top: 8px;">
+        <h2>🛠 DevTools tip</h2>
+        <p>Run the thrashing version, then open the Performance panel and record for 2 seconds. In the flame chart, look for tall purple <strong>"Recalculate Style"</strong> and red <strong>"Layout"</strong> bars repeating inside each frame. Then do the same for the optimised version — you'll see those bars almost disappear.</p>
+      </div>
+
+    </section>
+
+    <!-- ── TAB 3: Layer Promotion ───────────────────────────── -->
+    <section class="tab-content" id="tab-layers">
+
+      <div class="instructions">
+        <h2>Compositor layers — the good and the bad</h2>
+        <p>When the browser promotes an element to its own compositor layer, it can move, fade, or transform that element entirely on the GPU without touching layout or paint. But each layer consumes GPU memory — and on mobile, over-promoting can be worse than not promoting at all. Below are four cards showing different promotion states, all animating the same way. Click any card to toggle its promotion.</p>
+      </div>
+
+      <!-- Four layer cards -->
+      <div class="layer-cards" id="layer-cards">
+
+        <div class="layer-card" data-mode="none">
+          <div class="layer-card-box" id="lc-box-0">
+            <span>A</span>
+          </div>
+          <div class="layer-card-info">
+            <div class="lc-title">No promotion</div>
+            <div class="lc-reason">Shares the root layer. Repaints on every animation frame if colour changes.</div>
+            <div class="lc-badge lc-badge-none">No own layer</div>
+          </div>
+        </div>
+
+        <div class="layer-card" data-mode="will-change">
+          <div class="layer-card-box" id="lc-box-1">
+            <span>B</span>
+          </div>
+          <div class="layer-card-info">
+            <div class="lc-title">will-change: transform</div>
+            <div class="lc-reason">Browser pre-promotes before animation starts. Smooth, but costs GPU memory immediately.</div>
+            <div class="lc-badge lc-badge-good">Own layer ✓</div>
+          </div>
+        </div>
+
+        <div class="layer-card" data-mode="animation">
+          <div class="layer-card-box" id="lc-box-2">
+            <span>C</span>
+          </div>
+          <div class="layer-card-info">
+            <div class="lc-title">CSS @keyframes</div>
+            <div class="lc-reason">An active CSS animation on transform/opacity automatically promotes the element — no will-change needed.</div>
+            <div class="lc-badge lc-badge-good">Own layer ✓</div>
+          </div>
+        </div>
+
+        <div class="layer-card" data-mode="opacity">
+          <div class="layer-card-box" id="lc-box-3">
+            <span>D</span>
+          </div>
+          <div class="layer-card-info">
+            <div class="lc-title">will-change: opacity</div>
+            <div class="lc-reason">Opacity animations are also compositor-safe. Separate layer for this too.</div>
+            <div class="lc-badge lc-badge-good">Own layer ✓</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Layer count & memory bar -->
+      <div class="layer-stats">
+        <div class="layer-stat-row">
+          <span class="layer-stat-label">Active compositor layers</span>
+          <span class="layer-stat-val" id="layer-count">1</span>
+        </div>
+        <div class="layer-stat-row">
+          <span class="layer-stat-label">Relative GPU memory pressure</span>
+          <div class="memory-bar-wrap">
+            <div class="memory-bar" id="memory-bar"></div>
+          </div>
+          <span class="layer-stat-val" id="memory-label">low</span>
+        </div>
+      </div>
+
+      <!-- Code section -->
+      <div class="code-compare" style="margin-top: 24px;">
+        <div class="code-block">
+          <div class="code-label cost-low">✅ Apply before, remove after</div>
+          <pre><code>// Promote just before animation
+el.style.willChange = 'transform';
+
+animate(el, { x: 200 }, {
+  duration: 400,
+  onComplete: () => {
+    // Release the layer when done
+    el.style.willChange = 'auto';
+  }
+});</code></pre>
+          <div class="code-annotation good">Layer exists only while needed. Memory freed immediately after.</div>
+        </div>
+        <div class="code-block">
+          <div class="code-label cost-high">❌ Promoting everything</div>
+          <pre><code>/* Don't do this */
+* {
+  will-change: transform;
+}
+
+/* Or this */
+.card {
+  will-change: transform, opacity,
+               left, top, width;
+}</code></pre>
+          <div class="code-annotation bad">Every element gets its own GPU layer. On mobile this exhausts VRAM and causes crashes or severe jank.</div>
+        </div>
+      </div>
+
+      <div class="instructions" style="margin-top: 16px;">
+        <h2>🛠 DevTools tip — Layers panel</h2>
+        <p>Open DevTools → More tools → <strong>Layers</strong>. You'll see a 3D stacked view of every compositor layer. Click a layer to see its <strong>Compositing Reasons</strong> — the exact CSS property that caused promotion. Toggle the cards above and watch new layers appear and disappear in real time.</p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="main.js"></script>
+
+<link rel="stylesheet" href="../../../skin-anim.css">
+</body>
+</html>

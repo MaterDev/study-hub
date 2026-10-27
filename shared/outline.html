@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outline · Study Hub</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  .kick{font-family:var(--font-pixel); font-size:.5rem; color:var(--plum-deep); letter-spacing:.05em; display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .pill{font-family:var(--font-pixel); font-size:.42rem; padding:4px 6px; border:2px solid var(--outline); border-radius:3px; color:var(--ink); background:#e8edf3;}
+  .pill.stub{background:repeating-linear-gradient(135deg,#fbf0d2 0 6px,#fff7e3 6px 12px);} .pill.built{background:#cfe9d8;} .pill.course{background:#e3dbf6;}
+  .datebar{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 22px;}
+  .datebar span{font-family:var(--font-ui); font-size:.84rem; color:var(--ink-soft); background:var(--paper); border:2px solid var(--line-strong); border-radius:5px; padding:5px 10px;}
+  .datebar b{color:var(--ink);}
+  .stubnote{border:3px dashed var(--ochre); background:#fffaf0; border-radius:8px; padding:14px 16px; margin:0 0 20px; font-size:.95rem;}
+  .stubnote b{color:var(--ink);}
+  .plan{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media(max-width:700px){.plan{grid-template-columns:1fr;}}
+  .pbox{border:3px solid var(--outline); border-radius:6px; padding:12px 14px; background:var(--surface);}
+  .pbox.wide{grid-column:1/-1;}
+  .pbox h4{margin:0 0 6px; font-size:1rem;} .pbox ul{margin:0; padding-left:18px;} .pbox li{font-size:.9rem; margin:3px 0;}
+  .pbox.build{background:#eaf5ee;} .pbox.warn{background:#fff6d8;}
+  .links{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .links a{font-family:var(--font-ui); font-size:.86rem; border:2px solid var(--outline); border-radius:5px; padding:5px 10px; background:var(--surface); text-decoration:none;}
+  .links a.stub{border-style:dashed; color:var(--ink-mute);}
+  .meter{display:flex; align-items:center; gap:10px; margin:10px 0 18px; font-family:var(--font-ui); font-size:.86rem;}
+  .meter .t{flex:1; max-width:340px; height:16px; border:3px solid var(--outline); border-radius:3px; background:repeating-linear-gradient(135deg,#fbf0d2 0 6px,#fff7e3 6px 12px); overflow:hidden;}
+  .meter .f{height:100%; background:#9fd3b0;}
+  .grp{border:3px solid var(--outline); border-radius:8px; padding:12px 14px; margin:12px 0; background:var(--paper);}
+  .grp h3{margin:0 0 4px; font-size:1.1rem;} .grp p{margin:0 0 8px; font-size:.9rem; color:var(--ink-mute);}
+  .rows{display:flex; flex-direction:column; gap:6px;}
+  .lrow{display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center; text-decoration:none !important; background:var(--surface); border:2px solid var(--line-strong); border-radius:5px; padding:7px 10px; color:var(--ink); font-family:var(--font-ui); font-size:.9rem;}
+  .lrow.stub{border-style:dashed; color:var(--ink-mute);} .lrow:hover{border-color:var(--outline);}
+  .lrow .d{font-family:var(--font-mono); font-size:.74rem; color:var(--ink-mute);}
+  .paths li{font-size:.92rem;}
+  .lrow .rd{display:none; margin-left:8px; font-style:normal; font-size:.74rem; font-weight:800; color:var(--forest);}
+  .lrow.is-read .rd{display:inline;} .lrow.is-read{background:#f2faf4;}
+</style>
+</head>
+<body>
+<div class="wrap"><div id="root"><p>Loading…</p></div><footer>Outline · rendered from section manifests</footer></div>
+<script src="../sections/registry.js"></script>
+<script>var ROOT = "../";   /* manifests store hub-root-relative paths; this page lives in shared/ */</script>
+<script src="hub-progress.js"></script>
+<script>
+(function(){
+  const id = new URLSearchParams(location.search).get("id");
+  const esc = s => String(s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const inHub = window.parent !== window;
+  const INDEX = {};
+  function link(n, cls){
+    const stub = n.status==="stub";
+    return '<a class="'+(cls||"")+(stub?" stub":"")+'" data-id="'+esc(n.id)+'" href="'+esc(n.file||n.home ? ROOT+(n.file||n.home) : "outline.html?id="+n.id)+'">'+esc(n.title.replace(/^(Module|Course):\s*/,""))+(stub?" · stub":"")+'</a>';
+  }
+  const md = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+  function list(arr){ return '<ul>'+(arr||[]).map(x=>'<li>'+md(x)+'</li>').join("")+'</ul>'; }
+  function lessons(nodes){ const out=[]; hubWalk(nodes, n=>{ if(n.type==="lesson") out.push(n); }); return out; }
+  function renderStub(e){
+    const n=e.node, p=n.plan||{}, d=n.dates||{};
+    let h='<div class="kick"><span class="pill stub">STUB · NOT BUILT YET</span>'+e.path.map(g=>esc(g.title.replace(/^(Module|Course):\s*/,""))).join(" › ")+'</div>'+
+      '<h1>'+esc(n.title)+'</h1><p class="subtitle">'+md(n.blurb)+'</p>'+
+      '<div class="datebar"><span><b>Planned</b> '+hubFmtDate(d.planned)+'</span><span><b>Imported</b> '+hubFmtDate((n.history||[]).slice(-1)[0]?.date)+'</span><span><b>Status</b> waiting to be built</span></div>'+
+      '<div class="stubnote"><b>This lesson is planned but not built.</b> Everything below is the original plan, kept so it can be picked up later. To build it, research first, then create the lesson file and switch this entry\'s <code>status</code> to <code>"built"</code> in <code>sections/'+esc(e.section.id)+'/manifest.js</code>.</div>'+
+      '<div class="plan">';
+    if(p.goals&&p.goals.length) h+='<div class="pbox"><h4>Learning goals</h4>'+list(p.goals)+'</div>';
+    if(p.concepts&&p.concepts.length) h+='<div class="pbox'+(p.goals&&p.goals.length?'':' wide')+'"><h4>Core concepts</h4>'+list(p.concepts)+'</div>';
+    if(p.takeaways&&p.takeaways.length) h+='<div class="pbox wide"><h4>Key takeaways to land</h4>'+list(p.takeaways)+'</div>';
+    if(p.build) h+='<div class="pbox wide build"><h4>🔨 Practical anchor (what to build)</h4><p style="margin:0">'+md(p.build)+'</p></div>';
+    if(p.connections&&p.connections.length) h+='<div class="pbox wide"><h4>Connections to other lessons</h4>'+list(p.connections)+'</div>';
+    if(p.notes&&p.notes.length) h+='<div class="pbox wide warn"><h4>Carried-over notes</h4>'+list(p.notes)+'</div>';
+    h+='</div>';
+    const ov=(n.overlaps||[]).map(x=>INDEX[x]).filter(Boolean);
+    if(ov.length) h+='<h3>Overlaps elsewhere in the hub</h3><p>Build with these in mind — cross-link or merge rather than duplicate.</p><div class="links">'+ov.map(o=>link(o.node)).join("")+'</div>';
+    if(n.rebuild) h+='<h3>Rebuild brief</h3><p>'+esc(n.rebuild.brief)+'</p>'+list(n.rebuild.basis);
+    const sib=e.path.length?lessons(e.path[e.path.length-1].children):[];
+    if(sib.length) h+='<h3>Also in '+esc(e.path[e.path.length-1].title)+'</h3><div class="links">'+sib.filter(s=>s.id!==n.id).map(s=>link(s)).join("")+'</div>';
+    return h;
+  }
+  function renderModule(e){
+    const n=e.node, d=n.dates||{}, all=lessons(n.children), built=all.filter(x=>x.status!=="stub");
+    let h='<div class="kick"><span class="pill course">'+esc(n.label||"MODULE")+'</span>'+esc(e.section.title)+'</div>'+
+      '<h1>'+esc(n.title.replace(/^(Module|Course):\s*/,""))+'</h1><p class="subtitle">'+esc(n.summary)+'</p>'+
+      '<div class="datebar"><span><b>Created</b> '+hubFmtDate(d.created)+'</span><span><b>Last lesson added</b> '+hubFmtDate(d.updated)+'</span></div>'+
+      '<div class="meter"><b>'+built.length+' / '+all.length+' built</b><div class="t"><div class="f" style="width:'+(all.length?built.length/all.length*100:0)+'%"></div></div><span>striped = stubs waiting to be built</span></div>';
+    if(n.throughline) h+='<div class="analogy"><b>The throughline:</b> '+esc(n.throughline)+'</div>';
+    if(n.principles) h+='<h3>Principles</h3>'+list(n.principles);
+    if(n.paths) h+='<h3>Suggested paths</h3><ul class="paths">'+n.paths.map(x=>'<li>'+md(x)+'</li>').join("")+'</ul>';
+    h+='<h2 id="sec1"><span class="num">1</span> Lessons</h2>';
+    (n.children||[]).forEach(g=>{
+      const ls = g.type==="group"? lessons(g.children):[g];
+      h+='<div class="grp"><h3>'+esc(g.title)+'</h3>'+(g.summary?'<p>'+esc(g.summary)+'</p>':'')+'<div class="rows">'+
+        ls.map(l=>{ const st=l.status==="stub"; const dt=st?("planned "+(l.dates&&l.dates.planned||"")):((l.dates&&l.dates.updated)||"");
+          return '<a class="lrow'+(st?' stub':'')+'" data-id="'+esc(l.id)+'" '+(st?'':'data-read-id="'+esc(l.id)+'" ')+'href="'+ROOT+esc(l.file)+'"><span>'+esc(l.title)+'<em class="rd">✓ read</em></span><span class="d">'+esc(dt)+'</span><span class="pill '+(st?'stub':'built')+'">'+(st?'STUB':'BUILT')+'</span></a>'; }).join("")+'</div></div>';
+    });
+    if(n.history) h+='<h2 id="sec2"><span class="num">2</span> History</h2><ul>'+n.history.map(x=>'<li><b>'+esc(x.date)+'</b> — '+esc(x.note)+'</li>').join("")+'</ul>';
+    return h;
+  }
+  hubLoadSections("../sections/", secs => {
+    secs.forEach(s => hubWalk(s.children, (n, path) => { INDEX[n.id] = {node:n, section:s, path:path.filter(p=>p.type==="group")}; }));
+    const e = INDEX[id], root = document.getElementById("root");
+    if(!e){ root.innerHTML = "<h1>Not found</h1><p>No manifest entry with id <code>"+esc(id)+"</code>.</p>"; return; }
+    document.title = e.node.title + " · Study Hub";
+    root.innerHTML = e.node.kind==="module" ? renderModule(e) : renderStub(e);
+    const paintRead = () => document.querySelectorAll("[data-read-id]").forEach(x => { const it = hubProgress.get(x.dataset.readId); x.classList.toggle("is-read", !!(it && it.read)); });
+    hubProgress.ready(paintRead); hubProgress.onChange(paintRead);
+    if(inHub){
+      parent.postMessage({hub:"at", id}, "*");
+      root.addEventListener("click", ev => { const a=ev.target.closest("[data-id]"); if(!a) return; ev.preventDefault(); parent.postMessage({hub:"open", id:a.dataset.id}, "*"); });
+    } else {
+      root.querySelectorAll("a[data-id]").forEach(a => { const h=a.getAttribute("href"); if(!/^outline\.html/.test(h)) a.setAttribute("href", h); });
+    }
+  });
+})();
+</script>
+</body>
+</html>

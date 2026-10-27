@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnose the Page · FE Perf Workshop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    /* ── This scenario has its own visual identity: a travel booking site ── */
+    :root {
+      --brand:    #0c4a6e;
+      --brand-md: #0369a1;
+      --brand-lt: #e0f2fe;
+      --sand:     #fafaf7;
+      --gold:     #d97706;
+      --text:     #1c1917;
+      --text-sub: #57534e;
+      --border:   #e7e5e4;
+      --radius:   12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--sand); color: var(--text); min-height: 100vh; }
+
+    /* ── Workshop overlay bar ── */
+    .workshop-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: #1e1b4b; color: #c7d2fe;
+      padding: 8px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.72rem; font-family: 'JetBrains Mono', monospace;
+    }
+    .workshop-bar a { color: #a5b4fc; text-decoration: none; }
+    .workshop-bar a:hover { color: #fff; }
+    .workshop-bar .wbar-right { display: flex; gap: 16px; align-items: center; }
+    .wbar-hint { background: rgba(165,180,252,0.15); border: 1px solid rgba(165,180,252,0.3); padding: 3px 10px; border-radius: 4px; }
+
+    /* ── Fake site ── */
+    .site-wrap { padding-top: 38px; }
+
+    /* Nav */
+    .site-nav {
+      background: var(--brand); color: #fff;
+      padding: 14px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .site-logo { font-family: 'DM Serif Display', serif; font-size: 1.4rem; letter-spacing: -0.01em; }
+    .site-logo span { color: #7dd3fc; }
+    .site-nav-links { display: flex; gap: 24px; font-size: 0.85rem; opacity: 0.8; }
+
+    /* Hero — deliberately broken (slow + no dimensions) */
+    .hero-area {
+      background: var(--brand);
+      min-height: 480px;
+      position: relative;
+      overflow: hidden;
+      display: flex; align-items: center;
+      padding: 60px 40px;
+    }
+    .hero-img-slot {
+      position: absolute; inset: 0;
+      background: #0c4a6e; /* stands in for the "not yet loaded" image */
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-img-loading {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+    .hero-img-loading .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hero-img-loading span { font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; }
+    .hero-content {
+      position: relative; z-index: 2; color: #fff; max-width: 560px;
+    }
+    .hero-eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #7dd3fc; margin-bottom: 12px; }
+    .hero-h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem,4vw,3.2rem); line-height: 1.15; margin-bottom: 16px; }
+    .hero-sub { font-size: 1rem; opacity: 0.8; margin-bottom: 28px; line-height: 1.6; }
+    .hero-search {
+      background: #fff; border-radius: var(--radius); padding: 8px 8px 8px 16px;
+      display: flex; align-items: center; gap: 8px; max-width: 480px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .hero-search input {
+      flex: 1; border: none; outline: none; font-size: 0.9rem; color: var(--text); font-family: inherit;
+      background: transparent;
+    }
+    .hero-search button {
+      background: var(--brand); color: #fff; border: none; border-radius: 8px;
+      padding: 10px 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+
+    /* Content section — has CLS problem (late-loading banner) */
+    .content-section { max-width: 1100px; margin: 0 auto; padding: 48px 40px; }
+    .section-title { font-family: 'DM Serif Display', serif; font-size: 1.8rem; margin-bottom: 8px; }
+    .section-sub   { color: var(--text-sub); margin-bottom: 32px; font-size: 0.95rem; }
+
+    /* Late-loading banner (CLS culprit) */
+    .late-banner {
+      background: linear-gradient(90deg, #0369a1, #0c4a6e);
+      color: #fff; border-radius: var(--radius);
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.9rem;
+    }
+    .late-banner.visible { opacity: 1; }
+
+    /* Cards grid */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .dest-card {
+      background: #fff; border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .dest-img { height: 160px; background: var(--brand-lt); position: relative; }
+    .dest-img-inner {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #bae6fd, #0ea5e9);
+    }
+    .dest-body { padding: 16px; }
+    .dest-city { font-family: 'DM Serif Display', serif; font-size: 1.1rem; margin-bottom: 4px; }
+    .dest-country { font-size: 0.78rem; color: var(--text-sub); margin-bottom: 12px; }
+    .dest-price { font-size: 0.82rem; color: var(--text-sub); }
+    .dest-price strong { color: var(--gold); font-size: 1rem; font-weight: 700; }
+
+    /* ── Diagnosis panel ── */
+    .diag-panel {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+      background: #fff;
+      border-top: 2px solid #e2e8f0;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+      padding: 16px 24px;
+    }
+    .diag-panel-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+    .diag-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+    .diag-metrics { display: flex; gap: 12px; }
+    .diag-metric {
+      border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 3px; min-width: 90px;
+    }
+    .dm-name { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8; }
+    .dm-val  { font-size: 1rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .dm-badge{ font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; align-self: flex-start; }
+    .dm-good  { color: #16a34a; background: #f0fdf4; }
+    .dm-needs { color: #ca8a04; background: #fefce8; }
+    .dm-poor  { color: #dc2626; background: #fef2f2; }
+    .diag-questions { flex: 1; min-width: 240px; }
+    .diag-q { font-size: 0.82rem; color: #475569; margin-bottom: 6px; }
+    .diag-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+    .diag-btn {
+      padding: 6px 14px; border-radius: 8px; border: 1px solid #e2e8f0;
+      background: #f8fafc; font-size: 0.78rem; cursor: pointer; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .diag-btn:hover { border-color: #4338ca; color: #4338ca; }
+    .diag-btn.correct   { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
+    .diag-btn.incorrect { background: #fef2f2; border-color: #dc2626; color: #dc2626; }
+    .diag-feedback {
+      font-size: 0.82rem; padding: 10px 14px; border-radius: 8px;
+      margin-top: 8px; display: none; line-height: 1.5;
+    }
+    .diag-feedback.show { display: block; }
+    .diag-feedback.good { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .diag-feedback.bad  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .diag-next { margin-top: 10px; padding: 6px 16px; border-radius: 8px; background: #4338ca; color: #fff; border: none; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: inherit; display: none; }
+    .diag-next.show { display: inline-block; }
+
+    /* ── answer reveal overlay ── */
+    .answer-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 950; background: rgba(0,0,0,0.6);
+      align-items: center; justify-content: center;
+    }
+    .answer-overlay.show { display: flex; }
+    .answer-box {
+      background: #fff; border-radius: 16px; padding: 32px 36px; max-width: 560px; width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.2); margin: 20px;
+    }
+    .answer-box h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; margin-bottom: 16px; }
+    .answer-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9; }
+    .answer-item:last-of-type { border-bottom: none; }
+    .answer-metric { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
+    .answer-verdict { font-size: 0.9rem; line-height: 1.5; color: #334155; }
+    .answer-close {
+      margin-top: 20px; width: 100%; padding: 12px; border-radius: 10px;
+      background: #4338ca; color: #fff; border: none; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+
+    /* bottom padding for fixed diag panel */
+    body { padding-bottom: 140px; }
+  </style>
+</head>
+<body>
+
+<!-- Workshop context bar -->
+<div class="workshop-bar">
+  <div>
+    <a href="../../../../../../index.html">← Examples: 1.1</a>
+    &nbsp;·&nbsp;
+    <span>Scenario: Diagnose the Broken Page</span>
+  </div>
+  <div class="wbar-right">
+    <span class="wbar-hint">Look at the metrics panel below the page</span>
+  </div>
+</div>
+
+<!-- Fake travel site -->
+<div class="site-wrap">
+  <nav class="site-nav">
+    <div class="site-logo">Wander<span>ly</span></div>
+    <div class="site-nav-links">
+      <span>Flights</span><span>Hotels</span><span>Experiences</span><span>Deals</span>
+    </div>
+  </nav>
+
+  <div class="hero-area">
+    <div class="hero-img-slot">
+      <div class="hero-img-loading" id="hero-loading">
+        <div class="spinner"></div>
+        <span>Loading hero image… 3.2s</span>
+      </div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Featured Destinations 2026</div>
+      <h1 class="hero-h1">Find Your Next Adventure</h1>
+      <p class="hero-sub">Explore thousands of destinations with exclusive deals on flights and hotels worldwide.</p>
+      <div class="hero-search">
+        <input type="text" placeholder="Where do you want to go?" value="">
+        <button>Search</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <!-- This banner loads late and pushes content down — CLS culprit -->
+    <div class="late-banner" id="late-banner">
+      🏖️ <strong>Summer Sale:</strong> Up to 40% off selected destinations — limited time only!
+      <button style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.8rem;">View Deals</button>
+    </div>
+
+    <h2 class="section-title">Popular Destinations</h2>
+    <p class="section-sub">Hand-picked trips our travellers love right now</p>
+
+    <div class="cards-grid">
+      <div class="dest-card">
+        <div class="dest-img"><div class="dest-img-inner" style="background:linear-gradient(135deg,#bae6fd,#0ea5e9);"></div></div>
+        <div class="dest-body">
+          <div class="dest-city">Santorini</div>
+          <div class="dest-country">Greece · 7 nights</div>
+          <div class="dest-price">From <strong>£1,240</strong> per person</div>
+        </div>
+      </div>
+      <div class="dest-card">
+        <div class="dest-img"><div class="dest-img-inner" style="background:linear-gradient(135deg,#d1fae5,#10b981);"></div></div>
+        <div class="dest-body">
+          <div class="dest-city">Kyoto</div>
+          <div class="dest-country">Japan · 10 nights</div>
+          <div class="dest-price">From <strong>£1,890</strong> per person</div>
+        </div>
+      </div>
+      <div class="dest-card">
+        <div class="dest-img"><div class="dest-img-inner" style="background:linear-gradient(135deg,#fef3c7,#f59e0b);"></div></div>
+        <div class="dest-body">
+          <div class="dest-city">Marrakech</div>
+          <div class="dest-country">Morocco · 5 nights</div>
+          <div class="dest-price">From <strong>£740</strong> per person</div>
+        </div>
+      </div>
+      <div class="dest-card">
+        <div class="dest-img"><div class="dest-img-inner" style="background:linear-gradient(135deg,#ede9fe,#7c3aed);"></div></div>
+        <div class="dest-body">
+          <div class="dest-city">Reykjavik</div>
+          <div class="dest-country">Iceland · 6 nights</div>
+          <div class="dest-price">From <strong>£1,120</strong> per person</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Diagnosis panel ── -->
+<div class="diag-panel">
+  <div class="diag-panel-inner">
+    <div>
+      <div class="diag-title">Field Metrics (75th percentile)</div>
+      <div class="diag-metrics">
+        <div class="diag-metric">
+          <div class="dm-name">LCP</div>
+          <div class="dm-val dm-poor" id="dm-lcp-val">—</div>
+          <div class="dm-badge dm-poor" id="dm-lcp-badge">—</div>
+        </div>
+        <div class="diag-metric">
+          <div class="dm-name">INP</div>
+          <div class="dm-val dm-good" id="dm-inp-val">—</div>
+          <div class="dm-badge dm-good" id="dm-inp-badge">—</div>
+        </div>
+        <div class="diag-metric">
+          <div class="dm-name">CLS</div>
+          <div class="dm-val dm-needs" id="dm-cls-val">—</div>
+          <div class="dm-badge dm-needs" id="dm-cls-badge">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="diag-questions">
+      <div class="diag-q" id="diag-q-text">Waiting for page to load…</div>
+      <div class="diag-choices" id="diag-choices"></div>
+      <div class="diag-feedback" id="diag-feedback"></div>
+      <button class="diag-next" id="diag-next">Next question →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Answer reveal -->
+<div class="answer-overlay" id="answer-overlay">
+  <div class="answer-box">
+    <h2>Full Analysis</h2>
+    <div class="answer-item">
+      <div class="answer-metric" style="color:#dc2626;">LCP — 5.2s (Poor)</div>
+      <div class="answer-verdict">The hero image is injected late by JavaScript. The browser doesn't discover it until the JS runs, causing a long <strong>Resource Load Delay</strong> phase. Fix: add <code>&lt;link rel="preload"&gt;</code> in the HTML head, or use a server-rendered <code>&lt;img&gt;</code> instead of JS injection.</div>
+    </div>
+    <div class="answer-item">
+      <div class="answer-metric" style="color:#16a34a;">INP — 88ms (Good)</div>
+      <div class="answer-verdict">The page has light JavaScript and no long tasks blocking the main thread. The "Search" button responds quickly. INP is passing.</div>
+    </div>
+    <div class="answer-item">
+      <div class="answer-metric" style="color:#ca8a04;">CLS — 0.18 (Needs improvement)</div>
+      <div class="answer-verdict">The promotional banner loads 1.8 seconds after the rest of the content and pushes the card grid down, causing a significant layout shift. Fix: pre-reserve space with a <code>min-height</code> placeholder, or serve the banner server-side.</div>
+    </div>
+    <button class="answer-close" id="answer-close">Got it</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    {
+      q: 'Watch the page load. Which metric is in the red zone?',
+      choices: ['LCP — the image loads too slowly', 'INP — the button is unresponsive', 'CLS — the layout is shifting', 'All three are failing'],
+      correct: 0,
+      feedback: {
+        correct: '✓ Correct. The hero image takes 5.2s to appear — well above the 2.5s threshold. Look at the loading spinner in the hero area.',
+        wrong: [
+          '', // not used
+          'Not quite. Click the Search button — it responds immediately. INP is 88ms, which is excellent.',
+          'CLS is also an issue, but look at the LCP number — that 5.2s value is in the danger zone.',
+          'INP is actually fine here — click the Search button to confirm. Two metrics are problematic, not three.',
+        ]
+      }
+    },
+    {
+      q: 'The CLS score is 0.18 (Needs Improvement). What caused it?',
+      choices: ['The hero image jumping as it loads', 'The promotional banner appearing late', 'The card images loading without dimensions', 'Font swap causing text reflow'],
+      correct: 1,
+      feedback: {
+        correct: '✓ Correct. The "Summer Sale" banner was injected 1.8 seconds after load, pushing the card grid down. Classic late-injected content CLS.',
+        wrong: [
+          '', '',
+          'Close — unsized images are a common CLS cause, but these card images are styled with a fixed-height container. The bigger culprit loaded later.',
+          'Font swap can cause CLS, but the DM Serif font was preloaded. Watch the banner appear about 1.8s after the cards.',
+        ]
+      }
+    },
+    {
+      q: 'What would you fix first to have the most impact on the overall CWV score?',
+      choices: ['Fix the CLS banner first', 'Fix the LCP image loading first', 'Fix both simultaneously', 'Add font-display: swap to fix FOUT'],
+      correct: 1,
+      feedback: {
+        correct: '✓ Right call. LCP is Poor (5.2s vs 2.5s threshold) — the most severe failure. CLS at 0.18 is "Needs Improvement" but not catastrophic. Always fix Poor metrics before "Needs Improvement" ones.',
+        wrong: [
+          'CLS is a real problem but it\'s at "Needs Improvement" (0.18), not "Poor". The LCP is "Poor" and should be fixed first.',
+          '',
+          'You could, but engineering resources are finite. Prioritise: LCP is "Poor" — that\'s a harder penalty than the "Needs Improvement" CLS.',
+          'There\'s no font-display issue here — the FOUT would show in CLS. Focus on the actual failing metrics first.',
+        ]
+      }
+    }
+  ];
+
+  let step = 0;
+  let answered = false;
+
+  // Animate the page "loading" to reveal metrics progressively
+  setTimeout(() => {
+    document.getElementById('dm-lcp-val').textContent = '5.2s';
+    document.getElementById('dm-lcp-badge').textContent = 'Poor';
+    document.getElementById('dm-inp-val').textContent = '88ms';
+    document.getElementById('dm-inp-badge').textContent = 'Good';
+  }, 1200);
+
+  setTimeout(() => {
+    // "LCP fires" — hero still hasn't loaded in our simulation
+  }, 2000);
+
+  // Late banner — causes CLS
+  setTimeout(() => {
+    const banner = document.getElementById('late-banner');
+    banner.classList.add('visible');
+    document.getElementById('dm-cls-val').textContent = '0.18';
+    document.getElementById('dm-cls-badge').textContent = 'Needs work';
+  }, 1800);
+
+  // After a beat, show first question
+  setTimeout(() => {
+    loadQuestion(0);
+  }, 2400);
+
+  function loadQuestion(idx) {
+    answered = false;
+    const q = questions[idx];
+    document.getElementById('diag-q-text').textContent = 'Question ' + (idx+1) + ': ' + q.q;
+    const choicesEl = document.getElementById('diag-choices');
+    choicesEl.innerHTML = '';
+    q.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'diag-btn';
+      btn.textContent = c;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        const fb = document.getElementById('diag-feedback');
+        const nextBtn = document.getElementById('diag-next');
+        if (i === q.correct) {
+          btn.classList.add('correct');
+          fb.textContent = q.feedback.correct;
+          fb.className = 'diag-feedback show good';
+        } else {
+          btn.classList.add('incorrect');
+          choicesEl.children[q.correct].classList.add('correct');
+          fb.textContent = q.feedback.wrong[i] || 'Not quite — see the highlighted correct answer above.';
+          fb.className = 'diag-feedback show bad';
+        }
+        if (idx < questions.length - 1) {
+          nextBtn.className = 'diag-next show';
+        } else {
+          nextBtn.textContent = 'See full analysis →';
+          nextBtn.className = 'diag-next show';
+          nextBtn.addEventListener('click', () => {
+            document.getElementById('answer-overlay').classList.add('show');
+          }, { once: true });
+        }
+      });
+      choicesEl.appendChild(btn);
+    });
+    document.getElementById('diag-feedback').className = 'diag-feedback';
+    document.getElementById('diag-next').className = 'diag-next';
+  }
+
+  document.getElementById('diag-next').addEventListener('click', () => {
+    step++;
+    if (step < questions.length) loadQuestion(step);
+  });
+  document.getElementById('answer-close').addEventListener('click', () => {
+    document.getElementById('answer-overlay').classList.remove('show');
+  });
+</script>
+</body>
+</html>

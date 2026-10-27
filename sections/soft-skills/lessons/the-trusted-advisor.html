@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Trusted Advisor: Earning Client Trust</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--forest); --accent-soft:var(--forest-soft); --accent-text:#2c5a3f; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:700; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+
+  /* ladder */
+  .ladder{display:grid; grid-template-columns:minmax(220px,1fr) 1.3fr; gap:16px; align-items:stretch;}
+  @media(max-width:760px){.ladder{grid-template-columns:1fr;}}
+  .rungs{display:flex; flex-direction:column-reverse; gap:8px; justify-content:flex-end;}
+  .rung{border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--paper); font-family:var(--font-ui); font-size:.86rem; font-weight:800; color:var(--ink); cursor:pointer; text-align:left; transition:margin-left .15s steps(3);}
+  .rung small{display:block; font-weight:600; color:var(--ink-mute); font-size:.72rem;}
+  .rung.on{border-color:var(--forest); background:var(--forest-soft);}
+  .rung[data-i="1"]{margin-left:22px;} .rung[data-i="2"]{margin-left:44px;} .rung[data-i="3"]{margin-left:66px;}
+  @media(max-width:760px){.rung[data-i]{margin-left:0;}}
+  .rdoc{border:2px solid var(--forest); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; min-height:230px;}
+  .rdoc h4{margin:0 0 6px; color:var(--accent-text);} .rdoc dl{margin:8px 0 0;} .rdoc dt{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); font-weight:800; margin-top:8px;} .rdoc dd{margin:2px 0 0;}
+
+  /* trust equation */
+  .eq{display:grid; grid-template-columns:1.1fr 1fr; gap:18px; align-items:start;}
+  @media(max-width:760px){.eq{grid-template-columns:1fr;}}
+  .eqc label{display:flex; flex-direction:column; gap:2px; margin-bottom:12px; font-family:var(--font-ui); font-size:.8rem; font-weight:800; color:var(--ink);}
+  .eqc label small{font-weight:600; color:var(--ink-mute); font-size:.72rem;}
+  .eqc label .v{font-family:var(--font-mono); font-weight:700; float:right;}
+  .eqc input[type=range]{accent-color:var(--forest); width:100%;}
+  .eqc .den input[type=range]{accent-color:var(--vermil);}
+  .scale{display:grid; grid-template-columns:1fr 18px 1fr; gap:6px; align-items:end; height:220px; padding:10px; border:2px solid var(--outline); border-radius:10px; background:var(--paper-2);}
+  .stack{display:flex; flex-direction:column-reverse; height:100%; justify-content:flex-start;}
+  .stack i{display:block; border:2px solid var(--outline); border-radius:3px; margin-top:-2px; transition:height .2s steps(4);}
+  .scale .bar{align-self:stretch; border-top:3px solid var(--ink-faint);}
+  .scale h5{margin:0 0 4px; font-family:var(--font-pixel); font-size:.4rem; color:var(--ink-mute); text-align:center;}
+  .gauge{height:20px; border:2px solid var(--outline); border-radius:6px; overflow:hidden; background:var(--paper-2); margin-top:12px;} .gauge i{display:block; height:100%; background:var(--forest); transition:width .25s steps(5);}
+  .eqnote{font-family:var(--font-ui); font-size:.86rem; margin-top:10px; min-height:3.4em;}
+  .presets{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+  .chipb{font-family:var(--font-ui); font-size:.78rem; font-weight:700; padding:6px 12px; border:2px solid var(--line-strong); border-radius:999px; background:var(--paper); color:var(--ink); cursor:pointer;}
+  .chipb:hover,.chipb.on{border-color:var(--forest); background:var(--forest-soft);}
+
+  /* trust facts */
+  .facts{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin:14px 0;}
+  .fact{border:2px solid var(--line-strong); border-radius:12px; padding:12px 14px; background:var(--surface); cursor:pointer; text-align:left; font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-height:112px;}
+  .fact b{display:block; font-size:.95rem; margin-bottom:4px;} .fact .dev{display:none; margin-top:8px; padding-top:8px; border-top:2px dashed var(--line-strong); color:var(--ink-soft);}
+  .fact.open{border-color:var(--forest); background:var(--forest-soft);} .fact.open .dev{display:block;}
+  .fact .hint{font-size:.7rem; color:var(--ink-mute);}
+
+  /* five stages */
+  .arrows{display:flex; gap:4px; flex-wrap:wrap; margin-bottom:12px;}
+  .arrow{flex:1; min-width:104px; border:0; padding:12px 8px 12px 16px; color:#fff; font-family:var(--font-ui); font-weight:800; font-size:.88rem; cursor:pointer; clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,12px 50%); text-align:center; opacity:.62;}
+  .arrow.on{opacity:1; filter:drop-shadow(0 2px 0 var(--outline));}
+  .arrow small{display:block; font-weight:600; font-size:.64rem; opacity:.9;}
+  .sdoc{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media(max-width:760px){.sdoc{grid-template-columns:1fr;}}
+  .sbox{border:2px solid var(--line-strong); border-radius:10px; padding:11px 13px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem;}
+  .sbox h5{margin:0 0 4px; font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute);}
+  .sbox.wide{grid-column:1/-1;} .sbox.warn{border-color:var(--vermil); background:var(--vermil-soft);} .sbox.dev{border-color:var(--forest); background:var(--forest-soft);}
+
+  /* scenarios */
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tag{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .scn .opt{display:block; width:100%; text-align:left; margin:7px 0; padding:10px 12px; border:2px solid var(--line-strong); border-radius:10px; background:var(--paper); color:var(--ink); font:600 .86rem var(--font-ui); cursor:pointer;}
+  .scn .opt:hover{border-color:var(--forest);} .scn .opt.good{border-color:var(--forest); background:var(--forest-soft);} .scn .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .scn .why{font-size:.82rem; color:var(--ink-soft); margin-top:4px; padding-left:2px;}
+  .scn .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+
+  /* columbo */
+  .col{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:center;}
+  @media(max-width:760px){.col{grid-template-columns:1fr;}}
+  .dialw label{display:flex; flex-direction:column; gap:4px; font-family:var(--font-ui); font-size:.8rem; font-weight:800;}
+  .dialw input[type=range]{accent-color:var(--ochre); width:100%;}
+  .meter2{margin:10px 0;} .meter2 b{font-family:var(--font-ui); font-size:.74rem; color:var(--ink-mute);} .meter2 .gauge{margin-top:4px;}
+  .cface{border:2px solid var(--outline); border-radius:12px; padding:14px; background:var(--paper-2); font-family:var(--font-ui); font-size:.88rem; min-height:112px;}
+  .cface .q{font-style:italic; color:var(--ink);}
+
+  /* quick impact */
+  .qi{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; margin:12px 0;}
+  .qi button{text-align:left; border:2px solid var(--line-strong); border-radius:10px; padding:9px 12px; background:var(--surface); color:var(--ink); font:600 .82rem var(--font-ui); cursor:pointer;}
+  .qi button b{display:block; font-size:.86rem;} .qi button span{color:var(--ink-mute); font-size:.76rem;}
+  .qi button.on{border-color:var(--forest); background:var(--forest-soft);}
+  .plan{border:2px dashed var(--forest); border-radius:12px; padding:14px 16px; font-family:var(--font-ui); font-size:.88rem; min-height:90px;}
+  .plan ol{margin:6px 0 0; padding-left:20px;}
+
+  /* project timeline */
+  .tl{display:flex; gap:0; margin:10px 0 14px; overflow-x:auto;}
+  .tl button{flex:1; min-width:104px; border:0; background:var(--paper); color:var(--ink); padding:12px 6px; font:800 .8rem var(--font-ui); cursor:pointer; border-bottom:6px solid var(--line-strong); text-align:center;}
+  .tl button.on{border-bottom-color:var(--forest); background:var(--forest-soft);}
+  .tl button small{display:block; font-weight:600; color:var(--ink-mute); font-size:.66rem;}
+  .tlc{border:2px solid var(--forest); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; min-height:130px;}
+  .tlc ul{margin:6px 0 0; padding-left:18px;} .tlc .st{display:inline-block; font-size:.66rem; font-weight:800; padding:2px 7px; border-radius:3px; border:2px solid var(--outline); background:var(--forest-soft); margin-right:6px;}
+
+  .caveats{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin:12px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The Trusted Advisor: Earning Client Trust</h1>
+  <p class="subtitle">Maister, Green and Galford's argument that the strongest client relationships are built on trust, and how to build it one conversation at a time, read for people who build things for clients.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The premise: from service provider to first call</a></li>
+      <li><a href="#sec2">The trust equation (interactive)</a></li>
+      <li><a href="#sec3">Five things that are true about trust</a></li>
+      <li><a href="#sec4">The five stages: engage, listen, frame, envision, commit</a></li>
+      <li><a href="#sec5">Practice: what would you say? (interactive)</a></li>
+      <li><a href="#sec6">The Columbo approach</a></li>
+      <li><a href="#sec7">The quick-impact list: pick your three</a></li>
+      <li><a href="#sec8">On a client project</a></li>
+      <li><a href="#sec9">How to read this book critically</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The premise: from service provider to first call</h2>
+  <p class="lead">The book's claim is simple: <strong>you earn a client's trust before you earn their best work, their repeat business or their willingness to pay for your judgment.</strong> Wanting clients to come to you earlier, to stop haggling over price, and to treat you as more than a pair of hands all come down to the same thing. A trusted advisor puts the relationship ahead of the current transaction, is willing to invest in it before it pays, and cares more about solving the client's problem than about showing off their own methods.</p>
+  <p>Summaries describe the relationship as moving through levels. Click a rung. <em>The names and the number of levels vary between summaries (the one used here has four); treat them as a map, not a taxonomy.</em></p>
+  <div class="stage" data-testid="ladder">
+    <div class="ladder">
+      <div class="rungs" id="rungs"></div>
+      <div class="rdoc" id="rdoc" data-testid="ladder-doc"></div>
+    </div>
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> The trust equation</h2>
+  <p>The book's best-known tool is the <strong>Trust Equation</strong>. Charles Green's firm describes it in words: trust rises with <b>credibility</b> (can we believe you?), <b>reliability</b> (do you do what you said?) and <b>intimacy</b> (do people feel safe being open with you?), and falls as <b>self-orientation</b> (is your focus on you, or on them and the shared goal?) rises. Written as a fraction, that is (C + R + I) ÷ S. The fraction is a summary of the idea, not a measured law.</p>
+  <p>Try it. Score a version of yourself from 1 to 10 on each, or tap a persona.</p>
+  <div class="stage" data-testid="trust-equation">
+    <div class="presets" id="presets"></div>
+    <div class="eq">
+      <div class="eqc" id="eqc"></div>
+      <div>
+        <div class="scale" id="scale" aria-label="Numerator stack versus self-orientation stack"></div>
+        <div class="gauge"><i id="eq-gauge" style="width:0"></i></div>
+        <div class="eqnote" id="eq-note" data-testid="trust-note"></div>
+      </div>
+    </div>
+    <p class="small" style="margin:8px 0 0;">Illustrative only: the 1–10 scales and the bands are mine, to show how the formula behaves. The authors' firm sells a separate diagnostic (the "Trust Quotient"); this is not that.</p>
+  </div>
+  <p>One property of the model is worth noticing: because self-orientation is the <em>divisor</em>, lowering it when it is high changes the result far more than polishing a strength. Expertise (credibility) alone does not make you trusted; a brilliant, self-focused expert scores low.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Five things that are true about trust</h2>
+  <p>Before the method, the book is careful about what trust <em>is</em>. Tap each card for what it means on a client project.</p>
+  <div class="facts" id="facts" data-testid="trust-facts"></div>
+
+  <h2 id="sec4"><span class="num">4</span> The five stages</h2>
+  <p>The book's process model: trust is built in five stages, and each needs a different skill. Click a stage.</p>
+  <div class="stage" data-testid="five-stages">
+    <div class="arrows" id="arrows"></div>
+    <div class="sdoc" id="sdoc" data-testid="stage-doc"></div>
+  </div>
+  <div class="analogy">There is no magic stage. Which one matters most depends on the problem in front of you, and skipping ahead is the usual way to lose a client's confidence: advice offered before you have <em>earned the right</em> to give it tends to bounce off.</div>
+
+  <h2 id="sec5"><span class="num">5</span> Practice: what would you say?</h2>
+  <p>Five client moments, each tied to a stage. Pick the reply that earns trust, then read why. The "right" answers follow the book's reasoning, but real clients vary, so use them to sharpen judgment, not as a script.</p>
+  <div class="stage" data-testid="scenario-trainer">
+    <div class="scn" id="scn"></div>
+    <div class="scn-nav"><button class="btn" id="scn-next" data-testid="scenario-next" disabled>Next →</button><span class="small" id="scn-score" data-testid="scenario-score"></span></div>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> The Columbo approach</h2>
+  <p>The authors use the TV detective Lieutenant Columbo as a metaphor. His rumpled, unassuming manner and plain questions put people at ease and draw out what they would not tell a polished investigator. The point for advisors: <strong>visible expertise can make clients guarded</strong>, because credentials and gadgets raise their sense of being judged or of being behind. Setting the trappings aside, being curious, and putting the client's intelligence and situation first, lowers the barriers.</p>
+  <div class="stage" data-testid="columbo">
+    <div class="col">
+      <div class="dialw">
+        <label>How much do you perform expertise in the room? <span class="small" id="col-v"></span><input type="range" id="col-r" min="0" max="100" value="80" data-testid="columbo-slider"></label>
+        <div class="meter2"><b>How guarded the client might feel</b><div class="gauge"><i id="col-guard" style="width:0;background:var(--vermil)"></i></div></div>
+        <div class="meter2"><b>How openly the client might talk</b><div class="gauge"><i id="col-open" style="width:0"></i></div></div>
+      </div>
+      <div class="cface" id="col-face" data-testid="columbo-face"></div>
+    </div>
+    <p class="small" style="margin:10px 0 0;">An illustration of the idea, not data. The point isn't to hide competence or to fake naivety: it's to be curious and not defensive. This ties straight back to self-orientation.</p>
+  </div>
+
+  <h2 id="sec7"><span class="num">7</span> The quick-impact list: pick your three</h2>
+  <p>The summary ends with a list of high-payoff behaviors. Here they are paraphrased. Choose up to three to try in your next client conversation and get a one-line plan.</p>
+  <div class="stage" data-testid="quick-impact">
+    <div class="qi" id="qi"></div>
+    <div class="plan" id="plan" data-testid="quick-impact-plan"></div>
+    <div style="margin-top:10px;"><button class="btn sec" id="plan-copy" data-testid="quick-impact-copy">Copy plan</button> <span class="small" id="plan-msg"></span></div>
+  </div>
+
+  <h2 id="sec8"><span class="num">8</span> On a client project</h2>
+  <p>The book is written for professional-services firms, but the stages map cleanly onto a web project. Click a phase to see where each trust move shows up. <em>This mapping is my own, not the authors'.</em></p>
+  <div class="stage" data-testid="project-map">
+    <div class="tl" id="tl"></div>
+    <div class="tlc" id="tlc" data-testid="project-map-doc"></div>
+  </div>
+
+  <h2 id="sec9"><span class="num">9</span> How to read this book critically</h2>
+  <div class="caveats">
+    <div class="flag"><b>It's a model, not a measurement.</b> The Trust Equation and the five stages are the authors' frameworks drawn from consulting experience. They're useful for reflection and conversation; nothing in the summaries presents them as validated by controlled studies.</div>
+    <div class="flag"><b>Techniques can become theatre.</b> Several recommended behaviors (listening, asking questions, going first) can be performed without caring. The book's own logic says that registers as self-orientation. If you are using a technique to be trusted, you are optimising for yourself.</div>
+    <div class="flag"><b>Context and age.</b> The book dates from 2000 and targets professional-services firms; a 20th-anniversary edition exists. Freelance and agency web work differs in scale and speed, and summaries disagree on details such as the relationship-level names, so check the book before quoting any of them.</div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Trust is earned before it is spent:</b> invest in the relationship ahead of the transaction, and expect it to take time.</li>
+    <li><b>Trust = credibility + reliability + intimacy, divided by self-orientation.</b> Cutting self-focus is usually the biggest lever.</li>
+    <li><b>Trust is two-way, risky and personal:</b> it grows through accumulated experience, involves rational and emotional parts, and attaches to people, not firms.</li>
+    <li><b>Five stages:</b> engage, listen, frame, envision, commit, each needing a different skill, and none skippable.</li>
+    <li><b>Listen before you advise, frame before you fix:</b> earn the right to give advice, name the real (often emotional) issue without blame, and picture the better future before choosing a solution.</li>
+    <li><b>Make the commitment explicit:</b> say what you will and won't do, what the client will do, how you'll report, and how success is judged.</li>
+    <li><b>Treat it as a heuristic:</b> use the model to examine your own habits, not to manipulate anyone.</li>
+  </ul>
+  <p class="src"><b>The book.</b> David H. Maister, Charles H. Green and Robert M. Galford, <a href="https://bookshop.org/p/books/the-trusted-advisor-20th-anniversary-edition-david-h-maister/951063" target="_blank">The Trusted Advisor</a> (Free Press, 2000; 20th-anniversary edition). This lesson is built from summaries, not from the book itself.</p>
+  <p class="src"><b>Summaries used.</b> Soundview Executive Book Summaries, <em>The Trusted Advisor</em> (vol. 23, no. 3, part 2, March 2001): the five stages, the three core skills, the nature of trust, the Columbo approach and the quick-impact list. · <a href="https://trustedadvisor.com/equation" target="_blank">Trusted Advisor Associates: The Trust Equation</a> (Charles H. Green's firm): the four variables and the Trust Quotient. · <a href="https://www.commonwealth.com/insights/becoming-the-trusted-advisor" target="_blank">Commonwealth: Becoming the Trusted Advisor</a>: the four relationship levels as summarised there. · <a href="https://guides.lib.fsu.edu/consulting" target="_blank">FSU Libraries consulting guide</a>: bibliographic description.</p>
+  <p class="src"><b>Checked 26 Oct 2026.</b> All text in this lesson is my paraphrase; the dialogue examples, the project mapping, the personas and the scoring scales are my own illustrations.</p>
+
+  <footer>The Trusted Advisor · Soft Skills &amp; Collaboration · part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- ladder ---------- */
+(function(){
+  const L=[
+    {n:'Service provider',s:'"service based"',see:'A source of a product or a single task.',get:'Tasks done well; usually where every relationship starts, and the easiest level to master.',dev:'You build the section you were asked for, on spec and on time.'},
+    {n:'Problem solver',s:'"needs based"',see:'Someone with capabilities beyond the first task.',get:'Help with deeper issues the client now relies on you for.',dev:'You spot that the slow page is really a data-model problem and fix that instead.'},
+    {n:'Perspective provider',s:'"relationship based"',see:'Someone who puts issues in context, gives advice and spots problems early.',get:'Judgment, not just execution; this is the stage that makes the final step easier.',dev:'You tell them the planned redesign will hurt conversion, and show two alternatives.'},
+    {n:'The first call',s:'"trust based"',see:'The person the client calls first when something matters, personal or professional.',get:'A partner in crises and wins alike; the most time-consuming level and the most rewarding.',dev:'They ask your opinion before they sign the agency contract or pick the app.'}
+  ];
+  const box=$('rungs'), doc=$('rdoc');
+  L.forEach((l,i)=>{ const b=document.createElement('button'); b.type='button'; b.className='rung'; b.dataset.i=i; b.setAttribute('data-testid','ladder-rung-'+i); b.innerHTML=(i+1)+'. '+l.n+'<small>'+l.s+'</small>';
+    b.onclick=()=>{ box.querySelectorAll('.rung').forEach(x=>x.classList.remove('on')); b.classList.add('on'); doc.innerHTML='<h4>'+(i+1)+'. '+l.n+'</h4><dl><dt>How the client sees you</dt><dd>'+l.see+'</dd><dt>What the client gets</dt><dd>'+l.get+'</dd><dt>On a web project</dt><dd>'+l.dev+'</dd></dl>'; }; box.appendChild(b); });
+  box.children[0].click();
+})();
+
+/* ---------- trust equation ---------- */
+(function(){
+  const V=[['c','Credibility','Can they believe what you say?','#4a6fa8'],['r','Reliability','Do you do what you said you would?','#437a58'],['i','Intimacy','Do they feel safe being open with you?','#7d68b3'],['s','Self-orientation','Is your focus on you, or on them and the shared goal?','#b35c5c']];
+  const state={c:7,r:7,i:5,s:4};
+  const P=[['Brilliant but self-focused expert',{c:10,r:7,i:3,s:9}],['Dependable order-taker',{c:6,r:9,i:3,s:4}],['The charmer',{c:5,r:3,i:9,s:7}],['Trusted advisor (in progress)',{c:8,r:8,i:7,s:2}]];
+  const eqc=$('eqc'), pr=$('presets');
+  V.forEach(([k,n,q])=>{ const l=document.createElement('label'); l.className=k==='s'?'den':''; l.innerHTML=n+' <span class="v" id="v-'+k+'"></span><small>'+q+'</small><input type="range" min="1" max="10" id="r-'+k+'" data-testid="trust-'+k+'">'; eqc.appendChild(l); });
+  P.forEach(([n,v],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='chipb'; b.textContent=n; b.setAttribute('data-testid','trust-preset-'+i); b.onclick=()=>{ Object.assign(state,v); render(); }; pr.appendChild(b); });
+  function ratio(s){ return (s.c+s.r+s.i)/s.s; }
+  function render(){
+    V.forEach(([k])=>{ $('r-'+k).value=state[k]; $('v-'+k).textContent=state[k]+'/10'; });
+    const sc=$('scale'); const H=190;
+    const col=k=>V.find(v=>v[0]===k)[3];
+    sc.innerHTML='<div><h5>C + R + I</h5><div class="stack" style="height:'+H+'px">'+['c','r','i'].map(k=>'<i style="height:'+state[k]*5.2+'px;background:'+col(k)+'" title="'+k+'"></i>').join('')+'</div></div><div class="bar"></div><div><h5>SELF-ORIENTATION</h5><div class="stack" style="height:'+H+'px"><i style="height:'+state.s*5.2+'px;background:'+col('s')+'"></i></div></div>';
+    const r=ratio(state); $('eq-gauge').style.width=Math.min(100,r/30*100*3)+'%';
+    const levers=[['c','raising credibility by 1'],['r','raising reliability by 1'],['i','raising intimacy by 1']].map(([k,t])=>[t,ratio(Object.assign({},state,{[k]:Math.min(10,state[k]+1)}))-r]).concat([['lowering self-orientation by 1',ratio(Object.assign({},state,{s:Math.max(1,state.s-1)}))-r]]).sort((a,b)=>b[1]-a[1]);
+    const band=r<3?'low':r<6?'building':'strong';
+    $('eq-note').innerHTML='<b>Ratio '+r.toFixed(1)+'</b> (illustrative band: '+band+'). In this model the biggest single gain right now would come from <b>'+levers[0][0]+'</b> (+'+levers[0][1].toFixed(1)+').'+(state.s>=7?' Self-orientation is high, so it is dragging the whole result down.':'');
+  }
+  V.forEach(([k])=>$('r-'+k).addEventListener('input',e=>{ state[k]=+e.target.value; render(); })); render();
+})();
+
+/* ---------- facts ---------- */
+(function(){
+  const F=[
+    ['Trust grows','It rarely appears instantly. You are more likely to be liked first; trust comes from accumulated experience.','Expect to earn it across several small deliveries, not in one pitch.'],
+    ['It is rational and emotional','Clients weigh your expertise, and also your support, dedication to their interests and courage in challenging them.','A technically perfect answer delivered coldly can still lose them.'],
+    ['It is a two-way street','You cannot create it alone; the client has to participate and reciprocate, in their own time.','Ask for their input and give them real choices; do not push for trust.'],
+    ['It involves risk','Trust means exposing yourself a little. If neither side takes a risk, there is nothing to trust.','Say the uncomfortable thing about scope, timeline or a bad idea, with care.'],
+    ['It is personal','People trust people, not brands or processes. An organisation can get on a shortlist, but a person keeps the relationship.','Your name is what the client remembers; the agency logo is not.']
+  ];
+  const box=$('facts');
+  F.forEach(([t,d,dev],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='fact'; b.setAttribute('data-testid','trust-fact-'+i); b.innerHTML='<b>'+t+'</b>'+d+'<div class="dev"><b style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-mute)">On a project</b>'+dev+'</div><div class="hint">tap to expand</div>'; b.onclick=()=>b.classList.toggle('open'); box.appendChild(b); });
+})();
+
+/* ---------- five stages ---------- */
+(function(){
+  const S=[
+    {n:'Engage',c:'#c9a24a',sk:'Being credibly noticed',what:'An initial connection that makes the client want to discuss a need. It takes the client investing time and taking a small risk on you, and it works best when it is specific: a concrete issue you might help with, not a general offer.',warn:'Generic pitches. Even current clients will not open up just because you are willing to listen.',dev:'A short, specific observation on their live site ("your checkout shifts on mobile") beats "we do performance work".'},
+    {n:'Listen',c:'#437a58',sk:'Understanding another human being',what:'Listening earns the right to comment on the client\'s issues. It is emotional as well as rational, and it is active: a continual back-and-forth that shows each person is heard.',warn:'Listening too rationally (only collecting facts) or too passively (nodding without engaging). Interrupting, jumping to conclusions and solving too quickly.',dev:'Paraphrase the problem back, ask for the story behind it, and ask how you might be of help before proposing anything.'},
+    {n:'Frame',c:'#4a6fa8',sk:'Creative insight and emotional courage',what:'Crystallising the client\'s tangled issues and feelings into a problem statement that gives a fresh way of thinking. It has a rational side (distil to a few critical variables) and an emotional side (surface the unspoken). The authors call it the most challenging stage and often the most rewarding.',warn:'Blame. First attempts at framing are usually "so-and-so won\'t listen to me" or "we need more training"; move from blame to a problem someone can own and act on.',dev:'"Naming and claiming": acknowledge it is hard to raise, accept responsibility for raising it, then state the issue directly, using caveats like "it is probably just me, but…"'},
+    {n:'Envision',c:'#7d68b3',sk:'A spirit of collaboration and creativity',what:'Once the problem is framed, do not rush to solve it. Together, picture the better future in rich detail. Three questions anchor it: what are we really aiming for, what will it look like when we get there, and how will we know we are there?',warn:'Premature solving. The client may also decide the better future is not worth the effort, and that is their call.',dev:'Ask "if this were fixed, what would you notice first?" before you propose a tool, metric or architecture.'},
+    {n:'Commit',c:'#b35c5c',sk:'Generating enthusiasm and managing over-enthusiasm',what:'Turn the vision into a joint commitment: what stands in the way, who plays which role, what information is needed, when to check in, what deadlines loom. Manage expectations explicitly: what you will and will not do, what the client will and will not do, boundaries, working arrangements, reporting and how success is measured.',warn:'Leaving risks and pitfalls unsaid at the start; clients may read that as arrogance or secrecy. A shared workload calculation is not commitment.',dev:'A one-page working agreement: scope in and out, client responsibilities, cadence, milestones and a definition of done.'}
+  ];
+  const ar=$('arrows'), doc=$('sdoc');
+  S.forEach((s,i)=>{ const b=document.createElement('button'); b.type='button'; b.className='arrow'; b.style.background=s.c; b.setAttribute('data-testid','stage-'+s.n.toLowerCase()); b.innerHTML=(i+1)+'. '+s.n+'<small>'+s.sk+'</small>';
+    b.onclick=()=>{ ar.querySelectorAll('.arrow').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+      doc.innerHTML='<div class="sbox wide"><h5>What it is</h5>'+s.what+'</div><div class="sbox warn"><h5>Watch out for</h5>'+s.warn+'</div><div class="sbox dev"><h5>On a client project</h5>'+s.dev+'</div>'; }; ar.appendChild(b); });
+  ar.children[1].click();
+})();
+
+/* ---------- scenarios ---------- */
+(function(){
+  const Sc=[
+    {st:'ENGAGE',say:'(You are reaching out to a prospect whose site you noticed has a clear problem.)',q:'Which opening is most likely to earn a reply?',o:[
+      ['"We are a full-service agency with 12 years of experience in e-commerce."',0,'Generic and about you. Engaging works when the client believes you can help with a specific issue.'],
+      ['"Your checkout shifts layout on mobile and I think I can see why. Here is a two-minute video and one fix idea, no strings."',1,'Specific, generous (you went first) and about their problem. That is the investment that earns attention.'],
+      ['"Can we schedule a call this week to discuss how we can add value?"',0,'Vague and asks them to invest first. There is nothing concrete to respond to.']]},
+    {st:'LISTEN',say:'"The new landing page keeps timing out and my VP is furious."',q:'What do you say first?',o:[
+      ['"I know what it is: your tag manager is overloaded. Remove it and it will be fine."',0,'Jumping to a solution before listening. It may even be right, but it skips earning the right to advise and ignores the VP, who is the emotional half of the problem.'],
+      ['"That sounds stressful. Before I dig in, can you walk me through what happens, and what your VP has seen?"',1,'Acknowledges the feeling, asks for the story and the details, and shows you are on their side before you touch the problem.'],
+      ['"Our performance audit takes three days. I will send a proposal."',0,'Selling the next thing before understanding this one.']]},
+    {st:'FRAME',say:'"Marketing keeps adding scripts and breaking my site."',q:'How do you respond?',o:[
+      ['"Yes, marketing is the problem. They should stop."',0,'Agreeing with blame feels supportive but locks the problem outside the client\'s control.'],
+      ['"It is probably just me, but I wonder if nobody owns the question of who approves new scripts, and that gap is slowing the site. Does that ring true?"',1,'Names the real issue without blame, claims responsibility for raising it, and uses a caveat to lower the risk. That is naming and claiming.'],
+      ['"I will add a lint rule that blocks new scripts."',0,'A technical fix that skips the emotional and political framing. It may fail because the underlying dispute remains.']]},
+    {st:'ENVISION',say:'"We just need a faster site."',q:'What do you ask?',o:[
+      ['"Great, let us get Lighthouse above 90."',0,'Jumps to a solution and swaps their goal for a metric you chose.'],
+      ['"If it were fixed, what would you notice first? How would we know we had got there?"',1,'Paints the better future in their terms and defines success before choosing the solution.'],
+      ['"Let me send you a list of tools we use."',0,'Solving before envisioning.']]},
+    {st:'COMMIT',say:'"This all sounds great. Let us go!"',q:'What happens next?',o:[
+      ['"Perfect, we start Monday."',0,'Enthusiasm without detail. Unspoken assumptions are where trust is lost later.'],
+      ['"Before we start, let me confirm what we will do and not do, what we need from you, how often I will report, and what \'done\' means."',1,'Manages expectations explicitly and makes the commitment joint, which is what the commit stage asks for.'],
+      ['"I will send the contract and we can sort details as we go."',0,'Postpones the conversations that make the commitment real.']]}
+  ];
+  let i=0, score=0, answered=false; const box=$('scn'), nx=$('scn-next'), sc=$('scn-score');
+  function show(){
+    if(i>=Sc.length){ box.innerHTML='<div class="tag">DONE</div><div class="say" style="border-left-color:var(--forest)">You matched the book\'s reasoning on '+score+' of '+Sc.length+'.</div><p class="small">What matters is the habit: acknowledge, ask, name the issue without blame, picture the future, then agree the details.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{ i=0;score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; sc.textContent=''; return; }
+    const s=Sc[i]; answered=false; nx.disabled=true;
+    box.innerHTML='<div class="tag">'+s.st+' · '+(i+1)+' / '+Sc.length+'</div><div class="say">'+s.say+'</div><b>'+s.q+'</b>'+s.o.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'" data-testid="scenario-option-'+k+'">'+o[0]+'</button><div class="why" id="why-'+k+'" hidden></div>').join('');
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(answered) return; answered=true; const k=+b.dataset.k; const ok=s.o[k][1]===1; if(ok) score++;
+      b.classList.add(ok?'good':'bad'); s.o.forEach((o,j)=>{ if(o[1]===1) box.querySelector('[data-k="'+j+'"]').classList.add('good'); const w=$('why-'+j); w.hidden=false; w.innerHTML='<b>'+(o[1]?'Best: ':'Not quite: ')+'</b>'+o[2]; });
+      nx.disabled=false; sc.textContent=score+' of '+(i+1)+' matched'; });
+  }
+  function next(){ i++; show(); }
+  nx.onclick=next; show();
+})();
+
+/* ---------- Columbo ---------- */
+(function(){
+  const r=$('col-r'), face=$('col-face');
+  function render(){
+    const v=+r.value; $('col-v').textContent=v+'/100'; $('col-guard').style.width=Math.round(15+v*0.8)+'%'; $('col-open').style.width=Math.round(95-v*0.8)+'%';
+    face.innerHTML = v>66 ? '<b>Performing expertise.</b> Credentials, jargon, a slick demo.<div class="q">Client: "Sure, sounds good." (and they keep the real worry to themselves)</div>'
+      : v>33 ? '<b>Somewhere in the middle.</b> Competent, but still managing how you come across.<div class="q">Client: "Well… there is one thing, but it is probably nothing."</div>'
+      : '<b>Curious and unguarded.</b> Plain questions, the client\'s intelligence first, "just one more thing…".<div class="q">Client: "Honestly, what is really worrying me is…"</div>';
+  }
+  r.addEventListener('input',render); render();
+})();
+
+/* ---------- quick impact ---------- */
+(function(){
+  const Q=[
+    ['Listen to everything','Paraphrase what you hear until you can say it back.'],
+    ['Empathise for real','Understand their view and acknowledge it before disagreeing.'],
+    ['Note what the client feels','Name the feeling (and your own, carefully).'],
+    ['Build a shared agenda','Share your ideas for the meeting and ask for theirs.'],
+    ['Take a point of view','Offer an idea even if unsure, to provoke their thinking.'],
+    ['Take a small personal risk','Share something about yourself, accepting it could go badly.'],
+    ['Ask about a related area','Show interest beyond your narrow remit.'],
+    ['Ask great open questions','Let them set the frame, in their own terms.'],
+    ['Give away ideas','Expertise is not diminished by sharing it.'],
+    ['Return calls with speed','Fast responses signal that you value them.'],
+    ['Relax your mind before the meeting','Clear distractions; remind yourself it is about the client.']
+  ];
+  const box=$('qi'), plan=$('plan'); const sel=[];
+  Q.forEach(([t,d],i)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('data-testid','quick-impact-'+i); b.innerHTML='<b>'+t+'</b><span>'+d+'</span>';
+    b.onclick=()=>{ const k=sel.indexOf(i); if(k>=0){ sel.splice(k,1); b.classList.remove('on'); } else if(sel.length<3){ sel.push(i); b.classList.add('on'); } draw(); }; box.appendChild(b); });
+  function text(){ return sel.length?'Next client conversation, I will:\n'+sel.map((i,k)=>(k+1)+'. '+Q[i][0]+': '+Q[i][1]).join('\n'):''; }
+  function draw(){ plan.innerHTML=sel.length?'<b>Next client conversation, I will:</b><ol>'+sel.map(i=>'<li><b>'+Q[i][0]+'</b>: '+Q[i][1]+'</li>').join('')+'</ol>':'<span class="small">Pick up to three.</span>'; }
+  $('plan-copy').onclick=()=>{ const t=text(); if(!t){ $('plan-msg').textContent='Pick one first.'; return; } (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>$('plan-msg').textContent='Copied.',()=>$('plan-msg').textContent='Could not copy.'); };
+  draw();
+})();
+
+/* ---------- project timeline ---------- */
+(function(){
+  const T=[
+    {n:'Discovery',sub:'first calls',st:['Engage','Listen','Frame'],mv:['Open with something specific about their business or site, not a capabilities deck.','Listen for the story and the feelings behind the brief; paraphrase before proposing.','Name the real problem without blame ("it is probably just me, but…").']},
+    {n:'Proposal',sub:'scope & estimate',st:['Envision','Commit'],mv:['Describe the better future and how you will know you are there, not just a task list.','State what is in and out of scope, and what you need from them.','Be candid about risks and assumptions; leaving them out can read as secrecy.']},
+    {n:'Build',sub:'weekly work',st:['Reliability','Listen'],mv:['Do what you said, when you said; reliability is half of what clients judge.','Return messages fast; it is one of the cheapest trust signals.','Share work early; go first rather than waiting for a polished reveal.']},
+    {n:'Review',sub:'feedback & changes',st:['Frame','Intimacy'],mv:['When feedback is blame-shaped ("the design is wrong"), reframe to the underlying need.','Give your honest point of view even when it disagrees; present options and let them decide.','Mind the politics: help the client look good internally.']},
+    {n:'Launch',sub:'go-live',st:['Commit','Reliability'],mv:['Agree the launch plan, owners and rollback in advance.','Say plainly what could go wrong and what you will do about it.']},
+    {n:'Support',sub:'after go-live',st:['Intimacy','Self-orientation'],mv:['Check in without an upsell attached; keep your focus on how it is working for them.','Give away ideas. Expertise is renewed by use.','This is where the relationship moves toward "first call".']}
+  ];
+  const tl=$('tl'), doc=$('tlc');
+  T.forEach((p,i)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('data-testid','project-phase-'+i); b.innerHTML=p.n+'<small>'+p.sub+'</small>';
+    b.onclick=()=>{ tl.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); doc.innerHTML='<div>'+p.st.map(s=>'<span class="st">'+s+'</span>').join('')+'</div><ul>'+p.mv.map(m=>'<li>'+m+'</li>').join('')+'</ul>'; }; tl.appendChild(b); });
+  tl.children[0].click();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

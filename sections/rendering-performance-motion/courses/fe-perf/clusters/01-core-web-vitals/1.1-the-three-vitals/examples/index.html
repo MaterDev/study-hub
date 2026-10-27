@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examples: 1.1 The Three Vitals · FE Perf Workshop</title>
+  <link rel="stylesheet" href="../../../../_shared/lesson.css">
+  <style>
+    :root {
+      --accent:      #5458a8;
+      --accent-mid:  #4a6fa8;
+      --accent-rgb:  129, 140, 248;
+      --accent-soft: rgba(129, 140, 248, 0.12);
+      --accent-line: rgba(129, 140, 248, 0.32);
+    }
+
+    /* ── Hero ── */
+    .examples-hero {
+      position: relative;
+      background: rgba(38, 47, 66, 0.72);
+      backdrop-filter: blur(18px) saturate(1.3);
+      -webkit-backdrop-filter: blur(18px) saturate(1.3);
+      border-bottom: 1px solid rgba(129,140,248,0.26);
+      padding: var(--sp-10) var(--sp-8) var(--sp-8);
+    }
+    .examples-hero::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent,
+        rgba(129,140,248,0.7) 25%, rgba(45,212,191,0.5) 60%, transparent);
+      pointer-events: none;
+    }
+    .examples-hero h1 { font-family: var(--font-mono); }
+    .examples-hero-inner {
+      max-width: var(--wide-w);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--sp-8);
+      align-items: end;
+    }
+    .hero-back { display:inline-flex;align-items:center;gap:var(--sp-2);font-size:0.78rem;font-weight:500;color:var(--text-muted);text-decoration:none;margin-bottom:var(--sp-5); }
+    .hero-back:hover { color:var(--accent); }
+    .examples-hero h1 { font-size:clamp(1.5rem,3vw,2rem);margin-bottom:var(--sp-2); }
+    .examples-hero .hero-sub { font-size:0.95rem;color:var(--text-muted);max-width:520px;margin:0; }
+    .hero-stats { display:flex;gap:var(--sp-5);margin-top:var(--sp-5); }
+    .hero-stat  { display:flex;flex-direction:column;gap:2px; }
+    .hero-stat-num   { font-size:1.4rem;font-weight:700;color:var(--accent);line-height:1; }
+    .hero-stat-label { font-size:0.7rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-dim); }
+    .hero-lesson-tag { display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-4) var(--sp-5);background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:var(--r-lg);font-size:0.82rem;color:var(--text-muted); }
+    .hero-lesson-tag a { color:var(--accent);font-weight:500; }
+    @media(max-width:680px){.examples-hero-inner{grid-template-columns:1fr}.hero-lesson-tag{display:none}}
+
+    /* ── Section headers ── */
+    .section-header { max-width:var(--wide-w);margin:0 auto;padding:var(--sp-10) var(--sp-8) 0;display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-4); }
+    .section-header h2 { font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:var(--text);margin:0;padding:0;border:none;letter-spacing:-0.02em; }
+    .section-header .section-desc { font-family:var(--font-mono);font-size:0.76rem;color:var(--text-muted);margin:0; }
+    .examples-content { max-width:var(--wide-w);margin:0 auto;padding:var(--sp-6) var(--sp-8); }
+
+    /* ── Experiment cards ── */
+    .experiments-list { display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:var(--sp-5);margin-top:var(--sp-5); }
+    @media(max-width:900px){.experiments-list{grid-template-columns:1fr}}
+    .experiment-card { position:relative;background:rgba(35,42,59,0.68);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(129,140,248,0.22);border-radius:var(--r-xl);overflow:hidden;box-shadow:0 4px 28px rgba(0,0,0,0.4),0 0 40px rgba(129,140,248,0.05);display:flex;flex-direction:column; }
+    .experiment-card::after { content:'';position:absolute;left:12%;right:12%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(129,140,248,0.5),transparent);pointer-events:none; }
+    .experiment-header { padding:var(--sp-4) var(--sp-5);border-bottom:1px solid rgba(129,140,248,0.18);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);background:rgba(21,26,38,0.6); }
+    .experiment-title-row { display:flex;align-items:center;gap:var(--sp-3);min-width:0; }
+    .experiment-num { width:24px;height:24px;border-radius:50%;background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--accent);font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .experiment-name { font-size:0.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .experiment-controls { display:flex;gap:var(--sp-2);flex-shrink:0; }
+    .experiment-stage { padding:var(--sp-5);flex:1;min-height:160px; }
+    .experiment-footer { padding:var(--sp-3) var(--sp-5);border-top:1px solid rgba(251,191,36,0.28);background:rgba(251,191,36,0.10);display:flex;align-items:flex-start;gap:var(--sp-2);font-size:0.78rem;color:var(--text-body);line-height:1.4; }
+    .experiment-footer em { color:var(--yellow);font-style:normal;font-weight:600; }
+
+    /* ── Scenario cards ── */
+    .scenarios-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--sp-5);margin-top:var(--sp-5); }
+    @media(max-width:680px){.scenarios-grid{grid-template-columns:1fr}}
+    .scenario-card { background:rgba(35,42,59,0.68);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(129,140,248,0.22);border-radius:var(--r-xl);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.38);text-decoration:none;display:flex;flex-direction:column;transition:box-shadow 0.2s,transform 0.2s,border-color 0.2s; }
+    .scenario-card:hover { box-shadow:0 10px 40px rgba(0,0,0,0.5),0 0 30px rgba(129,140,248,0.18);transform:translateY(-3px);border-color:rgba(var(--accent-rgb),0.6); }
+    .scenario-thumb { height:140px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center; }
+    .scenario-body { padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-3);flex:1; }
+    .scenario-tags { display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2); }
+    .scenario-type { font-size:0.65rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;padding:3px 9px;border-radius:999px; }
+    .type-compare   { background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-line); }
+    .type-practice  { background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-line); }
+    .type-challenge { background:var(--red-bg);color:var(--red);border:1px solid var(--red-line); }
+    .scenario-time { font-size:0.7rem;color:var(--text-dim); }
+    .scenario-body h3 { font-size:0.97rem;font-weight:650;color:var(--text);margin:0;line-height:1.3; }
+    .scenario-body p { font-size:0.82rem;color:var(--text-muted);margin:0;line-height:1.55; }
+    .scenario-footer { display:flex;align-items:center;justify-content:space-between;padding:var(--sp-3) var(--sp-5);border-top:1px solid rgba(129,140,248,0.18);background:rgba(21,26,38,0.6); }
+    .scenario-difficulty { font-size:0.7rem;color:var(--text-dim); }
+    .scenario-open { font-size:0.78rem;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:4px; }
+    .scenario-card:hover .scenario-open { gap:7px; }
+    .section-divider { max-width:var(--wide-w);margin:var(--sp-10) auto 0;border:none;border-top:1px solid var(--border); }
+
+    /* ════ EXPERIMENT 1: Score Builder ════ */
+    .score-builder { display:flex;flex-direction:column;gap:var(--sp-4); }
+    .sb-metric { display:grid;grid-template-columns:60px 1fr auto;gap:var(--sp-3);align-items:center;font-size:0.82rem; }
+    .sb-label { font-weight:700;font-size:0.75rem;letter-spacing:0.04em; }
+    .sb-slider { width:100%;accent-color:var(--accent);cursor:pointer; }
+    .sb-pill { min-width:70px;text-align:center;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:999px;transition:all 0.2s; }
+
+    /* ════ EXPERIMENT 2: INP Phase Timer ════ */
+    .inp-timer-area { display:flex;flex-direction:column;gap:var(--sp-4); }
+    .inp-timer-phases { display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3); }
+    .inp-phase-meter { border-radius:var(--r-md);border:1px solid rgba(129,140,248,0.22);overflow:hidden;background:rgba(21,26,38,0.5); }
+    .ipm-label { font-family:var(--font-mono);font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:var(--sp-2) var(--sp-3);background:rgba(129,140,248,0.10);border-bottom:1px solid rgba(129,140,248,0.2); }
+    .ipm-val { font-size:1.1rem;font-weight:700;font-family:var(--font-mono);padding:var(--sp-3);color:var(--text-dim);transition:color 0.3s; }
+    .ipm-bar-track { height:6px;background:var(--border);margin:0 var(--sp-3) var(--sp-3); }
+    .ipm-bar-fill { height:100%;border-radius:999px;width:0%;transition:width 0.4s,background 0.4s; }
+    .inp-result { background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);font-size:0.82rem;display:flex;align-items:center;justify-content:space-between; }
+    .inp-total-label { color:var(--text-dim); }
+    .inp-total-val { font-size:1rem;font-weight:700;font-family:var(--font-mono);color:var(--text-dim);transition:color 0.3s; }
+
+    /* ════ EXPERIMENT 3: CLS Calculator ════ */
+    .cls-calc { display:flex;flex-direction:column;gap:var(--sp-4); }
+    .cls-sliders { display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4); }
+    .cls-slider-group { display:flex;flex-direction:column;gap:var(--sp-2); }
+    .cls-slider-label { font-size:0.72rem;font-weight:600;color:var(--text-muted); }
+    .cls-slider-val   { font-size:0.72rem;font-family:var(--font-mono);color:var(--accent); }
+    .cls-viewport { background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--r-md);height:120px;position:relative;overflow:hidden; }
+    .cls-vp-el { position:absolute;background:rgba(129,140,248,0.28);border:2px solid rgba(129,140,248,0.7);border-radius:4px;box-shadow:0 0 16px rgba(129,140,248,0.3);transition:top 0.3s; }
+    .cls-vp-ghost { position:absolute;background:transparent;border:2px dashed rgba(129,140,248,0.45);border-radius:4px; }
+    .cls-vp-arrow { position:absolute;right:12px;width:14px;background:var(--red);border-radius:2px;transition:height 0.3s,top 0.3s; }
+    .cls-score-row { display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap; }
+    .cls-score-formula { font-size:0.78rem;color:var(--text-muted); }
+    .cls-score-result { font-size:1.2rem;font-weight:800;font-family:var(--font-mono);transition:color 0.3s; }
+  </style>
+</head>
+<body>
+<div class="lesson-shell">
+
+  <nav class="lesson-nav">
+    <a class="nav-logo" href="../../../../../../index.html">FE <span class="accent">Perf</span> Workshop</a>
+    <span class="nav-sep">›</span>
+    <div class="breadcrumb">
+      <a href="../../../../../../index.html">Workshop</a>
+      <span class="crumb-sep">›</span>
+      <a href="../lesson.html">1.1 The Three Vitals</a>
+      <span class="crumb-sep">›</span>
+      <span class="crumb-current">Examples</span>
+    </div>
+  </nav>
+
+  <main>
+    <div class="examples-hero">
+      <div class="examples-hero-inner">
+        <div>
+          <a class="hero-back" href="../lesson.html">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7 2L3 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back to lesson
+          </a>
+          <div class="lesson-cluster-tag" style="margin-bottom:var(--sp-3);">Cluster 1 · Core Web Vitals</div>
+          <h1>The Three Vitals</h1>
+          <p class="hero-sub">Hands-on experiments with LCP, INP, and CLS — build intuition for how each score is calculated, and then diagnose a broken page in the wild.</p>
+          <div class="hero-stats">
+            <div class="hero-stat"><span class="hero-stat-num">3</span><span class="hero-stat-label">Experiments</span></div>
+            <div class="hero-stat"><span class="hero-stat-num">2</span><span class="hero-stat-label">Scenarios</span></div>
+            <div class="hero-stat"><span class="hero-stat-num">~25m</span><span class="hero-stat-label">Total time</span></div>
+          </div>
+        </div>
+        <div class="hero-lesson-tag">
+          <span>📖</span>
+          <span>From <strong>1.1</strong> — <a href="../lesson.html">The Three Vitals</a></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EXPERIMENTS ══ -->
+    <div class="section-header">
+      <h2>Experiments</h2>
+      <p class="section-desc">Run directly on this page</p>
+    </div>
+    <div class="examples-content" style="padding-top:var(--sp-4);padding-bottom:var(--sp-4);">
+      <div class="experiments-list">
+
+        <!-- Experiment 1: Threshold explorer -->
+        <div class="experiment-card">
+          <div class="experiment-header">
+            <div class="experiment-title-row">
+              <div class="experiment-num">1</div>
+              <span class="experiment-name">Threshold Explorer</span>
+            </div>
+          </div>
+          <div class="experiment-stage">
+            <div class="score-builder">
+              <div class="sb-metric">
+                <span class="sb-label" style="color:var(--cluster-1);">LCP</span>
+                <input type="range" class="sb-slider" id="sb-lcp" min="500" max="6000" value="2100" step="100">
+                <span class="sb-pill metric-good" id="sb-lcp-pill">2.1s</span>
+              </div>
+              <div class="sb-metric">
+                <span class="sb-label" style="color:var(--cluster-4);">INP</span>
+                <input type="range" class="sb-slider" id="sb-inp" min="30" max="700" value="140" step="10">
+                <span class="sb-pill metric-good" id="sb-inp-pill">140ms</span>
+              </div>
+              <div class="sb-metric">
+                <span class="sb-label" style="color:var(--cluster-8);">CLS</span>
+                <input type="range" class="sb-slider" id="sb-cls" min="0" max="0.4" value="0.05" step="0.01">
+                <span class="sb-pill metric-good" id="sb-cls-pill">0.05</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0;border-top:1px solid var(--border);margin-top:var(--sp-2);">
+                <span style="font-size:0.75rem;color:var(--text-muted);">Overall assessment:</span>
+                <span id="sb-overall" style="font-size:0.82rem;font-weight:700;color:var(--green);">✓ Passes all three</span>
+              </div>
+            </div>
+          </div>
+          <div class="experiment-footer">
+            <span>👁</span>
+            <span>Drag each slider past the threshold lines. Notice the pill color flip from green → yellow → red. <strong>All three must pass</strong> for the overall assessment to be green.</span>
+          </div>
+        </div>
+
+        <!-- Experiment 2: INP Phase Stopwatch -->
+        <div class="experiment-card">
+          <div class="experiment-header">
+            <div class="experiment-title-row">
+              <div class="experiment-num">2</div>
+              <span class="experiment-name">INP Phase Stopwatch</span>
+            </div>
+            <div class="experiment-controls">
+              <button class="btn btn-outline btn-sm" id="inp-sim-fast">⚡ Fast Interaction</button>
+              <button class="btn btn-outline btn-sm" id="inp-sim-slow">🐌 Slow Interaction</button>
+            </div>
+          </div>
+          <div class="experiment-stage">
+            <div class="inp-timer-area">
+              <div class="inp-timer-phases">
+                <div class="inp-phase-meter">
+                  <div class="ipm-label" style="color:#b45309;">Input Delay</div>
+                  <div class="ipm-val" id="ipm-1">0ms</div>
+                  <div class="ipm-bar-track"><div class="ipm-bar-fill" id="ipm-1-bar"></div></div>
+                </div>
+                <div class="inp-phase-meter">
+                  <div class="ipm-label" style="color:var(--cluster-4);">Processing</div>
+                  <div class="ipm-val" id="ipm-2">0ms</div>
+                  <div class="ipm-bar-track"><div class="ipm-bar-fill" id="ipm-2-bar"></div></div>
+                </div>
+                <div class="inp-phase-meter">
+                  <div class="ipm-label" style="color:#9a3412;">Presentation</div>
+                  <div class="ipm-val" id="ipm-3">0ms</div>
+                  <div class="ipm-bar-track"><div class="ipm-bar-fill" id="ipm-3-bar"></div></div>
+                </div>
+              </div>
+              <div class="inp-result">
+                <span class="inp-total-label">Total INP</span>
+                <span class="inp-total-val" id="inp-total-val">— ms</span>
+              </div>
+            </div>
+          </div>
+          <div class="experiment-footer">
+            <span>👁</span>
+            <span>Click <em>Fast</em> to see a responsive interaction. Click <em>Slow</em> to simulate a blocked main thread. Notice how <strong>Input Delay</strong> spikes — that's the main thread being busy before it can even start handling the click.</span>
+          </div>
+        </div>
+
+        <!-- Experiment 3: CLS Calculator -->
+        <div class="experiment-card">
+          <div class="experiment-header">
+            <div class="experiment-title-row">
+              <div class="experiment-num">3</div>
+              <span class="experiment-name">CLS Score Calculator</span>
+            </div>
+            <div class="experiment-controls">
+              <button class="btn btn-outline btn-sm" id="cls-trigger">Trigger Shift</button>
+            </div>
+          </div>
+          <div class="experiment-stage">
+            <div class="cls-calc">
+              <div class="cls-sliders">
+                <div class="cls-slider-group">
+                  <div style="display:flex;justify-content:space-between;">
+                    <span class="cls-slider-label">Impact fraction (% viewport area)</span>
+                    <span class="cls-slider-val" id="cls-impact-val">40%</span>
+                  </div>
+                  <input type="range" class="sb-slider" id="cls-impact-slider" min="5" max="95" value="40" step="5">
+                </div>
+                <div class="cls-slider-group">
+                  <div style="display:flex;justify-content:space-between;">
+                    <span class="cls-slider-label">Distance fraction (% viewport moved)</span>
+                    <span class="cls-slider-val" id="cls-distance-val">20%</span>
+                  </div>
+                  <input type="range" class="sb-slider" id="cls-distance-slider" min="5" max="80" value="20" step="5">
+                </div>
+              </div>
+              <div class="cls-viewport" id="cls-viewport">
+                <div class="cls-vp-ghost" id="cls-ghost"></div>
+                <div class="cls-vp-el"    id="cls-el">Content block</div>
+                <div class="cls-vp-arrow" id="cls-arrow"></div>
+              </div>
+              <div class="cls-score-row">
+                <span class="cls-score-formula" id="cls-formula-txt">0.40 × 0.20 =</span>
+                <span class="cls-score-result" id="cls-result">0.08</span>
+                <span id="cls-verdict" class="metric-pill metric-good" style="font-size:0.7rem;">Good</span>
+              </div>
+            </div>
+          </div>
+          <div class="experiment-footer">
+            <span>👁</span>
+            <span>Adjust the sliders and click "Trigger Shift" to see the element jump. The red bar shows the distance. Watch the score update — try to push it past 0.1 to flip to "Needs Improvement".</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SCENARIOS ══ -->
+    <hr class="section-divider">
+    <div class="section-header">
+      <h2>Scenarios</h2>
+      <p class="section-desc">Full-page practice environments</p>
+    </div>
+    <div class="examples-content" style="padding-top:var(--sp-4);padding-bottom:var(--sp-16);">
+      <div class="scenarios-grid">
+
+        <!-- Scenario 1: Diagnose the broken page -->
+        <a class="scenario-card" href="./diagnose-the-page.html">
+          <div class="scenario-thumb" style="background:rgba(21,26,38,0.7);display:flex;">
+            <!-- Three metric gauges, two red one green -->
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;border-right:1px solid var(--border);">
+              <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cluster-1);">LCP</div>
+              <div style="font-size:1.4rem;font-weight:800;color:var(--red);font-family:var(--font-mono);">5.2s</div>
+              <div style="font-size:0.6rem;background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:999px;font-weight:700;">Poor</div>
+            </div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;border-right:1px solid var(--border);">
+              <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cluster-4);">INP</div>
+              <div style="font-size:1.4rem;font-weight:800;color:var(--green);font-family:var(--font-mono);">88ms</div>
+              <div style="font-size:0.6rem;background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:999px;font-weight:700;">Good</div>
+            </div>
+            <div style="flex:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;">
+              <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cluster-8);">CLS</div>
+              <div style="font-size:1.4rem;font-weight:800;color:var(--yellow);font-family:var(--font-mono);">0.18</div>
+              <div style="font-size:0.6rem;background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:999px;font-weight:700;">Needs work</div>
+            </div>
+          </div>
+          <div class="scenario-body">
+            <div class="scenario-tags">
+              <span class="scenario-type type-compare">Diagnose</span>
+              <span class="scenario-time">⏱ ~10min</span>
+            </div>
+            <h3>Diagnose the Broken Page</h3>
+            <p>A real-looking travel booking site with three performance problems baked in. Identify <em>which</em> vital is failing, <em>why</em>, and what you'd fix first.</p>
+          </div>
+          <div class="scenario-footer">
+            <span class="scenario-difficulty">Beginner</span>
+            <span class="scenario-open">Open <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
+
+        <!-- Scenario 2: What would users experience? -->
+        <a class="scenario-card" href="./vitals-field-simulator.html">
+          <div class="scenario-thumb" style="background:linear-gradient(135deg,rgba(129,140,248,0.16) 0%,rgba(45,212,191,0.12) 100%);flex-direction:column;gap:0;justify-content:flex-end;padding:0;">
+            <!-- Simulated distribution bars -->
+            <div style="display:flex;align-items:flex-end;gap:2px;height:90px;padding:0 16px 0;">
+              <!-- Approximate bell curve shifted right -->
+              <div style="flex:1;height:12%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:22%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:38%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:60%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:80%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:95%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:100%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:92%;background:var(--green);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:78%;background:var(--yellow);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:60%;background:var(--yellow);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:44%;background:var(--yellow);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:30%;background:var(--red);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:18%;background:var(--red);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:10%;background:var(--red);border-radius:3px 3px 0 0;"></div>
+              <div style="flex:1;height:5%;background:var(--red);border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="background:rgba(129,140,248,0.14);border-top:1px solid rgba(129,140,248,0.28);padding:6px 16px;font-size:0.62rem;color:var(--accent-mid);font-family:var(--font-mono);font-weight:700;letter-spacing:0.07em;text-transform:uppercase;">LCP Distribution Across Users</div>
+          </div>
+          <div class="scenario-body">
+            <div class="scenario-tags">
+              <span class="scenario-type type-practice">Explore</span>
+              <span class="scenario-time">⏱ ~15min</span>
+            </div>
+            <h3>Field Data Simulator</h3>
+            <p>See how the same page performs across different device classes and network conditions. Understand why your laptop score never matches your users' experience.</p>
+          </div>
+          <div class="scenario-footer">
+            <span class="scenario-difficulty">Beginner</span>
+            <span class="scenario-open">Open <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="lesson-footer">
+    <a href="../lesson.html">← Back to Lesson</a>
+    <a href="../../../../../../index.html">Workshop Home</a>
+  </footer>
+</div>
+
+<script>
+  // ── Experiment 1: Threshold Explorer ──
+  (function() {
+    const metrics = [
+      { slider: 'sb-lcp', pill: 'sb-lcp-pill', unit: 'ms', display: v => (v/1000).toFixed(1)+'s',
+        good: 2500, needs: 4000, fmt: v => (v/1000).toFixed(1)+'s' },
+      { slider: 'sb-inp', pill: 'sb-inp-pill', unit: 'ms', display: v => v+'ms',
+        good: 200,  needs: 500,  fmt: v => v+'ms' },
+      { slider: 'sb-cls', pill: 'sb-cls-pill', unit: '',   display: v => parseFloat(v).toFixed(2),
+        good: 0.1,  needs: 0.25, fmt: v => parseFloat(v).toFixed(2) },
+    ];
+    function rating(m, v) {
+      return parseFloat(v) <= m.good ? 'good' : parseFloat(v) <= m.needs ? 'needs' : 'poor';
+    }
+    function update() {
+      let allGood = true;
+      metrics.forEach(m => {
+        const sl = document.getElementById(m.slider);
+        const pl = document.getElementById(m.pill);
+        const v  = sl.value;
+        const r  = rating(m, v);
+        pl.textContent = m.fmt(v);
+        pl.className   = 'sb-pill metric-' + (r === 'needs' ? 'needs' : r);
+        if (r !== 'good') allGood = false;
+      });
+      const ov = document.getElementById('sb-overall');
+      ov.textContent = allGood ? '✓ Passes all three' : '✗ Failing — check the red metrics';
+      ov.style.color = allGood ? 'var(--green)' : 'var(--red)';
+    }
+    metrics.forEach(m => document.getElementById(m.slider).addEventListener('input', update));
+    update();
+  })();
+
+  // ── Experiment 2: INP Phase Stopwatch ──
+  (function() {
+    function runINP(delay, processing, presentation) {
+      const m1 = document.getElementById('ipm-1'), b1 = document.getElementById('ipm-1-bar');
+      const m2 = document.getElementById('ipm-2'), b2 = document.getElementById('ipm-2-bar');
+      const m3 = document.getElementById('ipm-3'), b3 = document.getElementById('ipm-3-bar');
+      const tv = document.getElementById('inp-total-val');
+      // reset
+      [m1,m2,m3].forEach(el => { el.textContent='0ms'; el.style.color='var(--text-dim)'; });
+      [b1,b2,b3].forEach(el => { el.style.width='0%'; el.style.background='var(--border)'; });
+      tv.textContent='— ms'; tv.style.color='var(--text-dim)';
+      const total = delay + processing + presentation;
+      function color(ms, max) { return ms<=max*0.3 ? 'var(--green)' : ms<=max*0.7 ? 'var(--yellow)' : 'var(--red)'; }
+      setTimeout(() => {
+        m1.textContent=delay+'ms'; m1.style.color=color(delay,200);
+        b1.style.width=Math.min(100,delay/300*100)+'%'; b1.style.background=color(delay,200);
+        setTimeout(() => {
+          m2.textContent=processing+'ms'; m2.style.color=color(processing,150);
+          b2.style.width=Math.min(100,processing/300*100)+'%'; b2.style.background=color(processing,150);
+          setTimeout(() => {
+            m3.textContent=presentation+'ms'; m3.style.color=color(presentation,80);
+            b3.style.width=Math.min(100,presentation/200*100)+'%'; b3.style.background=color(presentation,80);
+            tv.textContent=total+'ms';
+            tv.style.color=total<=200?'var(--green)':total<=500?'var(--yellow)':'var(--red)';
+          }, 300);
+        }, 300);
+      }, 200);
+    }
+    document.getElementById('inp-sim-fast').addEventListener('click', () => runINP(8,  42, 18));
+    document.getElementById('inp-sim-slow').addEventListener('click', () => runINP(280,190, 68));
+  })();
+
+  // ── Experiment 3: CLS Calculator ──
+  (function() {
+    const impactSlider   = document.getElementById('cls-impact-slider');
+    const distanceSlider = document.getElementById('cls-distance-slider');
+    const impactVal      = document.getElementById('cls-impact-val');
+    const distanceVal    = document.getElementById('cls-distance-val');
+    const formulaTxt     = document.getElementById('cls-formula-txt');
+    const resultEl       = document.getElementById('cls-result');
+    const verdictEl      = document.getElementById('cls-verdict');
+    const vpEl           = document.getElementById('cls-el');
+    const ghostEl        = document.getElementById('cls-ghost');
+    const arrowEl        = document.getElementById('cls-arrow');
+    const vp             = document.getElementById('cls-viewport');
+    let   shifted        = false;
+
+    function updateCalc() {
+      const imp  = impactSlider.value / 100;
+      const dist = distanceSlider.value / 100;
+      const score = (imp * dist).toFixed(3);
+      impactVal.textContent   = impactSlider.value + '%';
+      distanceVal.textContent = distanceSlider.value + '%';
+      formulaTxt.textContent  = imp.toFixed(2) + ' × ' + dist.toFixed(2) + ' =';
+      resultEl.textContent    = score;
+      const rating = parseFloat(score) < 0.1 ? 'good' : parseFloat(score) < 0.25 ? 'needs' : 'poor';
+      resultEl.style.color = rating==='good' ? 'var(--green)' : rating==='needs' ? 'var(--yellow)' : 'var(--red)';
+      verdictEl.textContent = rating==='good' ? 'Good' : rating==='needs' ? 'Needs work' : 'Poor';
+      verdictEl.className   = 'metric-pill metric-' + (rating==='needs'?'needs':rating);
+      updateVisual(false);
+    }
+
+    function updateVisual(animate) {
+      const vpH   = vp.offsetHeight || 120;
+      const vpW   = vp.offsetWidth  || 300;
+      const imp   = impactSlider.value / 100;
+      const dist  = distanceSlider.value / 100;
+      const elH   = Math.round(vpH * imp * 0.6);
+      const shiftPx = Math.round(vpH * dist);
+      const startTop = Math.max(4, Math.round((vpH - elH) * 0.15));
+      const endTop   = startTop + shiftPx;
+      const elW    = vpW * 0.7;
+      const elLeft = (vpW - elW) / 2;
+      // ghost (where it was)
+      ghostEl.style.cssText = `left:${elLeft}px;top:${startTop}px;width:${elW}px;height:${elH}px;position:absolute;background:transparent;border:2px dashed rgba(129,140,248,0.45);border-radius:4px;`;
+      // element (where it moved)
+      vpEl.style.cssText    = `left:${elLeft}px;top:${shifted?endTop:startTop}px;width:${elW}px;height:${elH}px;display:flex;align-items:center;justify-content:center;font-size:0.72rem;color:#c7cdff;font-weight:600;background:rgba(129,140,248,0.28);border:2px solid rgba(129,140,248,0.7);box-shadow:0 0 16px rgba(129,140,248,0.3);border-radius:4px;transition:top 0.35s ease;`;
+      // arrow
+      const arrowTop = shifted ? startTop : startTop;
+      const arrowH   = shifted ? shiftPx  : 0;
+      arrowEl.style.cssText = `position:absolute;right:12px;top:${arrowTop}px;width:4px;height:${arrowH}px;background:var(--red);border-radius:2px;transition:height 0.35s,top 0.35s;opacity:0.7;`;
+    }
+
+    document.getElementById('cls-trigger').addEventListener('click', () => {
+      shifted = !shifted;
+      updateVisual(true);
+    });
+    [impactSlider, distanceSlider].forEach(el => el.addEventListener('input', () => { shifted=false; updateCalc(); }));
+    updateCalc();
+  })();
+</script>
+<script>
+  window.WORKSHOP_ROOT   = '../../../../';
+  window.WORKSHOP_LESSON = '1.1';
+  window.WORKSHOP_PAGE   = 'examples';
+</script>
+
+
+<link rel="stylesheet" href="../../../../../skin-feperf.css">
+</body>
+</html>

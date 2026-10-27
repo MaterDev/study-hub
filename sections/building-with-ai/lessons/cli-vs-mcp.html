@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLI vs MCP for AI-Powered Dev</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--ochre); --accent-soft:var(--ochre-soft); --accent-text:#8a5d00; --cli:var(--forest); --mcp:var(--plum); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#3a2c05; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:700; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  code.inline{white-space:normal;}
+
+  /* hero diagram */
+  .vs{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0;}
+  @media(max-width:720px){.vs{grid-template-columns:1fr;}}
+  .col{border:1.5px solid var(--line); border-radius:14px; padding:16px; background:var(--surface); box-shadow:var(--shadow-sm);}
+  .col.cli{border-color:var(--cli);} .col.mcp{border-color:var(--mcp);}
+  .col h3{margin:0 0 12px; text-align:center; font-size:1.15rem;} .col.cli h3{color:var(--cli);} .col.mcp h3{color:var(--mcp);}
+  .node{border:1.5px solid var(--line-strong); border-radius:10px; padding:8px 10px; text-align:center; font-family:var(--font-ui); font-size:.82rem; margin:0 auto; max-width:230px; background:var(--paper-2);}
+  .node.hi{font-weight:600;}
+  .col.cli .node.k{border-color:var(--cli); color:var(--cli);} .col.mcp .node.k{border-color:var(--mcp); color:var(--mcp);}
+  .arrow{text-align:center; color:var(--ink-faint); font-size:1rem; margin:5px 0;}
+  .tools-row{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:6px 0;}
+  .toolchip{font-family:var(--font-mono); font-size:.74rem; border:1px solid var(--cli); color:var(--cli); border-radius:7px; padding:5px 9px; background:color-mix(in srgb,var(--cli) 8%,transparent);}
+  .cap{text-align:center; font-family:var(--font-ui); font-size:.72rem; color:var(--ink-mute); margin:4px 0;}
+  .burn{text-align:center; font-family:var(--font-mono); font-size:.72rem; color:var(--vermil); margin:2px 0;}
+  .wins{margin-top:12px; border-radius:10px; padding:10px 12px; text-align:center; font-family:var(--font-ui); font-size:.85rem;}
+  .col.cli .wins{background:color-mix(in srgb,var(--cli) 12%,transparent); color:var(--cli); font-weight:600;}
+  .col.mcp .wins{background:color-mix(in srgb,var(--mcp) 12%,transparent); color:var(--mcp); font-weight:600;}
+  .mcp-two{display:flex; gap:8px; justify-content:center;}
+  .mcp-two .node{max-width:140px;}
+
+  /* token tax */
+  .tax-ctrl{display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; margin-bottom:12px; font-family:var(--font-ui);}
+  .tax-ctrl label{display:flex; flex-direction:column; gap:4px; font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); font-weight:700;}
+  input[type=range]{accent-color:var(--ochre); width:200px;}
+  .tax-bar-row{display:grid; grid-template-columns:150px 1fr auto; gap:12px; align-items:center; margin:8px 0; font-family:var(--font-ui); font-size:.84rem;}
+  .tax-track{height:26px; background:var(--paper-2); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .tax-fill{height:100%; border-radius:5px; width:0; transition:width .4s;}
+  .tax-val{font-family:var(--font-mono); color:var(--ink); white-space:nowrap;}
+
+  /* pipe demo */
+  .pipe{font-family:var(--font-mono); font-size:.9rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:14px 16px; overflow-x:auto; white-space:nowrap;}
+  .pipe .seg{opacity:.25; transition:opacity .3s;} .pipe .seg.on{opacity:1;}
+  .pipe .op{color:#e0a3d6;} .pipe .cmd{color:#8fb8ff;} .pipe .arg{color:#c3d98a;}
+  .pipe-note{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute); min-height:2.4em; margin-top:8px;}
+
+  /* when-each cards */
+  .side2{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0;}
+  @media(max-width:720px){.side2{grid-template-columns:1fr;}}
+  .sidecard{border-radius:12px; padding:16px; box-shadow:var(--shadow-sm);}
+  .sidecard.cli{background:color-mix(in srgb,var(--cli) 7%,var(--surface)); border:1px solid var(--cli);}
+  .sidecard.mcp{background:color-mix(in srgb,var(--mcp) 7%,var(--surface)); border:1px solid var(--mcp);}
+  .sidecard h4{margin:0 0 8px;} .sidecard.cli h4{color:var(--cli);} .sidecard.mcp h4{color:var(--mcp);}
+  .sidecard ul{margin:0; padding-left:18px; font-family:var(--font-ui); font-size:.86rem;} .sidecard li{margin-bottom:5px;}
+
+  /* decision picker */
+  .q-block{margin:12px 0;}
+  .q-block .q{font-family:var(--font-ui); font-weight:700; font-size:.88rem; margin-bottom:7px;}
+  .opts{display:flex; gap:8px; flex-wrap:wrap;}
+  .opt{font-family:var(--font-ui); font-size:.82rem; padding:7px 13px; border:1.5px solid var(--line); border-radius:999px; background:var(--surface); cursor:pointer;}
+  .opt:hover{border-color:var(--accent);} .opt.on{border-color:var(--accent); background:var(--accent-soft); font-weight:600;}
+  .rec{border:1px solid var(--accent); border-left:4px solid var(--accent); border-radius:12px; padding:16px; margin-top:12px; display:none;}
+  .rec .rm{font-family:var(--font-display); font-size:1.4rem; color:var(--ink); margin:0;}
+  .rec .rw{font-family:var(--font-ui); font-size:.86rem; color:var(--ink-soft); margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CLI vs MCP for AI-Powered Dev</h1>
+  <p class="subtitle">Why "just give the agent a terminal" often beats wiring up MCP servers — and when it doesn't.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The claim, in one picture</a></li>
+      <li><a href="#sec2">Why models are good at CLIs</a></li>
+      <li><a href="#sec3">The token tax of MCP (interactive)</a></li>
+      <li><a href="#sec4">"MCP mostly wraps the CLI"</a></li>
+      <li><a href="#sec5">Where MCP actually wins</a></li>
+      <li><a href="#sec6">The resolution: write code to call tools</a></li>
+      <li><a href="#sec7">Decision guide + doing CLI-first safely</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The claim, in one picture</h2>
+  <p class="lead">The argument: for a coding agent, the fastest, cheapest, most reliable way to give it capabilities is usually the <strong>command line it already knows</strong> — not a fleet of MCP servers. MCP earns its place elsewhere. Here's the shape of it:</p>
+  <div class="vs">
+    <div class="col cli">
+      <h3>CLI approach</h3>
+      <div class="node hi">Developer</div><div class="arrow">↓</div>
+      <div class="node">Terminal / Shell</div><div class="arrow">↓</div>
+      <div class="tools-row"><span class="toolchip">ripgrep</span><span class="toolchip">git</span><span class="toolchip">curl</span><span class="toolchip">npm</span></div>
+      <div class="cap">composable via pipes</div>
+      <div style="display:flex; gap:8px; margin-top:8px;"><div class="node k" style="flex:1">Fast loops</div><div class="node k" style="flex:1">Models know it</div></div>
+      <div class="wins">CLI wins: coding, debugging, shipping</div>
+    </div>
+    <div class="col mcp">
+      <h3>MCP approach</h3>
+      <div class="node hi">Developer</div><div class="arrow">↓</div>
+      <div class="node">AI Agent</div><div class="arrow">↓</div>
+      <div class="node k">Load schemas…</div>
+      <div class="burn">(burns context tokens)</div>
+      <div class="arrow">↓</div>
+      <div class="mcp-two"><div class="node k">MCP: Git</div><div class="node k">MCP: Docker</div></div>
+      <div class="cap">each wraps the underlying CLI</div>
+      <div class="wins">MCP wins: enterprise, non-dev, regulated</div>
+    </div>
+  </div>
+  <p style="font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute);">Everything below checks this against primary sources — including Anthropic's own engineering post, which quantifies the "burns context tokens" arrow precisely.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Why models are good at CLIs</h2>
+  <p>This isn't a coincidence or a hack — it falls out of how the models were trained and how shells work:</p>
+  <div class="pitfall"><div class="icon">📚</div><div><b>They've read the whole internet's worth of shell.</b> <code class="inline">git commit</code>, <code class="inline">grep -r</code>, <code class="inline">curl -X POST</code>, <code class="inline">npm run build</code> appear millions of times in the training data — man pages, Stack Overflow, READMEs, CI configs. The model has strong priors for the exact flags and idioms. An MCP tool schema you wrote last week has <em>zero</em> training signal; the model learns it fresh, in-context, every session.</div></div>
+  <div class="pitfall"><div class="icon">🔗</div><div><b>Pipes compose without you designing an API.</b> Unix tools chain with <code class="inline">|</code>: the output of one becomes the input of the next. The agent can read a log, keep only errors, sort, dedupe, and count — in a single line — without you having built a "filter-and-count" tool. Composition is free.</div></div>
+  <div class="pitfall"><div class="icon">🔁</div><div><b>The loop is tight and text-native.</b> Run command → read stdout/stderr → adjust → run again. Plain text in, plain text out, exit codes for success/failure. No schema round-trips, no serialization layer, no client that has to be running.</div></div>
+
+  <div class="stage">
+    <p style="font-family:var(--font-ui); font-size:.84rem; color:var(--ink-mute); margin-top:0;">Watch a pipeline the agent can write in one shot — no custom tool required:</p>
+    <div class="pipe" id="pipe">
+      <span class="seg on"><span class="cmd">rg</span> <span class="arg">"ERROR"</span> logs/</span><span class="seg"> <span class="op">|</span> <span class="cmd">cut</span> <span class="arg">-d: -f1</span></span><span class="seg"> <span class="op">|</span> <span class="cmd">sort</span></span><span class="seg"> <span class="op">|</span> <span class="cmd">uniq</span> <span class="arg">-c</span></span><span class="seg"> <span class="op">|</span> <span class="cmd">sort</span> <span class="arg">-rn</span></span><span class="seg"> <span class="op">|</span> <span class="cmd">head</span></span>
+    </div>
+    <div class="pipe-note" id="pipe-note">"find ERROR lines across logs/"</div>
+    <div style="display:flex; gap:10px; margin-top:10px;"><button class="btn" id="pipe-step">Add next stage →</button><button class="btn sec" id="pipe-reset">Reset</button></div>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> The token tax of MCP</h2>
+  <p>The diagram's "burns context tokens" arrow is the crux, and it's <em>measured</em>, not vibes. Per Anthropic: most MCP clients <strong>load every connected tool's definition into the context window up front</strong>, before the agent has even read your request. Connect enough servers and that's a six-figure token bill on every turn. Drag the slider:</p>
+  <div class="stage">
+    <div class="tax-ctrl">
+      <label>MCP tools connected <input type="range" id="tax-tools" min="5" max="250" value="60"><span class="tax-val" id="tax-tools-val">60 tools</span></label>
+      <label>avg schema size <select id="tax-size">
+        <option value="500">lean (~500 tok/tool)</option>
+        <option value="900" selected>typical (~900 tok/tool)</option>
+        <option value="1600">rich (~1600 tok/tool)</option>
+      </select></label>
+    </div>
+    <div class="tax-bar-row"><span>MCP schemas (upfront)</span><div class="tax-track"><div class="tax-fill" id="tax-mcp" style="background:var(--mcp)"></div></div><span class="tax-val" id="tax-mcp-val">—</span></div>
+    <div class="tax-bar-row"><span>CLI (per command)</span><div class="tax-track"><div class="tax-fill" id="tax-cli" style="background:var(--cli)"></div></div><span class="tax-val" id="tax-cli-val">~400 tok</span></div>
+    <p class="pipe-note" id="tax-note" style="min-height:auto;"></p>
+  </div>
+  <div class="flag">
+    <strong>Anthropic's worked example:</strong> an agent connected to many servers spent <code class="inline">150,000</code> tokens on tool definitions + intermediate results; rewriting it so the agent <em>writes code to call tools on demand</em> dropped it to <code class="inline">2,000</code> tokens — a <strong>98.7% cut</strong>. A CLI command the model already knows costs ~nothing upfront: just the command it types plus the output you let through. (Second tax the post flags: with direct tool-calls, big intermediate results — a transcript, a 10k-row sheet — flow <em>through the model twice</em>. The CLI/code path filters before anything hits context.)
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> "MCP mostly wraps the CLI"</h2>
+  <p>The diagram's sharpest jab: an <code class="inline">MCP: Git</code> server or <code class="inline">MCP: Docker</code> server is often a thin layer that... shells out to <code class="inline">git</code> and <code class="inline">docker</code>. For a coding agent already sitting in a sandbox with those binaries, you've added a schema-loading, process-running, token-costing layer in front of a tool the model already invokes fluently.</p>
+  <div class="analogy">
+    <span class="emoji">🎁</span>As one write-up put it: wrapping a tool the agent already knows how to invoke "adds cost without adding safety." The agent didn't gain a capability — it gained a middleman. The wrapper only pays off when it adds something the raw CLI <em>can't</em>: scoped permissions, discovery, a non-CLI backend, an audit trail (see §5).
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Where MCP actually wins</h2>
+  <p>The honest other half — and the diagram agrees (its "enterprise, non-dev, regulated" box). MCP is an open standard (Anthropic, 2024; now adopted by Microsoft, OpenAI, Google) that exists to solve real problems the CLI doesn't:</p>
+  <div class="side2">
+    <div class="sidecard cli">
+      <h4>Reach for the CLI when…</h4>
+      <ul>
+        <li>It's a <strong>trusted, terminal-native coding agent</strong> (Claude Code, a sandboxed dev loop)</li>
+        <li>The tool is a binary the model already knows (<code class="inline">git</code>, <code class="inline">rg</code>, <code class="inline">docker</code>, <code class="inline">gh</code>, build scripts)</li>
+        <li>You want fast iteration and cheap context</li>
+        <li>You need ad-hoc composition (pipe/filter/transform)</li>
+      </ul>
+    </div>
+    <div class="sidecard mcp">
+      <h4>Reach for MCP when…</h4>
+      <ul>
+        <li><strong>Hosted / multi-tenant / consumer</strong> apps — permissions must be scoped per user or org (close to non-negotiable)</li>
+        <li>The backend <strong>isn't a CLI</strong> — a SaaS API, a governed database, an internal service</li>
+        <li>You need <strong>discovery</strong> — the agent (or another team's agent) can ask "what can you do?" and get a typed answer</li>
+        <li><strong>Regulated / audited</strong> environments needing structured logging, allow-lists, and a standard interface</li>
+        <li><strong>Non-developer</strong> or cross-client use — one server, many agents/hosts</li>
+      </ul>
+    </div>
+  </div>
+  <p style="font-family:var(--font-ui); font-size:.86rem; color:var(--ink-mute);">The CLI's own limits are the mirror image: no standard schema, no built-in discovery (the agent can't query what a command <em>can</em> do), and &mdash; critically &mdash; letting an LLM generate shell commands means a prompt injection can become arbitrary code execution unless you sandbox hard (§7).</p>
+
+  <h2 id="sec6"><span class="num">6</span> The resolution: write code to call tools</h2>
+  <p>Here's the twist that makes this more than a flame war. Anthropic's own fix for MCP's token tax isn't "abandon MCP" — it's <strong>"let the model write code that calls the tools,"</strong> loading only the definitions it needs, on demand. Cloudflare shipped the same idea as "Code Mode." That's the CLI philosophy — <em>the model is great at writing code/commands; lean on that</em> — applied to MCP.</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0; color:var(--vermil);">Direct tool-calls (token-heavy)</h3>
+<pre><span class="c-comment">// every tool schema preloaded into context</span>
+<span class="c-comment">// each result flows back through the model</span>
+TOOL gdrive.getDocument(id) → 50k-token transcript
+TOOL salesforce.updateRecord(… same transcript …)
+<span class="c-comment">// transcript passes through context twice</span></pre>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0; color:var(--cli);">Agent writes code (token-light)</h3>
+<pre><span class="c-kw">import</span> * <span class="c-kw">as</span> gdrive <span class="c-kw">from</span> <span class="c-str">'./servers/google-drive'</span>;
+<span class="c-kw">import</span> * <span class="c-kw">as</span> sf <span class="c-kw">from</span> <span class="c-str">'./servers/salesforce'</span>;
+<span class="c-kw">const</span> t = (<span class="c-kw">await</span> gdrive.<span class="c-fn">getDocument</span>({id}))<span class="c-comment">.content</span>;
+<span class="c-kw">await</span> sf.<span class="c-fn">updateRecord</span>({id, data:{Notes:t}});
+<span class="c-comment">// transcript never enters the model's context</span></pre>
+    </div>
+  </div>
+  <p>So the real axis isn't "CLI vs MCP" — it's <strong>"tool-call each thing (schemas + results through the model)" vs "let the model drive a shell/runtime."</strong> The CLI is the zero-setup version of the winning side. MCP-plus-code-execution gets you the standard <em>and</em> the efficiency — at the cost of running a sandbox.</p>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">under the hood</div>
+    <h4>Why this is the same insight as "give it a terminal"</h4>
+    <p>A shell is just a code-execution environment the model already has priors for. "Write bash" and "write a TS script that calls MCP tools as functions" are the same move: keep tool <em>definitions</em> and intermediate <em>data</em> out of the context window, and let a runtime — not the model's attention — do the plumbing. Both beat spraying 200 tool schemas into every prompt.</p>
+  </div>
+
+  <h2 id="sec7"><span class="num">7</span> Decision guide + doing CLI-first safely</h2>
+  <p>Answer three questions for your setup:</p>
+  <div class="stage">
+    <div class="q-block"><div class="q">1. Who runs the agent?</div><div class="opts" data-q="who" id="q-who"></div></div>
+    <div class="q-block"><div class="q">2. What's the tool behind it?</div><div class="opts" data-q="tool" id="q-tool"></div></div>
+    <div class="q-block"><div class="q">3. Environment?</div><div class="opts" data-q="env" id="q-env"></div></div>
+    <div class="rec" id="rec"></div>
+  </div>
+  <p>If you go CLI-first (the right default for a trusted coding agent), do it safely:</p>
+  <div class="pitfall"><div class="icon">🧱</div><div><b>Sandbox the shell.</b> An LLM emitting shell commands + untrusted input (a web page, an issue, a file) is a prompt-injection path to arbitrary code execution. Run in a container/VM with no secrets, least privilege, and network egress limits.</div></div>
+  <div class="pitfall"><div class="icon">✅</div><div><b>Allow-list, don't free-for-all.</b> Permit <code class="inline">git</code>, <code class="inline">rg</code>, <code class="inline">npm test</code>, your build scripts; gate destructive/irreversible commands behind confirmation. This is the safety MCP would otherwise provide — you're just providing it at the shell layer.</div></div>
+  <div class="pitfall"><div class="icon">🪵</div><div><b>Keep an audit trail.</b> Log the commands the agent runs. In regulated contexts this is exactly the structured accountability that pushes teams to MCP — if you can't produce it at the CLI layer, that's a signal to use MCP.</div></div>
+  <div class="pitfall"><div class="icon">🧩</div><div><b>Hybrid is fine — and often best.</b> CLI for the git/build/test loop; MCP (ideally via code execution) for the governed SaaS/database/multi-tenant pieces. It's not religion; match the mechanism to the tool.</div></div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>For trusted coding agents, CLI-first is the sane default:</b> models already know shell tools, pipes compose for free, and you pay ~no upfront token tax.</li>
+    <li><b>MCP's cost is real and measured</b> — schemas load into context up front (Anthropic's example: 150k→2k tokens once the agent writes code instead).</li>
+    <li><b>Many dev MCP servers just wrap a CLI</b> the agent already knows — a middleman that "adds cost without adding safety" unless it adds scoping/discovery/a non-CLI backend.</li>
+    <li><b>MCP genuinely wins</b> for hosted/multi-tenant/regulated/non-dev and non-CLI systems (standard interface, per-user auth, discovery, audit).</li>
+    <li><b>The real fix</b> is "let the model write code to call tools" — the CLI is the zero-setup version of that; MCP+code-execution is the governed version.</li>
+    <li><b>CLI-first ≠ careless:</b> sandbox, allow-list, and log — that's how you get the CLI's speed without giving up MCP's safety.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> Anthropic — <a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank">Code execution with MCP</a> (the 150k→2k token result) · <a href="https://modelcontextprotocol.io/" target="_blank">Model Context Protocol</a> (what MCP is/for) · Cloudflare — <a href="https://blog.cloudflare.com/code-mode/" target="_blank">Code Mode</a></p>
+  <p class="src">Practitioner — <a href="https://huggingface.co/blog/nielsr/mcp-vs-cli" target="_blank">Hugging Face: On CLIs vs MCP</a> · <a href="https://blog.mcpservers.org/posts/cli-vs-mcp" target="_blank">CLI vs MCP: call tools or run commands?</a> · Armin Ronacher — <a href="https://lucumr.pocoo.org/2025/6/12/agentic-coding/" target="_blank">Agentic Coding</a> (barely uses MCP; prefers scripts/CLI)</p>
+
+  <footer>CLI vs MCP · AI &amp; Agents · your Study Hub</footer>
+</div>
+
+<script>
+/* pipe demo */
+(function(){
+  const segs=[...document.querySelectorAll('#pipe .seg')];
+  const notes=[
+    '"find ERROR lines across logs/"',
+    '… keep just the filename (field 1, split on ":")',
+    '… sort so identical files group together',
+    '… collapse dupes and COUNT each (uniq -c)',
+    '… sort by count, biggest first',
+    '… top offenders only. One line. No custom tool built.'
+  ];
+  let i=0;
+  const note=document.getElementById('pipe-note');
+  document.getElementById('pipe-step').addEventListener('click',()=>{
+    if(i<segs.length-1){ i++; segs[i].classList.add('on'); note.textContent=notes[i]; }
+  });
+  document.getElementById('pipe-reset').addEventListener('click',()=>{
+    i=0; segs.forEach((s,k)=>s.classList.toggle('on',k===0)); note.textContent=notes[0];
+  });
+})();
+
+/* token tax */
+(function(){
+  const tools=document.getElementById('tax-tools'), size=document.getElementById('tax-size');
+  const tv=document.getElementById('tax-tools-val');
+  const WINDOW=200000; const cliCost=400;
+  function fmt(n){ return n>=1000 ? (n/1000).toFixed(n>=100000?0:1)+'k' : n; }
+  function render(){
+    const n=+tools.value, per=+size.value; tv.textContent=n+' tools';
+    const mcp=n*per;
+    const max=Math.max(mcp, cliCost, 1);
+    document.getElementById('tax-mcp').style.width=(mcp/max*100)+'%';
+    document.getElementById('tax-cli').style.width=(cliCost/max*100)+'%';
+    document.getElementById('tax-mcp-val').textContent='~'+fmt(mcp)+' tok';
+    document.getElementById('tax-cli-val').textContent='~'+cliCost+' tok';
+    const pct=(mcp/WINDOW*100);
+    document.getElementById('tax-note').innerHTML='That\'s <b>~'+fmt(mcp)+' tokens</b> loaded before the agent reads your request — about <b>'+pct.toFixed(0)+'%</b> of a 200k context window, every turn. The CLI equivalent: the model already knows the command, so it costs only what it types + the output you keep.';
+  }
+  tools.addEventListener('input',render); size.addEventListener('change',render); render();
+})();
+
+/* decision picker */
+(function(){
+  const Q={
+    who:[["Me / a trusted dev agent","trusted"],["End users (hosted/multi-tenant)","hosted"]],
+    tool:[["A CLI/binary (git, docker, build)","cli"],["A SaaS/API/database (no CLI)","noncli"]],
+    env:[["Personal / internal","open"],["Regulated / audited","reg"]]
+  };
+  const st={who:null,tool:null,env:null};
+  Object.keys(Q).forEach(k=>{
+    const w=document.getElementById('q-'+k);
+    Q[k].forEach(([label,val])=>{
+      const b=document.createElement('div'); b.className='opt'; b.textContent=label;
+      b.addEventListener('click',()=>{ w.querySelectorAll('.opt').forEach(x=>x.classList.remove('on')); b.classList.add('on'); st[k]=val; rec(); });
+      w.appendChild(b);
+    });
+  });
+  function rec(){
+    if(!st.who||!st.tool||!st.env) return;
+    let title, why;
+    if(st.who==="hosted"||st.env==="reg"||st.tool==="noncli"){
+      if(st.tool==="cli" && st.who==="trusted"){ title="Hybrid — CLI loop + MCP for the governed parts";
+        why="Your tool is a CLI, but the hosted/regulated context needs scoped permissions and audit. Keep the CLI for the fast dev loop; put the governed/multi-tenant surface behind MCP (ideally via code execution)."; }
+      else { title="MCP (prefer code execution)";
+        why="Hosted/multi-tenant, regulated, or a non-CLI backend → you need per-user scoping, discovery, and an audit trail that the raw shell doesn't give you. Use MCP, and have the agent write code to call it so you don't pay the full schema token tax."; }
+    } else {
+      title="CLI-first";
+      why="Trusted agent + a CLI the model already knows + an open/internal environment = give it a sandboxed shell with an allow-list. Cheapest context, fastest loop, no wrapper. Add MCP later only if a specific tool needs scoping or discovery.";
+    }
+    const r=document.getElementById('rec'); r.style.display='block';
+    r.innerHTML='<p class="rm">'+title+'</p><p class="rw">'+why+'</p><p class="rw" style="color:var(--ink-mute)">Whichever you pick: sandbox, allow-list, and log (§7).</p>';
+  }
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

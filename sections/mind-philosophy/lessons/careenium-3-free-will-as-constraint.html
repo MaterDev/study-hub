@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3. Free will as constraint</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--plum); --accent-soft:var(--plum-soft); --accent-text:var(--plum-deep); }
+  .c3-stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .c3-btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .c3-btn.alt{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .c3-btn:focus-visible, .c3-seg button:focus-visible{outline:3px solid var(--ochre); outline-offset:2px;}
+  .c3-small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .c3-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .c3-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); min-width:0; flex:1 1 200px;}
+  .c3-ctl input[type=range]{width:100%; accent-color:var(--plum);}
+  .c3-ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-ui); text-transform:none; letter-spacing:0; max-width:100%;}
+  .c3-chk{display:flex; gap:6px; align-items:center; font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
+  .c3-chk input{accent-color:var(--plum);}
+  .c3-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;}
+  @media(max-width:760px){.c3-two{grid-template-columns:minmax(0,1fr);}}
+  .c3-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .c3-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute); line-height:1.6;}
+  .c3-note{font-family:var(--font-ui); font-size:.88rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .c3-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;}
+  .c3-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:8px 12px; font:700 .78rem var(--font-ui); cursor:pointer; flex:1 1 auto;}
+  .c3-seg button[aria-pressed=true]{background:var(--plum); color:#fff;}
+  .c3-big{font:800 1.4rem var(--font-ui); color:var(--ink);}
+  .c3-tag{font-weight:800; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); display:inline-block; font-size:.74rem; white-space:nowrap;}
+  .c3-tag.open{border-color:var(--forest); background:var(--forest-soft);}
+  .c3-tag.won{border-color:var(--ochre); background:var(--ochre-soft);}
+  .c3-tag.out{border-color:var(--vermil); background:var(--vermil-soft); color:var(--ink);}
+  .c3-tag.pick{border-color:var(--plum); background:var(--plum-soft);}
+  /* decide explorer rows */
+  .c3-act{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto; gap:8px 12px; align-items:center; padding:8px 0; border-top:1px solid var(--line); font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
+  .c3-act:first-child{border-top:0;}
+  .c3-act input[type=range]{width:100%; accent-color:var(--plum); min-width:0;}
+  @media(max-width:560px){.c3-act{grid-template-columns:minmax(0,1fr) auto;} .c3-act .c3-w{grid-column:1 / -1; order:3;}}
+  .c3-funnel{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0;}
+  .c3-step{flex:1 1 120px; border:2px solid var(--line-strong); border-radius:10px; padding:8px 10px; background:var(--paper); text-align:center; font-family:var(--font-ui); min-width:0;}
+  .c3-step b{display:block; font-size:1.3rem; color:var(--ink);}
+  .c3-step span{font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); font-weight:800;}
+  /* troops */
+  .c3-troops{display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:3px; max-width:320px;}
+  .c3-troops i{display:block; aspect-ratio:1/1; border-radius:3px; border:1px solid var(--line-strong); background:var(--vermil-soft);}
+  .c3-troops i.yes{background:var(--forest); border-color:var(--forest);}
+  /* lattice */
+  .c3-lat{display:block; width:100%; max-width:320px; aspect-ratio:1/1; border:2px solid var(--outline); border-radius:8px; image-rendering:pixelated; background:var(--paper);}
+  .c3-bars{display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:6px; border-bottom:2px solid var(--outline);}
+  .c3-bars div{flex:1 1 0; min-width:0; background:var(--plum); border-radius:3px 3px 0 0; position:relative;}
+  .c3-bars div.top{background:var(--ochre);}
+  .c3-bars-lab{display:flex; gap:4px;} .c3-bars-lab span{flex:1 1 0; min-width:0; text-align:center; font:700 .62rem var(--font-ui); color:var(--ink-mute);}
+  .c3-legend{display:flex; gap:12px; flex-wrap:wrap; font:700 .76rem var(--font-ui); color:var(--ink); align-items:center;}
+  .c3-sw{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:4px; border:1px solid var(--outline);}
+  .c3-sw.r{background:var(--vermil);} .c3-sw.b{background:var(--cobalt);}
+  .c3-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:10px;}
+  .c3-pos{text-align:left; border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--paper); color:var(--ink); font:700 .88rem var(--font-ui); cursor:pointer; min-width:0;}
+  .c3-pos[aria-pressed=true]{border-color:var(--plum); background:var(--plum-soft);}
+  .c3-pos:focus-visible{outline:3px solid var(--ochre); outline-offset:2px;}
+  .c3-pos small{display:block; font-weight:600; color:var(--ink-soft); margin-top:3px;}
+  .c3-q{border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:10px 0; color:var(--ink); font-family:var(--font-ui);}
+  dl.c3-dl{margin:0;} dl.c3-dl dt{font:800 .68rem var(--font-ui); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); margin-top:8px;} dl.c3-dl dd{margin:2px 0 0; font-family:var(--font-ui); font-size:.88rem; color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>3. Free will as constraint</h1>
+  <p class="subtitle">Why claiming you can do whatever you like describes a limit rather than a licence, why a resolution cannot simply order the parts of a mind around, and the narrow conditions under which the top level can steer the bottom one.</p>
+
+  <div class="toc" data-testid="c3-toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The careenium and the claim</a></li>
+      <li><a href="#sec2">Why wanting is a limit (interactive)</a></li>
+      <li><a href="#sec3">A general and unwilling troops (interactive)</a></li>
+      <li><a href="#sec4">Snap decisions and phase transitions (interactive)</a></li>
+      <li><a href="#sec5">The half-frozen state (interactive)</a></li>
+      <li><a href="#sec6">Downward causation, without magic (interactive)</a></li>
+      <li><a href="#sec7">Three positions on free will (interactive)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The careenium and the claim</h2>
+  <p class="lead">This lesson is the third in a module on a 1982 dialogue by Douglas Hofstadter, which pictures a mind as a <b>careenium</b>: a table of tiny marbles bouncing in all directions, in which clumps of marbles hold together as larger, slower shapes. Seen at the marble scale, everything is chaos. Seen at the scale of the clumps, there is orderly behaviour that looks as if it has reasons.</p>
+  <p>The dialogue asks who shoves whom around inside a head: do the tiny parts push the large patterns, or do the large patterns push the parts? The answer it develops is that each level constrains the other. This lesson follows that answer into the question of free will. It stands on its own, and you do not need the earlier lessons to follow it.</p>
+  <div class="c3-box" data-testid="c3-claim">
+    <h5>THE CLAIM IN ONE SENTENCE</h5>
+    <b>In the careenium view, free will is the physical shaping of a system's behaviour by its own wants: the system can do only what its large-scale tendencies allow, and what it does is whatever those tendencies, with the cooperation of its parts, favour most.</b>
+  </div>
+  <p class="c3-small">That sentence is my paraphrase of the dialogue's argument, not a quotation. In the dialogue the Tortoise first says the careenium has free will, in a constrained sense; Achilles then renames the idea "free won't" (Hofstadter 1982, p. 210). The paper itself is attached to this module as a reading tab on the right edge of the hub, so you can check every point below against it.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Why wanting is a limit</h2>
+  <p>Achilles says he can decide to do whatever he likes. The Tortoise asks if he can decide to answer in Sanskrit, which he cannot speak. Then comes the sharper point: can he decide to do something terrible to a friend? He can imagine it, but he cannot actually decide it, because nothing in him wants it. The phrase sounds like unlimited freedom, but it says two restrictive things at once. You can decide only what lies within your abilities, and of those, only what you want. In fact, the dialogue adds, at any moment you can decide to do just one thing: the one you want most, where "want" is a complicated function of the whole state of the system (pp. 204-205).</p>
+  <p>Below is a small system with six possible actions. Set how much it wants each one, pick what it is able to do, and watch the set of real decisions shrink. The actions, abilities and numbers are my own illustration of the argument.</p>
+  <div class="c3-stage" data-testid="c3-decide">
+    <div class="c3-row">
+      <label class="c3-ctl">What the person is able to do
+        <select id="c3-d-scn" data-testid="c3-d-scenario">
+          <option value="0">An ordinary person, no Sanskrit</option>
+          <option value="1">The same person, after learning Sanskrit</option>
+          <option value="2">The same person with a broken arm</option>
+        </select></label>
+      <button class="c3-btn alt" id="c3-d-reset" data-testid="c3-d-reset">Reset the wants</button>
+    </div>
+    <div class="c3-funnel" aria-live="polite">
+      <div class="c3-step" data-testid="c3-d-n-imag"><b id="c3-d-n1">6</b><span>Can imagine</span></div>
+      <div class="c3-step" data-testid="c3-d-n-able"><b id="c3-d-n2">0</b><span>Within ability</span></div>
+      <div class="c3-step" data-testid="c3-d-n-want"><b id="c3-d-n3">0</b><span>Also wanted</span></div>
+      <div class="c3-step" data-testid="c3-d-n-pick"><b id="c3-d-n4">0</b><span>Decided</span></div>
+    </div>
+    <div id="c3-d-rows" data-testid="c3-d-rows"></div>
+    <div class="c3-note" id="c3-d-note" data-testid="c3-d-note" aria-live="polite"></div>
+  </div>
+  <p class="c3-small">The rule used here, that the action with the strongest want wins, is a deliberate simplification of the dialogue's remark that you can do only the one thing you most want. Real wants interact and shift with the state of the whole system, which is why the dialogue calls "want" a complex function. A tie leaves the system undecided; look at what happens when you make two wants equal.</p>
+
+  <h2 id="sec3"><span class="num">3</span> A general and unwilling troops</h2>
+  <p>The dialogue's example is a wife who has picked up a habit, such as endlessly twiddling a puzzle cube. Her husband says: just decide to stop. But she is divided. The habit has taken over part of her. The Tortoise calls the husband's appeal an appeal to her soul, meaning the coherent set of principles, tendencies and interests that make her who she is, and says that a soul cannot arbitrarily shove its neurons around. Wanting to quit is not enough if the neurons are not on her side, just as a government cannot rule a country whose people will not support it (pp. 205-206).</p>
+  <p>Achilles sharpens it: the soul is like a general with troops who have their own paths. He has some power to coerce, and beyond it they mutiny. So he has to go with the tide. In the model below there are one hundred troops. Each has its own pull toward the habit, scattered around an average. The general gives an order of a given strength, and each troop follows only if the order is stronger than its own pull. It is my own toy model, chosen to make the dialogue's point visible.</p>
+  <div class="c3-stage" data-testid="c3-troops-widget">
+    <div class="c3-row">
+      <span class="c3-small">Presets:</span>
+      <button class="c3-btn alt" data-p="strong" data-testid="c3-t-preset-strong">Troops with a strong habit</button>
+      <button class="c3-btn alt" data-p="torn" data-testid="c3-t-preset-torn">Troops divided</button>
+      <button class="c3-btn alt" data-p="open" data-testid="c3-t-preset-open">Troops with no strong view</button>
+    </div>
+    <div class="c3-two">
+      <div>
+        <label class="c3-ctl">How strongly the habit pulls the troops, on average: <span id="c3-t-hv"></span>
+          <input type="range" id="c3-t-h" min="0" max="10" step="0.5" value="7" data-testid="c3-t-habit"></label>
+        <label class="c3-ctl">How much the troops differ from one another: <span id="c3-t-sv"></span>
+          <input type="range" id="c3-t-s" min="0" max="10" step="0.5" value="2" data-testid="c3-t-spread"></label>
+        <label class="c3-ctl">How hard the general pushes: <span id="c3-t-rv"></span>
+          <input type="range" id="c3-t-r" min="0" max="10" step="0.5" value="5" data-testid="c3-t-resolve"></label>
+      </div>
+      <div class="c3-box">
+        <h5>THE ORDER: QUIT THE HABIT</h5>
+        <div class="c3-troops" id="c3-t-grid" data-testid="c3-t-grid" role="img" aria-label="One hundred troops; green ones follow the order"></div>
+        <div class="c3-big" style="margin-top:8px" id="c3-t-out" data-testid="c3-t-out" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="c3-note" id="c3-t-note" data-testid="c3-t-note" aria-live="polite"></div>
+  </div>
+  <p>Notice the third preset. When the troops have no strong view of their own, the same moderate push carries almost all of them. That is the opening for the next section: the general can sometimes win, but only when the troops themselves have not made up their minds.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Snap decisions and phase transitions</h2>
+  <p>The Tortoise grants that sometimes an unexpected shift at a high level can set off an abrupt phase transition among the low-level parts: a million tiny things suddenly swirl into a new pattern. Once in a while the general can gain control, but only when the neurons have no settled preference and have reached no consensus, so that they are leadable. A snap decision, such as a sudden resolution to quit on the spot, is a coarse description of one such event (pp. 206-207). The dialogue compares the careenium to water and ice: where regions are frozen into blocks, a higher-level description works; where nothing is frozen it does not.</p>
+  <p>You can feel this with a standard physics toy, which is my illustration and not in the dialogue. A grid of 400 cells, each red or blue, where every cell prefers to match its four neighbours. The <b>temperature</b> slider sets how much random noise there is (the units are arbitrary). Press <b>Run</b> and let the grid settle. Then switch on the <b>nudge</b>, a weak constant push toward blue, which plays the general. Finally press <b>Test steering</b>, which starts from an all-red grid, runs 100 sweeps with and without the nudge, and reports how far the nudge moved the result.</p>
+  <div class="c3-stage" data-testid="c3-lattice-widget">
+    <div class="c3-two">
+      <div>
+        <canvas class="c3-lat" id="c3-l-cv" width="280" height="280" data-testid="c3-l-canvas" role="img" aria-label="A 20 by 20 grid of red and blue cells"></canvas>
+        <div class="c3-legend" style="margin-top:6px"><span><i class="c3-sw r"></i>red</span><span><i class="c3-sw b"></i>blue</span><span id="c3-l-share" data-testid="c3-l-share"></span></div>
+      </div>
+      <div>
+        <label class="c3-ctl">Temperature (noise): <span id="c3-l-tv"></span>
+          <input type="range" id="c3-l-t" min="1" max="5" step="0.05" value="1.5" data-testid="c3-l-temp"></label>
+        <div class="c3-box" style="margin:8px 0"><h5>STATE OF THE GRID</h5><div class="c3-big" id="c3-l-state" data-testid="c3-l-state" aria-live="polite"></div></div>
+        <div class="c3-row">
+          <label class="c3-chk"><input type="checkbox" id="c3-l-nudge" data-testid="c3-l-nudge"> Nudge toward blue (weak)</label>
+        </div>
+        <div class="c3-row">
+          <button class="c3-btn" id="c3-l-run" data-testid="c3-l-run">Pause</button>
+          <button class="c3-btn alt" id="c3-l-step" data-testid="c3-l-step">Step 5 sweeps</button>
+          <button class="c3-btn alt" id="c3-l-red" data-testid="c3-l-allred">All red</button>
+          <button class="c3-btn alt" id="c3-l-rand" data-testid="c3-l-random">Random</button>
+        </div>
+        <div class="c3-row">
+          <button class="c3-btn" id="c3-l-test" data-testid="c3-l-test">Test steering at this temperature</button>
+          <button class="c3-btn alt" id="c3-l-sweep" data-testid="c3-l-sweep">Test all temperatures</button>
+        </div>
+        <div class="c3-note" id="c3-l-result" data-testid="c3-l-result" aria-live="polite"></div>
+      </div>
+    </div>
+    <div id="c3-l-chart" data-testid="c3-l-chart" hidden>
+      <div class="c3-small" style="margin-top:10px">How far the nudge moved the blue share (0 to 100 points), by temperature. Gold marks the most steerable.</div>
+      <div class="c3-bars" id="c3-l-bars"></div><div class="c3-bars-lab" id="c3-l-barlab"></div>
+    </div>
+  </div>
+  <p class="c3-small">The grid is the Ising model, a textbook toy from statistical physics. Its transition between ordered and disordered states sits at a temperature of about 2.27 in these units (a known result, from background knowledge rather than from the dialogue). The nudge strength, grid size and number of sweeps are my own choices. Results vary run to run because the model is random.</p>
+  <p>What you should see: when the grid is cold and frozen, the nudge does nothing, because every cell is locked in by its neighbours. When it is hot, the noise swamps the nudge and the pattern stays close to a coin toss. Only in a band around the transition does a weak push tip the whole grid. That is the careenium's claim in miniature: a high-level push is effective only when the low level has not settled, and it gets no purchase on frozen structure.</p>
+
+  <h2 id="sec5"><span class="num">5</span> The half-frozen state</h2>
+  <p>Achilles then wonders what it is like when the brain is halfway between the two, with plenty of symmballs (the dialogue's name for stable clumps) and yet plenty of stray bits belonging to no one, like a half-frozen lake in early spring. The Tortoise says that is where he feels most creative: neurons acting somewhat independently, somewhat collectively, so that loose parts cooperate with larger channels and give a lively, semi-chaotic feeling of being alive. The dialogue also suggests that a measure of uncoalesced freedom may be essential to creativity, and that ideas reach the top level from below, so that the verbalised reasons are always after the fact (pp. 207-210).</p>
+  <p>Press a preset to start a fresh grid in each state and compare two numbers. <b>Settled</b> cells have all four neighbours matching them, so they sit inside a block that you could name. <b>Loose</b> cells disagree with at least two neighbours. The figures update as the grid runs.</p>
+  <div class="c3-stage" data-testid="c3-half-widget">
+    <div class="c3-seg" role="group" aria-label="Choose a state">
+      <button type="button" data-st="1.4" aria-pressed="true" data-testid="c3-h-frozen">Frozen</button>
+      <button type="button" data-st="2.3" aria-pressed="false" data-testid="c3-h-half">Half-frozen</button>
+      <button type="button" data-st="4" aria-pressed="false" data-testid="c3-h-hot">Hot</button>
+    </div>
+    <div class="c3-two" style="margin-top:12px">
+      <canvas class="c3-lat" id="c3-h-cv" width="280" height="280" data-testid="c3-h-canvas" role="img" aria-label="A grid of red and blue cells in the chosen state"></canvas>
+      <div>
+        <div class="c3-box"><h5>READOUT</h5>
+          <div>Settled cells: <b id="c3-h-set" data-testid="c3-h-settled"></b></div>
+          <div>Loose cells: <b id="c3-h-loose" data-testid="c3-h-loose"></b></div>
+        </div>
+        <div class="c3-note" id="c3-h-note" data-testid="c3-h-note" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+  <p class="c3-small">Whether half-frozen is really where creativity lives is the dialogue's suggestion, offered in a conversation, and the dialogue gives no experiment for it. The grid shows only that three kinds of organisation exist; it does not measure creativity.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Downward causation, without magic</h2>
+  <p>The dialogue borrows its core image from the neuroscientist Roger Sperry. Heavy pins in a pinball table look to a casual observer as if they dictate the paths of the light marbles, an influence the paper credits Sperry with describing as pushing the marbles around; yet over a longer time the marbles jostle the pins. In the paper this is introduced as the philosophy that its author evidently shares (pp. 190, 192). Philosophers now call the idea <b>downward causation</b>: higher-level patterns influencing the behaviour of their own parts.</p>
+  <p>Whether that phrase names something real is disputed. Choose a reading and see what it says about the grid you just used.</p>
+  <div class="c3-stage" data-testid="c3-down-widget">
+    <div class="c3-seg" role="group" aria-label="Choose a reading">
+      <button type="button" data-rd="0" aria-pressed="true" data-testid="c3-r-constraint">Constraint reading</button>
+      <button type="button" data-rd="1" aria-pressed="false" data-testid="c3-r-force">New-force reading</button>
+      <button type="button" data-rd="2" aria-pressed="false" data-testid="c3-r-exclusion">Exclusion objection</button>
+    </div>
+    <dl class="c3-dl" id="c3-r-out" data-testid="c3-r-out" aria-live="polite" style="margin-top:10px"></dl>
+  </div>
+  <p class="c3-small">The first reading is the one the dialogue leans on, in my interpretation. The second and third are other thinkers' positions: the second as the Stanford Encyclopedia describes strong emergentists, and the third as it describes Jaegwon Kim's causal exclusion argument. I did not read Sperry's 1965 essay itself, only the dialogue's use of it.</p>
+
+  <h2 id="sec7"><span class="num">7</span> Three positions on free will</h2>
+  <p>It helps to place the careenium view among the standard positions. Pick one and ask it the same question: does the divided wife, who cannot make herself stop, lack free will? These summaries are other thinkers' positions, condensed from the Stanford Encyclopedia of Philosophy, apart from the last line of each card, which is my own reading of how the dialogue relates to it.</p>
+  <div class="c3-stage" data-testid="c3-pos-widget">
+    <div class="c3-cards" role="group" aria-label="Positions">
+      <button type="button" class="c3-pos" data-pos="0" aria-pressed="true" data-testid="c3-pos-compat">Compatibilist<small>Free will and determinism can both hold.</small></button>
+      <button type="button" class="c3-pos" data-pos="1" aria-pressed="false" data-testid="c3-pos-libertarian">Libertarian<small>We have free will, so determinism is false.</small></button>
+      <button type="button" class="c3-pos" data-pos="2" aria-pressed="false" data-testid="c3-pos-hard">Hard determinist<small>Determinism is true, so we lack free will.</small></button>
+    </div>
+    <dl class="c3-dl" id="c3-pos-out" data-testid="c3-pos-out" aria-live="polite" style="margin-top:10px"></dl>
+  </div>
+  <p>Daniel Dennett, whom the dialogue cites on another topic in lesson 4, defends a compatibilism in <i>Elbow Room</i> (1984) and <i>Freedom Evolves</i> (2003): the freedoms worth wanting do not require escaping causation. The careenium view fits that family, since it locates freedom in a system's wants shaping its own conduct rather than in an uncaused act. I read it that way; the dialogue does not label itself.</p>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Free will, in the careenium view, is a physical constraint:</b> a system's large-scale wants shape what it does. Achilles' rename for it is "free won't" (Hofstadter 1982, p. 210).</li>
+    <li><b>Claiming you can do whatever you like limits you twice:</b> to what you are able to do, and then to what you want, in practice the one thing you want most.</li>
+    <li><b>A resolution is a general, not a god:</b> it needs the cooperation of the parts it commands, and mutinies when they have strong views of their own.</li>
+    <li><b>The top level can steer the bottom only near a transition:</b> frozen structure ignores a nudge and a hot mess drowns it.</li>
+    <li><b>Downward causation is contested:</b> read as constraint it is mild; read as a new force it faces the causal exclusion objection.</li>
+    <li><b>Compatibilism is the nearest family,</b> but libertarians and hard determinists reject it on different grounds.</li>
+  </ul>
+  <p class="src"><b>The paper.</b> Hofstadter, D. R. (1982). "Who Shoves Whom Around Inside the Careenium? or What is the Meaning of the Word 'I'?" <i>Synthese</i> 53: 189-218. It is attached to this module as a reading tab on the right edge of the page, so you can read the dialogue alongside the lessons. Page numbers above refer to the journal pages.</p>
+  <p class="src"><b>Other sources.</b> <a href="https://plato.stanford.edu/entries/compatibilism/" target="_blank" rel="noopener">Stanford Encyclopedia: Compatibilism</a> · <a href="https://plato.stanford.edu/entries/incompatibilism-arguments/" target="_blank" rel="noopener">Stanford Encyclopedia: Arguments for Incompatibilism</a> · <a href="https://plato.stanford.edu/entries/properties-emergent/" target="_blank" rel="noopener">Stanford Encyclopedia: Emergent Properties</a>. Also cited, not fetched: Sperry (1965), "Mind, Brain, and Humanist Values", as listed in the paper's bibliography; Dennett (1984), <i>Elbow Room</i>; Dennett (2003), <i>Freedom Evolves</i>.</p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> Confirmed from the paper: every dialogue point attributed to it above. Confirmed from the Stanford entries: the three positions, the Consequence Argument's role, Dennett's place among compatibilists with <i>Elbow Room</i> and <i>Freedom Evolves</i> in its bibliography, and the description of downward causation and Kim's exclusion argument. Not confirmed from a source and stated as background or my own synthesis: the Ising transition temperature, the mapping of the grid onto the dialogue, the troop and action models and all of their numbers, the reading of the dialogue as compatibilist, and the dates of the two Dennett books beyond the entry's listing. Objections to free will itself from neuroscience, and the debate over whether emergence is real, go beyond what this lesson covers.</p>
+
+  <footer>3. Free will as constraint · Mind &amp; Philosophy · part of your Study Hub</footer>
+</div>
+
+<script>
+(function(){
+  function g(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---------- 1. what can I decide ---------- */
+  (function(){
+    var A=[
+      {t:'Answer a question in English', able:[1,1,1], want:6},
+      {t:'Answer a question in Sanskrit', able:[0,1,1], want:3},
+      {t:'Play the cello piece one more time', able:[1,1,0], want:7},
+      {t:'Go for a walk', able:[1,1,1], want:5},
+      {t:'Lift a 500 kg weight', able:[0,0,0], want:2},
+      {t:'Betray a close friend', able:[1,1,1], want:0}
+    ];
+    var wants=A.map(function(a){return a.want;});
+    var rows=g('c3-d-rows');
+    rows.innerHTML=A.map(function(a,i){
+      return '<div class="c3-act"><div>'+esc(a.t)+'</div><div class="c3-w"><input type="range" min="0" max="10" step="1" value="'+a.want+'" data-i="'+i+'" data-testid="c3-d-want-'+i+'" aria-label="How much the person wants: '+esc(a.t)+'"></div><div><span class="c3-tag" id="c3-d-tag-'+i+'" data-testid="c3-d-tag-'+i+'"></span></div></div>';
+    }).join('');
+    function draw(){
+      var sc=+g('c3-d-scn').value, able=0, want=0, best=-1, bestN=0, pick=-1;
+      A.forEach(function(a,i){ if(a.able[sc]){ able++; if(wants[i]>0){ want++; if(wants[i]>best){best=wants[i];bestN=1;pick=i;} else if(wants[i]===best){bestN++;} } } });
+      if(bestN!==1) pick=-1;
+      A.forEach(function(a,i){
+        var tg=g('c3-d-tag-'+i), cls, txt;
+        if(!a.able[sc]){cls='out';txt='outside ability';}
+        else if(wants[i]===0){cls='out';txt='not wanted';}
+        else if(i===pick){cls='pick';txt='decided';}
+        else {cls='open';txt='open';}
+        tg.className='c3-tag '+cls; tg.textContent=txt;
+      });
+      g('c3-d-n1').textContent=A.length; g('c3-d-n2').textContent=able; g('c3-d-n3').textContent=want; g('c3-d-n4').textContent=(pick>=0?1:0);
+      var n=g('c3-d-note');
+      if(want===0) n.innerHTML='<b>Nothing is decided.</b> Within what this person can do, there is nothing they want, so there is nothing for them to decide to do.';
+      else if(pick>=0) n.innerHTML='<b>Of '+A.length+' imaginable actions, '+able+' are possible, '+want+' are wanted, and one is decided:</b> '+esc(A[pick].t).toLowerCase()+'. "Open" actions are possible and wanted, but something wanted more wins.';
+      else n.innerHTML='<b>A tie at the top.</b> Two or more wants are equally strong, so this model leaves the system undecided until something shifts one of them. In a real mind that shift is the kind of event the next sections discuss.';
+    }
+    rows.addEventListener('input',function(e){ var i=e.target.getAttribute('data-i'); if(i!==null){ wants[+i]=+e.target.value; draw(); } });
+    g('c3-d-scn').onchange=draw;
+    g('c3-d-reset').onclick=function(){ wants=A.map(function(a){return a.want;}); rows.querySelectorAll('input').forEach(function(inp,i){inp.value=wants[i];}); draw(); };
+    draw();
+  })();
+
+  /* ---------- 2. troops ---------- */
+  (function(){
+    var U=[], seed=12345, i;
+    for(i=0;i<100;i++){ seed=(seed*1103515245+12345)%2147483648; U.push((seed/2147483648)*2-1); }
+    var grid=g('c3-t-grid'), cells=[];
+    for(i=0;i<100;i++){ var c=document.createElement('i'); grid.appendChild(c); cells.push(c); }
+    var H=g('c3-t-h'), S=g('c3-t-s'), R=g('c3-t-r');
+    function draw(){
+      var h=+H.value, s=+S.value, r=+R.value, n=0;
+      g('c3-t-hv').textContent=h; g('c3-t-sv').textContent=s; g('c3-t-rv').textContent=r;
+      for(var k=0;k<100;k++){ var pull=h+(s/2)*U[k]; var yes=r>pull; if(yes) n++; cells[k].className=yes?'yes':''; }
+      g('c3-t-out').textContent=n+' of 100 follow the order';
+      var note;
+      if(n>=75) note='<b>The order is carried out.</b> The push was stronger than almost every troop\'s own pull. This happens when the habit is weak, or when the general pushes very hard.';
+      else if(n>=25) note='<b>The mind is split.</b> Part of the army follows and part refuses. The person feels torn, as the wife in the dialogue does: she wants to stop, but does not have enough neurons on her side.';
+      else note='<b>Mutiny.</b> Almost no troop is moved. The resolution is sincere and still fails, because it cannot override what the parts themselves lean toward.';
+      g('c3-t-note').innerHTML=note+' <span class="c3-small">(Illustrative model with made-up numbers.)</span>';
+    }
+    [H,S,R].forEach(function(el){ el.addEventListener('input',draw); });
+    var P={strong:[8,2,5],torn:[5,8,5],open:[1,2,3]};
+    document.querySelectorAll('[data-p]').forEach(function(b){ b.onclick=function(){ var p=P[b.getAttribute('data-p')]; H.value=p[0]; S.value=p[1]; R.value=p[2]; draw(); }; });
+    draw();
+  })();
+
+  /* ---------- lattice class ---------- */
+  var N=20, REDRAW=[];
+  try{ new MutationObserver(function(){ REDRAW.forEach(function(f){ f(); }); }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']}); }catch(e){}
+  function Lattice(cv){
+    this.cv=cv; this.ctx=cv.getContext('2d'); this.s=new Int8Array(N*N); this.fill(1);
+  }
+  Lattice.prototype.fill=function(v){ for(var k=0;k<N*N;k++) this.s[k]=v; };
+  Lattice.prototype.randomise=function(){ for(var k=0;k<N*N;k++) this.s[k]=Math.random()<0.5?1:-1; };
+  Lattice.prototype.sweep=function(T,h){
+    var s=this.s;
+    for(var n=0;n<N*N;n++){
+      var i=Math.floor(Math.random()*N), j=Math.floor(Math.random()*N), idx=i*N+j;
+      var nb=s[((i+1)%N)*N+j]+s[((i+N-1)%N)*N+j]+s[i*N+(j+1)%N]+s[i*N+(j+N-1)%N];
+      var d=2*s[idx]*nb-2*s[idx]*h;
+      if(d<=0||Math.random()<Math.exp(-d/T)) s[idx]=-s[idx];
+    }
+  };
+  Lattice.prototype.blueShare=function(){ var t=0; for(var k=0;k<N*N;k++) t+=s_val(this.s[k]); return t/(N*N); };
+  function s_val(v){ return v===-1?1:0; }
+  Lattice.prototype.draw=function(){
+    var cs=getComputedStyle(this.cv), root=getComputedStyle(document.documentElement);
+    var red=root.getPropertyValue('--vermil').trim()||'#b35c5c', blue=root.getPropertyValue('--cobalt').trim()||'#4a6fa8';
+    var w=this.cv.width/N, ctx=this.ctx;
+    for(var i=0;i<N;i++) for(var j=0;j<N;j++){ ctx.fillStyle=this.s[i*N+j]===1?red:blue; ctx.fillRect(j*w,i*w,w-1,w-1); }
+  };
+  Lattice.prototype.stats=function(){
+    var s=this.s, se=0, lo=0;
+    for(var i=0;i<N;i++) for(var j=0;j<N;j++){
+      var v=s[i*N+j], dis=0, q=[((i+1)%N)*N+j,((i+N-1)%N)*N+j,i*N+(j+1)%N,i*N+(j+N-1)%N];
+      for(var k=0;k<4;k++) if(s[q[k]]!==v) dis++;
+      if(dis===0) se++; if(dis>=2) lo++;
+    }
+    return {settled:se/(N*N), loose:lo/(N*N)};
+  };
+  var HNUDGE=0.15;
+  function steer(T,trials){
+    var a=0,b=0, L=new Lattice(document.createElement('canvas'));
+    for(var t=0;t<trials;t++){
+      L.fill(1); for(var w=0;w<100;w++) L.sweep(T,0); a+=L.blueShare();
+      L.fill(1); for(var w2=0;w2<100;w2++) L.sweep(T,HNUDGE); b+=L.blueShare();
+    }
+    return {off:a/trials, on:b/trials, diff:(b-a)/trials};
+  }
+  function pct(x){ return Math.round(x*100)+'%'; }
+  var reduce=false; try{ reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+
+  /* ---------- 3. lattice widget ---------- */
+  (function(){
+    var L=new Lattice(g('c3-l-cv')), run=!reduce, timer=null;
+    var Tin=g('c3-l-t');
+    function label(T){ return T<1.9?'Frozen: locked in blocks':(T<=2.8?'Half-frozen: near the transition':'Hot: noise dominates'); }
+    function draw(){
+      var T=+Tin.value; g('c3-l-tv').textContent=T.toFixed(2);
+      g('c3-l-state').textContent=label(T);
+      L.draw(); g('c3-l-share').textContent='blue share '+pct(L.blueShare());
+      g('c3-l-run').textContent=run?'Pause':'Run';
+    }
+    function tick(){ if(!run) return; var T=+Tin.value, h=g('c3-l-nudge').checked?HNUDGE:0; L.sweep(T,h); L.sweep(T,h); draw(); }
+    timer=setInterval(tick,90);
+    Tin.addEventListener('input',draw);
+    g('c3-l-nudge').onchange=draw;
+    g('c3-l-run').onclick=function(){ run=!run; draw(); };
+    g('c3-l-step').onclick=function(){ var T=+Tin.value, h=g('c3-l-nudge').checked?HNUDGE:0; for(var k=0;k<5;k++) L.sweep(T,h); draw(); };
+    g('c3-l-red').onclick=function(){ L.fill(1); draw(); };
+    g('c3-l-rand').onclick=function(){ L.randomise(); draw(); };
+    g('c3-l-test').onclick=function(){
+      var T=+Tin.value, r=steer(T,4), d=r.diff;
+      var v= d<0.1 ? (T<1.9?'Nothing moves. The cold grid is frozen, so the push finds no purchase.':'Barely moves. The noise washes the push out.') : (d>0.5?'The push steers the whole grid. It is near the transition, where the cells have not settled and a small push can tip them together.':'The push has a partial effect.');
+      g('c3-l-result').innerHTML='<b>Without the nudge: '+pct(r.off)+' blue. With it: '+pct(r.on)+' blue. Difference: '+Math.round(d*100)+' points.</b> '+v+' <span class="c3-small">(Average of 4 runs from an all-red start, 100 sweeps each.)</span>';
+    };
+    g('c3-l-sweep').onclick=function(){
+      var Ts=[1,1.5,1.9,2.1,2.27,2.5,2.8,3.2,3.6,4,4.5,5], res=Ts.map(function(T){ return steer(T,3).diff; });
+      var top=0; res.forEach(function(d,i){ if(d>res[top]) top=i; });
+      g('c3-l-bars').innerHTML=res.map(function(d,i){ return '<div class="'+(i===top?'top':'')+'" style="height:'+Math.max(2,Math.round(Math.max(0,d)*100))+'%" title="T '+Ts[i]+': '+Math.round(d*100)+' points" data-testid="c3-l-bar-'+i+'"></div>'; }).join('');
+      g('c3-l-barlab').innerHTML=Ts.map(function(T){ return '<span>'+T+'</span>'; }).join('');
+      g('c3-l-chart').hidden=false;
+      g('c3-l-result').innerHTML='<b>Most steerable at temperature '+Ts[top]+' ('+Math.round(res[top]*100)+' points).</b> Cold (left) and hot (right) both respond far less. This is the profile the dialogue describes in words.';
+    };
+    L.randomise(); for(var w=0;w<60;w++) L.sweep(1.5,0); draw(); REDRAW.push(draw);
+  })();
+
+  /* ---------- 4. half-frozen widget ---------- */
+  (function(){
+    var L=new Lattice(g('c3-h-cv')), T=1.4, run=!reduce;
+    var NOTES={'1.4':'Frozen: most cells sit inside large blocks. A block-level description works well and the pattern hardly changes, which is order without much room for surprise.',
+      '2.3':'Half-frozen: some blocks hold, many cells sit on their edges, and the pattern keeps rearranging. Block-level descriptions work in places and fail in others.',
+      '4':'Hot: few blocks at all. Most cells disagree with their neighbours at any moment, so there are no stable shapes to describe.'};
+    function start(t){ T=t; L.randomise(); for(var w=0;w<150;w++) L.sweep(T,0); draw(); }
+    function draw(){ L.draw(); var st=L.stats(); g('c3-h-set').textContent=pct(st.settled); g('c3-h-loose').textContent=pct(st.loose); g('c3-h-note').innerHTML=NOTES[String(T)]; }
+    setInterval(function(){ if(run){ L.sweep(T,0); draw(); } },160);
+    document.querySelectorAll('[data-st]').forEach(function(b){ b.onclick=function(){ document.querySelectorAll('[data-st]').forEach(function(o){ o.setAttribute('aria-pressed','false'); }); b.setAttribute('aria-pressed','true'); start(+b.getAttribute('data-st')); }; });
+    start(1.4); REDRAW.push(draw);
+  })();
+
+  /* ---------- 5. downward causation readings ---------- */
+  (function(){
+    var D=[
+      ['Constraint reading','The large pattern is a stable arrangement of the same parts. It shapes what the parts can do only by being the arrangement they are in, as the heavy pins shape the light marbles. No extra force is added; the parts still obey the same physics.','In the grid: a frozen block holds its cells in place because each cell is surrounded by agreeing neighbours. The "high level" is just the pattern the cells make, and it limits them.','The paper leans this way: the two scales constrain each other, and both are physical (my interpretation).'],
+      ['New-force reading','The whole has a causal power of its own, over and above its parts. Strong emergentists are described as treating the downward influence as a basic power of the whole.','In the grid: it would mean the blue patch pushes cells in a way that physics at the cell level does not already account for. The grid, which is built from cell rules only, has no such push, so it does not model this view.','Other thinkers\' position. The Stanford entry lists objections: it may reduce to the base-level powers, lacks empirical evidence, and clashes with physical causal closure.'],
+      ['Exclusion objection','Kim argues that if a high-level state has effects, and physics already fully causes those effects at the low level, then each effect has two sufficient causes, which he finds implausible. So either high-level causes add nothing or they just are low-level ones.','In the grid: the nudge changes the outcome only by changing which low-level flips happen. Asking whether the pattern or the flips did the work may be a bad question, which weak emergentists answer by denying the two compete.','Other thinkers\' position, as the Stanford entry summarises it. It is a challenge to the idea that the top level does separate work, not an objection to the pins-and-marbles picture as a description.']
+    ];
+    var btns=document.querySelectorAll('[data-rd]');
+    function show(i){
+      btns.forEach(function(b){ b.setAttribute('aria-pressed',b.getAttribute('data-rd')===String(i)?'true':'false'); });
+      var d=D[i];
+      g('c3-r-out').innerHTML='<dt>What it says</dt><dd>'+d[1]+'</dd><dt>What it means for the grid</dt><dd>'+d[2]+'</dd><dt>Status</dt><dd>'+d[3]+'</dd>';
+    }
+    btns.forEach(function(b){ b.onclick=function(){ show(+b.getAttribute('data-rd')); }; });
+    show(0);
+  })();
+
+  /* ---------- 6. positions ---------- */
+  (function(){
+    var P=[
+      ['Compatibilist','Free will, and often responsibility, can coexist with causal determinism. Classical versions say you are free when you act on your own wants without outside compulsion.','Not necessarily unfree. If her habit is a part of her that has overridden her wants, a classical view could call it compulsion; other compatibilist views ask whether she responds to reasons. Either way, being caused is not the issue.','The Consequence Argument: if the laws and the past fix everything, our acts are not up to us. Manipulation cases, which suggest how a psychology was formed matters.','Closest fit with the dialogue, in my reading: freedom is the system\'s wants shaping its conduct, and the wife\'s case is a conflict among those wants.'],
+      ['Libertarian','We have free will, so determinism is false in the relevant way. Traditional versions require an agent who is an uncaused cause; contemporary ones appeal to indeterministic events or uncaused actions.','Her failure shows only that this once her will was overcome. A free agent could in principle have decided otherwise.','Randomness or an uncaused act seems no more up to us than a caused one. It also needs the world to be indeterministic in the right place.','The dialogue says choice is an illusion only in so far as "I" is, and treats decisions as outcomes of the system, so it does not describe an uncaused cause. It also notes the small things must cooperate.'],
+      ['Hard determinist','Determinism is true, or close enough, so we lack free will. It agrees with libertarians that free will and determinism cannot coexist.','Nobody is free, the wife included. Her struggle is as caused as anything else, and the husband\'s "just decide" blames her for what was never up to her.','It seems to clash with how deliberation and responsibility work in daily life, and compatibilists reject the premise that freedom needs open alternatives.','The dialogue accepts that decisions are physically caused, but does not conclude that nothing worth calling free will remains; it redefines the term.']
+    ];
+    var btns=document.querySelectorAll('[data-pos]');
+    function show(i){
+      btns.forEach(function(b){ b.setAttribute('aria-pressed',b.getAttribute('data-pos')===String(i)?'true':'false'); });
+      var d=P[i];
+      g('c3-pos-out').innerHTML='<dt>Core claim</dt><dd>'+d[1]+'</dd><dt>On the divided wife</dt><dd>'+d[2]+'</dd><dt>Main objection from critics</dt><dd>'+d[3]+'</dd><dt>How the dialogue relates (my reading)</dt><dd>'+d[4]+'</dd>';
+    }
+    btns.forEach(function(b){ b.onclick=function(){ show(+b.getAttribute('data-pos')); }; });
+    show(0);
+  })();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

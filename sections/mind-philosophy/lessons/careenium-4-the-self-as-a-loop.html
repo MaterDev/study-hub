@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4. The self as a loop</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--plum); --accent-soft:var(--plum-soft); --accent-text:var(--plum-deep); }
+  .c4-stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .c4-btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .c4-btn.alt{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .c4-btn:focus-visible, .c4-seg button:focus-visible, .c4-tab:focus-visible{outline:3px solid var(--ochre); outline-offset:2px;}
+  .c4-small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .c4-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .c4-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); min-width:0; flex:1 1 200px;}
+  .c4-ctl input[type=range]{width:100%; accent-color:var(--plum);}
+  .c4-ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-ui); text-transform:none; letter-spacing:0; max-width:100%;}
+  .c4-chk{display:flex; gap:8px; align-items:flex-start; font-family:var(--font-ui); font-size:.86rem; color:var(--ink); padding:6px 0;}
+  .c4-chk input{accent-color:var(--plum); margin-top:3px;}
+  .c4-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;}
+  @media(max-width:760px){.c4-two{grid-template-columns:minmax(0,1fr);}}
+  .c4-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .c4-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute); line-height:1.6;}
+  .c4-note{font-family:var(--font-ui); font-size:.88rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .c4-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;}
+  .c4-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:8px 12px; font:700 .78rem var(--font-ui); cursor:pointer; flex:1 1 auto;}
+  .c4-seg button[aria-pressed=true]{background:var(--plum); color:#fff;}
+  .c4-big{font:800 1.3rem var(--font-ui); color:var(--ink);}
+  .c4-tag{font-weight:800; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); display:inline-block; font-size:.72rem; white-space:nowrap;}
+  .c4-tag.on{border-color:var(--forest); background:var(--forest-soft);}
+  .c4-tag.paper{border-color:var(--plum); background:var(--plum-soft);}
+  .c4-tag.other{border-color:var(--ochre); background:var(--ochre-soft);}
+  .c4-tag.bg{border-color:var(--line-strong); background:var(--paper-2);}
+  dl.c4-dl{margin:0;} dl.c4-dl dt{font:800 .68rem var(--font-ui); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); margin-top:10px;} dl.c4-dl dd{margin:3px 0 0; font-family:var(--font-ui); font-size:.88rem; color:var(--ink);}
+  /* fire */
+  .c4-fire{min-height:96px; display:flex; align-items:center; justify-content:center; font:800 1.1rem var(--font-ui); color:var(--ink); text-align:center; border-radius:10px; border:2px solid var(--line-strong); background:var(--paper); padding:10px;}
+  .c4-fire.lit{border-color:var(--ochre); background:var(--ochre-soft);}
+  /* stance */
+  .c4-st{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap:10px;}
+  @media(max-width:700px){.c4-st{grid-template-columns:minmax(0,1fr);}}
+  .c4-st .c4-box.best{border-color:var(--plum); background:var(--plum-soft);}
+  .c4-meter{height:10px; border:2px solid var(--outline); border-radius:6px; background:var(--paper-2); overflow:hidden; margin:3px 0 8px;}
+  .c4-meter i{display:block; height:100%; background:var(--plum);}
+  .c4-meter.cost i{background:var(--ochre);}
+  /* loop */
+  .c4-svg{display:block; width:100%; height:auto; border:2px solid var(--outline); border-radius:8px; background:var(--paper);}
+  .c4-frames{display:block; width:100%; max-width:220px; height:auto; border:2px solid var(--outline); border-radius:8px; background:var(--paper);}
+  /* builder */
+  .c4-prop{display:flex; justify-content:space-between; gap:8px; align-items:center; border:2px solid var(--line-strong); border-radius:8px; padding:6px 10px; margin-bottom:6px; background:var(--paper); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); opacity:.55;}
+  .c4-prop.on{opacity:1; border-color:var(--forest); background:var(--forest-soft);}
+  .c4-tabs{display:flex; flex-wrap:wrap; gap:6px;}
+  .c4-tab{border:2px solid var(--line-strong); border-radius:8px; background:var(--paper); color:var(--ink); padding:8px 12px; font:700 .8rem var(--font-ui); cursor:pointer; flex:1 1 auto;}
+  .c4-tab[aria-pressed=true]{border-color:var(--plum); background:var(--plum); color:#fff;}
+  .c4-led{display:flex; flex-direction:column; gap:6px; margin-top:10px;}
+  .c4-item{border:2px solid var(--line-strong); border-radius:8px; padding:8px 10px; background:var(--paper); font-family:var(--font-ui); font-size:.86rem; color:var(--ink); display:flex; gap:10px; justify-content:space-between; align-items:flex-start;}
+  .c4-item div{min-width:0; overflow-wrap:anywhere;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>4. The self as a loop</h1>
+  <p class="subtitle">Why the "who" in a mind may be an outcome rather than a starting ingredient, how a system that describes itself can stabilise that description, and how to weigh the main objections fairly.</p>
+
+  <div class="toc" data-testid="c4-toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">A self with nobody in it? (interactive)</a></li>
+      <li><a href="#sec2">Flame and fire (interactive)</a></li>
+      <li><a href="#sec3">The stance, turned inward (interactive)</a></li>
+      <li><a href="#sec4">The loop that holds itself up (interactive)</a></li>
+      <li><a href="#sec5">Building an I, layer by layer (interactive)</a></li>
+      <li><a href="#sec6">Objections and replies (interactive)</a></li>
+      <li><a href="#sec7">What the paper claims, and what it does not (interactive)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> A self with nobody in it?</h2>
+  <p class="lead">This lesson is the fourth in a module on a 1982 dialogue by Douglas Hofstadter. Its central picture is the <b>careenium</b>: a table of tiny bouncing marbles in which clumps of marbles form larger, slower patterns. Looked at closely it is chaos; looked at from far enough away, the clumps behave in orderly ways, as if they had wants and reasons. The dialogue asks what, if anything, in such a system could be the <i>I</i> that does the wanting. You can read this lesson without the earlier ones.</p>
+  <p>Achilles objects that a heap of marbles, however well organised, is like a pinball machine: all machinery, and empty until some living flame is added. Without that extra ingredient, he says, there is no one at home. The Tortoise's reply, in the paper, is that this picture has things backwards. The paper's argument is that the sense of being someone is an <b>outcome</b> of how a system represents itself, not a decision made beforehand about who gets a soul (Hofstadter 1982, pp. 212-214). Compare what each picture predicts.</p>
+  <div class="c4-stage" data-testid="c4-pictures">
+    <div class="c4-seg" role="group" aria-label="Choose a picture of the soul">
+      <button type="button" data-pic="0" aria-pressed="true" data-testid="c4-pic-added">The soul is added to a structure</button>
+      <button type="button" data-pic="1" aria-pressed="false" data-testid="c4-pic-outcome">The soul is an outcome of a structure</button>
+    </div>
+    <dl class="c4-dl" id="c4-pic-out" data-testid="c4-pic-out" aria-live="polite"></dl>
+  </div>
+  <p class="c4-small">The first picture is the one the dialogue attributes to Achilles, described in its own comic terms (a soul dropped into a body like a cherry on a sundae). The predictions listed are my own working-out of each picture, not statements from the paper.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Flame and fire</h2>
+  <p>Achilles says a careenium needs a "flame", as a pile of wood needs a flame to become a fire. The Tortoise turns this over. When a pile of wood catches, nothing special has been added to it: it simply becomes active instead of inert, and any flame would have done. The identity of the fire comes from the fuel and the burning, not from whatever lit it. And someone who sees a pile of metal burning and insists it cannot be a real fire, because real fires are always wood or paper, is making a mistake about what a fire is (p. 213).</p>
+  <p>Try it. Choose a fuel, something to light it, and whether there is air. Then see what changes when you change only how it was lit.</p>
+  <div class="c4-stage" data-testid="c4-fire-widget">
+    <div class="c4-row">
+      <label class="c4-ctl">Fuel
+        <select id="c4-f-fuel" data-testid="c4-f-fuel">
+          <option value="wood">A pile of wood</option>
+          <option value="paper">A stack of paper</option>
+          <option value="mg">A magnesium ribbon</option>
+          <option value="sand">A heap of sand</option>
+        </select></label>
+      <label class="c4-ctl">How it is lit
+        <select id="c4-f-light" data-testid="c4-f-light">
+          <option value="match">A match</option>
+          <option value="lens">A magnifying lens in the sun</option>
+          <option value="spark">A spark from lightning</option>
+          <option value="none">Not lit</option>
+        </select></label>
+      <label class="c4-chk"><input type="checkbox" id="c4-f-air" checked data-testid="c4-f-air"> Air (oxygen) present</label>
+    </div>
+    <div class="c4-fire" id="c4-f-out" data-testid="c4-f-out" aria-live="polite"></div>
+    <div class="c4-note" id="c4-f-note" data-testid="c4-f-note" aria-live="polite"></div>
+  </div>
+  <p>The mapping to selves is the Tortoise's argument, in my paraphrase. The activity of a sufficiently complex system describing itself is the "fuel". Where the first push came from does not decide which self it is, and asking which soul <i>should</i> go into which careenium is as odd as asking which flame belongs to which log. The dialogue presses the same point with a question: could someone else's flame, implanted in your body, leave your body and brain intact and yet make you someone else? It also compares the persistence of a self through change to a country such as Poland, which stays the same country over centuries even though nearly everything in it has changed (pp. 213-214).</p>
+  <p class="c4-small">That wood, paper and magnesium burn in air and sand does not is general chemistry from my own background knowledge, used only for the demonstration. The magnesium case echoes the dialogue's burning pile of metal.</p>
+
+  <h2 id="sec3"><span class="num">3</span> The stance, turned inward</h2>
+  <p>Where would a self come from, if not a special ingredient? The dialogue turns to philosopher Daniel Dennett's idea of the <b>intentional stance</b>: treating something as having beliefs, wants and reasons so as to predict what it will do. Dennett describes three ways to predict a thing's behaviour: from its physics, from what it was designed to do, or from the beliefs and desires it appears to have. You choose whichever predicts best at the least cost (the three stances as summarised in the encyclopedia entry linked below).</p>
+  <p>Select a system and compare the three stances. The scores are my own illustrative judgements on a 1 to 5 scale, not measurements.</p>
+  <div class="c4-stage" data-testid="c4-stance-widget">
+    <div class="c4-row">
+      <label class="c4-ctl">What you are trying to predict
+        <select id="c4-s-sys" data-testid="c4-s-system"></select></label>
+    </div>
+    <div class="c4-st" id="c4-s-grid" data-testid="c4-s-grid"></div>
+    <div class="c4-note" id="c4-s-note" data-testid="c4-s-note" aria-live="polite"></div>
+    <div class="c4-row" style="margin-top:12px"><span class="c4-small">Now change who is looking:</span>
+      <div class="c4-seg" role="group" aria-label="Who adopts the stance">
+        <button type="button" data-ob="0" aria-pressed="true" data-testid="c4-s-outsider">An outsider looks at the system</button>
+        <button type="button" data-ob="1" aria-pressed="false" data-testid="c4-s-itself">The system looks at itself</button>
+      </div>
+    </div>
+    <div class="c4-box" style="margin-top:8px"><h5>WHAT IS SAID</h5><div id="c4-s-say" data-testid="c4-s-say" aria-live="polite"></div></div>
+  </div>
+  <p>The paper's step is the second one. If a system is complicated enough that its own best way of understanding itself is in terms of wants and beliefs, it adopts what the Tortoise calls the <b>auto-intentional stance</b>: it describes its own marble-level activity as "I want this, I believe that" (p. 215). Achilles objects that this seems like a made-up story told in earnest. The Tortoise replies that beliefs and wants are as real as ice cubes and traffic jams, patterns at one level of description, and that your own inner eye gives you your feelings in no more direct a way (p. 215).</p>
+
+  <h2 id="sec4"><span class="num">4</span> The loop that holds itself up</h2>
+  <p>Achilles calls this a level-crossing feedback loop and compares it to a television pointed at its own screen, recycling its image over and over into nested copies (pp. 215-216). The Tortoise adds the crucial claim: by adopting that stance toward itself, a system creates a self-perpetuating belief in itself as one thing with beliefs and desires. The more the idea of a unified self cycles through the system, the more established it becomes, like a crystal whose crystallising helps further crystallisation. Even if it begins as a delusion, once it is locked in it determines a great deal of the system's behaviour, and then it is no longer silly to take it seriously (p. 216).</p>
+  <p>Here is a toy model of that claim. One number, <b>B</b>, stands for how strongly the system's self-model is established, from 0 to 1. Each step, B moves toward how strongly the system's behaviour, steered by that self-model, confirms it. The <b>gain</b> says how much the self-model shapes behaviour. An outside <b>push</b> stands for whatever first suggests "you are one thing". Press <b>Push once</b>, then watch what happens when the push ends. Try a low gain, then a high one.</p>
+  <div class="c4-stage" data-testid="c4-loop-widget">
+    <div class="c4-two">
+      <div>
+        <label class="c4-ctl">Gain: how much the self-model shapes behaviour: <span id="c4-l-gv"></span>
+          <input type="range" id="c4-l-g" min="0" max="2" step="0.05" value="0.5" data-testid="c4-l-gain"></label>
+        <label class="c4-ctl">Push strength: <span id="c4-l-pv"></span>
+          <input type="range" id="c4-l-p" min="0.2" max="1" step="0.05" value="0.6" data-testid="c4-l-push"></label>
+        <label class="c4-ctl">Noise: <span id="c4-l-nv"></span>
+          <input type="range" id="c4-l-n" min="0" max="0.3" step="0.01" value="0" data-testid="c4-l-noise"></label>
+        <div class="c4-row">
+          <button class="c4-btn" id="c4-l-seed" data-testid="c4-l-seed">Push once</button>
+          <button class="c4-btn alt" id="c4-l-step" data-testid="c4-l-step">Step</button>
+          <button class="c4-btn alt" id="c4-l-run" data-testid="c4-l-run">Pause</button>
+          <button class="c4-btn alt" id="c4-l-reset" data-testid="c4-l-reset">Reset</button>
+        </div>
+      </div>
+      <div>
+        <div class="c4-box"><h5>WHAT THE SCREEN SHOWS OF ITSELF</h5>
+          <svg class="c4-frames" id="c4-l-frames" viewBox="0 0 200 200" data-testid="c4-l-frames" role="img" aria-label="Nested copies of a screen; more copies appear as the self-model strengthens"></svg>
+        </div>
+      </div>
+    </div>
+    <div class="c4-box" style="margin-top:10px"><h5>STRENGTH OF THE SELF-MODEL OVER TIME (GOLD BAND: OUTSIDE PUSH ON)</h5>
+      <svg class="c4-svg" id="c4-l-plot" viewBox="0 0 400 150" data-testid="c4-l-plot" role="img" aria-label="Line chart of self-model strength over time"></svg>
+      <div class="c4-big" id="c4-l-state" data-testid="c4-l-state" aria-live="polite" style="margin-top:8px"></div>
+    </div>
+    <div class="c4-note" id="c4-l-note" data-testid="c4-l-note"></div>
+  </div>
+  <p class="c4-small">This is my own toy, not a result from the paper or from any experiment. It uses a simple switch-like curve to stand in for the idea that a stronger self-model produces behaviour that supports it. The nested frames are an analogy to the television image in the dialogue, not a simulation of one.</p>
+  <p>What to take from it: at low gain, any push fades once it stops, and the self-model washes out. At moderate gain a strong enough push can tip the system over a threshold into a state that then sustains itself. At high gain even a small push, or a burst of noise, is enough. That is the dialogue's claim about reification in miniature: the self-model need not start out true or earned; once the loop closes it supports itself.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Building an I, layer by layer</h2>
+  <p>The dialogue's simple animal monitors its own hunger and does little else; a more complex animal represents its surroundings, weighs hunger against danger and other priorities, and so gains something worth calling deliberation (p. 203). The self, on the dialogue's account, comes from adding the circling-back of a complex representation of the system, together with its representation of the world (p. 217). The widget lets you add those layers and see which properties turn up. It is an <b>illustration</b>, built from my reading of the dialogue, and not a result: the dependencies between layers are my choices.</p>
+  <div class="c4-stage" data-testid="c4-builder-widget">
+    <div class="c4-two">
+      <div>
+        <div class="c4-box"><h5>LAYERS</h5>
+          <label class="c4-chk"><input type="checkbox" id="c4-b-perceive" data-testid="c4-b-perceive"><span><b>Perceive.</b> Turn outside events into internal symbols.</span></label>
+          <label class="c4-chk"><input type="checkbox" id="c4-b-remember" data-testid="c4-b-remember"><span><b>Remember.</b> Keep a record of past states.</span></label>
+          <label class="c4-chk"><input type="checkbox" id="c4-b-monitor" data-testid="c4-b-monitor"><span><b>Monitor.</b> Register its own internal state, such as hunger. Needs perceive.</span></label>
+          <label class="c4-chk"><input type="checkbox" id="c4-b-model" data-testid="c4-b-model"><span><b>Model itself.</b> Represent itself as one agent with beliefs and wants. Needs monitor.</span></label>
+          <label class="c4-chk"><input type="checkbox" id="c4-b-loop" data-testid="c4-b-loop"><span><b>Close the loop.</b> Let the self-model feed back into what it perceives and does. Needs model itself.</span></label>
+        </div>
+      </div>
+      <div class="c4-box"><h5>PROPERTIES THAT APPEAR</h5><div id="c4-b-props" data-testid="c4-b-props" aria-live="polite"></div></div>
+    </div>
+    <div class="c4-box" style="margin-top:10px"><h5>THE SAME MECHANISM, DIFFERENT I'S (NEEDS MODEL ITSELF)</h5>
+      <div class="c4-row">
+        <label class="c4-ctl">Which things it represents
+          <select id="c4-b-world" data-testid="c4-b-world"><option value="0">A harbour town and its tides</option><option value="1">A mountain trail and its weather</option></select></label>
+        <label class="c4-ctl">The style of its representing
+          <select id="c4-b-style" data-testid="c4-b-style"><option value="0">Cautious</option><option value="1">Playful</option><option value="2">Methodical</option></select></label>
+      </div>
+      <div id="c4-b-i" data-testid="c4-b-i" aria-live="polite"></div>
+    </div>
+    <div class="c4-note" id="c4-b-note" data-testid="c4-b-note"></div>
+  </div>
+  <p>The second panel carries the dialogue's last big idea. The Tortoise says Erwin Schrödinger suggested there is only one sense of the word "I", with each of us feeling that it knows its own uniquely, and the Tortoise restates it as <b>one mechanism</b> underlying all senses of "I": the circling-back of a representation of the system. Which "I" you are depends on the <i>way</i> things are cycled and represented, the style or spirit, and not on which set of experiences you happened to go through (p. 217). I have not read Schrödinger's <i>Mind and Matter</i>; this is the paper's account of him. The three styles and two worlds above are invented examples.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Objections and replies</h2>
+  <p>A fair reading has to weigh what a sceptic would say. Each tab below sets one objection beside what the paper replies, then beside what other thinkers have said. The paper's reply and the others' positions are labelled separately, so you can see where the dialogue ends and the wider debate begins.</p>
+  <div class="c4-stage" data-testid="c4-obj-widget">
+    <div class="c4-tabs" role="group" aria-label="Choose an objection">
+      <button type="button" class="c4-tab" data-ob="0" aria-pressed="true" data-testid="c4-ob-hard">The hard problem</button>
+      <button type="button" class="c4-tab" data-ob="1" aria-pressed="false" data-testid="c4-ob-who">Who reads the self-model?</button>
+      <button type="button" class="c4-tab" data-ob="2" aria-pressed="false" data-testid="c4-ob-zombie">Zombies</button>
+      <button type="button" class="c4-tab" data-ob="3" aria-pressed="false" data-testid="c4-ob-identity">Continuity and identity</button>
+    </div>
+    <dl class="c4-dl" id="c4-ob-out" data-testid="c4-ob-out" aria-live="polite"></dl>
+  </div>
+  <p class="c4-small">The positions credited to other thinkers come from the Stanford Encyclopedia of Philosophy entries on consciousness and on higher-order theories, except where a card says it is background knowledge I did not check. They are condensed, so read the entries before relying on any detail.</p>
+
+  <h2 id="sec7"><span class="num">7</span> What the paper claims, and what it does not</h2>
+  <p>It is easy to read more into a dialogue than it says, or less. A dialogue is also an informal form: the speakers tease and overstate, and the Tortoise admits to some rhetorical exaggeration (p. 217). Hofstadter later developed the same theme at book length in <i>I Am a Strange Loop</i> (2007), which argues that the sense of "I" is a self-referential pattern and draws on the self-reference at the heart of Gödel's theorems. Critics there include the philosopher Slavoj Žižek, who is reported to argue that the account needs downward causation it does not acknowledge. Use the filter to separate the paper's own claims from what is contested.</p>
+  <div class="c4-stage" data-testid="c4-ledger-widget">
+    <div class="c4-seg" role="group" aria-label="Filter claims">
+      <button type="button" data-lf="all" aria-pressed="true" data-testid="c4-lf-all">All</button>
+      <button type="button" data-lf="paper" aria-pressed="false" data-testid="c4-lf-paper">The paper says</button>
+      <button type="button" data-lf="gap" aria-pressed="false" data-testid="c4-lf-gap">The paper leaves open</button>
+      <button type="button" data-lf="other" aria-pressed="false" data-testid="c4-lf-other">Other thinkers dispute</button>
+    </div>
+    <div class="c4-led" id="c4-led" data-testid="c4-led" aria-live="polite"></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>In this view the soul is an outcome, not an ingredient:</b> like a fire, it comes from a process, and where the first spark came from does not decide it.</li>
+    <li><b>The auto-intentional stance:</b> when a system is complicated enough that it understands itself best in terms of wants and beliefs, it describes itself that way, and that description becomes part of the system.</li>
+    <li><b>The self-image loop reinforces itself,</b> like a crystal helping itself to grow; once locked in, it explains much of the system's behaviour, so it is not idle.</li>
+    <li><b>One mechanism, many I's:</b> the circling-back is the same everywhere; the way things are cycled makes each I distinct.</li>
+    <li><b>The hard objections stay open:</b> whether a loop of this kind is enough for experience is disputed, and the paper does not settle it.</li>
+    <li><b>Read the dialogue as an argument offered informally,</b> not a proof; weigh it against other positions.</li>
+  </ul>
+  <p class="src"><b>The paper.</b> Hofstadter, D. R. (1982). "Who Shoves Whom Around Inside the Careenium? or What is the Meaning of the Word 'I'?" <i>Synthese</i> 53: 189-218. It is attached to this module as a reading tab on the right edge of the page, so you can read the dialogue alongside the lessons. Page numbers above refer to the journal pages. The only phrase quoted from it in this lesson is the two-word phrase in section 6; everything else is paraphrase.</p>
+  <p class="src"><b>Other sources.</b> <a href="https://plato.stanford.edu/entries/consciousness/" target="_blank" rel="noopener">Stanford Encyclopedia: Consciousness</a> · <a href="https://plato.stanford.edu/entries/consciousness-higher/" target="_blank" rel="noopener">Stanford Encyclopedia: Higher-Order Theories of Consciousness</a> · <a href="https://en.wikipedia.org/wiki/Intentional_stance" target="_blank" rel="noopener">Wikipedia: Intentional stance</a> · <a href="https://en.wikipedia.org/wiki/I_Am_a_Strange_Loop" target="_blank" rel="noopener">Wikipedia: I Am a Strange Loop</a>. Cited, not fetched: Schrödinger (1967), <i>Mind and Matter</i>, as listed in the paper's bibliography; Dennett's work on the intentional stance, as the paper cites it.</p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> Confirmed from the paper: every dialogue point attributed to it. Confirmed from the pages linked above: the three stances and two criticisms of the intentional stance; the hard problem, philosophical zombies and the main replies (Dennett's rejection, higher-order theories); the regress and misrepresentation objections to higher-order theories; the 2007 book's central claim and Žižek's reported criticism. Not confirmed from a source and stated as background or my own synthesis: the combustion examples, all numbers and scores, the dynamical toy and its regimes, the layer dependencies, the Parfit remark in section 6, and the mapping of other thinkers' views onto the dialogue. The Wikipedia pages are secondary sources, so treat them as pointers.</p>
+
+  <footer>4. The self as a loop · Mind &amp; Philosophy · part of your Study Hub</footer>
+</div>
+
+<script>
+(function(){
+  function g(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function press(list,on,attr){ list.forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute(attr)===String(on)?'true':'false'); }); }
+
+  /* ---------- 1. two pictures ---------- */
+  (function(){
+    var D=[
+      ['A soul is a separate thing that gets attached to a physical structure. Structures without one are empty.',
+       'Whether a given brain or careenium has a self depends on a fact outside it: whether a soul was attached. Two systems alike in every physical detail could differ in having one.',
+       'You must say which soul goes into which body, and on what basis. The dialogue shows this is hard to do without arbitrariness.',
+       'A body could be a hollow "pseudo-I": a thing that behaves as if it had free will, with nobody to have it.'],
+      ['A "who" is built by the way a system represents itself, and grows stronger as it sees itself as one coherent agent over time.',
+       'Whether there is a self depends on the system\'s structure, in particular how it represents itself. Two systems with the same structure and self-representation would not differ in having one.',
+       'The question "which soul?" is replaced by "which structure and which way of representing?". Different systems end up with different I\'s because they represent themselves differently.',
+       'Selves come in degrees. A system that sees itself as a persistent agent only weakly has a weaker "who" than one that does so strongly.']
+    ];
+    var btns=Array.prototype.slice.call(document.querySelectorAll('[data-pic]'));
+    function show(i){
+      press(btns,i,'data-pic'); var d=D[i];
+      g('c4-pic-out').innerHTML='<dt>The picture</dt><dd>'+d[0]+'</dd><dt>What decides if there is a self</dt><dd>'+d[1]+'</dd><dt>The puzzle about which self goes where</dt><dd>'+d[2]+'</dd><dt>What it predicts about empty cases</dt><dd>'+d[3]+'</dd>';
+    }
+    btns.forEach(function(b){ b.onclick=function(){ show(+b.getAttribute('data-pic')); }; });
+    show(0);
+  })();
+
+  /* ---------- 2. fire ---------- */
+  (function(){
+    var burns={wood:1,paper:1,mg:1,sand:0};
+    var names={wood:'wood',paper:'paper',mg:'magnesium',sand:'sand'};
+    var ways={match:'a match',lens:'a lens',spark:'a spark',none:''};
+    function draw(){
+      var f=g('c4-f-fuel').value, l=g('c4-f-light').value, a=g('c4-f-air').checked;
+      var out=g('c4-f-out'), note=g('c4-f-note');
+      if(!burns[f]){ out.className='c4-fire'; out.textContent='No fire: sand cannot burn.'; note.innerHTML='<b>The fuel decides.</b> Without something that can sustain the burning process, no flame, however it is made, gives you a fire.'; return; }
+      if(l==='none'){ out.className='c4-fire'; out.textContent='Inert: '+names[f]+' waiting.'; note.innerHTML='<b>Inert, not empty.</b> The material is the same as when it burns. What is missing is the activity.'; return; }
+      if(!a){ out.className='c4-fire'; out.textContent='No fire: no air.'; note.innerHTML='<b>The process needs its conditions.</b> Heat and fuel alone are not enough without oxygen.'; return; }
+      out.className='c4-fire lit'; out.textContent='A fire of '+names[f]+', lit by '+ways[l]+'.';
+      note.innerHTML='<b>Change how it was lit and it is the same kind of fire.</b> What makes it this fire is the '+names[f]+' burning here. The match, lens or spark is not a part of it that gives it an identity.';
+    }
+    ['c4-f-fuel','c4-f-light'].forEach(function(id){ g(id).onchange=draw; });
+    g('c4-f-air').onchange=draw; draw();
+  })();
+
+  /* ---------- 3. stances ---------- */
+  (function(){
+    var S=[
+      {n:'A rock thrown through the air', ph:[5,2,'Predict the arc from mass, speed and gravity.'], de:[1,1,'Nothing was designed to make it do this.'], it:[1,5,'Saying it "wants" to land would add nothing and cost you accuracy.'], best:0},
+      {n:'A household thermostat', ph:[3,3,'You could trace the circuit, but it is tedious.'], de:[5,1,'It was built to hold a temperature; that is enough.'], it:[3,3,'Treating it as "wanting" 20 degrees works, but adds nothing over the design stance.'], best:1},
+      {n:'A chess program', ph:[1,5,'Tracking every circuit state is hopeless for a move you must predict.'], de:[3,3,'It was built to play chess, which helps a little.'], it:[5,1,'Assume it wants to win and sees your threats: predict its best move.'], best:2},
+      {n:'A dog that has seen a cat', ph:[1,5,'Tracking every neuron is out of reach.'], de:[3,3,'It has some designed instincts, but they say little.'], it:[5,1,'It wants to chase and believes the cat is there: predict a chase.'], best:2},
+      {n:'A friend deciding what to do', ph:[1,5,'Out of reach, and no help in practice.'], de:[2,4,'Partly, for reflexes only.'], it:[5,1,'Beliefs, wants, reasons: the everyday way, and it works.'], best:2},
+      {n:'A careenium, seen at the level of symmballs', ph:[1,5,'Marble by marble: hopeless.'], de:[2,4,'Nothing was designed.'], it:[4,2,'At the symmball level its patterns look like wants and beliefs, as the dialogue says.'], best:2}
+    ];
+    var sel=g('c4-s-sys'); sel.innerHTML=S.map(function(s,i){ return '<option value="'+i+'">'+esc(s.n)+'</option>'; }).join('');
+    var ob=0, obs=Array.prototype.slice.call(document.querySelectorAll('[data-ob]')).filter(function(b){ return b.getAttribute('data-testid') && b.getAttribute('data-testid').indexOf('c4-s-')===0; });
+    var T=[['Physical stance','ph'],['Design stance','de'],['Intentional stance','it']];
+    function draw(){
+      var s=S[+sel.value];
+      g('c4-s-grid').innerHTML=T.map(function(t,k){
+        var v=s[t[1]];
+        return '<div class="c4-box'+(s.best===k?' best':'')+'" data-testid="c4-s-card-'+t[1]+'"><h5>'+t[0].toUpperCase()+'</h5><div class="c4-small">Predictive power (illustrative)</div><div class="c4-meter"><i style="width:'+(v[0]*20)+'%"></i></div><div class="c4-small">Effort to use (illustrative)</div><div class="c4-meter cost"><i style="width:'+(v[1]*20)+'%"></i></div><div>'+esc(v[2])+'</div></div>';
+      }).join('');
+      g('c4-s-note').innerHTML='<b>Best fit here: the '+T[s.best][0].toLowerCase()+'.</b> Dennett\'s advice, as summarised in the entry linked below, is to use the lowest stance that does the job and to move up only when it fails.';
+      g('c4-s-say').innerHTML= ob===0
+        ? 'An outsider might say: &quot;It '+(s.best===2?'wants and believes things, so I predict it will do what suits those.':'does not need to be understood in terms of wants and beliefs.')+'&quot;'
+        : 'The system itself, if complex enough, would say: &quot;<b>I</b> want this, <b>I</b> believe that.&quot; It uses the intentional stance on its own marble-level activity. This is the auto-intentional stance, and it is where the loop in section 4 begins.';
+    }
+    sel.onchange=draw;
+    obs.forEach(function(b){ b.onclick=function(){ ob=+b.getAttribute('data-ob'); press(obs,ob,'data-ob'); draw(); }; });
+    draw();
+  })();
+
+  /* ---------- 4. loop ---------- */
+  (function(){
+    var B=0.02, hist=[], seedHist=[], seedLeft=0, run=true, M=160;
+    try{ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) run=false; }catch(e){}
+    function S(x){ return 1/(1+Math.exp(-10*(x-0.5))); }
+    function noise(){ return Math.random()+Math.random()+Math.random()-1.5; }
+    function step(){
+      var gain=+g('c4-l-g').value, p=+g('c4-l-p').value, n=+g('c4-l-n').value;
+      var push=0; if(seedLeft>0){ push=p; seedLeft--; }
+      var x=gain*B+push+n*2*noise();
+      B=B+0.3*(S(x)-B); if(B<0) B=0; if(B>1) B=1;
+      hist.push(B); seedHist.push(push>0?1:0);
+      if(hist.length>M){ hist.shift(); seedHist.shift(); }
+    }
+    function drawFrames(){
+      var out='', k, sz=200, off=0, scale=0.72, alpha;
+      for(k=0;k<7;k++){
+        alpha=(k===0)?1:Math.pow(B,k);
+        if(alpha<0.04) break;
+        out+='<rect x="'+off.toFixed(1)+'" y="'+off.toFixed(1)+'" width="'+sz.toFixed(1)+'" height="'+sz.toFixed(1)+'" rx="6" fill="none" stroke="var(--plum)" stroke-width="4" opacity="'+alpha.toFixed(2)+'"/>';
+        var ns=sz*scale; off+=(sz-ns)/2; sz=ns;
+      }
+      g('c4-l-frames').innerHTML=out;
+    }
+    function drawPlot(){
+      var out='', i, W=400, H=150, px=W/(M-1);
+      out+='<line x1="0" y1="'+(H-10-0.5*(H-20))+'" x2="'+W+'" y2="'+(H-10-0.5*(H-20))+'" stroke="var(--line-strong)" stroke-dasharray="4 4"/>';
+      for(i=0;i<hist.length;i++){ if(seedHist[i]) out+='<rect x="'+(i*px-px/2).toFixed(1)+'" y="'+(H-8)+'" width="'+px.toFixed(1)+'" height="6" fill="var(--ochre)"/>'; }
+      var pts=hist.map(function(v,j){ return (j*px).toFixed(1)+','+(H-10-v*(H-20)).toFixed(1); }).join(' ');
+      if(hist.length>1) out+='<polyline points="'+pts+'" fill="none" stroke="var(--plum)" stroke-width="3"/>';
+      g('c4-l-plot').innerHTML=out;
+    }
+    function draw(){
+      var gain=+g('c4-l-g').value;
+      g('c4-l-gv').textContent=gain.toFixed(2); g('c4-l-pv').textContent=(+g('c4-l-p').value).toFixed(2); g('c4-l-nv').textContent=(+g('c4-l-n').value).toFixed(2);
+      var st, note;
+      if(B<0.2){ st='Washed out (B = '+B.toFixed(2)+')'; note='The self-model is weak. At this gain, behaviour barely confirms it, so any push fades.'; }
+      else if(B<0.8){ st='Forming (B = '+B.toFixed(2)+')'; note='The self-model is partly established. It may still collapse or lock in.'; }
+      else { st=(seedLeft>0?'Locked in, with the push still on':'Self-sustaining: locked in with no push')+' (B = '+B.toFixed(2)+')'; note=(seedLeft>0?'The push is raising B.':'The push has ended and B stays high. The loop is holding itself up.'); }
+      g('c4-l-state').textContent=st; g('c4-l-note').innerHTML=note;
+      g('c4-l-run').textContent=run?'Pause':'Run';
+      drawFrames(); drawPlot();
+    }
+    function reset(){ B=0.02; hist=[]; seedHist=[]; seedLeft=0; for(var i=0;i<20;i++){ hist.push(B); seedHist.push(0); } draw(); }
+    setInterval(function(){ if(run){ step(); draw(); } },110);
+    ['c4-l-g','c4-l-p','c4-l-n'].forEach(function(id){ g(id).addEventListener('input',draw); });
+    g('c4-l-seed').onclick=function(){ seedLeft=12; draw(); };
+    g('c4-l-step').onclick=function(){ step(); draw(); };
+    g('c4-l-run').onclick=function(){ run=!run; draw(); };
+    g('c4-l-reset').onclick=reset;
+    reset();
+  })();
+
+  /* ---------- 5. builder ---------- */
+  (function(){
+    var ids=['perceive','remember','monitor','model','loop'];
+    var el={}; ids.forEach(function(k){ el[k]=g('c4-b-'+k); });
+    var P=[
+      ['Reacts to what happens outside', function(c){ return c.perceive; }],
+      ['Has a past that bears on the present', function(c){ return c.remember; }],
+      ['Registers its own state, such as hunger', function(c){ return c.monitor; }],
+      ['Deliberates: weighs its needs against what it perceives', function(c){ return c.monitor && c.remember; }],
+      ['Describes itself as one agent with wants and beliefs', function(c){ return c.model; }],
+      ['Feels like the same someone across time', function(c){ return c.model && c.remember; }],
+      ['Has a self-image that reinforces itself and explains its behaviour', function(c){ return c.loop; }]
+    ];
+    var I=[
+      ['I am someone who checks the tide tables before every trip, and I trust a plan only after I have checked it twice.','I am someone who finds the harbour funny and unpredictable, and I improvise with whatever the tide brings.','I am someone who logs every tide and boat, and I like my days to run in a fixed order.'],
+      ['I am someone who reads the sky before setting out, and I turn back at the first sign of weather I did not expect.','I am someone who likes to wander off the marked trail to see what the weather does, and I take it as it comes.','I am someone who plans each leg of the trail by the forecast, and I keep to the schedule.']
+    ];
+    function draw(){
+      var c={}; ids.forEach(function(k){ c[k]=el[k].checked; });
+      if(!c.perceive){ c.monitor=false; c.model=false; c.loop=false; }
+      if(!c.monitor){ c.model=false; c.loop=false; }
+      if(!c.model){ c.loop=false; }
+      ids.forEach(function(k){ el[k].checked=c[k]; });
+      el.monitor.disabled=!c.perceive; el.model.disabled=!c.monitor; el.loop.disabled=!c.model;
+      g('c4-b-props').innerHTML=P.map(function(p,i){ var on=!!p[1](c); return '<div class="c4-prop'+(on?' on':'')+'" data-testid="c4-b-prop-'+i+'"><span>'+esc(p[0])+'</span><span class="c4-tag '+(on?'on':'bg')+'">'+(on?'present':'absent')+'</span></div>'; }).join('');
+      var w=+g('c4-b-world').value, s=+g('c4-b-style').value;
+      g('c4-b-i').innerHTML= c.model ? '<div class="c4-q" style="border-left:5px solid var(--ochre); padding-left:12px; color:var(--ink)">'+esc(I[w][s])+(c.loop?' <span class="c4-small">(The self-image now feeds back and sustains itself.)</span>':'')+'</div>' : '<span class="c4-small">Add "Model itself" to see a self-description.</span>';
+      var n=0; P.forEach(function(p){ if(p[1](c)) n++; });
+      g('c4-b-note').innerHTML='<b>'+n+' of '+P.length+' properties present.</b> The layers are the same for every choice above; only the way things are represented changes the I. <span class="c4-small">This shows which structural features the dialogue emphasises. It does not show that anyone is experiencing anything, which is the objection in the next section.</span>';
+    }
+    ids.forEach(function(k){ el[k].onchange=draw; });
+    g('c4-b-world').onchange=draw; g('c4-b-style').onchange=draw;
+    el.perceive.checked=true; draw();
+  })();
+
+  /* ---------- 6. objections ---------- */
+  (function(){
+    var O=[
+      {t:'The hard problem',
+       q:'Even if the loop explains behaviour and the way the system talks about itself, why is any of it experienced from the inside? Explaining attention, memory or self-report seems to leave out what it is like to be the system.',
+       p:'Achilles states the worry as perception with nobody there to have it. The Tortoise answers that the sense of I is a mechanism, the circling-back of a representation of the system together with its representation of the world, and that this bidirectional causality between levels, with symbols that can recognise qualities of their own activity, is the crux of the mental (p. 217). The paper does not claim to say why such a loop is accompanied by experience; it argues that nothing further needs adding (my reading).',
+       o:[['Chalmers and others (SEP: Consciousness)','The hard problem is explaining why physical processes give rise to experience at all, which is harder than explaining cognitive functions. On this view, a story about loops addresses the easy problems.'],['Dennett (SEP: Consciousness)','Described as a qualified eliminativist who pairs denial of some features of consciousness, such as qualia or a conscious self, with a positive model, so for him the problem dissolves rather than being answered.']],
+       s:'Whether explaining the function of a self-model also explains experience is the main disagreement, and the paper takes a side without proving it.'},
+      {t:'Who reads the self-model?',
+       q:'If the system perceives itself, someone must do the perceiving. Does that need a second self inside, and then a third to read that, and so on?',
+       p:'The Tortoise answers that nobody needs to sit inside and read: the self-image is recycled into the system itself, carried out by the very marbles it describes, and it affects what the system does. The dialogue asks whether looking at one\'s own feelings through an inner eye is really different from this (p. 215-216). The loop is the reader.',
+       o:[['Regress objection to higher-order theories (SEP: Higher-Order Theories)','If a state is conscious only when a higher-order thought is about it, that thought seems to need another one. Defenders reply that the higher-order thought is usually unconscious, so the chain stops unless someone introspects.'],['Misrepresentation worry (same entry)','A higher-order state could misrepresent its target, or have none. Critics argue this would make someone seem conscious of a state they are not in. This is relevant if the self-model is wrong about the system.']],
+       s:'Higher-order and self-representational theories are close cousins of the dialogue\'s idea, and their critics\' objections apply to it by analogy (my judgement).'},
+      {t:'Zombies',
+       q:'Could there be a system with the same loops, the same behaviour and the same self-talk, with nothing felt at all?',
+       p:'The paper does not discuss zombies by name. Its nearest move is Achilles\' hollow "pseudo-I", a thing with free will but nobody to have it. The Tortoise says that picture only makes sense if a soul is attached from outside; if it is the structure and its self-representation that make a self, there is no gap for the zombie to fall into (pp. 212-213, my reading).',
+       o:[['Chalmers (SEP: Consciousness)','Some philosophers, Chalmers among them, argue zombies are conceivable or possible, which would show consciousness is not purely physical.'],['Dennett (SEP: Consciousness and the Wikipedia entry on the stance)','Critics such as Dennett dispute this. Dennett responds that such a zombie is impossible.']],
+       s:'Whether conceivability shows anything about what is possible is itself disputed. The zombie debate came after the paper (background, not checked).'},
+      {t:'Continuity and identity',
+       q:'If the self is the system\'s picture of itself as one thing over time, what happens when the system changes, is copied, or loses its memories?',
+       p:'The Tortoise says the feeling of being one thing through time comes from identification with past and future versions, and compares it with a country like Poland that stays itself through change. He calls the sense of soul-sameness "nature\'s hoax" (Hofstadter 1982, p. 214), and adds that if you prefer not to call it an illusion, a real ability to abstract makes the soul not one. Achilles asks whether anything that can fool itself into seeing itself as unchanging then has a soul; the Tortoise agrees, as long as the seeing is as powerful as ours.',
+       o:[['Background, not fetched this session','Derek Parfit argued in <i>Reasons and Persons</i> (1984) that what matters in survival is psychological continuity, not a further fact of identity, and used cases of copying to press the point. I have not checked this in this session; read it before relying on it.'],['Others (not covered here)','Views that a soul or non-physical self carries identity, and views that the self is nothing but a useful fiction, both exist. I did not research them.']],
+       s:'The paper offers a criterion in terms of self-image, not a ruling on copies or gaps in memory.'}
+    ];
+    var btns=Array.prototype.slice.call(document.querySelectorAll('.c4-tab'));
+    function show(i){
+      press(btns,i,'data-ob'); var d=O[i];
+      var others=d.o.map(function(x){ return '<dd><span class="c4-tag other">Other thinkers\' position</span> <b>'+x[0]+'.</b> '+x[1]+'</dd>'; }).join('');
+      g('c4-ob-out').innerHTML='<dt>The objection</dt><dd>'+d.q+'</dd><dt>Reply in the paper (Hofstadter 1982)</dt><dd><span class="c4-tag paper">The paper</span> '+d.p+'</dd><dt>Other thinkers</dt>'+others+'<dt>Still open</dt><dd>'+d.s+'</dd>';
+    }
+    btns.forEach(function(b){ b.onclick=function(){ show(+b.getAttribute('data-ob')); }; });
+    show(0);
+  })();
+
+  /* ---------- 7. ledger ---------- */
+  (function(){
+    var L=[
+      ['paper','The sense of being someone is an outcome of how a system represents itself, and grows as it sees itself as a coherent agent over time (p. 214).'],
+      ['paper','Treating itself as having wants and beliefs, the auto-intentional stance, sets up a self-reinforcing loop that becomes real and explanatory once locked in (pp. 215-216).'],
+      ['paper','There is one mechanism behind all senses of I, the circling-back of a representation of the system; which I you are depends on the way it is cycled and on what is represented, not only on your experiences (p. 217).'],
+      ['paper','Free will here is physical constraint by the system\'s own wants, so the same story does not give a soul to a thing that behaves as if it had one (pp. 210, 212, my reading).'],
+      ['gap','A precise threshold for how complex or perceptually powerful a system must be before it has a self. The paper says only that it must see itself as persistent and acting for reasons, and compares the power to that of living creatures like us (p. 214).'],
+      ['gap','A test that could tell a system with a real self from one that only behaves as if it had one. The Tortoise argues the difference is not a hidden ingredient, but gives no test.'],
+      ['gap','Whether such a loop is accompanied by feeling. The dialogue says what the I is, not why anything is felt (my reading).'],
+      ['other','That a self-model loop is sufficient for experience: disputed under the hard problem and in debates about zombies (see section 6).'],
+      ['other','That downward causation, the high level shaping the low, is a real causal factor: disputed. Žižek is reported to argue that Hofstadter\'s later account needs it and does not acknowledge it (Wikipedia on <i>I Am a Strange Loop</i>).'],
+      ['other','That the self is an illusion: the dialogue itself treats it both as a hoax and as not an illusion, depending on how one uses the word, so critics on either side can quote it.']
+    ];
+    var btns=Array.prototype.slice.call(document.querySelectorAll('[data-lf]'));
+    var tagTxt={paper:'The paper says',gap:'Left open',other:'Disputed'}, tagCls={paper:'paper',gap:'bg',other:'other'};
+    function show(f){
+      press(btns,f,'data-lf');
+      g('c4-led').innerHTML=L.map(function(x,i){ return {k:x[0],t:x[1],i:i}; }).filter(function(x){ return f==='all'||x.k===f; }).map(function(x){ return '<div class="c4-item" data-testid="c4-led-item-'+x.i+'"><div>'+x.t+'</div><span class="c4-tag '+tagCls[x.k]+'">'+tagTxt[x.k]+'</span></div>'; }).join('');
+    }
+    btns.forEach(function(b){ b.onclick=function(){ show(b.getAttribute('data-lf')); }; });
+    show('all');
+  })();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Durable Value from Fable</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{
+    --accent:var(--plum); --accent-soft:var(--plum-soft);
+    --panel:var(--surface); --panel2:var(--paper-2); --border:var(--line);
+    --text:var(--ink); --muted:var(--ink-mute); --code-bg:#353d5e; --gold:var(--plum);
+  }
+  .conf{display:inline-block; font-family:var(--font-ui); font-size:.62rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.04em; padding:2px 7px; border-radius:10px; margin-right:6px; vertical-align:middle;}
+  .conf.v{background:var(--good-soft); color:var(--good); border:1px solid rgba(67,122,88,.4);}
+  .conf.r{background:var(--warn-soft); color:var(--warn); border:1px solid rgba(201,162,74,.4);}
+  .conf.i{background:var(--cobalt-soft); color:var(--cobalt); border:1px solid rgba(74,111,168,.35);}
+  .factrow{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:.95rem;}
+  .factrow:last-child{border-bottom:none;}
+  .factrow .fk{flex:none; width:130px; color:var(--ink-mute); font-family:var(--font-ui); font-size:.82rem; font-weight:600;}
+
+  /* pyramid */
+  .pyramid{display:flex; flex-direction:column; align-items:center; gap:5px; margin:18px 0;}
+  .tier{border:1px solid var(--line); border-radius:8px; padding:10px 16px; text-align:center; position:relative;}
+  .tier .tn{font-family:var(--font-ui); font-weight:700; font-size:.92rem; color:var(--ink);} .tier .tm{font-family:var(--font-ui); font-size:.74rem; color:var(--ink-mute);}
+  .tier.t1{width:52%; background:var(--plum-soft); border-color:var(--plum);}
+  .tier.t2{width:60%; background:rgba(125,104,179,.14); border-color:var(--plum);}
+  .tier.t3{width:72%; background:var(--cobalt-soft);}
+  .tier.t4{width:84%; background:var(--paper-2);}
+  .tier.t5{width:96%; background:var(--paper-2);}
+  .tier .badge{position:absolute; right:10px; top:50%; transform:translateY(-50%);}
+
+  /* routing flowchart */
+  .route{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .rnode{display:inline-block; background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-family:var(--font-ui); font-size:.86rem; margin:4px;}
+  .rnode.q{border-color:var(--ochre); color:var(--warn);}
+  .rnode.fable{border-color:var(--plum); color:var(--plum); font-weight:600;}
+  .rnode.cheap{border-color:var(--forest); color:var(--forest);}
+  .rline{color:var(--ink-mute); margin:6px 0; font-family:var(--font-ui); font-size:.85rem;}
+
+  /* distill funnel */
+  .distill{display:grid; grid-template-columns:1fr auto 1.4fr auto 1fr; gap:12px; align-items:center; margin:18px 0;}
+  @media(max-width:760px){.distill{grid-template-columns:1fr; text-align:center;}}
+  .dcol{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:14px; font-family:var(--font-ui); font-size:.85rem;}
+  .dcol.left{border-color:var(--plum);} .dcol.right{border-color:var(--forest);}
+  .dcol h4{margin:0 0 6px; font-size:.9rem;} .dcol.left h4{color:var(--plum);} .dcol.right h4{color:var(--forest);}
+  .darrow{text-align:center; color:var(--ink-faint); font-size:1.3rem;}
+  @media(max-width:760px){.darrow{transform:rotate(90deg);}}
+
+  /* artifact grid */
+  .art-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:16px 0;}
+  @media(max-width:700px){.art-grid{grid-template-columns:1fr;}}
+  .art{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; cursor:pointer; transition:border-color .15s; box-shadow:var(--shadow-sm);}
+  .art:hover{border-color:var(--plum);}
+  .art h4{margin:0 0 4px; font-size:1rem; display:flex; align-items:center; gap:8px;}
+  .art .em{font-size:1.1rem;}
+  .art p{margin:0; font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .art .why{display:none; margin-top:8px; font-size:.86rem; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:8px;}
+  .art.open .why{display:block;} .art.open{border-color:var(--plum);}
+  .art .why b{color:var(--forest);}
+
+  /* timeline */
+  .timeline{border-left:2px solid var(--line-strong); margin:16px 0 16px 10px; padding-left:22px;}
+  .tl-item{position:relative; margin-bottom:16px;}
+  .tl-item::before{content:""; position:absolute; left:-29px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--plum); border:2px solid var(--paper);}
+  .tl-item.danger::before{background:var(--vermil);}
+  .tl-item b{color:var(--ink); font-family:var(--font-ui);} .tl-item p{margin:3px 0 0; font-size:.95rem;}
+
+  /* checklist */
+  .checklist{margin:14px 0;}
+  .cli{display:flex; align-items:flex-start; gap:12px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; margin-bottom:8px; cursor:pointer; box-shadow:var(--shadow-sm);}
+  .cli .box{width:20px; height:20px; flex:none; border:1.5px solid var(--line-strong); border-radius:6px; margin-top:2px;
+    display:flex; align-items:center; justify-content:center; color:transparent; font-size:.8rem;}
+  .cli.done .box{background:var(--forest); border-color:var(--forest); color:#fff;}
+  .cli.done .ctext{color:var(--ink-mute); text-decoration:line-through;}
+  .ctext{font-family:var(--font-ui); font-size:.9rem;} .ctext .wk{font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; color:var(--plum); margin-right:8px; font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Durable Value from Fable</h1>
+  <p class="subtitle">How developers use Anthropic's most capable model — and how to bank lasting value from a temporary window.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What Fable 5 actually is</a></li>
+      <li><a href="#sec2">The access timeline</a></li>
+      <li><a href="#sec3">Route hard problems to the smartest model</a></li>
+      <li><a href="#sec4">Distilling intelligence into artifacts</a></li>
+      <li><a href="#sec5">Your limited-window checklist</a></li>
+      <li><a href="#sec6">Sources &amp; honest gaps</a></li>
+    </ol>
+  </div>
+
+  <p style="font-family:var(--font-ui); font-size:.85rem;">Confidence labels used throughout:
+    <span class="conf v">verified</span> stated on Anthropic's own pages ·
+    <span class="conf r">reported</span> third-party outlets only ·
+    <span class="conf i">inference</span> reasoning, not a sourced claim.</p>
+
+  <h2 id="sec1"><span class="num">1</span> What Fable 5 actually is</h2>
+  <div class="card">
+    <div class="factrow"><div class="fk">Identity</div><div><span class="conf v">verified</span> <code class="inline">claude-fable-5</code>, announced June 9 2026 alongside a sibling, Claude Mythos 5.</div></div>
+    <div class="factrow"><div class="fk">Where it sits</div><div><span class="conf v">verified</span> A new "Mythos-class" tier that sits <b>above</b> the Opus class — described as Anthropic's "most capable generally available model." There is no "Claude 5"; Fable/Mythos is a tier, not a version number.</div></div>
+    <div class="factrow"><div class="fk">Fable vs Mythos</div><div><span class="conf v">verified</span> Same underlying model. Difference is safeguards: Fable ships with strong safety classifiers for general release; Mythos has some lifted and is restricted to vetted cyber-defense partners.</div></div>
+    <div class="factrow"><div class="fk">Positioning</div><div><span class="conf v">verified</span> Built for "ambitious, long-running, asynchronous work." It can run in an agent harness for <b>days</b>, plan across stages, delegate to sub-agents, and check its own work. "The longer and more complex the task, the larger Fable 5's lead."</div></div>
+    <div class="factrow"><div class="fk">Strengths</div><div><span class="conf v">verified</span> State-of-the-art on nearly all tested benchmarks; standouts in software engineering, knowledge work, vision, and scientific research. More token-efficient than prior models; writes and validates its own tests.</div></div>
+    <div class="factrow"><div class="fk">Pricing</div><div><span class="conf v">verified</span> $10 / M input tokens, $50 / M output, with the standard 90% prompt-caching discount. Roughly 2× the price of Opus 4.8 ($5/$25).</div></div>
+    <div class="factrow"><div class="fk">Safety fallback</div><div><span class="conf v">verified</span> Runs classifiers for cyber / bio-chem / distillation. When triggered, the turn is auto-answered by Opus 4.8 instead (you're notified, not charged Fable prices). &gt;95% of sessions see no fallback — but benign coding/debugging sometimes gets bounced.</div></div>
+    <div class="factrow"><div class="fk">Data retention</div><div><span class="conf v">verified</span> Using Fable/Mythos <b>requires 30-day data retention</b> for safety monitoring (logged access, deleted after 30 days, not used for training). Matters for confidential/regulated material.</div></div>
+    <div class="factrow"><div class="fk">Context window</div><div><span class="conf r">reported</span> Third parties cite a 1M-token context / 128K max output; Anthropic's pages I reviewed didn't state these on-page. Plausible (matches Opus 4.8's 1M) but confirm before relying on it.</div></div>
+  </div>
+
+  <h3>The model tier, at a glance</h3>
+  <div class="pyramid">
+    <div class="tier t1"><div class="tn">Mythos 5</div><div class="tm">restricted · vetted partners</div><span class="badge">capped</span></div>
+    <div class="tier t2"><div class="tn">Fable 5</div><div class="tm">most capable GA · $10/$50</div><span class="badge">you're here</span></div>
+    <div class="tier t3"><div class="tn">Opus 4.8</div><div class="tm">heavy reasoning · $5/$25</div></div>
+    <div class="tier t4"><div class="tn">Sonnet 5</div><div class="tm">near-Opus at Sonnet cost · the workhorse</div></div>
+    <div class="tier t5"><div class="tn">Haiku 4.5</div><div class="tm">fast &amp; cheap · volume work</div></div>
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> The access timeline</h2>
+  <p>Why "front-load durable work" is the prudent stance: Fable's availability has been genuinely turbulent.</p>
+  <div class="timeline">
+    <div class="tl-item"><b>Jun 9 2026 — launched.</b><p>Included on Pro/Max/Team/Enterprise temporarily at no extra cost.</p></div>
+    <div class="tl-item danger"><b>Jun 12 — suspended entirely.</b><p>US government export controls forced Anthropic to pull access.</p></div>
+    <div class="tl-item"><b>Jun 30 / Jul 1 — redeployed.</b><p>Controls lifted; updated safeguards; subscription access reinstated but capped.</p></div>
+    <div class="tl-item"><b>Jul 20 — made permanent on paid plans.</b> <span class="conf r">reported</span><p>Included in Max &amp; Team Premium at ~50% of usage limits; Pro / Team Standard get it via usage credits only, plus a one-time $100 credit.</p></div>
+  </div>
+  <div class="flag">
+    <strong>Honest read:</strong> depending on which plan your trial rides, "access ends" could mean it drops off entirely, converts to pay-per-use credits ($10/$50 per M tokens), or stays but throttled. All three are plausible given the chaotic rollout. The durable-value strategy below is the right hedge <em>regardless of which happens</em> — so confirm your specific post-trial path, then act as if the clock is ticking.
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Route hard problems to the smartest model</h2>
+  <p class="lead">Fable's own positioning <em>is</em> the usage pattern. The economically rational way to use an expensive, possibly-temporary frontier model is <strong>tiered routing</strong>: cheap models do volume; the frontier model does the few things only it can do.</p>
+  <div class="route">
+    <div class="rnode q">New task — is it hard / ambiguous / high-stakes / long-horizon?</div>
+    <div class="rline">├─ <b>yes</b> →&nbsp; <span class="rnode fable">Fable 5</span></div>
+    <div class="rline">└─ <b>no</b> &nbsp;→&nbsp; <span class="rnode cheap">Sonnet 5 / Haiku 4.5</span></div>
+    <div class="rline" style="margin-top:10px;">↳ side rule: <b>stuck &gt; 1 hour?</b> → escalate to Fable</div>
+  </div>
+  <div class="art-grid">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0; color:var(--plum);">Reserve Fable for</h3>
+      <p style="font-family:var(--font-ui); font-size:.88rem;">Hardest reasoning &amp; ambiguous decomposition · architecture &amp; system design · large cross-cutting refactors/migrations · deep research &amp; synthesis · high-stakes review (the last-line check on a critical PR, contract, or a cheaper model's plan) · vision-heavy verification · long autonomous runs where self-testing compounds.</p>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0; color:var(--forest);">Leave to cheaper models</h3>
+      <p style="font-family:var(--font-ui); font-size:.88rem;">Boilerplate, routine CRUD, well-specified single-file edits, formatting, high-volume classification/extraction, first drafts, chatty iteration — anything latency- or cost-sensitive. Sonnet 5 is the default workhorse.</p>
+    </div>
+  </div>
+  <div class="analogy">
+    <strong>The mental model:</strong> frontier intelligence is worth paying for on <em>irreversible, high-leverage, or genuinely hard</em> decisions, and wasteful on <em>reversible, cheap, routine</em> ones. Heuristic: "if getting it wrong is expensive to undo, or I've been stuck an hour, escalate. Otherwise, don't." <span class="conf i">inference</span> Because Fable is token-efficient and often one-shots work cheaper models grind through, the naive "2× the price of Opus" comparison overstates real cost on hard tasks — fewer turns and retries offset the premium. On easy tasks it's pure waste.
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Distilling intelligence into artifacts</h2>
+  <p class="lead">This is the heart of it. A temporary window of superior intelligence should be spent producing <strong>permanent assets, not disposable answers</strong>. A great answer evaporates; a great reusable artifact compounds.</p>
+  <div class="distill">
+    <div class="dcol left"><h4>Fable (temporary)</h4>Superior reasoning, but access is rationed and may end.</div>
+    <div class="darrow">→</div>
+    <div class="dcol"><h4>Durable artifacts you own</h4>prompt libraries · CLAUDE.md / skills · playbooks · decision frameworks · eval rubrics · scaffolds · ADRs · docs</div>
+    <div class="darrow">→</div>
+    <div class="dcol right"><h4>Value persists</h4>Cheaper models + your team keep benefiting <b>after</b> access ends.</div>
+  </div>
+  <p style="font-family:var(--font-ui); font-size:.92rem;">The organizing principle: spend Fable tokens on things that <b>(a)</b> are hard to get right, <b>(b)</b> you'll reuse many times, and <b>(c)</b> a cheaper model can faithfully <em>execute</em> or <em>apply</em> later even if it couldn't <em>author</em> them. A lesser model following an excellent playbook or rubric performs far above its unaided level &mdash; you're buying a permanent capability uplift. Click each artifact for why it lasts.</p>
+  <div class="art-grid" id="artifacts"></div>
+  <div class="analogy">
+    <strong>The one habit that matters most:</strong> whenever Fable does something impressive in a chat, immediately ask it to <em>"generalize this into a reusable template / checklist / skill I can use with any model."</em> Convert every good <em>instance</em> into a durable <em>pattern</em>. That's the difference between "I had a great session" and "I permanently leveled up my workflow."
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Your limited-window checklist</h2>
+  <p>Prioritized so the highest-leverage, least-reproducible work happens first. Tick these off as you go &mdash; saved in this browser.</p>
+  <div class="checklist" id="checklist"></div>
+
+  <h2 id="sec6"><span class="num">6</span> Sources &amp; honest gaps</h2>
+  <p class="src">Anthropic — <a href="https://www.anthropic.com/news/claude-fable-5-mythos-5" target="_blank">Claude Fable 5 &amp; Mythos 5 launch</a> · <a href="https://www.anthropic.com/news/redeploying-fable-5" target="_blank">Redeploying Fable 5</a></p>
+  <p class="src">Anthropic Support — <a href="https://support.claude.com/en/articles/15424964-claude-fable-5-on-your-plan" target="_blank">Fable 5 on your plan</a> · <a href="https://support.claude.com/en/articles/15363606" target="_blank">Why Claude switched models (fallback)</a></p>
+  <p class="src">Anthropic — <a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank">Models overview</a></p>
+  <p class="src">Coverage — <a href="https://simonwillison.net/2026/Jul/18/claude-make-fable-5-permanent/" target="_blank">Simon Willison</a> · <a href="https://www.forbes.com/sites/tylerroush/2026/07/13/ai-model-wars-anthropic-extends-fable-access-again-after-openais-sol-release/" target="_blank">Forbes</a> · <a href="https://caylent.com/blog/claude-fable-5-anthropics-first-public-mythos-class-model" target="_blank">Caylent</a></p>
+  <div class="flag" style="margin-top:16px;">
+    <strong>What could NOT be firmly verified:</strong> exact context-window / max-output numbers (reported, not on Anthropic's pages I read), precise benchmark scores (shown as an image + partner evals, not extracted), and knowledge cutoff (not found). Dramatic customer anecdotes (e.g. a 2-month migration done "in a day") are vendor-curated testimonials — credible directionally, not independent benchmarks. Don't quote specific percentages you haven't seen yourself.
+  </div>
+
+  <footer>Durable Value from Fable · part of your Study Hub</footer>
+</div>
+
+<script>
+/* ---------- artifact gallery ---------- */
+const ARTIFACTS = [
+  {em:"🧩", name:"Reusable prompt library", what:"Battle-tested, parameterized prompts for recurring tasks, refined with Fable until excellent.",
+    why:"<b>Why it lasts:</b> prompts are model-agnostic text. A prompt Fable perfected keeps lifting Haiku/Sonnet/Opus output indefinitely. Arguably the highest-ROI artifact. Have Fable critique and rewrite its own prompts."},
+  {em:"📗", name:"Distilled playbooks / SOPs", what:"Step-by-step operating procedures for complex processes, with failure modes and recovery steps.",
+    why:"<b>Why it lasts:</b> encodes hard-won judgment into a repeatable process any teammate or cheaper model can follow. Process knowledge doesn't expire when the model does."},
+  {em:"⚖️", name:"Decision frameworks & rubrics", what:"Explicit criteria for recurring judgment calls — build vs buy, which datastore, is this PR mergeable.",
+    why:"<b>Why it lasts:</b> turns a smart model's judgment into a checklist you apply to hundreds of future decisions."},
+  {em:"📌", name:"CLAUDE.md / skills / context files", what:"Project- and org-specific files that teach ANY model your conventions, architecture, glossary, and gotchas.",
+    why:"<b>Why it lasts:</b> the most literal form of banking intelligence. A rich context file authored by Fable permanently raises the floor of every future session — even ones run on Sonnet or Haiku."},
+  {em:"🗺️", name:"Reference docs & architecture maps", what:"The documentation you never had time for — system overviews, data-flow diagrams, 'how this subsystem works.'",
+    why:"<b>Why it lasts:</b> disproportionately valuable when authored by something that can hold a large system in its head. Especially for legacy/undocumented code."},
+  {em:"🏛️", name:"Architecture Decision Records", what:"For each big design choice: what was decided, why, alternatives considered, trade-offs.",
+    why:"<b>Why it lasts:</b> prevents re-litigating decisions and preserves rationale after people (and models) move on. Fable excels at the reasoning-heavy 'why / alternatives' section."},
+  {em:"🧱", name:"Scaffolds & reference implementations", what:"Golden-path templates: a reference service, a correct example of your hardest pattern (auth, migrations).",
+    why:"<b>Why it lasts:</b> a correct reference is copied hundreds of times and lets cheaper models pattern-match to a known-good template."},
+  {em:"✅", name:"Eval rubrics & test harnesses", what:"Eval suites and grading rubrics that define 'what good looks like,' plus golden datasets.",
+    why:"<b>Why it lasts:</b> this is how you keep CHEAPER models honest later. Use Fable once to define the bar, then run cheap models against it indefinitely — the professional way to downgrade models without downgrading quality."},
+  {em:"🎓", name:"Curricula & 'expert-in-a-box'", what:"Deep teaching artifacts — a learning path for a hard topic, an annotated primer, an FAQ knowledge base.",
+    why:"<b>Why it lasts:</b> learning transfers to YOU. Anything Fable teaches you that you internalize survives independent of any model — the most durable value of all."},
+  {em:"🚧", name:"The big blocked deliverable", what:"The gnarly migration, the from-scratch prototype, the deep analysis you've been putting off.",
+    why:"<b>Why it lasts:</b> you can't save model access, but you can convert it into finished work that persists. If it's genuinely hard and you have the window, do it now with the best tool."}
+];
+const ag = document.getElementById("artifacts");
+ARTIFACTS.forEach(a => {
+  const el = document.createElement("div");
+  el.className = "art";
+  el.innerHTML = '<h4><span class="em">'+a.em+'</span>'+a.name+'</h4><p>'+a.what+'</p><div class="why">'+a.why+'</div>';
+  el.addEventListener("click", () => el.classList.toggle("open"));
+  ag.appendChild(el);
+});
+
+/* ---------- checklist with localStorage ---------- */
+const CHECK = [
+  {wk:"Week 1", t:"Author/upgrade your CLAUDE.md + skills/context files with Fable reading your actual codebase & docs."},
+  {wk:"Week 1", t:"Build the prompt library — have Fable write and self-critique prompts for your 10 most common recurring tasks."},
+  {wk:"Week 1", t:"Define evaluation rubrics + golden test sets so you can safely run cheaper models afterward and know quality held."},
+  {wk:"Week 2", t:"Run the big migration / refactor / prototype you've been blocked on — long-horizon, high-context work is Fable's edge."},
+  {wk:"Week 2", t:"Generate the missing documentation & architecture maps for your most opaque systems."},
+  {wk:"Week 2", t:"Write ADRs for pending or undocumented big decisions."},
+  {wk:"Ongoing", t:"Route ruthlessly: only send Fable the hard/ambiguous/high-stakes/long tasks; keep routine work on Sonnet/Haiku to preserve budget."},
+  {wk:"Ongoing", t:"Convert instances to patterns: end impressive sessions with 'turn this into a reusable template/skill.'"},
+  {wk:"Ongoing", t:"Learn deliberately — ask Fable to teach you its reasoning, not just hand you answers."},
+  {wk:"Housekeeping", t:"Save everything to your own repo/knowledge base — don't leave value stranded in chat history."},
+  {wk:"Housekeeping", t:"Mind the 30-day retention requirement — don't run confidential/regulated material through Fable if it conflicts with obligations."},
+  {wk:"Housekeeping", t:"Confirm your post-trial path (dropped vs credits vs throttled) so you know your real deadline."}
+];
+const CKEY = "fable-checklist-v1";
+let cstate = {};
+try{ cstate = JSON.parse(localStorage.getItem(CKEY)) || {}; }catch(e){ cstate = {}; }
+const cl = document.getElementById("checklist");
+CHECK.forEach((c,i) => {
+  const el = document.createElement("div");
+  el.className = "cli" + (cstate[i] ? " done" : "");
+  el.innerHTML = '<div class="box">✓</div><div class="ctext"><span class="wk">'+c.wk+'</span>'+c.t+'</div>';
+  el.addEventListener("click", () => {
+    cstate[i] = !cstate[i]; el.classList.toggle("done");
+    try{ localStorage.setItem(CKEY, JSON.stringify(cstate)); }catch(e){}
+  });
+  cl.appendChild(el);
+});
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

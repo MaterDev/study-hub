@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Netcode Models</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--plum); --accent-soft:var(--plum-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .model-tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:0;}
+  .mtab{background:var(--paper-2); border:1px solid var(--line); border-bottom:none; border-radius:8px 8px 0 0; padding:9px 15px; cursor:pointer; font-family:var(--font-ui); font-size:.84rem; color:var(--ink-mute);}
+  .mtab.active{background:var(--surface); color:var(--ink); font-weight:600;}
+  .mpanel{display:none; background:var(--surface); border:1px solid var(--line); border-radius:0 10px 10px 10px; padding:18px;}
+  .mpanel.active{display:block;}
+  .mpanel h4{margin:0 0 8px;}
+  .loopdiag{display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; margin:12px 0; font-family:var(--font-ui); font-size:.76rem;}
+  .ln{border:1.5px solid var(--line-strong); border-radius:9px; padding:8px 10px; text-align:center; min-width:74px; background:var(--paper-2);}
+  .ln.host{border-color:var(--cobalt); color:var(--cobalt);} .ln.guest{border-color:var(--forest); color:var(--forest);} .ln.net{border-color:var(--plum); color:var(--plum); background:var(--plum-soft);}
+  .ln b{display:block; color:var(--ink);}
+  .ar{color:var(--ink-faint);}
+  .verdict-pill{display:inline-block; font-family:var(--font-ui); font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:3px 9px; border-radius:999px; margin-left:6px;}
+  .vp-good{background:var(--good-soft); color:var(--good);} .vp-bad{background:var(--bad-soft); color:var(--bad);} .vp-mid{background:var(--warn-soft); color:var(--warn);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Netcode Models</h1>
+  <p class="subtitle">The three ways to keep two machines agreeing on one fight — and why fighting games are the hardest case.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The core problem: two clocks, one truth</a></li>
+      <li><a href="#sec2">The three models (interactive)</a></li>
+      <li><a href="#sec3">Side-by-side comparison</a></li>
+      <li><a href="#sec4">The host-authoritative loop, step by step</a></li>
+      <li><a href="#sec5">Why fighting games are the brutal case</a></li>
+      <li><a href="#sec6">Which model your spike tests, and why</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The core problem: two clocks, one truth</h2>
+  <p class="lead">Two players, two computers, ~20&ndash;100 milliseconds of network between them. Both must see the <em>same fight</em> &mdash; same positions, same hits, same winner &mdash; despite the fact that any message between them arrives already out of date. "Netcode" is the family of strategies for hiding that delay. There is no strategy that removes it; you only get to choose <em>where the pain goes</em>.</p>
+  <div class="analogy">
+    <span class="emoji">🛰️</span><strong>Analogy:</strong> It's a conversation over a satellite link with a noticeable delay. You can (a) both agree to speak slowly so nobody talks over anyone (lockstep), (b) each talk normally and constantly apologize/rewind when you realize you clashed (rollback), or (c) let one person be the moderator whose version is final and the other just listens a beat behind (host-authoritative). Same delay; very different feel.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> The three models</h2>
+  <p>Click each. The diagram shows where the simulation runs and where the delay lands.</p>
+  <div class="stage">
+    <div class="model-tabs">
+      <button class="mtab active" data-m="delay">Delay-based</button>
+      <button class="mtab" data-m="rollback">Rollback (GGPO)</button>
+      <button class="mtab" data-m="host">Host-authoritative</button>
+    </div>
+
+    <div class="mpanel active" id="m-delay">
+      <h4>Delay-based lockstep <span class="verdict-pill vp-mid">sluggish</span></h4>
+      <div class="loopdiag">
+        <div class="ln guest"><b>You</b>press button</div><div class="ar">→</div>
+        <div class="ln net"><b>wait</b>for opponent's input</div><div class="ar">→</div>
+        <div class="ln"><b>both sims</b>step together</div>
+      </div>
+      <p style="font-size:.92rem;">Neither machine advances a frame until <em>both</em> players' inputs for that frame have arrived. Both run the identical simulation in lockstep, so they never disagree. The cost: your own button doesn't take effect until the opponent's input arrives &mdash; so <strong>everything you do feels delayed by the ping.</strong> Deprecated for modern fighting games because high or variable ping makes it unplayable.</p>
+    </div>
+
+    <div class="mpanel" id="m-rollback">
+      <h4>Rollback (GGPO-style) <span class="verdict-pill vp-good">feels local</span></h4>
+      <div class="loopdiag">
+        <div class="ln guest"><b>You</b>press button</div><div class="ar">→</div>
+        <div class="ln"><b>act instantly</b>predict opponent</div><div class="ar">→</div>
+        <div class="ln net"><b>input arrives</b>wrong? rewind + replay</div>
+      </div>
+      <p style="font-size:.92rem;">Your input takes effect <strong>immediately</strong> &mdash; the game <em>predicts</em> the opponent will keep doing what they were doing. When their real input arrives and differs, the game silently <em>rewinds</em> to that frame, replays the last few frames with the correct input, and catches up &mdash; all within one frame, invisibly. This is the FGC gold standard because it feels offline. The catch: it must re-simulate past frames, which demands a perfectly reproducible, restorable sim (Lesson 7).</p>
+    </div>
+
+    <div class="mpanel" id="m-host">
+      <h4>Host-authoritative / state-relay <span class="verdict-pill vp-mid">cheap to build</span></h4>
+      <div class="loopdiag">
+        <div class="ln host"><b>Host</b>runs the only sim</div><div class="ar">→</div>
+        <div class="ln net"><b>snapshot</b>ships state</div><div class="ar">→</div>
+        <div class="ln guest"><b>Guest</b>renders it, no sim</div>
+      </div>
+      <p style="font-size:.92rem;">Only <strong>one machine (the host) runs the simulation.</strong> Every tick it captures a <em>snapshot</em> of the fight state and ships it; the guest just <em>draws</em> what it receives and sends its button presses back to the host. Dead simple, and it needs <strong>no</strong> reproducibility &mdash; the guest never simulates, so it can't diverge. The cost lands squarely on the guest: everything it sees is delayed by a full round-trip plus buffering. This is the model your spike is testing.</p>
+    </div>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Side-by-side comparison</h2>
+  <p>Straight from your spike's research table &mdash; the tradeoffs that decide which model a game can afford:</p>
+  <table>
+    <tr><th></th><th>Delay-based</th><th>Rollback (GGPO)</th><th>Host-authoritative</th></tr>
+    <tr><td><b>Needs determinism?</b></td><td>yes</td><td class="bad">yes, bit-for-bit</td><td class="good">no</td></tr>
+    <tr><td><b>Snapshot / restore?</b></td><td>no</td><td class="bad">snapshot + restore every tick</td><td>snapshot only</td></tr>
+    <tr><td><b>Guest feel</b></td><td class="mid">sluggish with ping</td><td class="good">local-instant</td><td class="bad">eats RTT + buffer</td></tr>
+    <tr><td><b>FGC acceptance</b></td><td>deprecated</td><td class="good">gold standard</td><td>rare in FGC</td></tr>
+    <tr><td><b>Retrofit cost</b></td><td class="good">low</td><td class="bad">very high</td><td class="good">low–moderate</td></tr>
+  </table>
+  <div class="flag">
+    Read the columns as a trade: <strong>rollback</strong> gives the best <em>feel</em> but demands the most <em>engineering</em> (a fully deterministic, restorable sim). <strong>Host-authoritative</strong> is the cheapest to <em>build</em> but pushes the worst <em>feel</em> onto the guest. Delay-based is easy but plays poorly. There's no free lunch &mdash; only a choice of which bill to pay.
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> The host-authoritative loop, step by step</h2>
+  <p>Since this is the model your spike measures, here's the exact round-trip a single guest button-press takes:</p>
+  <ol>
+    <li><strong>Guest presses a button.</strong> Nothing visible happens locally yet &mdash; the guest doesn't simulate.</li>
+    <li>The input is sent to the <strong>host</strong> over the transport.</li>
+    <li>The host feeds that input into the <em>real</em> simulation (through a <code class="inline">RemoteInput</code> seam &mdash; Lesson 6), advances a tick, and resolves what happened.</li>
+    <li>The host captures a <strong>snapshot</strong> of the new state and ships it back.</li>
+    <li>The guest receives the snapshot and <strong>renders</strong> it &mdash; now the button's effect finally appears on the guest's screen.</li>
+  </ol>
+  <p>That's a full network round-trip <em>plus</em> a smoothing buffer before the guest sees its own action. On the host's screen everything is instant; the asymmetry is the guest's burden. Lesson 6 measures exactly how many frames of felt lag this adds &mdash; and whether it's tolerable.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Why fighting games are the brutal case</h2>
+  <p>Most online games (shooters, MMOs) use host/server-authoritative state-relay happily. Fighting games are uniquely hostile to it, for two reasons your research spells out:</p>
+  <div class="pitfall"><div class="icon">🎯</div><div><b>Frame-perfect interactions.</b> Throws, throw-techs, and 1-frame links depend on reacting within ~16ms. A shooter can paper over lag with "server rewind" (it decides you hit if your crosshair was on target when <em>you</em> fired). A fighting game can't &mdash; a block that's one frame late is just a hit.</div></div>
+  <div class="pitfall"><div class="icon">⏪</div><div><b>You interpolate in the past.</b> To smooth out network jitter, the guest deliberately renders the received state a bit <em>behind</em> real time (an "interpolation buffer" &mdash; Lesson 5). So the guest is hitting the opponent <em>where they were</em>, ~100ms ago. Shooters tolerate this; frame-1 fighting-game hitboxes cannot.</div></div>
+  <div class="analogy">
+    This is why the fighting-game community adopted <em>rollback</em> so fiercely: it's the only model that makes your own inputs feel instant while staying in sync. Host-authoritative is "the cheap way to ship," but it may deliver a guest experience past the point where a fighting game still feels fair &mdash; which is the exact question your spike sets out to measure rather than assume.
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> Which model your spike tests, and why</h2>
+  <p>Your multiplayer plan already <em>chose</em> host-authoritative (Decision 1) &mdash; on paper &mdash; because rollback's determinism requirement looked too expensive to retrofit. The spike's job is to <strong>prove or disprove that choice with real measurement</strong> instead of theory. So it:</p>
+  <ul>
+    <li>Builds the <em>actual</em> host-authoritative loop (real sim → snapshot → transport → guest render) rather than a toy.</li>
+    <li>Measures the guest's felt input lag against the fighting-game "feel ceiling" (Lesson 6) &mdash; the number that decides if host-authoritative is good enough.</li>
+    <li><em>Separately</em> measures the "determinism cost" (Lesson 7) &mdash; i.e. how expensive rollback would be to reopen &mdash; so the decision is a real cost/benefit, not a guess.</li>
+  </ul>
+  <p>The finding, after two review passes (still pending real two-machine runs): <strong>host-authoritative is being kept</strong> &mdash; nothing reopened rollback. The early "guest feel is past the ceiling" alarm turned out to be largely a <em>config + measurement artifact</em> (Lessons 6 &amp; 8): at the project's real 20&ndash;60ms target the guest feel is ~2&ndash;3.5 frames &mdash; borderline-acceptable, not the 6+ the pessimistic default implied. And crucially, delay-based lockstep is <em>not</em> a cheaper escape &mdash; it carries the <strong>same determinism prerequisite as rollback</strong> (see the table: both need it). So the real decision is "same-region tolerance vs. a rollback investment," and the honest next step is to fix the measurement instrument, then take one trustworthy reading. Now you know exactly what those words mean.</p>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li>Three models: <b>delay-based</b> (simple, sluggish), <b>rollback</b> (best feel, needs a deterministic/restorable sim), <b>host-authoritative</b> (cheapest to build, worst guest feel).</li>
+    <li>Netcode never removes delay &mdash; it only chooses <b>where the pain lands</b>.</li>
+    <li>Fighting games are the hardest case: frame-perfect interactions + interpolating in the past. It's why the FGC standardized on rollback.</li>
+    <li>Your spike builds the real host-authoritative loop to test if it's good enough, and separately prices what rollback would cost.</li>
+  </ul>
+  <p class="src">Infil — <a href="https://words.infil.net/w02-netcode-p5.html" target="_blank">Netcode explained</a> (rollback, retrofit cost)</p>
+  <p class="src">Snapnet — <a href="https://snapnet.dev/blog/netcode-architectures-part-3-snapshot-interpolation/" target="_blank">Snapshot interpolation</a> · Gambetta — <a href="https://www.gabrielgambetta.com/entity-interpolation.html" target="_blank">Entity interpolation</a></p>
+  <p class="src">Your spike — <code class="inline">research.md §C</code>, <code class="inline">HostAuthoritativeLoopDiagram.tsx</code></p>
+
+  <footer>Netcode Models · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+document.querySelectorAll('.mtab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.mtab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('m-'+t.dataset.m).classList.add('active');
+}));
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

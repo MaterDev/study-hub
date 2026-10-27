@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plugins and the Ecosystem</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); --accent-text:#2c4d82; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); min-width:0;}
+  .ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-ui); text-transform:none; letter-spacing:0; max-width:100%;}
+  .chk{display:flex; gap:6px; align-items:center; font-family:var(--font-ui); font-size:.8rem; color:var(--ink);} .chk input{accent-color:var(--cobalt);}
+  .pl-src{font-family:var(--font-mono); font-size:.78rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 14px; overflow-x:auto; line-height:1.6; white-space:pre;}
+  .pl-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.pl-two{grid-template-columns:minmax(0,1fr);}}
+  .pl-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .pl-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .pl-note{font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .pl-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .pl-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:6px 10px; font:700 .76rem var(--font-ui); cursor:pointer;} .pl-seg button.on{background:var(--cobalt); color:#fff;}
+  .pl-list{display:flex; flex-direction:column; gap:6px; margin:0 0 8px; padding:0; list-style:none;}
+  .pl-li{display:flex; justify-content:space-between; gap:8px; border:2px solid var(--line-strong); border-radius:8px; padding:6px 10px; background:var(--paper); font-family:var(--font-ui); font-size:.82rem; color:var(--ink);}
+  .pl-li.off{opacity:.55;}
+  .pl-bar{height:14px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden;} .pl-bar i{display:block; height:100%; background:var(--forest); width:0; transition:width .2s;}
+  .pl-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px;}
+  .pl-big{font:800 1.5rem var(--font-ui); color:var(--ink);}
+  .pl-st{font-weight:800; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); display:inline-block;} .pl-st.ok{border-color:var(--forest); background:var(--forest-soft);} .pl-st.mid{border-color:var(--ochre); background:var(--ochre-soft);} .pl-st.no{border-color:var(--vermil); background:var(--vermil-soft);}
+  .pl-tbl{width:100%; border-collapse:collapse; font-family:var(--font-ui); font-size:.8rem; color:var(--ink);} .pl-tbl th{font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); text-align:left; padding:4px 6px;} .pl-tbl td{border-top:1px solid var(--line); padding:6px; vertical-align:middle; overflow-wrap:anywhere;}
+  .pl-tblwrap{overflow-x:auto;}
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tg{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .78rem var(--font-ui); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--cobalt);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em; font-family:var(--font-ui);} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Plugins and the Ecosystem</h1>
+  <p class="subtitle">What a plugin is, where a feature belongs (plugin, theme or must-use plugin), the kinds of plugin you meet on client sites, how to vet one before installing it, how to find the one that is breaking a site, and who owns the licence.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">A plugin is a package of PHP (interactive)</a></li>
+      <li><a href="#sec2">Plugin, theme or must-use? (interactive)</a></li>
+      <li><a href="#sec3">The categories you meet in client work (interactive)</a></li>
+      <li><a href="#sec4">Vetting a plugin before you install it (interactive)</a></li>
+      <li><a href="#sec5">When the site breaks: plugin bisection (interactive)</a></li>
+      <li><a href="#sec6">Licences, renewals and the audit sheet (interactive)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> A plugin is a package of PHP</h2>
+  <p class="lead">The plugin handbook describes plugins as packages of code that extend the core functionality of WordPress. They are made of PHP and can include other assets such as images, CSS and JavaScript. You already know the mechanism from the hooks lesson: a plugin is mostly a place to put <code class="inline">add_action()</code> and <code class="inline">add_filter()</code> calls that do not belong to a particular theme.</p>
+  <p>The smallest possible plugin is one PHP file in <code class="inline">wp-content/plugins</code> with a header comment. The header reference says the only required field is <b>Plugin Name</b>; the others (version, author, licence, minimum WordPress and PHP versions and so on) are optional but are what you read when judging a plugin. Remove the name below and see what WordPress would show.</p>
+  <div class="stage" data-testid="plugin-header">
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="ph-name" checked data-testid="ph-name"> Plugin Name</label>
+      <label class="chk"><input type="checkbox" id="ph-ver" checked data-testid="ph-version"> Version</label>
+      <label class="chk"><input type="checkbox" id="ph-req" checked data-testid="ph-requires"> Requires at least / Requires PHP</label>
+      <label class="chk"><input type="checkbox" id="ph-lic" checked data-testid="ph-license"> License</label>
+    </div>
+    <div class="pl-two">
+      <div class="pl-src" id="ph-code" data-testid="ph-code"></div>
+      <div class="pl-box"><h5>PLUGINS SCREEN</h5><div id="ph-out" data-testid="ph-out"></div></div>
+    </div>
+    <div class="pl-note" id="ph-note" data-testid="ph-note"></div>
+  </div>
+  <p class="small">The plugin and its file names here are made up. Only the header fields and the "Plugin Name is required" rule come from the handbook; what the Plugins screen shows for each is my simplified picture.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Plugin, theme or must-use?</h2>
+  <p>The usual rule of thumb: if the feature should still exist after the theme is changed, it belongs in a plugin. Custom post types and fields for the client's data are the classic case (the content-types lesson raised this). A theme should own presentation. Registering content types in <code class="inline">functions.php</code> means the content vanishes from the admin the day the theme changes.</p>
+  <p>A third home exists. <b>Must-use plugins</b> live in <code class="inline">wp-content/mu-plugins</code>. They load automatically, before normal plugins, in alphabetical order, and cannot be switched off from the admin: you delete the file. The handbook lists the trade-offs: no activation hooks run, there are no update notices, and only PHP files directly in that folder load (a subfolder needs a small loader file). Choose the home for each feature.</p>
+  <div class="stage" data-testid="placement-picker">
+    <div class="scn" id="pp-box" data-testid="pp-box"></div>
+    <div class="scn-nav"><button class="btn" id="pp-next" data-testid="pp-next" disabled>Next →</button><span class="small" id="pp-score" data-testid="pp-score"></span></div>
+  </div>
+  <p class="small">The scenarios and their "best home" answers are my own teaching judgement applying the handbook's description; real projects argue about edge cases.</p>
+
+  <h2 id="sec3"><span class="num">3</span> The categories you meet in client work</h2>
+  <p>Most client sites carry plugins from the same handful of jobs. The point of knowing the categories is to recognise <b>overlap</b> (two plugins doing the same job fight each other) and to know what each kind of plugin touches. Pick a category.</p>
+  <div class="stage" data-testid="category-explorer">
+    <div class="pl-seg" id="cx-tabs"></div>
+    <div class="pl-two" style="margin-top:12px">
+      <div class="pl-box"><h5>WHAT IT DOES</h5><div id="cx-does" data-testid="cx-does"></div></div>
+      <div class="pl-box"><h5>WHAT TO WATCH</h5><div id="cx-watch" data-testid="cx-watch"></div></div>
+    </div>
+  </div>
+  <p class="small">WooCommerce's developer documentation describes it as a customizable, open-source eCommerce platform built on WordPress that can sell physical goods, digital downloads, subscriptions, content and bookings. The "what to watch" notes for every category are my own practical synthesis, not handbook statements.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Vetting a plugin before you install it</h2>
+  <p>Every plugin is a dependency you now maintain. Before installing, read its signals. The WordPress.org plugin directory shows many of them on the plugin's page, and its guidelines (GPL-compatible code, no trialware, no tracking without consent, no loading executable code from unapproved sources) set a baseline for plugins listed there. Premium plugins sold elsewhere are not covered by those guidelines, so more of the checking is yours. Below, set the signals for a made-up plugin and read the verdict. The weights are illustrative, not a standard.</p>
+  <div class="stage" data-testid="vetting-checklist">
+    <div class="row"><span class="small">Load an example:</span>
+      <button class="btn sec" data-ex="good" data-testid="vet-example-good">Healthy</button>
+      <button class="btn sec" data-ex="stale" data-testid="vet-example-stale">Quiet for years</button>
+      <button class="btn sec" data-ex="risky" data-testid="vet-example-risky">Popular but risky</button></div>
+    <div class="pl-grid" id="vt-controls"></div>
+    <div class="pl-two" style="margin-top:12px">
+      <div class="pl-box"><h5>SCORE</h5><div class="pl-big" id="vt-score" data-testid="vt-score"></div><div class="pl-bar"><i id="vt-bar"></i></div><div style="margin-top:8px"><span class="pl-st" id="vt-verdict" data-testid="vt-verdict"></span></div></div>
+      <div class="pl-box"><h5>WHY</h5><div id="vt-why" data-testid="vt-why"></div></div>
+    </div>
+  </div>
+  <p class="small">Active-install counts are a popularity signal, not a quality signal, so the checklist keeps them out of the score on purpose. The signal list is my synthesis of common practice. "Tested up to" and the support forum are fields the directory shows; I did not check each against its current page layout.</p>
+
+  <h2 id="sec5"><span class="num">5</span> When the site breaks: plugin bisection</h2>
+  <p>A white screen, a broken layout or a JavaScript error appeared after an update. The standard way to find a plugin culprit is elimination: on a staging copy, deactivate plugins, test, reactivate some, test again. Doing it one plugin at a time takes up to ten tests for ten plugins. Splitting the active set in half each time takes four. Here the site has ten plugins and exactly one is the cause (it changes each round). Switch plugins off, press <b>Test the site</b>, and name the culprit when you are sure.</p>
+  <div class="stage" data-testid="bisection-sim">
+    <div class="pl-two">
+      <div>
+        <ul class="pl-list" id="bs-list" data-testid="bs-list"></ul>
+        <div class="row"><button class="btn sec" id="bs-all-off" data-testid="bs-all-off">Deactivate all</button><button class="btn sec" id="bs-all-on" data-testid="bs-all-on">Activate all</button></div>
+      </div>
+      <div>
+        <div class="pl-box"><h5>SITE STATUS</h5><div class="pl-big" id="bs-status" data-testid="bs-status">Not tested yet</div><div class="small" id="bs-tests" data-testid="bs-tests">Tests run: 0</div></div>
+        <div class="row"><button class="btn" id="bs-test" data-testid="bs-test">Test the site</button>
+          <label class="ctl">culprit is<select id="bs-guess" data-testid="bs-guess"></select></label>
+          <button class="btn sec" id="bs-submit" data-testid="bs-submit">Name it</button>
+          <button class="btn sec" id="bs-new" data-testid="bs-new">New site</button></div>
+        <div class="pl-note" id="bs-note" data-testid="bs-note"></div>
+      </div>
+    </div>
+  </div>
+  <p class="small">Real life is messier than this model: sometimes two plugins conflict only together (so the problem persists until both are off), sometimes the theme is the cause (switch to a default theme as well), and you do this on a staging copy so visitors never see it. A broken plugin can also lock you out of the admin; renaming its folder over SFTP deactivates it. That last point and the staging advice are standard practice from background knowledge rather than from the pages cited below.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Licences, renewals and the audit sheet</h2>
+  <p>Plugins in the directory must be GPL-compatible, so the code itself is free to use. Paid plugins usually sell something else: updates, support and sometimes a licence key that stops updates when it expires. Ask before you buy: whose account holds the licence, who gets the renewal email, and what happens to the site when it lapses (it keeps running, but you stop receiving updates, which is a security matter). Put client-critical licences in the <b>client's</b> name where you can, and record them in the handover. That advice is my own practice-based synthesis.</p>
+  <p>The audit sheet below is a made-up site. Untick a plugin to remove it and watch the totals. The costs and risk scores are illustrative numbers, not real products.</p>
+  <div class="stage" data-testid="audit-sheet">
+    <div class="pl-tblwrap"><table class="pl-tbl"><thead><tr><th>Keep</th><th>Plugin (made up)</th><th>Job</th><th>Per year</th><th>Risk</th></tr></thead><tbody id="au-rows"></tbody></table></div>
+    <div class="pl-grid" style="margin-top:12px">
+      <div class="pl-box"><h5>PLUGINS KEPT</h5><div class="pl-big" id="au-count" data-testid="au-count"></div></div>
+      <div class="pl-box"><h5>ANNUAL COST</h5><div class="pl-big" id="au-cost" data-testid="au-cost"></div></div>
+      <div class="pl-box"><h5>RISK POINTS</h5><div class="pl-big" id="au-risk" data-testid="au-risk"></div></div>
+    </div>
+    <div class="pl-note" id="au-note" data-testid="au-note"></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Every plugin is a dependency you now maintain.</b> Fewer, better plugins beat many.</li>
+    <li><b>A plugin is PHP in a folder with a header;</b> only Plugin Name is required, but the other fields are what you read when judging it.</li>
+    <li><b>Features that must survive a theme change go in a plugin;</b> must-use plugins are always on, load first, and get no update notices.</li>
+    <li><b>Vet before you install:</b> update activity, support, compatibility, code and licence terms, not install counts.</li>
+    <li><b>Find a conflict by elimination,</b> halving the active set, on a staging copy.</li>
+    <li><b>Know who owns the licence</b> and who receives the renewal.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> <a href="https://developer.wordpress.org/plugins/intro/what-is-a-plugin/" target="_blank">What is a plugin</a> · <a href="https://developer.wordpress.org/plugins/plugin-basics/header-requirements/" target="_blank">Header requirements</a> · <a href="https://developer.wordpress.org/advanced-administration/plugins/mu-plugins/" target="_blank">Must-use plugins</a> · <a href="https://developer.wordpress.org/plugins/plugin-basics/best-practices/" target="_blank">Plugin best practices</a> · <a href="https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/" target="_blank">Detailed plugin guidelines</a> · <a href="https://developer.woocommerce.com/docs/" target="_blank">WooCommerce developer docs</a> · <a href="https://developer.wordpress.org/advanced-administration/security/hardening/" target="_blank">Hardening WordPress</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> Confirmed from those pages: the plugin definition, the header fields, the must-use behaviour, the directory guideline themes, WooCommerce's one-line description, and the advice to delete unused plugins and install from trusted sources. Not confirmed from a source and stated as my own synthesis or background knowledge: the plugin-versus-theme rule of thumb, the vetting signals and weights, the category notes, bisection practice, folder-rename deactivation, licence-ownership advice, and all costs and scores in the demos. Escaping habits from lesson 2.1 apply equally to plugin code you review.</p>
+
+  <footer>Plugins and the Ecosystem · WordPress for Front-End &amp; UI Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const g=id=>document.getElementById(id);
+const NL=String.fromCharCode(10);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------- header demo ---------- */
+(function(){
+  function draw(){
+    const n=g('ph-name').checked, v=g('ph-ver').checked, r=g('ph-req').checked, l=g('ph-lic').checked;
+    const lines=['<?php','/**'];
+    if(n) lines.push(' * Plugin Name: Demo Banner Notice');
+    lines.push(' * Description: Shows a notice bar on the site.');
+    if(v) lines.push(' * Version:     1.2.0');
+    if(r){ lines.push(' * Requires at least: 6.0'); lines.push(' * Requires PHP: 7.4'); }
+    lines.push(' * Author:      Example Studio');
+    if(l) lines.push(' * License:     GPL-2.0-or-later');
+    lines.push(' */','','add_action( "wp_footer", "dbn_print_notice" );');
+    g('ph-code').innerHTML=lines.map(esc).join(NL);
+    if(!n){ g('ph-out').innerHTML='<span class="pl-st no">Not listed</span><br>Without a Plugin Name header the file is not recognised as a plugin, so it cannot be activated.'; g('ph-note').textContent='Only Plugin Name is required. Everything else is optional.'; return; }
+    let h='<b>Demo Banner Notice</b>'+(v?' | Version 1.2.0':' | no version shown')+'<br>Shows a notice bar on the site.<br>By Example Studio';
+    if(!r) h+='<br><span class="pl-st mid">No minimum versions declared</span>'; else h+='<br><span class="pl-st ok">Needs WordPress 6.0, PHP 7.4</span>';
+    g('ph-out').innerHTML=h;
+    const missing=[]; if(!v) missing.push('version'); if(!r) missing.push('minimum versions'); if(!l) missing.push('licence');
+    g('ph-note').textContent= missing.length ? 'It works, but a reviewer cannot tell the '+missing.join(', ')+'. Treat missing optional fields as a quality signal.' : 'A complete header: name, version, requirements and licence are all declared.';
+  }
+  ['ph-name','ph-ver','ph-req','ph-lic'].forEach(id=>g(id).onchange=draw); draw();
+})();
+
+/* ---------- placement picker ---------- */
+(function(){
+  const O=['Theme','Normal plugin','Must-use plugin'];
+  const Q=[
+    ['A bespoke Portfolio content type with its fields. It must stay in the admin if the theme is redesigned next year.',1,'A normal plugin. Content structure should outlive the theme.'],
+    ['The logo size, header layout and colour palette of this one design.',0,'The theme. This is presentation tied to this design.'],
+    ['A hosting company rule that every site on a platform must load a small compatibility file, and clients must not be able to switch it off.',2,'A must-use plugin: always on, no admin switch. The cost is that it gets no update notice, so someone must maintain it.'],
+    ['A contact form that the client wants to keep when the site is redesigned.',1,'A normal plugin. Forms are functionality, not presentation.'],
+    ['A template part that prints the footer menu in a specific column layout.',0,'The theme. It is markup and layout for this design.']
+  ];
+  let i=0,score=0,done=false; const box=g('pp-box'), nx=g('pp-next');
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="tg">DONE</div><div class="say" style="border-left-color:var(--forest)">You placed '+score+' of '+Q.length+'.</div><p class="small">Ask: should this survive a theme change, and should anyone be able to switch it off?</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{i=0;score=0;nx.textContent='Next';nx.onclick=next;show();}; g('pp-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tg">FEATURE '+(i+1)+' / '+Q.length+'</div><div class="say">'+esc(q[0])+'</div><div class="opts">'+O.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'" data-testid="pp-option-'+k+'">'+o+'</button>').join('')+'</div><div class="why" id="pp-why" data-testid="pp-why"></div>';
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); g('pp-why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+esc(q[2]); nx.disabled=false; g('pp-score').textContent=score+' of '+(i+1)+' placed'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+})();
+
+/* ---------- category explorer ---------- */
+(function(){
+  const C=[
+    ['SEO','Writes titles, meta descriptions, sitemaps and structured data, and lets editors control them per page.','Check it works with the theme rather than fighting it. Redirect and sitemap features can overlap with other plugins.'],
+    ['Forms','Builds forms, validates them, stores or emails submissions.','Form submissions are personal data: where are they stored, who can read them, and what happens to spam? Test that email delivery actually works.'],
+    ['Caching','Stores generated pages or data so the server does less work per visit.','Two caching plugins on one site is a classic conflict. After changes, know how to clear the cache. See lesson 3.2.'],
+    ['Backup','Copies files and the database to somewhere else on a schedule, and restores them.','A backup stored only on the same server is not a backup. Test a restore at least once.'],
+    ['Security','Adds malware scanning, a firewall and limits on repeated failed attempts.','Strict settings can block real editors, and scans can slow the site. They add to, not replace, updates and careful roles. See lesson 3.2.'],
+    ['Commerce','The best-known example is WooCommerce: products, cart and orders, with many extensions.',
+'A store is a larger commitment than a normal plugin. Scope it as a project, not a plugin.']
+
+  ];
+  const tabs=g('cx-tabs'); let cur=0;
+  tabs.innerHTML=C.map((c,k)=>'<button type="button" data-k="'+k+'" data-testid="cx-tab-'+c[0].toLowerCase()+'">'+c[0]+'</button>').join('');
+  function draw(){ tabs.querySelectorAll('button').forEach((b,k)=>b.classList.toggle('on',k===cur)); g('cx-does').textContent=C[cur][1]; g('cx-watch').textContent=C[cur][2]; }
+  tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=+b.dataset.k;draw();}); draw();
+})();
+
+/* ---------- vetting checklist ---------- */
+(function(){
+  const F=[
+    ['upd','Last updated',[['Within 3 months',3],['Within a year',2],['1 to 2 years ago',1],['More than 2 years ago',0]],'Update activity shows someone is still maintaining it.'],
+    ['wp','Tested with your WordPress version',[['Yes, current',3],['One release behind',2],['Several releases behind',1],['Never stated',0]],'Compatibility with the WordPress version you run.'],
+    ['sup','Support threads',[['Most answered',3],['Some answered',2],['Few answered',1],['None answered or none exist',0]],'Does the author respond when something breaks?'],
+    ['rev','Reviews',[['Many, consistent',3],['Mixed',2],['Very few',1],['Complaints about breakage or abandonment',0]],'Reviews are noisy; read the recent ones.'],
+    ['code','Quick code skim',[['Escapes output and checks nonces and capabilities',3],['Looks tidy, did not check these',2],['Messy, some raw output',1],['Runs remote code or has obvious holes',0]],'Code quality, with the habits from the escaping lesson.'],
+    ['lic','Licence and renewal terms',[['Clear, GPL-compatible, renewal in your control',3],['Clear but renewal is automatic',2],['Unclear',1],['Updates stop without a key and you do not hold it',0]],'Licence terms and who controls the renewal.']
+  ];
+  const EX={good:[0,0,0,0,0,0],stale:[3,3,2,1,1,0],risky:[0,0,1,3,3,3]};
+  const box=g('vt-controls');
+  box.innerHTML=F.map((f,i)=>'<label class="ctl">'+f[1]+'<select data-i="'+i+'" data-testid="vet-'+f[0]+'">'+f[2].map((o,k)=>'<option value="'+k+'">'+esc(o[0])+'</option>').join('')+'</select></label>').join('');
+  const sels=[...box.querySelectorAll('select')];
+  function draw(){
+    let total=0,why=[]; sels.forEach((s,i)=>{ const o=F[i][2][+s.value]; total+=o[1]; if(o[1]<=1) why.push('<b>'+F[i][1]+':</b> '+esc(o[0])+'. '+F[i][3]); });
+    const max=F.length*3; g('vt-score').textContent=total+' / '+max; g('vt-bar').style.width=Math.round(total/max*100)+'%';
+    const hardStop=sels.some((s,i)=>F[i][2][+s.value][1]===0&&(i===4||i===5));
+    let cls,txt; if(hardStop){cls='no';txt='Do not install without a fix';} else if(total>=15){cls='ok';txt='Reasonable to install';} else if(total>=10){cls='mid';txt='Install only with a reason';} else {cls='no';txt='Look for an alternative';}
+    const v=g('vt-verdict'); v.className='pl-st '+cls; v.textContent=txt;
+    let w= why.length? why.join('<br>') : 'No weak signals. Still install on staging first.';
+    if(hardStop) w='<b>Hard stop:</b> a zero on code or licence outweighs a good total.<br>'+w;
+    g('vt-why').innerHTML=w;
+  }
+  sels.forEach(s=>s.onchange=draw);
+  document.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{ EX[b.dataset.ex].forEach((v,i)=>sels[i].value=v); draw(); });
+  draw();
+})();
+
+/* ---------- bisection ---------- */
+(function(){
+  const N=['Alpha SEO','Beta Forms','Gamma Cache','Delta Backup','Epsilon Slider','Zeta Analytics','Eta Popups','Theta Scanner','Iota Events','Kappa Shop Tweaks'];
+  let bad=0, on=[], tests=0, over=false;
+  function stale(){ g('bs-status').textContent='Not tested yet'; g('bs-status').style.color=''; }
+  function build(){ bad=Math.floor(Math.random()*N.length); on=N.map(()=>true); tests=0; over=false; stale(); g('bs-note').textContent='Plan: deactivate half, test, and keep halving the group that could still hold the culprit.'; draw(); }
+  function draw(){
+    g('bs-list').innerHTML=N.map((n,i)=>'<li class="pl-li'+(on[i]?'':' off')+'"><label class="chk"><input type="checkbox" data-i="'+i+'" data-testid="bs-plugin-'+i+'"'+(on[i]?' checked':'')+'> '+esc(n)+'</label></li>').join('');
+    g('bs-list').querySelectorAll('input').forEach(c=>c.onchange=()=>{ on[+c.dataset.i]=c.checked; stale(); draw(); });
+    g('bs-tests').textContent='Tests run: '+tests;
+    const gs=g('bs-guess'); if(!gs.options.length) gs.innerHTML=N.map((n,i)=>'<option value="'+i+'">'+esc(n)+'</option>').join('');
+  }
+  g('bs-test').onclick=()=>{ if(over) return; tests++; const broken=on[bad]; g('bs-status').textContent=broken?'Broken':'Working'; g('bs-status').style.color=broken?'var(--bad)':'var(--good)'; g('bs-tests').textContent='Tests run: '+tests; };
+  g('bs-all-off').onclick=()=>{ on=on.map(()=>false); stale(); draw(); };
+  g('bs-all-on').onclick=()=>{ on=on.map(()=>true); stale(); draw(); };
+  g('bs-submit').onclick=()=>{ if(over) return; const k=+g('bs-guess').value; if(k===bad){ over=true; g('bs-note').innerHTML='<b>Correct: '+esc(N[bad])+'.</b> You used '+tests+' test'+(tests===1?'':'s')+'. Halving ten plugins needs about four; one at a time can take ten. Reactivate the rest and look for a fix or alternative for this one.'; } else { g('bs-note').innerHTML='<b>Not that one.</b> Keep narrowing with more tests.'; } };
+  g('bs-new').onclick=build; build();
+})();
+
+/* ---------- audit sheet ---------- */
+(function(){
+  const P=[
+    ['Plugin A Seo','SEO',0,1,'seo'],['Plugin B Forms','Forms',99,1,'forms'],['Plugin C Cache','Caching',49,2,'cache'],['Plugin D Cache Lite','Caching',0,3,'cache'],
+    ['Plugin E Backup','Backup',79,1,'backup'],['Plugin F Slider','Visual',39,3,'misc'],['Plugin G Shop','Commerce',0,2,'shop'],['Plugin H Scanner','Scanning',89,1,'sec']
+  ];
+  const DOL=String.fromCharCode(36);
+  const on=P.map(()=>true);
+  const rows=g('au-rows');
+  rows.innerHTML=P.map((p,i)=>'<tr><td><input type="checkbox" checked data-i="'+i+'" data-testid="au-keep-'+i+'" aria-label="Keep '+esc(p[0])+'"></td><td>'+esc(p[0])+'</td><td>'+p[1]+'</td><td>'+DOL+p[2]+'</td><td>'+['','Low','Medium','High'][p[3]]+'</td></tr>').join('');
+  function draw(){
+    let c=0,cost=0,risk=0,cache=0;
+    P.forEach((p,i)=>{ if(on[i]){ c++; cost+=p[2]; risk+=p[3]; if(p[4]==='cache') cache++; } });
+    g('au-count').textContent=c; g('au-cost').textContent=DOL+cost; g('au-risk').textContent=risk;
+    g('au-note').innerHTML= cache>1 ? '<b>Overlap:</b> two caching plugins are both active. That is the kind of pair that conflicts; keep one.' : (c===P.length?'Everything is kept. Which ones does the site really need?':'No overlapping jobs. Each remaining plugin is still a dependency to update and renew.');
+  }
+  rows.querySelectorAll('input').forEach(c=>c.onchange=()=>{ on[+c.dataset.i]=c.checked; draw(); }); draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

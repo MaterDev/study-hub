@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 04 — CSS Animation Performance & Debugging</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #f4f8fd; --surface: #ffffff; --surface2: #353d5e; --surface3: #f3f6fc;
+      --border:  #c3d3e6; --text: #2a3150; --dim: #525c83; --faint: #a9c1da;
+      --accent:  #6a55a3; --cyan: #2f7fa8; --green: #3a7a52;
+      --yellow:  #b8902e; --orange: #b8692e; --red: #b35c5c;
+      --mono:    'JetBrains Mono','Fira Code',monospace;
+      --measure: 68ch;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.75; }
+    .page { max-width: 800px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Header ── */
+    .lesson-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .badge { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; }
+    .badge-num  { background: var(--accent); color: #fff; }
+    .badge-lvl  { background: rgba(250,204,21,.15); color: var(--yellow); border: 1px solid rgba(250,204,21,.3); }
+    .badge-time { background: rgba(56,189,248,.1); color: var(--cyan); border: 1px solid rgba(56,189,248,.25); }
+    h1 { font-size: 2rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; margin-bottom: 12px; }
+    .lead { font-size: 1.1rem; color: var(--dim); max-width: 60ch; line-height: 1.6; margin-bottom: 40px; }
+
+    /* ── Nav ── */
+    .section-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; }
+    .section-nav a { font-size: .8rem; font-weight: 600; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; color: var(--dim); text-decoration: none; transition: all .12s; }
+    .section-nav a:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Typography ── */
+    h2 { font-size: 1.35rem; font-weight: 700; margin: 52px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.05rem; font-weight: 700; margin: 32px 0 10px; color: var(--cyan); }
+    p  { max-width: var(--measure); margin-bottom: 14px; }
+    a  { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 1.4em; margin-bottom: 14px; max-width: var(--measure); }
+    li { margin-bottom: 5px; }
+    li::marker { color: var(--accent); }
+    code { font-family: var(--mono); font-size: .82em; background: rgba(124,110,255,.12); color: var(--accent); padding: 2px 6px; border-radius: 4px; }
+    pre { background: #eaf2fb; border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; overflow-x: auto; margin: 16px 0 20px; max-width: var(--measure); }
+    pre code { background: none; padding: 0; font-size: .83rem; color: var(--cyan); line-height: 1.8; }
+    .kw  { color: var(--accent); } .val { color: var(--green); }
+    .cmt { color: var(--faint); font-style: italic; } .sel { color: var(--cyan); }
+
+    /* ── Callouts ── */
+    .callout { border-radius: 8px; padding: 16px 18px; margin: 20px 0; max-width: var(--measure); font-size: .92rem; line-height: 1.65; }
+    .callout-title { font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: .88rem; }
+    .callout p { margin-bottom: 6px; max-width: 100%; }
+    .callout p:last-child, .callout ul:last-child { margin-bottom: 0; }
+    .callout-insight  { background: rgba(124,110,255,.1);  border-left: 3px solid var(--accent); }
+    .callout-insight .callout-title  { color: var(--accent); }
+    .callout-warning  { background: rgba(248,113,113,.1);  border-left: 3px solid var(--red); }
+    .callout-warning .callout-title  { color: var(--red); }
+    .callout-devtools { background: rgba(74,222,128,.08);  border-left: 3px solid var(--green); }
+    .callout-devtools .callout-title { color: var(--green); }
+    .callout-hood     { background: rgba(56,189,248,.08);  border-left: 3px solid var(--cyan); }
+    .callout-hood .callout-title     { color: var(--cyan); }
+    .callout-industry { background: rgba(250,204,21,.07);  border-left: 3px solid var(--yellow); }
+    .callout-industry .callout-title { color: var(--yellow); }
+    .callout-connects { background: rgba(124,110,255,.06); border-left: 3px solid var(--faint); }
+    .callout-connects .callout-title { color: var(--dim); }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: Animated pipeline
+    ═══════════════════════════════════════════════════════ */
+    .pipeline-demo {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .pipeline-demo-title {
+      font-size: .75rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--dim); margin-bottom: 20px;
+    }
+    .prop-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .prop-btn {
+      font-size: .75rem; font-weight: 600; padding: 4px 10px;
+      border-radius: 5px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--dim); cursor: pointer;
+      transition: all .12s;
+    }
+    .prop-btn.active { background: rgba(124,110,255,.15); border-color: var(--accent); color: var(--accent); }
+    .prop-btn.cost-high   { border-color: rgba(248,113,113,.4); }
+    .prop-btn.cost-high.active   { background: rgba(248,113,113,.15); border-color: var(--red); color: var(--red); }
+    .prop-btn.cost-medium { border-color: rgba(250,204,21,.3); }
+    .prop-btn.cost-medium.active { background: rgba(250,204,21,.1); border-color: var(--yellow); color: var(--yellow); }
+    .prop-btn.cost-low    { border-color: rgba(74,222,128,.3); }
+    .prop-btn.cost-low.active    { background: rgba(74,222,128,.1); border-color: var(--green); color: var(--green); }
+
+    .pipe-track { display: flex; align-items: stretch; gap: 0; }
+    .pipe-node {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; padding: 14px 18px; border-radius: 8px; min-width: 90px;
+      border: 2px solid transparent; transition: all .3s ease;
+      position: relative; flex: 1;
+    }
+    .pipe-node-icon { font-size: 22px; }
+    .pipe-node-name { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+    .pipe-node-time { font-family: var(--mono); font-size: .72rem; margin-top: 2px; opacity: 0; transition: opacity .3s; }
+    .pipe-node.firing .pipe-node-time { opacity: 1; }
+    .pipe-node.idle   { background: var(--surface2); border-color: var(--border); color: var(--faint); }
+    .pipe-node.firing { animation: pipe-fire .5s ease; }
+    .pipe-node.done-red    { background: rgba(248,113,113,.12); border-color: rgba(248,113,113,.4); color: var(--red); }
+    .pipe-node.done-yellow { background: rgba(250,204,21,.1); border-color: rgba(250,204,21,.3); color: var(--yellow); }
+    .pipe-node.done-green  { background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.3); color: var(--green); }
+    .pipe-node.done-accent { background: rgba(124,110,255,.12); border-color: rgba(124,110,255,.4); color: var(--accent); }
+    .pipe-node.skipped { background: var(--surface2); border-color: var(--border); color: var(--faint); opacity: .35; }
+    .pipe-node.skipped::after { content: 'skipped'; position: absolute; bottom: 4px; font-size: .6rem; color: var(--faint); letter-spacing: .05em; text-transform: uppercase; }
+
+    @keyframes pipe-fire { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+    .pipe-arrow { display: flex; align-items: center; color: var(--faint); font-size: 18px; padding: 0 4px; }
+    .pipe-arrow.active { color: var(--accent); }
+
+    .pipe-result {
+      margin-top: 16px; padding: 10px 14px; border-radius: 6px;
+      font-size: .82rem; line-height: 1.55; font-weight: 500;
+      background: var(--surface2); border: 1px solid var(--border); color: var(--dim);
+      transition: all .3s;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: Frame budget bar
+    ═══════════════════════════════════════════════════════ */
+    .frame-budget {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .fb-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .fb-title { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); }
+    .fb-total { font-family: var(--mono); font-size: .82rem; color: var(--cyan); }
+    .fb-bar-wrap { height: 28px; background: var(--surface2); border-radius: 5px; overflow: hidden; display: flex; border: 1px solid var(--border); }
+    .fb-seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: .65rem; font-weight: 700; transition: width .5s ease; white-space: nowrap; overflow: hidden; min-width: 0; }
+    .fb-seg-style   { background: rgba(124,110,255,.6); color: #fff; }
+    .fb-seg-layout  { background: rgba(248,113,113,.7); color: #fff; }
+    .fb-seg-paint   { background: rgba(74,222,128,.6); color: #111; }
+    .fb-seg-comp    { background: rgba(56,189,248,.5); color: #fff; }
+    .fb-seg-spare   { background: rgba(255,255,255,.04); color: var(--faint); flex: 1; }
+    .fb-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .fb-leg-item { display: flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--dim); }
+    .fb-leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .fb-footnote { font-size: .75rem; color: var(--faint); margin-top: 8px; }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: Thread lanes
+    ═══════════════════════════════════════════════════════ */
+    .thread-diagram {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .thread-title { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin-bottom: 14px; }
+    .thread-lane { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .thread-lane:last-child { margin-bottom: 0; }
+    .thread-name { font-size: .72rem; font-weight: 700; width: 100px; flex-shrink: 0; text-align: right; color: var(--dim); }
+    .thread-track { flex: 1; height: 32px; background: var(--surface2); border-radius: 4px; position: relative; overflow: hidden; border: 1px solid var(--border); }
+    .thread-block {
+      position: absolute; height: 100%; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden;
+    }
+    .tb-style   { background: rgba(124,110,255,.5); color: #fff; }
+    .tb-layout  { background: rgba(248,113,113,.6); color: #fff; }
+    .tb-paint   { background: rgba(74,222,128,.5); color: #111; }
+    .tb-js      { background: rgba(251,146,60,.5); color: #fff; }
+    .tb-idle    { background: rgba(255,255,255,.04); color: var(--faint); border: 1px dashed var(--faint); }
+    .tb-comp    { background: rgba(56,189,248,.5); color: #fff; animation: comp-slide 2s linear infinite; }
+    @keyframes comp-slide { 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.6} }
+    .thread-bad-label  { font-size: .7rem; color: var(--red); font-weight: 700; margin-left: 4px; }
+    .thread-good-label { font-size: .7rem; color: var(--green); font-weight: 700; margin-left: 4px; }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: left vs transform live demo
+    ═══════════════════════════════════════════════════════ */
+    .compare-demo {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .compare-demo-title { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin-bottom: 16px; }
+    .compare-row { display: grid; grid-template-columns: 70px 1fr auto; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .compare-row:last-child { margin-bottom: 0; }
+    .cr-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+    .cr-label.bad  { color: var(--red); }
+    .cr-label.good { color: var(--green); }
+    .cr-track {
+      height: 48px; background: var(--surface2); border-radius: 6px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+    }
+    .cr-ball {
+      width: 38px; height: 38px; border-radius: 50%;
+      position: absolute; top: 5px;
+    }
+    .cr-ball-bad {
+      background: radial-gradient(circle at 35% 35%, #b35c5c, #f8e2e2);
+      box-shadow: 0 0 14px rgba(248,113,113,.5);
+      animation: cr-bad 2.5s linear infinite alternate;
+    }
+    @keyframes cr-bad {
+      from { left: 5px; }
+      to   { left: calc(100% - 43px); }
+    }
+    .cr-ball-good {
+      background: radial-gradient(circle at 35% 35%, #3a7a52, #e3f2e8);
+      box-shadow: 0 0 14px rgba(74,222,128,.4);
+      left: 5px;
+      animation: cr-good 2.5s linear infinite alternate;
+    }
+    @keyframes cr-good {
+      from { transform: translateX(0); }
+      to   { transform: translateX(calc(var(--cr-tw, 280px) - 43px)); }
+    }
+    .cr-tag { font-size: .68rem; color: var(--dim); font-family: var(--mono); white-space: nowrap; }
+
+    /* Paint flash simulation */
+    .paint-flash-sim { margin-top: 14px; }
+    .pfs-label { font-size: .72rem; color: var(--dim); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .pfs-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: .7rem; font-weight: 600; padding: 2px 8px; border-radius: 3px; border: 1px solid var(--border); cursor: pointer; background: var(--surface2); color: var(--dim); transition: all .12s; }
+    .pfs-toggle.on { border-color: var(--green); color: var(--green); background: rgba(74,222,128,.1); }
+    .pfs-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .flash-overlay {
+      position: absolute; inset: 0; background: rgba(74,222,128,.5);
+      border-radius: 6px; opacity: 0; pointer-events: none;
+      transition: opacity .05s;
+    }
+    .cr-track.flashing .flash-overlay { opacity: 1; }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: Property cost cards
+    ═══════════════════════════════════════════════════════ */
+    .cost-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; max-width: var(--measure); }
+    .cost-card {
+      border-radius: 10px; padding: 16px; border: 1px solid;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .cost-card-high   { background: rgba(248,113,113,.08); border-color: rgba(248,113,113,.3); }
+    .cost-card-medium { background: rgba(250,204,21,.06); border-color: rgba(250,204,21,.25); }
+    .cost-card-low    { background: rgba(74,222,128,.07); border-color: rgba(74,222,128,.25); }
+    .cc-cost { font-size: .7rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    .cc-cost-high   { color: var(--red); }
+    .cc-cost-medium { color: var(--yellow); }
+    .cc-cost-low    { color: var(--green); }
+    .cc-props { font-family: var(--mono); font-size: .72rem; color: var(--text); line-height: 1.8; }
+    .cc-stages { display: flex; gap: 4px; flex-wrap: wrap; }
+    .cc-stage-pill {
+      font-size: .62rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 3px;
+    }
+    .csp-hit  { background: rgba(248,113,113,.2); color: var(--red); }
+    .csp-skip { background: rgba(61,70,112,.4); color: var(--faint); }
+    .csp-gpu  { background: rgba(124,110,255,.2); color: var(--accent); }
+    .cc-bar-wrap { margin-top: 4px; }
+    .cc-bar { height: 4px; border-radius: 2px; }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: Layer stack diagram
+    ═══════════════════════════════════════════════════════ */
+    .layer-stack {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .layer-stack-title { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin-bottom: 16px; }
+    .layer-scene { position: relative; height: 200px; perspective: 800px; }
+    .layer-plate {
+      position: absolute; left: 10%; right: 10%;
+      height: 46px; border-radius: 6px;
+      display: flex; align-items: center; padding: 0 16px;
+      font-size: .78rem; font-weight: 600;
+      transition: all .5s cubic-bezier(0.22,1,0.36,1);
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    }
+    .lp-bg     { background: rgba(56,189,248,.12); color: var(--cyan); bottom: 0; }
+    .lp-body   { background: rgba(124,110,255,.12); color: var(--accent); bottom: 52px; }
+    .lp-card   { background: rgba(74,222,128,.12); color: var(--green); bottom: 104px; }
+    .lp-modal  { background: rgba(251,146,60,.12); color: var(--orange); bottom: 156px; opacity: 0; transition: all .5s; }
+    .lp-name { flex: 1; }
+    .lp-mem { font-family: var(--mono); font-size: .7rem; color: var(--faint); }
+    .lp-reason { font-size: .65rem; padding: 2px 6px; border-radius: 3px; background: rgba(255,255,255,.07); color: var(--dim); margin-left: 8px; }
+    .layer-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .layer-btn { font-size: .75rem; font-weight: 600; padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface2); color: var(--dim); cursor: pointer; transition: all .12s; }
+    .layer-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(124,110,255,.1); }
+    .layer-mem-total { font-family: var(--mono); font-size: .8rem; color: var(--cyan); margin-top: 10px; }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: Thrashing timeline
+    ═══════════════════════════════════════════════════════ */
+    .thrash-diagram {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .thrash-diagram-title { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin-bottom: 16px; }
+    .thrash-row { display: grid; grid-template-columns: 80px 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
+    .thrash-row-label { font-size: .7rem; font-weight: 700; color: var(--dim); text-align: right; }
+    .thrash-row-label.bad  { color: var(--red); }
+    .thrash-row-label.good { color: var(--green); }
+    .thrash-timeline { display: flex; height: 30px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+    .tt-block {
+      height: 100%; display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      position: relative;
+    }
+    .tt-read   { background: rgba(56,189,248,.3); color: var(--cyan); }
+    .tt-write  { background: rgba(251,146,60,.3); color: var(--orange); }
+    .tt-flush  { background: rgba(248,113,113,.5); color: var(--red); }
+    .tt-idle   { flex: 1; background: rgba(255,255,255,.03); }
+    .thrash-legend { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+    .tl-item { display: flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--dim); }
+    .tl-swatch { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════════════════════
+       VISUAL: DevTools mockup
+    ═══════════════════════════════════════════════════════ */
+    .devtools-mockup {
+      background: #1a1b26; border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; margin: 20px 0;
+      max-width: var(--measure); font-family: var(--mono); font-size: .75rem;
+    }
+    .dtm-header {
+      background: #13141f; padding: 0 14px;
+      display: flex; gap: 0; border-bottom: 1px solid var(--border); overflow-x: auto;
+    }
+    .dtm-tab {
+      padding: 8px 14px; color: var(--dim); cursor: default;
+      font-family: -apple-system, sans-serif; font-size: .75rem; white-space: nowrap;
+      border-bottom: 2px solid transparent;
+    }
+    .dtm-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+    .dtm-body { padding: 0; }
+    .dtm-toolbar { display: flex; gap: 12px; padding: 8px 14px; background: #1e1f2e; border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
+    .dtm-toggle { display: flex; align-items: center; gap: 6px; font-family: -apple-system, sans-serif; font-size: .75rem; color: var(--dim); }
+    .dtm-cb { width: 14px; height: 14px; border: 1px solid var(--border); border-radius: 2px; background: var(--surface2); flex-shrink: 0; position: relative; }
+    .dtm-cb.checked { background: var(--cyan); border-color: var(--cyan); }
+    .dtm-cb.checked::after { content: '✓'; position: absolute; top: -1px; left: 2px; font-size: 10px; color: #000; font-weight: 900; }
+    .dtm-section { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.04); }
+    .dtm-section-title { font-family: -apple-system, sans-serif; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
+    .dtm-row { display: flex; padding: 2px 0; gap: 8px; align-items: center; }
+    .dtm-key { color: #6e7fb0; min-width: 200px; }
+    .dtm-val-green { color: var(--green); }
+    .dtm-val-red   { color: var(--red); }
+    .dtm-val-yellow{ color: var(--yellow); }
+    .dtm-frames { display: flex; gap: 2px; padding: 8px 14px; flex-wrap: nowrap; overflow-x: auto; }
+    .dtm-frame { width: 16px; height: 24px; border-radius: 2px; flex-shrink: 0; }
+    .dtm-frame.green  { background: var(--green); opacity: .7; }
+    .dtm-frame.yellow { background: var(--yellow); opacity: .7; }
+    .dtm-frame.red    { background: var(--red); opacity: .9; }
+    .dtm-timeline { padding: 8px 14px; }
+    .dtm-tl-row { display: flex; height: 14px; margin-bottom: 3px; border-radius: 2px; overflow: hidden; }
+    .dtm-tl-block { height: 100%; }
+    .dtm-tl-js     { background: rgba(251,146,60,.7); }
+    .dtm-tl-layout { background: rgba(148,85,247,.8); }
+    .dtm-tl-paint  { background: rgba(74,222,128,.6); }
+    .dtm-tl-comp   { background: rgba(56,189,248,.6); }
+    .dtm-tl-idle   { background: rgba(255,255,255,.05); flex: 1; }
+
+    /* ── contain visual ── */
+    .contain-diagram {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .contain-diagram-title { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin-bottom: 14px; }
+    .contain-page {
+      background: var(--surface2); border: 2px solid var(--border);
+      border-radius: 6px; padding: 10px; position: relative;
+    }
+    .contain-page-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); margin-bottom: 6px; }
+    .contain-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .contain-section {
+      background: rgba(255,255,255,.03); border: 1px solid var(--border);
+      border-radius: 4px; padding: 8px; font-size: .72rem; color: var(--dim);
+    }
+    .contain-section.animated { animation: contain-anim 1.5s ease-in-out infinite alternate; }
+    .contain-section.isolated { border-color: var(--green); background: rgba(74,222,128,.06); }
+    .contain-section.isolated::before { content: 'contain: layout'; display: block; font-size: .62rem; color: var(--green); margin-bottom: 4px; font-family: var(--mono); }
+    @keyframes contain-anim { from { padding: 8px; } to { padding: 14px; } }
+    .contain-ripple {
+      position: absolute; inset: 0; border: 2px solid;
+      border-radius: 6px; opacity: 0; pointer-events: none;
+      animation: contain-ripple-spread 2s ease-out infinite;
+    }
+    .contain-ripple.no-contain { border-color: var(--red); }
+    .contain-ripple.with-contain { border-color: var(--green); }
+    @keyframes contain-ripple-spread { 0%{opacity:.6;inset:-2px} 100%{opacity:0;inset:-12px} }
+    .contain-toggle { display: flex; gap: 8px; margin-bottom: 10px; }
+    .contain-btn { font-size: .75rem; font-weight: 600; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface2); color: var(--dim); cursor: pointer; transition: all .12s; }
+    .contain-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(124,110,255,.1); }
+
+    /* ── Further reading ── */
+    .reading-list { list-style: none; padding: 0; max-width: var(--measure); }
+    .reading-list li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: baseline; }
+    .reading-list li:last-child { border-bottom: none; }
+    .reading-tag { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; }
+    .tag-spec    { background: rgba(124,110,255,.15); color: var(--accent); }
+    .tag-article { background: rgba(56,189,248,.1);  color: var(--cyan); }
+    .tag-tool    { background: rgba(74,222,128,.1);  color: var(--green); }
+
+    /* ── Practical ── */
+    .practical { background: linear-gradient(135deg, rgba(124,110,255,.1), rgba(56,189,248,.06)); border: 1px solid rgba(124,110,255,.3); border-radius: 10px; padding: 24px; margin-top: 48px; max-width: var(--measure); }
+    .practical h2 { border: none; margin-top: 0; font-size: 1.1rem; }
+    .practical-steps { counter-reset: steps; list-style: none; padding: 0; }
+    .practical-steps li { counter-increment: steps; padding: 8px 0 8px 36px; position: relative; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .practical-steps li:last-child { border-bottom: none; }
+    .practical-steps li::before { content: counter(steps); position: absolute; left: 0; top: 8px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="lesson-meta">
+    <span class="badge badge-num">Lesson 04</span>
+    <span class="badge badge-lvl">Intermediate</span>
+    <span class="badge badge-time">~18 min</span>
+  </div>
+  <h1>CSS Animation Performance &amp; Debugging</h1>
+  <p class="lead">The browser does real work every frame. This lesson teaches you to see exactly what that work is — and how to cut 90% of it by picking the right pipeline stage.</p>
+
+  <nav class="section-nav">
+    <a href="#pipeline">Pipeline</a>
+    <a href="#budget">Frame budget</a>
+    <a href="#cost">Property costs</a>
+    <a href="#threads">Threads</a>
+    <a href="#will-change">will-change</a>
+    <a href="#devtools">DevTools</a>
+    <a href="#thrashing">Thrashing</a>
+    <a href="#contain">contain</a>
+    <a href="#checklist">Checklist</a>
+    <a href="#practical">Practical</a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════
+       1. THE PIPELINE
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="pipeline">The rendering pipeline</h2>
+
+  <p>Every frame the browser renders follows the same sequence: <strong>Style → Layout → Paint → Composite</strong>. The trick is that <em>you choose</em> how far through that pipeline your animation travels — and the further left you go, the more expensive each frame becomes.</p>
+
+  <p>The interactive diagram below shows which stages fire for different CSS properties. Click a property to see.</p>
+
+  <div class="pipeline-demo">
+    <div class="pipeline-demo-title">Click a property to see which pipeline stages it triggers</div>
+    <div class="prop-selector">
+      <button class="prop-btn cost-high  active" data-prop="left">left / top</button>
+      <button class="prop-btn cost-high"  data-prop="width">width</button>
+      <button class="prop-btn cost-high"  data-prop="font-size">font-size</button>
+      <button class="prop-btn cost-medium" data-prop="color">background-color</button>
+      <button class="prop-btn cost-medium" data-prop="box-shadow">box-shadow</button>
+      <button class="prop-btn cost-low"   data-prop="transform">transform</button>
+      <button class="prop-btn cost-low"   data-prop="opacity">opacity</button>
+      <button class="prop-btn cost-medium" data-prop="filter">filter(blur)</button>
+    </div>
+    <div class="pipe-track">
+      <div class="pipe-node idle" id="pipe-style">
+        <span class="pipe-node-icon">📋</span>
+        <span class="pipe-node-name">Style</span>
+        <span class="pipe-node-time" id="pipe-style-time"></span>
+      </div>
+      <div class="pipe-arrow" id="pipe-arr-1">→</div>
+      <div class="pipe-node idle" id="pipe-layout">
+        <span class="pipe-node-icon">📐</span>
+        <span class="pipe-node-name">Layout</span>
+        <span class="pipe-node-time" id="pipe-layout-time"></span>
+      </div>
+      <div class="pipe-arrow" id="pipe-arr-2">→</div>
+      <div class="pipe-node idle" id="pipe-paint">
+        <span class="pipe-node-icon">🎨</span>
+        <span class="pipe-node-name">Paint</span>
+        <span class="pipe-node-time" id="pipe-paint-time"></span>
+      </div>
+      <div class="pipe-arrow" id="pipe-arr-3">→</div>
+      <div class="pipe-node idle" id="pipe-comp">
+        <span class="pipe-node-icon">⚡</span>
+        <span class="pipe-node-name">Composite</span>
+        <span class="pipe-node-time" id="pipe-comp-time"></span>
+      </div>
+    </div>
+    <div class="pipe-result" id="pipe-result">Select a property above to see which pipeline stages it triggers each frame.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       2. FRAME BUDGET
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="budget">The 16ms frame budget</h2>
+
+  <p>At 60fps, the browser has <strong>16.67ms</strong> to produce each frame — from JavaScript through to pixels on screen. Every millisecond you spend in Layout or Paint is a millisecond stolen from the work budget. Exceed 16ms and a frame is dropped.</p>
+
+  <div class="frame-budget">
+    <div class="fb-header">
+      <span class="fb-title">Frame budget — animating <span id="fb-prop-name">left</span></span>
+      <span class="fb-total">16.67ms total</span>
+    </div>
+    <div class="fb-bar-wrap" id="fb-bar">
+      <div class="fb-seg fb-seg-style"  id="fb-style"  style="width:8%">Style</div>
+      <div class="fb-seg fb-seg-layout" id="fb-layout" style="width:35%">Layout</div>
+      <div class="fb-seg fb-seg-paint"  id="fb-paint"  style="width:30%">Paint</div>
+      <div class="fb-seg fb-seg-comp"   id="fb-comp"   style="width:8%">Comp</div>
+      <div class="fb-seg fb-seg-spare"  id="fb-spare">spare</div>
+    </div>
+    <div class="fb-legend">
+      <div class="fb-leg-item"><div class="fb-leg-dot" style="background:rgba(124,110,255,.6)"></div>Style</div>
+      <div class="fb-leg-item"><div class="fb-leg-dot" style="background:rgba(248,113,113,.7)"></div>Layout</div>
+      <div class="fb-leg-item"><div class="fb-leg-dot" style="background:rgba(74,222,128,.6)"></div>Paint</div>
+      <div class="fb-leg-item"><div class="fb-leg-dot" style="background:rgba(56,189,248,.5)"></div>Composite</div>
+      <div class="fb-leg-item"><div class="fb-leg-dot" style="background:rgba(255,255,255,.07);border:1px solid var(--faint)"></div>Spare</div>
+    </div>
+    <div class="fb-footnote" id="fb-note">Animating <code>left</code>: Layout walks the entire subtree each frame — typically the biggest cost.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       3. PROPERTY COSTS
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="cost">Property cost — at a glance</h2>
+
+  <p>Before touching DevTools, knowing which tier a property lives in tells you how expensive it is before you even run it. The tiers are set by which pipeline stages the browser must execute when that property changes.</p>
+
+  <div class="cost-cards">
+    <div class="cost-card cost-card-high">
+      <span class="cc-cost cc-cost-high">🔴 High cost</span>
+      <div class="cc-props">left · top · right<br>width · height<br>margin · padding<br>font-size · display</div>
+      <div class="cc-stages">
+        <span class="cc-stage-pill csp-hit">Style</span>
+        <span class="cc-stage-pill csp-hit">Layout</span>
+        <span class="cc-stage-pill csp-hit">Paint</span>
+        <span class="cc-stage-pill csp-hit">Comp</span>
+      </div>
+      <div class="cc-bar-wrap"><div class="cc-bar" style="width:100%;background:var(--red);opacity:.6"></div></div>
+    </div>
+    <div class="cost-card cost-card-medium">
+      <span class="cc-cost cc-cost-medium">🟡 Medium cost</span>
+      <div class="cc-props">background-color<br>color · border-color<br>box-shadow<br>outline</div>
+      <div class="cc-stages">
+        <span class="cc-stage-pill csp-skip">Style</span>
+        <span class="cc-stage-pill csp-skip">Layout</span>
+        <span class="cc-stage-pill csp-hit">Paint</span>
+        <span class="cc-stage-pill csp-hit">Comp</span>
+      </div>
+      <div class="cc-bar-wrap"><div class="cc-bar" style="width:55%;background:var(--yellow);opacity:.7"></div></div>
+    </div>
+    <div class="cost-card cost-card-low">
+      <span class="cc-cost cc-cost-low">🟢 GPU only</span>
+      <div class="cc-props">transform<br>opacity<br><br><br></div>
+      <div class="cc-stages">
+        <span class="cc-stage-pill csp-skip">Style</span>
+        <span class="cc-stage-pill csp-skip">Layout</span>
+        <span class="cc-stage-pill csp-skip">Paint</span>
+        <span class="cc-stage-pill csp-gpu">Comp ✓</span>
+      </div>
+      <div class="cc-bar-wrap"><div class="cc-bar" style="width:12%;background:var(--green);opacity:.8"></div></div>
+    </div>
+  </div>
+
+  <p>The full reference is at <a href="https://csstriggers.com" target="_blank">csstriggers.com</a>. When in doubt before animating a property, look it up.</p>
+
+  <div class="callout callout-hood">
+    <div class="callout-title">📐 Under the hood — what "paint" actually is</div>
+    <p>When the browser paints an element, it hands the draw commands to <strong>Skia</strong> (Chrome's 2D graphics library, also used in Android) which rasterizes the element into a pixel bitmap. That bitmap is then uploaded to the GPU as a texture. If you change <code>background-color</code> every frame, Skia rerasterizes and the GPU re-uploads that texture every frame — consuming upload bandwidth. With <code>transform</code>, the texture is uploaded once and the GPU compositor simply repositions it using a matrix multiply. No rasterization, no upload.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       4. LIVE DEMO + THREADS
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="threads">Main thread vs compositor thread</h2>
+
+  <p>The real payoff of compositor-only animations isn't just speed — it's <strong>isolation</strong>. The compositor thread runs independently of the main thread. Even if your JavaScript is doing something expensive (parsing JSON, running a search algorithm), a <code>transform</code> animation won't stutter. It lives on a completely different thread.</p>
+
+  <div class="compare-demo">
+    <div class="compare-demo-title">Live: left vs. transform — same visual result, completely different work</div>
+    <div class="compare-row">
+      <span class="cr-label bad">❌ left</span>
+      <div class="cr-track" id="cr-track-bad">
+        <div class="cr-ball cr-ball-bad"></div>
+        <div class="flash-overlay"></div>
+      </div>
+      <span class="cr-tag">layout + paint<br>each frame</span>
+    </div>
+    <div class="compare-row">
+      <span class="cr-label good">✓ transform</span>
+      <div class="cr-track" id="cr-track-good">
+        <div class="cr-ball cr-ball-good"></div>
+        <div class="flash-overlay"></div>
+      </div>
+      <span class="cr-tag">compositor only<br>no layout/paint</span>
+    </div>
+    <div class="paint-flash-sim">
+      <div class="pfs-label">
+        Simulate DevTools paint flashing:
+        <span class="pfs-toggle" id="pfs-toggle"><span class="pfs-dot"></span>Off</span>
+      </div>
+    </div>
+  </div>
+
+  <p>Here's what the thread activity looks like for each approach. Notice how the transform animation leaves the main thread completely free:</p>
+
+  <div class="thread-diagram">
+    <div class="thread-title">Thread activity per frame</div>
+    <div style="font-size:.75rem;color:var(--red);font-weight:600;margin-bottom:6px">animating left</div>
+    <div class="thread-lane">
+      <span class="thread-name">Main thread</span>
+      <div class="thread-track">
+        <div class="thread-block tb-style"  style="left:0;width:8%">Style</div>
+        <div class="thread-block tb-layout" style="left:8%;width:35%">Layout</div>
+        <div class="thread-block tb-paint"  style="left:43%;width:28%">Paint</div>
+        <div class="thread-block tb-idle"   style="left:71%;width:29%">idle</div>
+      </div>
+    </div>
+    <div class="thread-lane">
+      <span class="thread-name">Compositor</span>
+      <div class="thread-track">
+        <div class="thread-block tb-idle" style="left:0;width:71%">waiting...</div>
+        <div class="thread-block tb-comp" style="left:71%;width:29%">Comp</div>
+      </div>
+    </div>
+    <div style="font-size:.75rem;color:var(--green);font-weight:600;margin:14px 0 6px">animating transform</div>
+    <div class="thread-lane">
+      <span class="thread-name">Main thread</span>
+      <div class="thread-track">
+        <div class="thread-block tb-idle" style="left:0;width:100%">free for JS work</div>
+      </div>
+    </div>
+    <div class="thread-lane">
+      <span class="thread-name">Compositor</span>
+      <div class="thread-track">
+        <div class="thread-block tb-comp" style="left:0;width:100%">running continuously</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       5. WILL-CHANGE
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="will-change">The <code>will-change</code> property</h2>
+
+  <p><code>will-change</code> tells the browser to promote an element to its own GPU layer <em>before</em> the animation starts. This eliminates the first-frame hitch that would otherwise happen when the browser promotes the layer on-demand.</p>
+
+  <p>Here's what that layer tree looks like. Each promoted element occupies its own GPU texture:</p>
+
+  <div class="layer-stack">
+    <div class="layer-stack-title">GPU compositor layer tree</div>
+    <div class="layer-scene" id="layer-scene">
+      <div class="layer-plate lp-bg" id="lp-bg">
+        <span class="lp-name">Page root</span>
+        <span class="lp-mem" id="lp-bg-mem">~800 KB</span>
+        <span class="lp-reason">root layer</span>
+      </div>
+      <div class="layer-plate lp-body" id="lp-body" style="opacity:0">
+        <span class="lp-name">.header</span>
+        <span class="lp-mem">~48 KB</span>
+        <span class="lp-reason">position: fixed</span>
+      </div>
+      <div class="layer-plate lp-card" id="lp-card" style="opacity:0">
+        <span class="lp-name">.card (will-change)</span>
+        <span class="lp-mem">~96 KB</span>
+        <span class="lp-reason">will-change: transform</span>
+      </div>
+      <div class="layer-plate lp-modal" id="lp-modal">
+        <span class="lp-name">.modal</span>
+        <span class="lp-mem">~200 KB</span>
+        <span class="lp-reason">will-change: opacity</span>
+      </div>
+    </div>
+    <div class="layer-controls">
+      <button class="layer-btn active" id="lbtn-0">1 layer (baseline)</button>
+      <button class="layer-btn" id="lbtn-1">+ fixed header</button>
+      <button class="layer-btn" id="lbtn-2">+ will-change card</button>
+      <button class="layer-btn" id="lbtn-3">+ will-change modal</button>
+    </div>
+    <div class="layer-mem-total" id="layer-mem-total">Total GPU memory: ~800 KB</div>
+  </div>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">⚠️ Layers cost GPU memory — don't overdo it</div>
+    <p>Every compositor layer is a separate GPU texture that lives in VRAM. Mobile devices share GPU memory with the display framebuffer. Promoting 30 cards to their own layers can consume 50–100MB of VRAM and <em>slow things down</em> on mid-range hardware. The browser may fall back to software compositing entirely.</p>
+    <ul>
+      <li>Only promote elements that are <em>actively about to animate</em></li>
+      <li>Add <code>will-change</code> in JS just before animation; remove on <code>animationend</code></li>
+      <li>Never use <code>will-change: all</code></li>
+    </ul>
+  </div>
+
+  <pre><code><span class="cmt">// ✅ Add just before animation, remove after</span>
+el.addEventListener(<span class="val">'mouseenter'</span>, () => {
+  el.style.willChange = <span class="val">'transform'</span>;
+});
+el.addEventListener(<span class="val">'animationend'</span>, () => {
+  el.style.willChange = <span class="val">'auto'</span>; <span class="cmt">// frees the layer</span>
+});</code></pre>
+
+  <div class="callout callout-hood">
+    <div class="callout-title">📐 Under the hood — the layer tree and transform matrices</div>
+    <p>The compositor maintains a list of <em>(texture, matrix)</em> pairs — each compositor layer is a texture, and each has a 4×4 transform matrix that says where to draw it. To move a layer with <code>transform</code>, the compositor just updates one number in that matrix — a trivial operation. To move something with <code>left</code>, the browser must recompute layout geometry for the element and everything affected by it, repaint to a bitmap, re-upload to GPU, and then composite. Same visual result, 100× the work.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       6. DEVTOOLS
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="devtools">The DevTools workflow</h2>
+
+  <p>Knowing the theory is not enough — you need a repeatable process for catching problems in real code. Here's the loop: visual → paint flash → layers → timeline → fix → repeat.</p>
+
+  <h3>Rendering tab — Paint flashing &amp; layer borders</h3>
+
+  <div class="devtools-mockup">
+    <div class="dtm-header">
+      <div class="dtm-tab">Elements</div>
+      <div class="dtm-tab">Console</div>
+      <div class="dtm-tab">Sources</div>
+      <div class="dtm-tab">Performance</div>
+      <div class="dtm-tab active">Rendering</div>
+      <div class="dtm-tab">Layers</div>
+    </div>
+    <div class="dtm-body">
+      <div class="dtm-toolbar">
+        <div class="dtm-toggle"><div class="dtm-cb checked"></div>Paint flashing</div>
+        <div class="dtm-toggle"><div class="dtm-cb checked"></div>Layer borders</div>
+        <div class="dtm-toggle"><div class="dtm-cb"></div>Layout Shift Regions</div>
+        <div class="dtm-toggle"><div class="dtm-cb checked"></div>Frame Rendering Stats</div>
+      </div>
+      <div class="dtm-section">
+        <div class="dtm-section-title">What to look for</div>
+        <div class="dtm-row"><span class="dtm-key">Paint flashing enabled</span><span class="dtm-val-green">green overlay flashes on repainted regions</span></div>
+        <div class="dtm-row"><span class="dtm-key">transform animation</span><span class="dtm-val-green">no flash — compositor only ✓</span></div>
+        <div class="dtm-row"><span class="dtm-key">background-color animation</span><span class="dtm-val-red">flashes every frame ✗</span></div>
+        <div class="dtm-row"><span class="dtm-key">left animation</span><span class="dtm-val-red">entire region reflashes ✗</span></div>
+        <div class="dtm-row"><span class="dtm-key">Layer borders: orange</span><span class="dtm-val-yellow">compositor layer boundary</span></div>
+        <div class="dtm-row"><span class="dtm-key">Layer borders: blue</span><span class="dtm-val-yellow">paint chunk boundary</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p><strong>Open it:</strong> DevTools → ⋮ → More tools → Rendering (or <code>Cmd+Shift+P</code> → "Show Rendering")</p>
+
+  <h3>Layers panel — the 3D exploded view</h3>
+
+  <div class="devtools-mockup">
+    <div class="dtm-header">
+      <div class="dtm-tab active">Layers</div>
+    </div>
+    <div class="dtm-body">
+      <div class="dtm-section">
+        <div class="dtm-section-title">Layer tree</div>
+        <div class="dtm-row"><span class="dtm-key">#document (root)</span><span class="dtm-val-green">root layer — 800 KB</span></div>
+        <div class="dtm-row"><span class="dtm-key">&nbsp;&nbsp;.header</span><span class="dtm-val-yellow">position: fixed — 48 KB</span></div>
+        <div class="dtm-row"><span class="dtm-key">&nbsp;&nbsp;.animated-card</span><span class="dtm-val-yellow">will-change: transform — 96 KB</span></div>
+      </div>
+      <div class="dtm-section">
+        <div class="dtm-section-title">Selected layer: .animated-card</div>
+        <div class="dtm-row"><span class="dtm-key">Compositing reason</span><span class="dtm-val-green">Has a will-change hint</span></div>
+        <div class="dtm-row"><span class="dtm-key">Memory</span><span class="dtm-val-yellow">~96 KB</span></div>
+        <div class="dtm-row"><span class="dtm-key">Paint count</span><span class="dtm-val-green">1 (painted once)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p><strong>Open it:</strong> DevTools → ⋮ → More tools → Layers. The 3D exploded view lets you click any layer to see why it was promoted and how much GPU memory it consumes.</p>
+
+  <h3>Performance timeline — catching dropped frames</h3>
+
+  <div class="devtools-mockup">
+    <div class="dtm-header">
+      <div class="dtm-tab active">Performance</div>
+    </div>
+    <div class="dtm-body">
+      <div class="dtm-section">
+        <div class="dtm-section-title">Frames</div>
+        <div class="dtm-frames" id="dt-frames"></div>
+      </div>
+      <div class="dtm-section">
+        <div class="dtm-section-title">Main thread — animating left (bad)</div>
+        <div class="dtm-timeline">
+          <div class="dtm-tl-row"><div class="dtm-tl-block dtm-tl-layout" style="width:38%"></div><div class="dtm-tl-block dtm-tl-paint" style="width:28%"></div><div class="dtm-tl-block dtm-tl-comp" style="width:12%"></div><div class="dtm-tl-block dtm-tl-idle" style="flex:1"></div></div>
+          <div class="dtm-tl-row"><div class="dtm-tl-block dtm-tl-layout" style="width:40%"></div><div class="dtm-tl-block dtm-tl-paint" style="width:30%"></div><div class="dtm-tl-block dtm-tl-comp" style="width:12%"></div><div class="dtm-tl-block dtm-tl-idle" style="flex:1"></div></div>
+        </div>
+        <div class="dtm-section-title" style="margin-top:8px">Main thread — animating transform (good)</div>
+        <div class="dtm-timeline">
+          <div class="dtm-tl-row"><div class="dtm-tl-block dtm-tl-idle" style="flex:1"></div></div>
+          <div class="dtm-tl-row"><div class="dtm-tl-block dtm-tl-idle" style="flex:1"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p>Zoom into a dropped frame (red bar): look for a long <strong style="color:rgba(148,85,247,.9)">purple Layout bar</strong> or <strong style="color:var(--green)">green Paint bar</strong>. Those are your targets. If you see <strong>Forced reflow</strong> annotations, you have layout thrashing (see below).</p>
+
+  <div class="callout callout-industry">
+    <div class="callout-title">🌐 Industry pulse — RenderingNG rewrites the pipeline</div>
+    <p>Chrome's rendering engine was rewritten in 2021 as <strong>RenderingNG</strong>. The pipeline is no longer strictly serial: compositing now happens before paint in some cases, and a threaded paint system means more work can happen off the main thread. In practice, some paint-heavy animations that would have janked in Chrome 90 may now be smoother in Chrome 120+. But the mental model still holds: <em>avoiding pipeline stages is always better than offloading them</em>. The DevTools panels work the same way regardless.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       7. LAYOUT THRASHING
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="thrashing">Layout thrashing</h2>
+
+  <p>Layout thrashing is what happens when you interleave DOM reads and writes inside a loop — forcing the browser to flush its pending layout queue over and over instead of batching it into one pass. The code looks innocent; the Performance timeline looks catastrophic.</p>
+
+  <div class="thrash-diagram">
+    <div class="thrash-diagram-title">Per-element timeline: reads force layout flushes</div>
+    <div class="thrash-row">
+      <span class="thrash-row-label bad">Thrashing</span>
+      <div class="thrash-timeline">
+        <div class="tt-block tt-read"  style="width:8%">read</div>
+        <div class="tt-block tt-flush" style="width:9%">flush</div>
+        <div class="tt-block tt-write" style="width:7%">write</div>
+        <div class="tt-block tt-read"  style="width:8%">read</div>
+        <div class="tt-block tt-flush" style="width:9%">flush</div>
+        <div class="tt-block tt-write" style="width:7%">write</div>
+        <div class="tt-block tt-read"  style="width:8%">read</div>
+        <div class="tt-block tt-flush" style="width:9%">flush</div>
+        <div class="tt-block tt-write" style="width:7%">write</div>
+        <div class="tt-block tt-read"  style="width:8%">read</div>
+        <div class="tt-block tt-flush" style="width:9%">flush</div>
+        <div class="tt-block tt-write" style="width:7%">write</div>
+      </div>
+    </div>
+    <div class="thrash-row">
+      <span class="thrash-row-label good">Batched</span>
+      <div class="thrash-timeline">
+        <div class="tt-block tt-read"  style="width:8%">r</div>
+        <div class="tt-block tt-read"  style="width:8%">r</div>
+        <div class="tt-block tt-read"  style="width:8%">r</div>
+        <div class="tt-block tt-read"  style="width:8%">r</div>
+        <div class="tt-block tt-flush" style="width:9%">flush</div>
+        <div class="tt-block tt-write" style="width:7%">w</div>
+        <div class="tt-block tt-write" style="width:7%">w</div>
+        <div class="tt-block tt-write" style="width:7%">w</div>
+        <div class="tt-block tt-write" style="width:7%">w</div>
+        <div class="tt-idle"></div>
+      </div>
+    </div>
+    <div class="thrash-legend">
+      <div class="tl-item"><div class="tl-swatch" style="background:rgba(56,189,248,.3)"></div>Read (offsetWidth etc.)</div>
+      <div class="tl-item"><div class="tl-swatch" style="background:rgba(248,113,113,.5)"></div>Forced layout flush</div>
+      <div class="tl-item"><div class="tl-swatch" style="background:rgba(251,146,60,.3)"></div>DOM write</div>
+    </div>
+  </div>
+
+  <pre><code><span class="cmt">// ❌ Thrashing — one layout flush per element</span>
+boxes.forEach(box => {
+  <span class="kw">const</span> h = box.offsetHeight; <span class="cmt">// READ → forced flush</span>
+  box.style.height = h + <span class="val">10</span> + <span class="val">'px'</span>; <span class="cmt">// WRITE</span>
+});
+
+<span class="cmt">// ✅ Batched — one flush total</span>
+<span class="kw">const</span> heights = boxes.map(b => b.offsetHeight); <span class="cmt">// all reads</span>
+heights.forEach((h, i) => {
+  boxes[i].style.height = h + <span class="val">10</span> + <span class="val">'px'</span>; <span class="cmt">// all writes</span>
+});</code></pre>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">⚠️ These properties force a layout flush when read</div>
+    <p><code>offsetWidth</code> · <code>offsetHeight</code> · <code>offsetTop</code> · <code>offsetLeft</code> · <code>scrollWidth</code> · <code>scrollHeight</code> · <code>clientWidth</code> · <code>clientHeight</code> · <code>getBoundingClientRect()</code> · <code>getComputedStyle()</code> · <code>scrollTop</code></p>
+    <p>In the Performance timeline, thrashing shows as dozens of purple <strong>Forced reflow</strong> bars stacked in one frame — each annotated with the exact JS line that caused it.</p>
+  </div>
+
+  <div class="callout callout-hood">
+    <div class="callout-title">📐 Under the hood — dirty bits and lazy layout</div>
+    <p>When you set a layout property (<code>style.width = '200px'</code>), the browser marks that element "layout dirty" but doesn't immediately compute new geometry. It queues up dirty elements and processes them in a batch at the end of the current JS task — right before paint. This batching is almost always invisible to you. But <code>offsetWidth</code> says "I need the current computed width <em>right now</em>" — so the browser is forced to flush the dirty queue immediately to give you an accurate answer. If you then write another property and read again, you've forced a second flush. The pattern from <a href="https://github.com/wilsonpage/fastdom" target="_blank">fastdom</a>: always do all your reads, then all your writes, never interleaved.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       8. CONTAIN
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="contain">The <code>contain</code> property</h2>
+
+  <p><code>contain</code> is a containment hint that tells the browser an element's subtree is independent from the rest of the page. When an animation inside a contained element triggers layout, only that subtree is reflowed — not the entire document.</p>
+
+  <div class="contain-diagram">
+    <div class="contain-diagram-title">Layout reflow scope — without vs. with contain</div>
+    <div class="contain-toggle">
+      <button class="contain-btn active" id="cbtn-no">Without contain</button>
+      <button class="contain-btn" id="cbtn-yes">With contain: layout</button>
+    </div>
+    <div class="contain-page" id="contain-page">
+      <div class="contain-page-label">Page</div>
+      <div class="contain-sections">
+        <div class="contain-section" id="cs-header">Header</div>
+        <div class="contain-section" id="cs-nav">Navigation</div>
+        <div class="contain-section animated" id="cs-widget">Widget (animating)</div>
+        <div class="contain-section" id="cs-footer">Footer</div>
+      </div>
+      <div class="contain-ripple no-contain" id="contain-ripple"></div>
+    </div>
+    <p style="font-size:.78rem;color:var(--dim);margin-top:10px;max-width:100%" id="contain-note">Without <code>contain</code>: the widget's layout animation propagates a reflow to the entire page — header, nav, footer all get reflowed too.</p>
+  </div>
+
+  <pre><code><span class="sel">.widget</span> {
+  <span class="kw">contain</span>: <span class="val">layout</span>; <span class="cmt">/* reflow stays inside */</span>
+}
+
+<span class="sel">.offscreen-section</span> {
+  <span class="kw">content-visibility</span>: <span class="val">auto</span>; <span class="cmt">/* skip rendering entirely */</span>
+  <span class="kw">contain-intrinsic-size</span>: <span class="val">auto 300px</span>;
+}</code></pre>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 content-visibility: auto — the biggest easy win</div>
+    <p><code>content-visibility: auto</code> skips <em>all</em> rendering (style, layout, paint) for off-screen elements until the user scrolls near them. For long pages with animated cards, this can cut initial render time by 50–80%. It implicitly applies <code>contain: layout paint style</code> to off-screen elements. Add <code>contain-intrinsic-size</code> so the browser knows how much scroll space to reserve while the element is invisible.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       9. CHECKLIST
+  ═══════════════════════════════════════════════════════ -->
+  <h2 id="checklist">Ship checklist</h2>
+
+  <ul>
+    <li>✅ Only <code>transform</code> and <code>opacity</code> are animated — not <code>left</code>, <code>width</code>, <code>background-color</code></li>
+    <li>✅ Paint flashing shows no green flashes on compositor animations</li>
+    <li>✅ Layers panel shows no unexpected layer promotions</li>
+    <li>✅ <code>will-change</code> is scoped and removed after animation ends</li>
+    <li>✅ No layout property reads interleaved with writes in animation loops</li>
+    <li>✅ <code>contain: layout</code> applied to animated UI regions</li>
+    <li>✅ <code>prefers-reduced-motion</code> is respected</li>
+    <li>✅ Tested with CPU throttled 4× (mid-range mobile simulation)</li>
+  </ul>
+
+  <pre><code><span class="cmt">/* Always include this */</span>
+<span class="kw">@media</span> (prefers-reduced-motion: <span class="val">reduce</span>) {
+  *, *::before, *::after {
+    <span class="kw">animation-duration</span>:        <span class="val">0.01ms</span> <span class="val">!important</span>;
+    <span class="kw">animation-iteration-count</span>: <span class="val">1</span> <span class="val">!important</span>;
+    <span class="kw">transition-duration</span>:        <span class="val">0.01ms</span> <span class="val">!important</span>;
+  }
+}</code></pre>
+
+  <div class="callout callout-connects">
+    <div class="callout-title">🔗 Connects to</div>
+    <p><strong>Lesson 1</strong> — the full pipeline (Style → Layout → Paint → Composite) is the foundation every rule here is built on.</p>
+    <p><strong>Lesson 5</strong> — JavaScript animation with <code>requestAnimationFrame</code>: layout thrashing becomes critical when your loop runs 60× per second.</p>
+    <p><strong>Lesson 12</strong> — Advanced DevTools: flame charts, long tasks, INP profiling. The Performance tab revisited with much more depth.</p>
+  </div>
+
+  <!-- ── Further reading ── -->
+  <h2 id="sec-10">Further reading</h2>
+  <ul class="reading-list">
+    <li><span class="reading-tag tag-spec">Reference</span><a href="https://csstriggers.com" target="_blank">CSS Triggers — which pipeline stages each property triggers</a></li>
+    <li><span class="reading-tag tag-article">Article</span><a href="https://web.dev/articles/animations-guide" target="_blank">web.dev — Animations performance guide</a></li>
+    <li><span class="reading-tag tag-article">Article</span><a href="https://web.dev/articles/stick-to-compositor-only-properties-and-manage-layer-count" target="_blank">web.dev — Stick to compositor-only properties</a></li>
+    <li><span class="reading-tag tag-article">Article</span><a href="https://developer.chrome.com/docs/devtools/performance" target="_blank">Chrome DevTools — Performance reference</a></li>
+    <li><span class="reading-tag tag-article">Article</span><a href="https://web.dev/articles/content-visibility" target="_blank">web.dev — content-visibility</a></li>
+    <li><span class="reading-tag tag-tool">Tool</span><a href="https://github.com/wilsonpage/fastdom" target="_blank">fastdom — batch DOM reads/writes to prevent thrashing</a></li>
+  </ul>
+
+  <!-- ── Practical ── -->
+  <div class="practical" id="practical">
+    <h2 id="sec-11">🔨 Practical: profile and fix a janky animation</h2>
+    <ol class="practical-steps">
+      <li>Open the lesson example. Run both the <code>left</code> and <code>transform</code> balls simultaneously.</li>
+      <li>DevTools → Rendering → enable <strong>Paint flashing</strong>. Watch which track lights up green every frame.</li>
+      <li>Open <strong>Layers panel</strong>. Identify which element got its own compositor layer and why.</li>
+      <li>Performance tab → record 3 seconds → stop → zoom into one frame. Find the Layout/Paint entries from the <code>left</code> animation.</li>
+      <li>Add <code>will-change: transform</code> to the bad ball's element. Re-record. Does a new layer appear? Did the Layout bar shrink?</li>
+      <li>Now fix it properly — change <code>left</code> to <code>transform: translateX()</code>. Re-record. Compare before and after.</li>
+      <li><strong>Bonus:</strong> In the will-change explorer, promote 40+ elements simultaneously and watch the memory estimate climb.</li>
+    </ol>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ── Pipeline diagram ─────────────────────────────────── */
+const PROP_DATA = {
+  'left':        { stages: ['high','high','high','gpu'], result: '⚠️ <strong>left</strong> triggers all four stages — Style recalc, full Layout pass, repaint of the region, then composite. This is the most expensive animation pattern. Avoid it.', budget: [8,35,30,8] },
+  'width':       { stages: ['high','high','high','gpu'], result: '⚠️ <strong>width</strong> triggers Layout — the browser must recompute geometry for the element and everything that flows around it. Use <code>transform: scaleX()</code> instead for visual resizing.', budget: [8,38,28,8] },
+  'font-size':   { stages: ['high','high','high','gpu'], result: '⚠️ <strong>font-size</strong> changes text reflow geometry — triggers full Layout and repaint. Avoid animating it; use <code>transform: scale()</code> on a wrapper instead.', budget: [10,40,25,8] },
+  'color':       { stages: ['skip','skip','high','gpu'], result: '🟡 <strong>background-color</strong> skips Layout (geometry doesn\'t change) but triggers Paint — the element\'s bitmap is re-rasterized every frame. OK for hover transitions, not for continuous animations.', budget: [5,0,40,10] },
+  'box-shadow':  { stages: ['skip','skip','high','gpu'], result: '🟡 <strong>box-shadow</strong> skips Layout but triggers Paint. Animating a large box-shadow involves heavy rasterization. Use <code>opacity</code> on a pseudo-element as a performant alternative.', budget: [5,0,45,10] },
+  'transform':   { stages: ['skip','skip','skip','gpu'], result: '✅ <strong>transform</strong> skips Layout and Paint entirely. The compositor thread handles it — completely independent of the main thread. This is the target for all positional and scale animations.', budget: [0,0,0,8] },
+  'opacity':     { stages: ['skip','skip','skip','gpu'], result: '✅ <strong>opacity</strong> is compositor-only, same as transform. Perfect for fade animations. Note: animating <code>visibility</code> instead does trigger style recalc.', budget: [0,0,0,6] },
+  'filter':      { stages: ['skip','skip','high','gpu'], result: '🟡 <strong>filter: blur()</strong> is usually GPU-accelerated but requires re-rasterizing the filtered region each frame. Large blur radii on large elements are expensive. Use sparingly on mobile.', budget: [5,0,30,12] },
+};
+
+const stageEls = [
+  document.getElementById('pipe-style'),
+  document.getElementById('pipe-layout'),
+  document.getElementById('pipe-paint'),
+  document.getElementById('pipe-comp'),
+];
+const stageTimeEls = [
+  document.getElementById('pipe-style-time'),
+  document.getElementById('pipe-layout-time'),
+  document.getElementById('pipe-paint-time'),
+  document.getElementById('pipe-comp-time'),
+];
+const arrows = [
+  document.getElementById('pipe-arr-1'),
+  document.getElementById('pipe-arr-2'),
+  document.getElementById('pipe-arr-3'),
+];
+const pipeResult = document.getElementById('pipe-result');
+const STAGE_NAMES = ['Style','Layout','Paint','Composite'];
+const STAGE_TIMES = ['~1ms','~4ms','~3ms','~1ms'];
+const STAGE_TIMES_SKIP = ['—','—','—','~1ms'];
+
+function animatePipeline(prop) {
+  const data = PROP_DATA[prop];
+  stageEls.forEach(el => { el.className = 'pipe-node idle'; });
+  arrows.forEach(a => a.classList.remove('active'));
+
+  let delay = 0;
+  data.stages.forEach((cost, i) => {
+    setTimeout(() => {
+      if (cost === 'skip') {
+        stageEls[i].className = 'pipe-node skipped';
+        stageTimeEls[i].textContent = '—';
+      } else {
+        const cls = cost === 'high' ? 'done-red' : cost === 'medium' ? 'done-yellow' : 'done-accent';
+        stageEls[i].className = 'pipe-node firing ' + cls;
+        stageTimeEls[i].textContent = cost === 'gpu' ? '~1ms' : STAGE_TIMES[i];
+        stageEls[i].querySelector('.pipe-node-time').style.opacity = '1';
+        setTimeout(() => { stageEls[i].classList.remove('firing'); }, 500);
+      }
+      if (i < 3) arrows[i].classList.toggle('active', cost !== 'skip');
+    }, delay);
+    delay += cost !== 'skip' ? 200 : 80;
+  });
+
+  setTimeout(() => { pipeResult.innerHTML = data.result; }, delay);
+  updateBudget(prop, data);
+}
+
+function updateBudget(prop, data) {
+  const b = data.budget;
+  const total = b[0] + b[1] + b[2] + b[3];
+  const spare = Math.max(0, 100 - total);
+  document.getElementById('fb-style').style.width  = b[0] + '%';
+  document.getElementById('fb-layout').style.width = b[1] + '%';
+  document.getElementById('fb-paint').style.width  = b[2] + '%';
+  document.getElementById('fb-comp').style.width   = b[3] + '%';
+  document.getElementById('fb-style').style.display  = b[0] ? '' : 'none';
+  document.getElementById('fb-layout').style.display = b[1] ? '' : 'none';
+  document.getElementById('fb-paint').style.display  = b[2] ? '' : 'none';
+  document.getElementById('fb-prop-name').textContent = prop;
+
+  const notes = {
+    'left': 'Animating <code>left</code>: Layout walks the entire subtree — typically the biggest cost.',
+    'width': 'Animating <code>width</code>: layout reflow propagates to all affected siblings and ancestors.',
+    'font-size': 'Animating <code>font-size</code>: triggers full text reflow and repaint.',
+    'color': 'Animating <code>background-color</code>: skips layout but re-rasterizes pixels every frame.',
+    'box-shadow': 'Animating <code>box-shadow</code>: rasterization cost grows with shadow size and blur.',
+    'transform': 'Animating <code>transform</code>: zero layout, zero paint — the compositor just updates a matrix.',
+    'opacity': 'Animating <code>opacity</code>: identical to transform — compositor only, near-zero cost.',
+    'filter': 'Animating <code>filter: blur()</code>: GPU-accelerated but re-rasterizes the filtered region.',
+  };
+  document.getElementById('fb-note').innerHTML = notes[prop] || '';
+}
+
+document.querySelectorAll('.prop-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.prop-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    animatePipeline(btn.dataset.prop);
+  });
+});
+animatePipeline('left');
+
+/* ── Paint flash simulation ───────────────────────────── */
+let flashOn = false;
+let flashInterval = null;
+const pfsToggle = document.getElementById('pfs-toggle');
+const badTrack = document.getElementById('cr-track-bad');
+
+pfsToggle.addEventListener('click', () => {
+  flashOn = !flashOn;
+  pfsToggle.classList.toggle('on', flashOn);
+  pfsToggle.innerHTML = `<span class="pfs-dot"></span>${flashOn ? 'On' : 'Off'}`;
+  if (flashOn) {
+    flashInterval = setInterval(() => {
+      badTrack.classList.add('flashing');
+      setTimeout(() => badTrack.classList.remove('flashing'), 60);
+    }, 120);
+  } else {
+    clearInterval(flashInterval);
+    badTrack.classList.remove('flashing');
+  }
+});
+
+// Fix transform ball width
+function fixTransformBall() {
+  const t = document.getElementById('cr-track-good');
+  if (t) document.querySelector('.cr-ball-good').style.setProperty('--cr-tw', t.clientWidth + 'px');
+}
+fixTransformBall();
+window.addEventListener('resize', fixTransformBall);
+
+/* ── Layer stack ──────────────────────────────────────── */
+const layerStates = [
+  { lbody: false, lcard: false, lmodal: false, mem: '~800 KB', label: 'Total GPU memory: ~800 KB' },
+  { lbody: true,  lcard: false, lmodal: false, mem: '~848 KB', label: 'Total GPU memory: ~848 KB (+48 KB for fixed header)' },
+  { lbody: true,  lcard: true,  lmodal: false, mem: '~944 KB', label: 'Total GPU memory: ~944 KB (+96 KB for will-change card)' },
+  { lbody: true,  lcard: true,  lmodal: true,  mem: '~1.1 MB', label: 'Total GPU memory: ~1.1 MB — getting expensive on mobile' },
+];
+const lpBody  = document.getElementById('lp-body');
+const lpCard  = document.getElementById('lp-card');
+const lpModal = document.getElementById('lp-modal');
+const lMemEl  = document.getElementById('layer-mem-total');
+
+document.querySelectorAll('[id^="lbtn-"]').forEach((btn, i) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[id^="lbtn-"]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const s = layerStates[i];
+    lpBody.style.opacity  = s.lbody  ? '1' : '0';
+    lpCard.style.opacity  = s.lcard  ? '1' : '0';
+    lpModal.style.opacity = s.lmodal ? '1' : '0';
+    lMemEl.textContent = s.label;
+    lMemEl.style.color = i >= 3 ? 'var(--red)' : i >= 2 ? 'var(--yellow)' : 'var(--cyan)';
+  });
+});
+
+/* ── Contain diagram ──────────────────────────────────── */
+let containMode = 'no';
+document.getElementById('cbtn-no').addEventListener('click', () => {
+  containMode = 'no';
+  document.getElementById('cbtn-no').classList.add('active');
+  document.getElementById('cbtn-yes').classList.remove('active');
+  document.getElementById('cs-widget').classList.remove('isolated');
+  document.getElementById('contain-ripple').className = 'contain-ripple no-contain';
+  document.getElementById('contain-note').innerHTML = 'Without <code>contain</code>: the widget\'s layout animation propagates a reflow to the entire page — header, nav, footer all get reflowed too.';
+});
+document.getElementById('cbtn-yes').addEventListener('click', () => {
+  containMode = 'yes';
+  document.getElementById('cbtn-yes').classList.add('active');
+  document.getElementById('cbtn-no').classList.remove('active');
+  document.getElementById('cs-widget').classList.add('isolated');
+  document.getElementById('contain-ripple').className = 'contain-ripple with-contain';
+  document.getElementById('contain-note').innerHTML = 'With <code>contain: layout</code>: the reflow is bounded to the widget\'s subtree. Header, nav, and footer never see it.';
+});
+
+/* ── DevTools frames row ──────────────────────────────── */
+const framesEl = document.getElementById('dt-frames');
+const framePattern = ['green','green','green','green','green','yellow','red','green','green','green','green','green','yellow','red','green','green'];
+framePattern.forEach(c => {
+  const f = document.createElement('div');
+  f.className = 'dtm-frame ' + c;
+  framesEl.appendChild(f);
+});
+</script>
+
+<link rel="stylesheet" href="../../skin-anim.css">
+<script src="../../../../registry.js"></script>
+<script src="../../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

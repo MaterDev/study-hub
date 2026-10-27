@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 1: The Browser Rendering Pipeline</title>
+  <style>
+    :root {
+      --bg: #f4f8fd;
+      --surface: #ffffff;
+      --surface-2: #f3f6fc;
+      --border: #c3d3e6;
+      --text: #2a3150;
+      --text-muted: #525c83;
+      --accent: #4a6fa8;
+      --accent-dim: #e1e9f7;
+      --green: #3a7a52;
+      --green-dim: #e3f2e8;
+      --yellow: #b8902e;
+      --yellow-dim: #fbf0d2;
+      --red: #b35c5c;
+      --red-dim: #f8e2e2;
+      --purple: #7d68b3;
+      --purple-dim: #ece6f8;
+      --code-bg: #353d5e;
+      --radius: 8px;
+      --font-mono: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    /* Layout */
+    .lesson-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 0 32px;
+    }
+
+    .lesson-header-inner {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .lesson-meta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .badge-lesson { background: var(--accent-dim); color: var(--accent); }
+    .badge-foundational { background: var(--green-dim); color: var(--green); }
+    .badge-time { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .lesson-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .lesson-header .subtitle {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 580px;
+    }
+
+    /* Content */
+    .content {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 56px 32px 80px;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 56px 0 16px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 32px 0 10px;
+      color: var(--text);
+    }
+
+    p { margin-bottom: 20px; color: var(--text); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong { color: #fff; font-weight: 600; }
+
+    /* Callout boxes */
+    .callout {
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 28px 0;
+      border-left: 3px solid;
+      font-size: 15.5px;
+    }
+
+    .callout-label {
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .callout p { margin: 0; }
+
+    .callout-insight { background: var(--accent-dim); border-color: var(--accent); }
+    .callout-insight .callout-label { color: var(--accent); }
+
+    .callout-mistake { background: var(--red-dim); border-color: var(--red); }
+    .callout-mistake .callout-label { color: var(--red); }
+
+    .callout-connects { background: var(--purple-dim); border-color: var(--purple); }
+    .callout-connects .callout-label { color: var(--purple); }
+
+    .callout-devtools { background: var(--green-dim); border-color: var(--green); }
+    .callout-devtools .callout-label { color: var(--green); }
+
+    /* Code */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 24px 0;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #2f4f86;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    /* Syntax highlight colors */
+    .kw { color: #c792ea; }
+    .str { color: #c3e88d; }
+    .num { color: #f78c6c; }
+    .cmt { color: #546e7a; font-style: italic; }
+    .fn { color: #82aaff; }
+    .prop { color: #ffcb6b; }
+    .tag { color: #f07178; }
+    .val { color: #c3e88d; }
+
+    /* Cost table */
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 15px;
+    }
+
+    .cost-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cost-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .cost-table tr:last-child td { border-bottom: none; }
+
+    .cost-high { color: var(--red); font-weight: 600; }
+    .cost-med { color: var(--yellow); font-weight: 600; }
+    .cost-low { color: var(--green); font-weight: 600; }
+
+    /* Example link */
+    .example-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      margin: 8px 0 24px;
+      transition: opacity 0.15s;
+    }
+    .example-link:hover { opacity: 0.85; text-decoration: none; }
+
+    /* Further reading */
+    .reading-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .reading-list li {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .reading-list li:last-child { border-bottom: none; }
+
+    .reading-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 3px;
+      white-space: nowrap;
+      margin-top: 3px;
+    }
+
+    .tag-spec { background: var(--accent-dim); color: var(--accent); }
+    .tag-article { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+    .tag-deep { background: var(--purple-dim); color: var(--purple); }
+
+    .reading-list a { font-weight: 500; }
+    .reading-list p { margin: 2px 0 0; font-size: 14px; color: var(--text-muted); }
+
+    /* Practical anchor */
+    .practical-anchor {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-top: 48px;
+    }
+
+    .practical-anchor h2 {
+      border: none;
+      margin-top: 0;
+      padding-top: 0;
+      font-size: 18px;
+    }
+
+    .practical-anchor ul {
+      padding-left: 20px;
+      margin-top: 12px;
+    }
+
+    .practical-anchor ul li {
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    /* SVG diagram container */
+    .diagram {
+      margin: 32px 0;
+      overflow-x: auto;
+    }
+
+    .diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+    /* Progress indicator */
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 64px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .lesson-nav a {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ HEADER ══ -->
+<header class="lesson-header">
+  <div class="lesson-header-inner">
+    <div class="lesson-meta">
+      <span class="badge badge-lesson">Lesson 01</span>
+      <span class="badge badge-foundational">Foundational</span>
+      <span class="badge badge-time">⏱ 15–18 min read</span>
+    </div>
+    <h1>The Browser Rendering Pipeline</h1>
+    <p class="subtitle">Before you write a single line of animation code, you need to understand what the browser does with it. This is the mental model every lesson builds on.</p>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════ CONTENT ══ -->
+<main class="content">
+
+  <!-- 1. OPENING HOOK -->
+  <h2 id="sec-1">Why this matters</h2>
+
+  <p>Here's a question: why does animating <code>left: 100px</code> sometimes cause your page to stutter, while animating <code>transform: translateX(100px)</code> — which moves an element the exact same distance — stays silky smooth?</p>
+
+  <p>The answer has nothing to do with CSS syntax. It's about what happens <em>inside the browser</em> after you write that line. The browser has a specific pipeline it runs every time it needs to put pixels on screen, and different CSS properties enter that pipeline at different stages. Some force the browser to redo expensive work from scratch. Others skip straight to the cheap part.</p>
+
+  <p>Once you understand this pipeline, you'll never guess at performance again. You'll <em>know</em> the cost of what you're writing — and that instinct will follow you from CSS animations all the way through to WebGL shaders.</p>
+
+  <!-- 2. MENTAL MODEL -->
+  <h2 id="sec-2">The mental model</h2>
+
+  <p>Think of the browser's rendering work as an assembly line. Raw materials (your HTML and CSS) go in one end, and finished pixels come out the other. The line has four main stations:</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 680 120" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+      <!-- Background -->
+      <rect width="680" height="120" fill="#f4f8fd" rx="10"/>
+
+      <!-- Stage boxes -->
+      <!-- Style -->
+      <rect x="20" y="30" width="130" height="60" rx="8" fill="#e1e9f7" stroke="#4a6fa8" stroke-width="1.5"/>
+      <text x="85" y="56" text-anchor="middle" fill="#4a6fa8" font-size="11" font-weight="700" letter-spacing="0.05em">STYLE</text>
+      <text x="85" y="74" text-anchor="middle" fill="#525c83" font-size="10">Match CSS rules</text>
+      <text x="85" y="87" text-anchor="middle" fill="#525c83" font-size="10">to elements</text>
+
+      <!-- Arrow -->
+      <path d="M152 60 L172 60" stroke="#c3d3e6" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- Layout -->
+      <rect x="174" y="30" width="130" height="60" rx="8" fill="#f8e2e2" stroke="#b35c5c" stroke-width="1.5"/>
+      <text x="239" y="56" text-anchor="middle" fill="#b35c5c" font-size="11" font-weight="700" letter-spacing="0.05em">LAYOUT</text>
+      <text x="239" y="74" text-anchor="middle" fill="#525c83" font-size="10">Calculate size</text>
+      <text x="239" y="87" text-anchor="middle" fill="#525c83" font-size="10">&amp; position</text>
+
+      <!-- Arrow -->
+      <path d="M306 60 L326 60" stroke="#c3d3e6" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- Paint -->
+      <rect x="328" y="30" width="130" height="60" rx="8" fill="#fbf0d2" stroke="#b8902e" stroke-width="1.5"/>
+      <text x="393" y="56" text-anchor="middle" fill="#b8902e" font-size="11" font-weight="700" letter-spacing="0.05em">PAINT</text>
+      <text x="393" y="74" text-anchor="middle" fill="#525c83" font-size="10">Draw pixels into</text>
+      <text x="393" y="87" text-anchor="middle" fill="#525c83" font-size="10">layer bitmaps</text>
+
+      <!-- Arrow -->
+      <path d="M460 60 L480 60" stroke="#c3d3e6" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- Composite -->
+      <rect x="482" y="30" width="178" height="60" rx="8" fill="#e3f2e8" stroke="#3a7a52" stroke-width="1.5"/>
+      <text x="571" y="56" text-anchor="middle" fill="#3a7a52" font-size="11" font-weight="700" letter-spacing="0.05em">COMPOSITE</text>
+      <text x="571" y="74" text-anchor="middle" fill="#525c83" font-size="10">Stack layers, send</text>
+      <text x="571" y="87" text-anchor="middle" fill="#525c83" font-size="10">to GPU → screen</text>
+
+      <!-- Arrow marker -->
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#c3d3e6"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <p>Each station does specific work. And critically — if a CSS property change affects an early station, <strong>every station after it has to re-run</strong>. Change something that affects layout, and the browser re-layouts, re-paints, and re-composites. Change something that only affects compositing, and only that last station runs.</p>
+
+  <p>That's the whole game. Animate at the cheapest station possible.</p>
+
+  <!-- 3. HOW IT WORKS -->
+  <h2 id="sec-3">How it works</h2>
+
+  <h3>Stage 1 — Style</h3>
+  <p>The browser parses your CSS and figures out which rules apply to which elements. This produces the <strong>computed style</strong> for every node — the final set of property values after cascade and inheritance. This runs every time styles change.</p>
+
+  <h3>Stage 2 — Layout</h3>
+  <p>Also called <strong>reflow</strong>. The browser calculates the size and position of every element on the page. This is expensive because layout is <em>relational</em> — changing the width of one element might affect the position of everything that comes after it. Layout is re-triggered whenever you change any property that affects how much space an element takes up:</p>
+
+  <pre><code><span class="cmt">/* These properties trigger Layout — avoid animating them */</span>
+<span class="prop">width</span>, <span class="prop">height</span>, <span class="prop">margin</span>, <span class="prop">padding</span>
+<span class="prop">top</span>, <span class="prop">left</span>, <span class="prop">right</span>, <span class="prop">bottom</span>  <span class="cmt">/* with position: relative/absolute */</span>
+<span class="prop">font-size</span>, <span class="prop">line-height</span>
+<span class="prop">border-width</span>, <span class="prop">display</span></code></pre>
+
+  <h3>Stage 3 — Paint</h3>
+  <p>Once the browser knows where everything goes, it draws the visual appearance of each element into bitmaps (think: pixel grids). This includes background colors, borders, text, shadows, and images. Paint is also expensive, but less so than layout — it doesn't have to re-calculate positions, just draw.</p>
+
+  <pre><code><span class="cmt">/* These trigger Paint but skip Layout */</span>
+<span class="prop">background-color</span>
+<span class="prop">color</span>
+<span class="prop">box-shadow</span>, <span class="prop">text-shadow</span>
+<span class="prop">border-color</span>, <span class="prop">outline</span></code></pre>
+
+  <h3>Stage 4 — Composite</h3>
+  <p>Here's where it gets interesting. The browser doesn't paint one big flat image — it maintains a set of <strong>layers</strong>, each rasterized separately. The composite stage takes those layers, hands them to the GPU, and the GPU assembles them into the final frame you see on screen.</p>
+
+  <p>This stage runs on the <strong>compositor thread</strong>, which is separate from the main thread where your JavaScript runs. That separation is the key insight: if an animation only requires compositing work, the browser can keep it running smoothly <em>even if your main thread is busy doing something else</em>.</p>
+
+  <pre><code><span class="cmt">/* These only trigger Composite — the safe zone */</span>
+<span class="prop">transform</span>  <span class="cmt">/* translate, rotate, scale, skew */</span>
+<span class="prop">opacity</span>
+<span class="cmt">/* Also increasingly safe in modern browsers: */</span>
+<span class="prop">filter</span>     <span class="cmt">/* blur, brightness, etc. */</span>
+<span class="prop">clip-path</span>  <span class="cmt">/* on some transforms */</span></code></pre>
+
+  <div class="callout callout-insight">
+    <span class="callout-label">💡 Key insight</span>
+    <p><code>transform: translateX(100px)</code> and <code>left: 100px</code> move an element the same distance visually, but one is free and the other is expensive. <code>transform</code> is applied at the composite stage — the browser doesn't recalculate layout, it just tells the GPU to shift the layer. <code>left</code> changes geometry and forces the whole pipeline to re-run.</p>
+  </div>
+
+  <h3>The 16ms budget</h3>
+  <p>Most displays refresh at 60Hz — 60 frames per second. That means the browser has <strong>16.67 milliseconds</strong> to run the entire pipeline and produce a new frame. Miss that deadline, and you drop a frame. Drop frames, and the user sees stutter.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 680 90" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+      <rect width="680" height="90" fill="#f4f8fd" rx="10"/>
+
+      <!-- Timeline bar -->
+      <rect x="20" y="30" width="640" height="30" rx="4" fill="#ffffff" stroke="#c3d3e6" stroke-width="1"/>
+
+      <!-- 16ms budget marker -->
+      <rect x="20" y="30" width="213" height="30" rx="4" fill="#e3f2e8" stroke="#3a7a52" stroke-width="1.5"/>
+      <text x="117" y="50" text-anchor="middle" fill="#3a7a52" font-size="12" font-weight="600">≤ 16.67ms budget</text>
+
+      <!-- Missed frame zone -->
+      <rect x="233" y="30" width="427" height="30" rx="0" fill="#f8e2e2" opacity="0.5"/>
+      <text x="446" y="50" text-anchor="middle" fill="#b35c5c" font-size="12">frame dropped — user sees jank</text>
+
+      <!-- Divider line -->
+      <line x1="233" y1="20" x2="233" y2="70" stroke="#b35c5c" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+      <!-- Label -->
+      <text x="20" y="16" fill="#525c83" font-size="11">0ms</text>
+      <text x="209" y="16" fill="#3a7a52" font-size="11">16.67ms</text>
+    </svg>
+  </div>
+
+  <h3>Layers: the compositing trick</h3>
+  <p>The browser decides which elements get their own compositor layer. Elements on separate layers can move, fade, or transform independently without affecting the paint of other elements. This is why layer promotion is such a useful performance tool — and why it can also backfire if overused (each layer costs GPU memory).</p>
+
+  <p>Elements are promoted to their own layer when:</p>
+  <ul style="padding-left: 20px; margin-bottom: 20px;">
+    <li style="margin-bottom: 8px;">They have a CSS <code>transform</code> that the browser detects as animated</li>
+    <li style="margin-bottom: 8px;">They use <code>will-change: transform</code> or <code>will-change: opacity</code></li>
+    <li style="margin-bottom: 8px;">They have a 3D transform applied (<code>translateZ(0)</code>, <code>translate3d()</code>)</li>
+    <li style="margin-bottom: 8px;">They are a <code>&lt;video&gt;</code>, <code>&lt;canvas&gt;</code>, or <code>&lt;iframe&gt;</code></li>
+    <li style="margin-bottom: 8px;">They use certain CSS filters</li>
+  </ul>
+
+  <div class="callout callout-mistake">
+    <span class="callout-label">⚠️ Common mistake</span>
+    <p>Adding <code>will-change: transform</code> to everything as a "performance boost." Layer promotion isn't free — each layer consumes GPU memory. On mobile devices especially, creating too many layers can actually <em>hurt</em> performance. Use it surgically, on elements you know will animate.</p>
+  </div>
+
+  <!-- 4. CODE IN PRACTICE -->
+  <h2 id="sec-4">Code in practice</h2>
+
+  <h3>The expensive way vs. the right way</h3>
+  <p>Here's the same animation done both ways. The difference in code is small. The difference in pipeline cost is enormous.</p>
+
+  <pre><code><span class="cmt">/* ❌ Triggers Layout + Paint + Composite every frame */</span>
+<span class="tag">.box-bad</span> {
+  <span class="prop">position</span>: <span class="val">relative</span>;
+  <span class="prop">transition</span>: <span class="val">left 0.3s ease</span>;
+}
+<span class="tag">.box-bad:hover</span> {
+  <span class="prop">left</span>: <span class="val">200px</span>; <span class="cmt">/* triggers layout! */</span>
+}
+
+<span class="cmt">/* ✅ Only triggers Composite — stays on GPU thread */</span>
+<span class="tag">.box-good</span> {
+  <span class="prop">transition</span>: <span class="val">transform 0.3s ease</span>;
+}
+<span class="tag">.box-good:hover</span> {
+  <span class="prop">transform</span>: <span class="val">translateX(200px)</span>; <span class="cmt">/* compositor only */</span>
+}</code></pre>
+
+  <h3>Individual transform properties (modern CSS)</h3>
+  <p>Since 2022, browsers support individual transform properties — <code>translate</code>, <code>rotate</code>, and <code>scale</code> — as first-class CSS properties. This makes it much easier to animate one transform independently without overwriting others:</p>
+
+  <pre><code><span class="cmt">/* Modern — each property is independent and animatable */</span>
+<span class="tag">.card</span> {
+  <span class="prop">translate</span>: <span class="val">0 0</span>;
+  <span class="prop">scale</span>: <span class="val">1</span>;
+  <span class="prop">rotate</span>: <span class="val">0deg</span>;
+  <span class="prop">transition</span>: <span class="val">translate 0.3s ease, scale 0.2s ease</span>;
+}
+
+<span class="tag">.card:hover</span> {
+  <span class="prop">translate</span>: <span class="val">0 -8px</span>; <span class="cmt">/* move up */</span>
+  <span class="prop">scale</span>: <span class="val">1.02</span>;        <span class="cmt">/* scale slightly */</span>
+}</code></pre>
+
+  <h3>The CSS properties cost table</h3>
+  <table class="cost-table">
+    <thead>
+      <tr>
+        <th>Property Examples</th>
+        <th>Pipeline Entry Point</th>
+        <th>Cost</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>width</code>, <code>height</code>, <code>top</code>, <code>margin</code>, <code>font-size</code></td>
+        <td>Layout</td>
+        <td class="cost-high">High</td>
+        <td>Avoid animating</td>
+      </tr>
+      <tr>
+        <td><code>background-color</code>, <code>box-shadow</code>, <code>color</code></td>
+        <td>Paint</td>
+        <td class="cost-med">Medium</td>
+        <td>Use sparingly</td>
+      </tr>
+      <tr>
+        <td><code>transform</code>, <code>opacity</code></td>
+        <td>Composite</td>
+        <td class="cost-low">Low</td>
+        <td>Freely animate</td>
+      </tr>
+      <tr>
+        <td><code>filter</code>, <code>clip-path</code></td>
+        <td>Composite (modern browsers)</td>
+        <td class="cost-low">Low–Med</td>
+        <td>Usually fine, check support</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 5. PERFORMANCE & DEBUGGING -->
+  <h2 id="sec-5">Performance &amp; debugging</h2>
+
+  <h3>Seeing the pipeline in DevTools</h3>
+  <p>Chrome DevTools gives you direct visibility into every stage of the pipeline. Here's the workflow to establish right now — you'll use it constantly:</p>
+
+  <div class="callout callout-devtools">
+    <span class="callout-label">🛠 DevTools tip — Paint flashing</span>
+    <p>Open DevTools → More tools → Rendering → Enable <strong>"Paint flashing"</strong>. Green overlays will appear on any element the browser repaints. Run your animation. If you see green flashing on things that shouldn't be changing, you have an unexpected paint cost. This is the fastest way to spot expensive animations.</p>
+  </div>
+
+  <div class="callout callout-devtools">
+    <span class="callout-label">🛠 DevTools tip — Layers panel</span>
+    <p>Open DevTools → More tools → <strong>Layers</strong>. This shows a 3D view of every compositor layer on the page. Click a layer to see why it was promoted (the "Compositing Reasons" panel). Use this to verify your animated elements are on their own layers — and to catch cases where too many layers are being created.</p>
+  </div>
+
+  <div class="callout callout-devtools">
+    <span class="callout-label">🛠 DevTools tip — Performance panel</span>
+    <p>Record a performance trace while your animation runs. Look at the <strong>Frames</strong> row — green bars are frames that hit 60fps, red/yellow bars are dropped frames. Click into any frame to see the breakdown: how long was spent in Layout, Paint, and Composite. This tells you exactly which stage is eating your budget.</p>
+  </div>
+
+  <h3>Layout thrashing</h3>
+  <p>There's a particularly painful version of Layout cost called <strong>layout thrashing</strong> — where JavaScript alternates between reading and writing layout properties, forcing the browser to recalculate layout multiple times per frame instead of once.</p>
+
+  <pre><code><span class="cmt">/* ❌ Layout thrashing — forces multiple layout recalculations */</span>
+<span class="kw">const</span> <span class="prop">boxes</span> = document.<span class="fn">querySelectorAll</span>(<span class="str">'.box'</span>);
+boxes.<span class="fn">forEach</span>(<span class="prop">box</span> => {
+  <span class="kw">const</span> <span class="prop">width</span> = box.<span class="prop">offsetWidth</span>; <span class="cmt">// READ — forces layout</span>
+  box.style.<span class="prop">width</span> = <span class="prop">width</span> * <span class="num">2</span> + <span class="str">'px'</span>; <span class="cmt">// WRITE — invalidates layout</span>
+  <span class="cmt">// Next iteration: read again → forces recalculation again!</span>
+});
+
+<span class="cmt">/* ✅ Batch reads, then writes */</span>
+<span class="kw">const</span> <span class="prop">widths</span> = [...boxes].<span class="fn">map</span>(<span class="prop">box</span> => box.<span class="prop">offsetWidth</span>); <span class="cmt">// all reads</span>
+boxes.<span class="fn">forEach</span>((<span class="prop">box</span>, <span class="prop">i</span>) => {
+  box.style.<span class="prop">width</span> = <span class="prop">widths</span>[<span class="prop">i</span>] * <span class="num">2</span> + <span class="str">'px'</span>; <span class="cmt">// all writes</span>
+});</code></pre>
+
+  <!-- 6. CONNECTIONS -->
+  <h2 id="sec-6">Connections</h2>
+
+  <div class="callout callout-connects">
+    <span class="callout-label">🔗 What this unlocks</span>
+    <p><strong>Lesson 2</strong> dives into CSS transitions and transforms — now you know exactly why <code>transform</code> is the foundation of everything. <strong>Lesson 4</strong> returns to the DevTools workflow with a full debugging session. <strong>Lesson 12</strong> (DevTools Mastery) covers the Performance panel in depth. <strong>Lesson 13</strong> (WebGL) revisits the composite stage from the inside — you'll be writing the code that runs on the GPU side of this pipeline.</p>
+  </div>
+
+  <p>Every time a new technique is introduced in the lessons ahead, ask yourself: <em>which stage of the pipeline does this touch?</em> That question will serve you well all the way to WebGPU compute shaders.</p>
+
+  <!-- 7. FURTHER READING -->
+  <h2 id="sec-7">Further reading</h2>
+
+  <ul class="reading-list">
+    <li>
+      <span class="reading-tag tag-spec">MDN</span>
+      <div>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work" target="_blank">How browsers work — MDN</a>
+        <p>Authoritative, comprehensive walkthrough of the full browser pipeline from parsing to pixels.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-spec">Google</span>
+      <div>
+        <a href="https://web.dev/articles/rendering-performance" target="_blank">Rendering Performance — web.dev</a>
+        <p>Google's reference on the pipeline, the 60fps budget, and which CSS properties affect which stages.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-article">Article</span>
+      <div>
+        <a href="https://web.dev/animations-guide/" target="_blank">How to create high-performance CSS animations — web.dev</a>
+        <p>Practical guide to choosing compositor-safe properties, with DevTools walkthroughs.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-deep">Deep dive</span>
+      <div>
+        <a href="https://developer.chrome.com/blog/inside-browser-part3" target="_blank">Inside look at modern web browsers (Part 3) — Chrome Developers</a>
+        <p>Unusually clear explanation of how the renderer process works, from the Chrome team.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-article">Article</span>
+      <div>
+        <a href="https://webperf.tips/tip/layers-and-compositing/" target="_blank">Layers and Compositing — webperf.tips</a>
+        <p>Focused, practical look at how and why browsers create compositor layers.</p>
+      </div>
+    </li>
+  </ul>
+
+  <!-- 8. PRACTICAL ANCHOR -->
+  <div class="practical-anchor">
+    <h2 id="sec-8">🔨 Practical anchor — Build it</h2>
+    <p>Open the example project linked below. It has two animated boxes side by side, and a live DevTools exercise guide. Your tasks:</p>
+    <ul>
+      <li>Toggle between the "expensive" and "performant" versions of the animation and observe the difference in the Layers panel</li>
+      <li>Enable paint flashing in DevTools and watch which version repaints on every frame</li>
+      <li>Use the Performance panel to record both animations and compare the Layout/Paint/Composite breakdown in the flame chart</li>
+      <li>Add <code>will-change: transform</code> to the performant version and see the layer appear in the Layers panel</li>
+    </ul>
+    <br/>
+    <a href="../examples/lesson-01-browser-rendering-pipeline/index.html" class="example-link" target="_blank">
+      ↗ Open example project
+    </a>
+    <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Run a local server from the project root on port 9999 to use this. Example: <code>npx serve . -p 9999</code></p>
+  </div>
+
+  <!-- Nav -->
+  <nav class="lesson-nav">
+    <span>← Start of curriculum</span>
+    <a href="lesson-02-css-transitions-transforms.html">Lesson 2: CSS Transitions &amp; Transforms →</a>
+  </nav>
+
+</main>
+
+<link rel="stylesheet" href="../../skin-anim.css">
+<script src="../../../../registry.js"></script>
+<script src="../../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Levels: the Pinball Machine and Its Pucks</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .ce-btn{background:var(--cobalt); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .ce-btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .ce-btn:focus-visible,.ce-tab:focus-visible,.ce-opt:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .ce-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ce-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); min-width:0; flex:1 1 200px;}
+  .ce-ctl input[type=range]{width:100%; accent-color:var(--cobalt);}
+  .ce-chk{display:flex; gap:6px; align-items:center; font-family:var(--font-ui); font-size:.8rem; color:var(--ink);} .ce-chk input{accent-color:var(--cobalt);}
+  .ce-cv{display:block; width:100%; height:auto; border:2px solid var(--outline); border-radius:10px; background:var(--surface);}
+  .ce-two{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.ce-two{grid-template-columns:minmax(0,1fr);}}
+  .ce-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .ce-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .ce-note{font-family:var(--font-ui); font-size:.86rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .ce-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;}
+  .ce-tab{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:7px 11px; font:700 .76rem var(--font-ui); cursor:pointer;} .ce-tab.on{background:var(--cobalt); color:#fff;}
+  .ce-st{font-weight:800; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); display:inline-block;} .ce-st.ok{border-color:var(--forest); background:var(--forest-soft);} .ce-st.mix{border-color:var(--ochre); background:var(--ochre-soft);} .ce-st.no{border-color:var(--vermil); background:var(--vermil-soft);}
+  .ce-bar{height:14px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden; margin:4px 0 8px;} .ce-bar i{display:block; height:100%; width:0; transition:width .25s;}
+  .ce-scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .ce-tag{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .ce-say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .ce-opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px;}
+  .ce-opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .8rem var(--font-ui); cursor:pointer; text-align:left;}
+  .ce-opt:hover{border-color:var(--cobalt);} .ce-opt.good{border-color:var(--forest); background:var(--forest-soft);} .ce-opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .ce-why{font-size:.86rem; color:var(--ink-soft); margin-top:10px; min-height:3em;} .ce-why b{color:var(--ink);}
+  .ce-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+  .ce-legend{display:flex; gap:14px; flex-wrap:wrap; font-family:var(--font-ui); font-size:.78rem; color:var(--ink); margin:8px 0 0;}
+  .ce-dot{display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:5px; vertical-align:-1px; border:1px solid var(--outline);}
+  .ce-pair{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px;} @media(max-width:560px){.ce-pair{grid-template-columns:minmax(0,1fr);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Levels: the Pinball Machine and Its Pucks</h1>
+  <p class="subtitle">Douglas Hofstadter's 1982 dialogue asks who pushes whom around inside a head. Its first move is not about minds at all: it is a box of bouncing marbles that looks chaotic at one speed and orderly at another. This lesson builds that box and uses it to explain what a "level of description" is.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The question: who shoves whom?</a></li>
+      <li><a href="#sec2">A box of marbles and heavy pucks (interactive)</a></li>
+      <li><a href="#sec3">Two film speeds, two stories (interactive)</a></li>
+      <li><a href="#sec4">Pucks built from marbles: symmballs (interactive)</a></li>
+      <li><a href="#sec5">One thing, two vocabularies (interactive)</a></li>
+      <li><a href="#sec6">Which level answers the question? (practice)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The question: who shoves whom?</h2>
+  <p class="lead">The dialogue stars two characters, Achilles and a Tortoise. Achilles has seen a book about how molecules determine our behaviour, and he objects. He is made of molecules, he agrees. But he moves his fingers when he decides to play his cello, so surely <b>he</b> shoves the molecules around, not the other way about?</p>
+  <p>The Tortoise does not answer yes or no. He changes the question. "Fingers" is already a shorthand for a huge number of molecules moving together, and "free will", he suggests, may be a shorthand for a huge number of tendencies in the brain. If so, the useful question is not "which thing is the boss?" It is <b>how do two levels of description relate</b>, one about the many small things and one about the few large patterns they make?</p>
+  <p>To make that concrete he builds an imaginary machine. Hofstadter calls it the <b>careenium</b>: a flat box of bouncing marbles, a cross between a pinball table and a pool table. Nothing about it is mystical, and that is the point. If the puzzle can be stated and partly answered for a box of marbles, then the answer cannot depend on anything spooky. This lesson stays inside the box. The next lessons ask what happens when it starts to perceive and speak.</p>
+
+  <h2 id="sec2"><span class="num">2</span> A box of marbles and heavy pucks</h2>
+  <p>The first version has two kinds of object. <b>Marbles</b> are light and fast. <b>Pucks</b> are heavy and sliding, like hockey pucks. The marbles bounce off the walls and off the pucks; each hit nudges a puck a little. To a viewer who watches the marbles at normal speed, the pucks barely move, so they look like fixed pins that decide where the marbles go. That is how a pinball table works.</p>
+  <p>The simulation below follows the same idea with real collisions. Marbles are mass 1; each puck is 60 times heavier (an illustrative number, not from the paper). The marbles do not collide with each other, which keeps the model simple. Move the <b>film speed</b> slider: it sets how many moments of the motion are packed into every frame you see. Watch what happens to the marbles and to the trails of the pucks.</p>
+  <div class="stage" data-testid="careenium-box">
+    <canvas class="ce-cv" id="bx-cv" width="640" height="360" role="img" aria-label="A box of small bouncing marbles and five large pucks. The pucks leave coloured trails."></canvas>
+    <div class="ce-legend"><span><i class="ce-dot" style="background:var(--cobalt)"></i>marble (light, fast)</span><span><i class="ce-dot" style="background:var(--vermil)"></i>puck (heavy, slow)</span></div>
+    <div class="ce-row">
+      <label class="ce-ctl">Film speed: <span id="bx-speed-val" data-testid="bx-speed-val">x1</span>
+        <input type="range" id="bx-speed" min="1" max="60" value="1" step="1" data-testid="bx-speed"></label>
+      <button type="button" class="ce-btn sec" id="bx-slow" data-testid="bx-slow">Slow film</button>
+      <button type="button" class="ce-btn sec" id="bx-fast" data-testid="bx-fast">Fast film</button>
+    </div>
+    <div class="ce-row">
+      <label class="ce-chk"><input type="checkbox" id="bx-marbles" checked data-testid="bx-show-marbles"> Show marbles</label>
+      <label class="ce-chk"><input type="checkbox" id="bx-trails" checked data-testid="bx-show-trails"> Show puck trails</label>
+      <button type="button" class="ce-btn sec" id="bx-pause" data-testid="bx-pause">Pause</button>
+      <button type="button" class="ce-btn sec" id="bx-reset" data-testid="bx-reset">Reset</button>
+    </div>
+    <div class="ce-note" id="bx-read" data-testid="bx-read" aria-live="polite"></div>
+  </div>
+  <p class="small">This is my own small physics model of the thought experiment, not a figure from the paper. The paper's box also has marbles entering and leaving through the walls; this one is closed. Real marbles here do bounce off pucks with energy and momentum conserved, so the pucks do jiggle in the way the Brownian-motion analogy describes.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Two film speeds, two stories</h2>
+  <p>In the dialogue the Tortoise asks Achilles to imagine two observers. The first watches in real time and follows the marbles. The second watches a film sped up by a factor of a thousand or more. Each one is looking at exactly the same box, and each tells a different, equally sincere story about it.</p>
+  <p>The fast-film observer is in the position of the nineteenth-century scientists who watched pollen grains jitter in water. That <b>Brownian motion</b> was seen by the botanist Robert Brown in 1827 and explained by Einstein in 1905 as the effect of countless collisions with water molecules too small and quick to see. An observer who cannot see the cause may still notice patterns in the big things, and then start talking as if the big things have wishes: "those two do not like to be close". The Tortoise calls that kind of talk a <b>teleology</b>, a way of describing the heavy pucks purely in terms of what they seem to be trying to do. Choose an observer.</p>
+  <div class="stage" data-testid="observer-picker">
+    <div class="ce-seg" role="tablist" aria-label="Choose an observer" id="ob-tabs"></div>
+    <div class="ce-pair" style="margin-top:12px">
+      <div class="ce-box"><h5>WHAT SHE SEES</h5><div id="ob-sees" data-testid="ob-sees"></div></div>
+      <div class="ce-box"><h5>WHO SEEMS TO SHOVE WHOM</h5><div id="ob-who" data-testid="ob-who"></div></div>
+    </div>
+    <div class="ce-note" id="ob-note" data-testid="ob-note"></div>
+  </div>
+  <p>Neither observer is wrong. The slow story is closer to the mechanism, and the fast story is better for seeing the large pattern. And the arrows run both ways: the pucks constrain where the marbles go, while the marbles, acting together, keep moving the pucks. Achilles sums it up himself: it is mutual. The paper calls this a pair of <b>two scales in time and space, each affecting the other</b>.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Pucks built from marbles: symmballs</h2>
+  <p>Achilles then spots a flaw. A brain has no heavy pucks and light marbles; it is neurons all the way down. So where would the two scales come from? The Tortoise removes the pucks. In their place he puts only marbles and some "stiff yet malleable membranes", which Achilles shortens to <b>symms</b>. A membrane that curls round a group of marbles makes a ball, a <b>symmball</b>. The paper adds that you could get the same effect with sticky marbles: "small yellow magnetic marbles" that clump together are also symms. The upshot is that big units can form out of one kind of small unit, so one level of stuff yields two levels of structure.</p>
+  <p>A symmball can last, because the marbles inside are packed close and spread out the force of any hit. But symmballs also form and dissolve, like ice cubes melting into water. That gives a third, slower time scale: the life of the structures themselves. This phase-transition picture matters later, because it says that a high-level description is not always available. A frozen pond has blocks you can talk about. A thawed pond has only moving water.</p>
+  <p>The simulation below uses the sticky-marble version. Each marble repels at close range and attracts weakly at medium range. The <b>temperature</b> slider sets how hard random kicks shake them. Cool the box and clumps should form. Heat it and they should come apart. The page counts the clumps (four or more touching marbles) and shows how much you would have to track in each state. Use <b>Cool slowly</b> to watch freezing happen.</p>
+  <div class="stage" data-testid="freezing-box">
+    <canvas class="ce-cv" id="fz-cv" width="480" height="300" role="img" aria-label="Sticky marbles in a box. When cold they form clumps; when hot they move as a gas."></canvas>
+    <div class="ce-legend"><span><i class="ce-dot" style="background:var(--ink-faint)"></i>free marble</span><span><i class="ce-dot" style="background:var(--plum)"></i>marbles in a symmball (each clump gets its own colour)</span></div>
+    <div class="ce-row">
+      <label class="ce-ctl">Temperature: <span id="fz-t-val" data-testid="fz-temp-val">hot</span>
+        <input type="range" id="fz-t" min="0" max="100" value="95" step="1" data-testid="fz-temp"></label>
+      <button type="button" class="ce-btn sec" id="fz-cool" data-testid="fz-cool">Cool slowly</button>
+      <button type="button" class="ce-btn sec" id="fz-half" data-testid="fz-half">Half-frozen setting</button>
+      <button type="button" class="ce-btn sec" id="fz-shake" data-testid="fz-shake">Scatter marbles</button>
+    </div>
+    <div class="ce-row">
+      <label class="ce-chk"><input type="checkbox" id="fz-coarse" data-testid="fz-coarse"> Coarse view: draw only the symmballs</label>
+      <button type="button" class="ce-btn sec" id="fz-pause" data-testid="fz-pause">Pause</button>
+    </div>
+    <div class="ce-pair">
+      <div class="ce-box"><h5>STATE OF THE BOX</h5><div><span class="ce-st mix" id="fz-state" data-testid="fz-state">Measuring</span></div><div class="ce-note" id="fz-detail" data-testid="fz-detail"></div></div>
+      <div class="ce-box"><h5>THINGS YOU MUST TRACK</h5><div id="fz-items" data-testid="fz-items"></div>
+        <div class="ce-bar"><i id="fz-bar" style="background:var(--forest)"></i></div><div class="small" id="fz-items-note"></div></div>
+    </div>
+  </div>
+  <p class="small">The force law, the thresholds (four marbles, a link distance of about one and a half marble widths) and the temperature scale are my own choices for a readable demonstration; the paper gives no numbers. Where the freezing point falls, and how many clumps form, depends on those choices and on chance, which is why the page measures the state instead of assuming it.</p>
+
+  <h2 id="sec5"><span class="num">5</span> One thing, two vocabularies</h2>
+  <p>Once you have both levels you can see what Achilles was doing with the word "fingers". It is a name for a very large number of molecules that move together. It is not an extra ingredient; it is a convenient way of speaking about the same stuff. The Tortoise suggests that "thought" and "snap decision" work the same way: each is a coarse-grained way of speaking about a huge cloud of lower-level activity, like the blurred cloud of marbles in the fast film.</p>
+  <p>Philosophers call a description like this <b>higher-level</b> when it uses vocabulary and regularities that the lower level does not. The Stanford Encyclopedia of Philosophy entry on emergent properties frames the central idea as two features held together: higher-level things <b>depend</b> on their components, yet show <b>autonomy</b>, in that their behaviour is naturally described in their own terms. Daniel Dennett argued in a 1991 paper, "Real Patterns", that such patterns can be genuinely real even though they are not extra substances; that paper is outside what I fetched, so treat that pointer as background. Hofstadter himself developed the same theme earlier in <em>Godel, Escher, Bach</em> (1979), including the thought that an ant colony can be described in terms of what the colony does, not what each ant does; I did not verify that detail against the book here.</p>
+  <p>Pick a pair below. Each shows a low-level description, a high-level one, and what would be lost by insisting on only one.</p>
+  <div class="stage" data-testid="vocabulary-pairs">
+    <div class="ce-seg" role="tablist" aria-label="Choose an example" id="vp-tabs"></div>
+    <div class="ce-pair" style="margin-top:12px">
+      <div class="ce-box"><h5>LOWER LEVEL</h5><div id="vp-low" data-testid="vp-low"></div></div>
+      <div class="ce-box"><h5>HIGHER LEVEL</h5><div id="vp-high" data-testid="vp-high"></div></div>
+    </div>
+    <div class="ce-note" id="vp-lost" data-testid="vp-lost"></div>
+  </div>
+  <p class="small">The fingers-and-molecules pair, the free-will-as-tendencies pair and the ice-and-water pair come from the dialogue. The traffic jam pair is my own added example. The notes on what each level is good for are my synthesis.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Which level answers the question?</h2>
+  <p>The skill this lesson builds is not a fact but a habit: before asking "what caused this?", ask <b>at which level the question is being asked</b>. Six questions about the careenium follow. For each, say whether the answer lives at the marble level, at the symmball (clump) level, or needs both. In every case the lower level supplies the mechanism, so read the explanations for what each level is best at.</p>
+  <div class="stage" data-testid="level-practice">
+    <div class="ce-scn" id="lp-box" data-testid="lp-box"></div>
+    <div class="ce-nav"><button type="button" class="ce-btn" id="lp-next" data-testid="lp-next" disabled>Next</button><span class="small" id="lp-score" data-testid="lp-score"></span></div>
+  </div>
+  <p class="small">The questions and model answers are my own teaching judgement applying the dialogue's picture; reasonable readers might split some of them differently.</p>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>The careenium is a deliberately plain system:</b> a box of bouncing marbles. If "who shoves whom" has an answer there, it needs no spooky forces.</li>
+    <li><b>The same system tells different true stories at different speeds.</b> At slow speed the pucks look fixed and seem to steer the marbles; at fast speed the marbles blur and the pucks seem to move on their own.</li>
+    <li><b>The influence runs both ways.</b> Big structures constrain the small things; the small things, acting together, move the big structures.</li>
+    <li><b>One kind of small thing can build two levels.</b> Sticky marbles form symmballs, which have their own slow dynamics of forming and dissolving.</li>
+    <li><b>A high-level description is available only when the structures exist,</b> like blocks of ice on a pond; when they melt, only the low-level description is left.</li>
+    <li><b>Ask which level a question lives at</b> before asking what caused something.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> Hofstadter, D. R. (1982). Who shoves whom around inside the careenium? or What is the meaning of the word "I"? <em>Synthese</em> 53, 189-218. The paper is attached to this module as a reading tab on the right edge. Quoted once, briefly: Sperry's phrase "shoving them around", as reported in the paper.</p>
+  <p class="src"><b>Background read.</b> <a href="https://plato.stanford.edu/entries/properties-emergent/" target="_blank">Stanford Encyclopedia of Philosophy: Emergent Properties</a> · <a href="https://en.wikipedia.org/wiki/Brownian_motion" target="_blank">Brownian motion (Wikipedia)</a> · <a href="https://en.wikipedia.org/wiki/G%C3%B6del,_Escher,_Bach" target="_blank">G&ouml;del, Escher, Bach (Wikipedia)</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> Confirmed from those pages: the SEP's dependence-and-autonomy framing of emergence; Brown 1827 and Einstein 1905 for Brownian motion; the 1979 publication date of <em>G&ouml;del, Escher, Bach</em>. Confirmed from the paper itself: the pucks and marbles, the two film speeds, the symm and symmball naming, the three time scales, and the frozen-versus-unfrozen discussion. Not verified, so background only: Dennett's "Real Patterns" (1991) and its argument; the ant colony idea in <em>G&ouml;del, Escher, Bach</em>. Everything numerical in the demos is illustrative.</p>
+
+  <footer>Levels: the Pinball Machine and Its Pucks &middot; The Careenium module &middot; part of your Study Hub</footer>
+</div>
+
+<script>
+const g=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function pal(){
+  const s=getComputedStyle(document.documentElement);
+  const v=(n,d)=>(s.getPropertyValue(n).trim()||d);
+  return {ink:v('--ink','#2a3150'),mute:v('--ink-mute','#525c83'),faint:v('--ink-faint','#a0a9c6'),cobalt:v('--cobalt','#4a6fa8'),vermil:v('--vermil','#b35c5c'),forest:v('--forest','#437a58'),plum:v('--plum','#7d68b3'),ochre:v('--ochre','#c9a24a'),outline:v('--outline','#56628a')};
+}
+const REDUCED=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* visibility gate: animations only run while on screen */
+function watchVisible(el,cb){
+  let vis=true;
+  if('IntersectionObserver' in window){ new IntersectionObserver(es=>{ vis=es[0].isIntersecting; cb(vis); }).observe(el); }
+  return ()=>vis;
+}
+
+/* ---------- widget A: marbles and pucks ---------- */
+(function(){
+  const cv=g('bx-cv'), ctx=cv.getContext('2d'), W=640, H=360, NM=80, NP=5, MR=3, PR=24, PM=60;
+  let M=[], P=[], trails=[], paused=REDUCED, frame=0, lastPuck=null, readTxt='';
+  const isVis=watchVisible(cv,()=>{});
+  function init(){
+    M=[]; P=[]; trails=[]; frame=0;
+    for(let i=0;i<NP;i++){ P.push({x:(i+0.75)*W/(NP+0.5)+(Math.random()-.5)*20, y:(i%2?H*0.72:H*0.28)+(Math.random()-.5)*30, vx:0, vy:0, m:PM, r:PR}); trails.push([]); }
+    while(M.length<NM){
+      const x=MR+Math.random()*(W-2*MR), y=MR+Math.random()*(H-2*MR);
+      if(P.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+MR+2)) continue;
+      const a=Math.random()*6.2832, sp=2.6+Math.random()*0.8;
+      M.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,m:1,r:MR});
+    }
+    lastPuck=P.map(p=>[p.x,p.y]);
+  }
+  function wall(o){
+    if(o.x<o.r){o.x=o.r;o.vx=Math.abs(o.vx);} if(o.x>W-o.r){o.x=W-o.r;o.vx=-Math.abs(o.vx);}
+    if(o.y<o.r){o.y=o.r;o.vy=Math.abs(o.vy);} if(o.y>H-o.r){o.y=H-o.r;o.vy=-Math.abs(o.vy);}
+  }
+  function coll(a,b){
+    const dx=b.x-a.x, dy=b.y-a.y, rs=a.r+b.r, d2=dx*dx+dy*dy;
+    if(d2>=rs*rs||d2===0) return;
+    const d=Math.sqrt(d2), nx=dx/d, ny=dy/d, ov=rs-d, tm=a.m+b.m;
+    a.x-=nx*ov*b.m/tm; a.y-=ny*ov*b.m/tm; b.x+=nx*ov*a.m/tm; b.y+=ny*ov*a.m/tm;
+    const rel=(a.vx-b.vx)*nx+(a.vy-b.vy)*ny;
+    if(rel<=0) return;
+    const j=2*rel/(1/a.m+1/b.m);
+    a.vx-=j/a.m*nx; a.vy-=j/a.m*ny; b.vx+=j/b.m*nx; b.vy+=j/b.m*ny;
+  }
+  function sub(){
+    for(const m of M){ m.x+=m.vx; m.y+=m.vy; wall(m); }
+    for(const p of P){ p.x+=p.vx; p.y+=p.vy; wall(p); }
+    for(const p of P) for(const m of M) coll(m,p);
+    for(let i=0;i<NP;i++) for(let j=i+1;j<NP;j++) coll(P[i],P[j]);
+  }
+  function drawMarbles(c,alpha){
+    ctx.globalAlpha=alpha; ctx.fillStyle=c.cobalt;
+    for(const m of M){ ctx.beginPath(); ctx.arc(m.x,m.y,MR,0,6.2832); ctx.fill(); }
+    ctx.globalAlpha=1;
+  }
+  function render(k){
+    const c=pal(), show=g('bx-marbles').checked, tr=g('bx-trails').checked;
+    ctx.clearRect(0,0,W,H);
+    const alpha=k<=12?1:12/k;
+    for(let s=0;s<k;s++){ sub(); if(show && k>1 && s<k-1) drawMarbles(c,alpha); }
+    if(show) drawMarbles(c,1);
+    frame++;
+    P.forEach((p,i)=>{ trails[i].push([p.x,p.y]); if(trails[i].length>140) trails[i].shift(); });
+    if(tr){
+      ctx.lineWidth=2; ctx.strokeStyle=c.vermil; ctx.globalAlpha=.7;
+      trails.forEach(t=>{ ctx.beginPath(); t.forEach((q,i)=>{ if(i===0) ctx.moveTo(q[0],q[1]); else ctx.lineTo(q[0],q[1]); }); ctx.stroke(); });
+      ctx.globalAlpha=1;
+    }
+    for(const p of P){ ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.2832); ctx.fillStyle=c.vermil; ctx.globalAlpha=.45; ctx.fill(); ctx.globalAlpha=1; ctx.lineWidth=2; ctx.strokeStyle=c.vermil; ctx.stroke(); }
+    if(frame%8===0){
+      let ms=0; for(const m of M) ms+=Math.hypot(m.vx,m.vy); ms=ms/M.length*k;
+      let pd=0; P.forEach((p,i)=>{ pd+=Math.hypot(p.x-lastPuck[i][0],p.y-lastPuck[i][1]); lastPuck[i]=[p.x,p.y]; }); pd=pd/NP/8;
+      readTxt='In each frame a typical marble covers about '+ms.toFixed(0)+' px of path, while a typical puck shifts about '+pd.toFixed(1)+' px. '+(ms/Math.max(pd,0.05)>150?'The marbles move so much more than the pucks that they smear into a haze.':'The marbles are still easy to follow one by one.');
+      g('bx-read').textContent=readTxt;
+    }
+  }
+  function loop(){ if(!paused && isVis()) render(+g('bx-speed').value); requestAnimationFrame(loop); }
+  g('bx-speed').oninput=()=>{ g('bx-speed-val').textContent='x'+g('bx-speed').value; if(paused) { /* redraw one frame */ } };
+  g('bx-slow').onclick=()=>{ g('bx-speed').value=1; g('bx-speed-val').textContent='x1'; };
+  g('bx-fast').onclick=()=>{ g('bx-speed').value=40; g('bx-speed-val').textContent='x40'; };
+  g('bx-pause').onclick=()=>{ paused=!paused; g('bx-pause').textContent=paused?'Run':'Pause'; };
+  g('bx-reset').onclick=()=>{ init(); render(1); };
+  init(); render(1); g('bx-pause').textContent=paused?'Run':'Pause'; loop();
+})();
+
+/* ---------- widget B: two observers ---------- */
+(function(){
+  const O=[
+    ['Slow film','The marbles, each one a clear dot, zipping about. The pucks look almost still, like fixed pins.','The pucks seem to shove the marbles: they decide where each marble goes next.','This is the pinball view. It is accurate for a short stretch of time, in which the pucks really have not moved yet.'],
+    ['Fast film (about x1000)','No individual marbles: their tracks blur into one even background. The pucks, however, glide in smooth, patterned ways.','Nothing visible shoves the pucks. They seem to move on their own, even to like or dislike each other.','This is where the observer may invent wishes for the pucks. The cause is real but hidden: constant bombardment by the marbles, as in Brownian motion.'],
+    ['Switching between them','As you turn the speed knob, the marbles become harder to track, and you notice the pucks are not fixed after all.','It is mutual. Pucks steer marbles at one scale; marbles, in great numbers, push pucks at the other.','The question "who is really in charge?" gets replaced by "which scale am I describing, and how do they feed each other?"']
+  ];
+  const tabs=g('ob-tabs'); let cur=0;
+  tabs.innerHTML=O.map((o,k)=>'<button type="button" class="ce-tab" role="tab" data-k="'+k+'" data-testid="ob-tab-'+k+'">'+esc(o[0])+'</button>').join('');
+  function draw(){ tabs.querySelectorAll('button').forEach((b,k)=>{b.classList.toggle('on',k===cur); b.setAttribute('aria-selected',k===cur);}); g('ob-sees').textContent=O[cur][1]; g('ob-who').textContent=O[cur][2]; g('ob-note').textContent=O[cur][3]; }
+  tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=+b.dataset.k;draw();}); draw();
+})();
+
+/* ---------- widget C: freezing sticky marbles ---------- */
+(function(){
+  const cv=g('fz-cv'), ctx=cv.getContext('2d'), W=480, H=300, N=60, R=4, D=8, RC=24, LINK=11.6, MINC=4;
+  let P=[], paused=REDUCED, T=0.95, coolFrames=0, frame=0;
+  const isVis=watchVisible(cv,()=>{});
+  const gauss=()=>(Math.random()+Math.random()+Math.random()-1.5)*2;
+  function sigma(t){ return 0.03+0.5*Math.pow(t,1.5); }
+  function scatter(){ P=[]; for(let i=0;i<N;i++){ P.push({x:R+Math.random()*(W-2*R), y:R+Math.random()*(H-2*R), vx:gauss(), vy:gauss()}); } }
+  function step(){
+    const s=sigma(T);
+    const ax=new Array(N).fill(0), ay=new Array(N).fill(0);
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+      const dx=P[j].x-P[i].x, dy=P[j].y-P[i].y, r2=dx*dx+dy*dy;
+      if(r2>=RC*RC||r2<1e-6) continue;
+      const r=Math.sqrt(r2); let f;
+      if(r<D) f=-0.4*(D-r); else f=0.1*(1-(r-D)/(RC-D));
+      const nx=dx/r, ny=dy/r;
+      ax[i]+=f*nx; ay[i]+=f*ny; ax[j]-=f*nx; ay[j]-=f*ny;
+    }
+    for(let i=0;i<N;i++){
+      const p=P[i];
+      p.vx=(p.vx+ax[i])*0.985+gauss()*s; p.vy=(p.vy+ay[i])*0.985+gauss()*s;
+      const sp=Math.hypot(p.vx,p.vy); if(sp>4){ p.vx*=4/sp; p.vy*=4/sp; }
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<R){p.x=R;p.vx=Math.abs(p.vx);} if(p.x>W-R){p.x=W-R;p.vx=-Math.abs(p.vx);}
+      if(p.y<R){p.y=R;p.vy=Math.abs(p.vy);} if(p.y>H-R){p.y=H-R;p.vy=-Math.abs(p.vy);}
+    }
+  }
+  function clusters(){
+    const par=P.map((_,i)=>i); const find=a=>{ while(par[a]!==a){ par[a]=par[par[a]]; a=par[a]; } return a; };
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){ if(Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y)<LINK){ const a=find(i), b=find(j); if(a!==b) par[Math.max(a,b)]=Math.min(a,b); } }
+    const groups={}; for(let i=0;i<N;i++){ const r=find(i); (groups[r]=groups[r]||[]).push(i); }
+    return Object.values(groups).filter(a=>a.length>=MINC);
+  }
+  let cl=[];
+  function tname(){ return T>0.8?'hot':T>0.55?'warm':T>0.3?'cool':'cold'; }
+  function readouts(){
+    const inC=cl.reduce((s,a)=>s+a.length,0), free=N-inC, items=cl.length+free, frac=inC/N;
+    const st=g('fz-state'); let cls,txt,det;
+    if(frac>=0.75){ cls='ok'; txt='Frozen'; det='Most marbles belong to a symmball. You can say which symmball is moving where, and mostly ignore the marbles inside.'; }
+    else if(frac>=0.25){ cls='mix'; txt='Half-frozen'; det='Some symmballs, some stray marbles belonging to no clump. A symmball-level description works for part of the box only.'; }
+    else { cls='no'; txt='Unfrozen'; det='Almost no symmballs. Only the marble-level description is available: stray marbles bouncing around.'; }
+    st.className='ce-st '+cls; st.textContent=txt; g('fz-detail').textContent=det+' ('+cl.length+' symmball'+(cl.length===1?'':'s')+', '+inC+' of '+N+' marbles inside.)';
+    g('fz-items').innerHTML='<b>'+N+'</b> marbles, or <b>'+items+'</b> if you track symmballs plus strays';
+    g('fz-bar').style.width=Math.round(items/N*100)+'%';
+    g('fz-items-note').textContent='Shorter bar means the high-level description is cheaper. (Illustrative count for this demo.)';
+    g('fz-t-val').textContent=tname();
+  }
+  const COL=()=>{ const c=pal(); return [c.cobalt,c.vermil,c.forest,c.plum,c.ochre]; };
+  function render(){
+    const c=pal(), colors=COL(), coarse=g('fz-coarse').checked;
+    ctx.clearRect(0,0,W,H);
+    const owner=new Array(N).fill(-1); cl.forEach((a,k)=>a.forEach(i=>owner[i]=k));
+    if(!coarse){
+      P.forEach((p,i)=>{ ctx.beginPath(); ctx.arc(p.x,p.y,R,0,6.2832); ctx.fillStyle=owner[i]<0?c.faint:colors[cl[owner[i]][0]%5]; ctx.fill(); });
+    }
+    cl.forEach(a=>{
+      let sx=0,sy=0; a.forEach(i=>{sx+=P[i].x;sy+=P[i].y;}); sx/=a.length; sy/=a.length;
+      let rad=0; a.forEach(i=>{ rad=Math.max(rad,Math.hypot(P[i].x-sx,P[i].y-sy)); }); rad+=R+3;
+      const col=colors[a[0]%5];
+      ctx.beginPath(); ctx.arc(sx,sy,rad,0,6.2832); ctx.globalAlpha=coarse?.5:.12; ctx.fillStyle=col; ctx.fill(); ctx.globalAlpha=1; ctx.lineWidth=2; ctx.strokeStyle=col; ctx.stroke();
+    });
+    if(coarse){ P.forEach((p,i)=>{ if(owner[i]<0){ ctx.beginPath(); ctx.arc(p.x,p.y,1.6,0,6.2832); ctx.fillStyle=c.faint; ctx.fill(); } }); }
+  }
+  function loop(){
+    if(!paused && isVis()){
+      if(coolFrames>0){ coolFrames--; T=0.95-(0.95-0.1)*(1-coolFrames/480); g('fz-t').value=Math.round(T*100); }
+      for(let s=0;s<3;s++) step();
+      frame++; if(frame%6===0){ cl=clusters(); readouts(); }
+      render();
+    }
+    requestAnimationFrame(loop);
+  }
+  g('fz-t').oninput=()=>{ coolFrames=0; T=+g('fz-t').value/100; cl=clusters(); readouts(); };
+  g('fz-cool').onclick=()=>{ scatter(); T=0.95; g('fz-t').value=95; coolFrames=480; if(paused){ paused=false; g('fz-pause').textContent='Pause'; } };
+  g('fz-half').onclick=()=>{ coolFrames=0; T=0.33; g("fz-t").value=33; };
+  g('fz-shake').onclick=()=>{ scatter(); };
+  g('fz-coarse').onchange=()=>{ render(); };
+  g('fz-pause').onclick=()=>{ paused=!paused; g('fz-pause').textContent=paused?'Run':'Pause'; };
+  scatter(); for(let i=0;i<30;i++) step(); cl=clusters(); readouts(); render();
+  g('fz-pause').textContent=paused?'Run':'Pause';
+  loop();
+})();
+
+/* ---------- widget E: vocabulary pairs ---------- */
+(function(){
+  const V=[
+    ['Fingers','Billions of molecules in tissue, each following physical law.','"My fingers", "I play a chord". One word for a chunk of molecules that move together.','Speaking only in molecules, you could not say that the hand is playing a chord, or that any of this is a cello piece at all.'],
+    ['Free will','Neural activity flowing along some pathways more readily than others.','"My will": a shorthand for a whole set of predispositions, the paper says, and a constraint on what the brain will do.','Speaking only in neurons, you lose the sense that the system as a whole prefers some things over others.'],
+    ['Ice and water','Water molecules that bounce around chaotically.','A solid block of ice that keeps its shape and can be pushed as a unit.','The block exists only while the molecules are locked in place; when they thaw, the block-level description stops applying.'],
+    ['Traffic jam','Individual cars, each speeding up and braking by its driver\'s rules.','A jam: a slow region that can persist and even drift backwards while the cars flow through it.','Tracking each car hides that the jam is one thing. Talking only of the jam hides that every car is going somewhere.']
+  ];
+  const tabs=g('vp-tabs'); let cur=0;
+  tabs.innerHTML=V.map((o,k)=>'<button type="button" class="ce-tab" role="tab" data-k="'+k+'" data-testid="vp-tab-'+k+'">'+esc(o[0])+'</button>').join('');
+  function draw(){ tabs.querySelectorAll('button').forEach((b,k)=>{b.classList.toggle('on',k===cur); b.setAttribute('aria-selected',k===cur);}); g('vp-low').textContent=V[cur][1]; g('vp-high').textContent=V[cur][2]; g('vp-lost').innerHTML='<b>What insisting on one level costs:</b> '+esc(V[cur][3]); }
+  tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=+b.dataset.k;draw();}); draw();
+})();
+
+/* ---------- widget D: which level? ---------- */
+(function(){
+  const O=['Marble level','Symmball level','Both, for different parts'];
+  const Q=[
+    ['"Which of the big clumps is drifting toward the left wall, and which away from it?"',1,'The symmball level. The question treats each clump as one object, and you can answer it without tracking a single marble.'],
+    ['"Where exactly is marble number 37 right now, and how fast is it going?"',0,'The marble level. This asks about one small thing; the clump description cannot say.'],
+    ['"Why does a clump hardly change shape when one fast marble hits it?"',2,'Both. The symmball level states the fact (clumps are stable); the marble level explains it (the marbles inside are packed close and share the impact).'],
+    ['"The box is very hot and no clumps exist. What is the state of the system?"',0,'The marble level, because there is nothing at the symmball level to describe. Not every system has a useful high-level description at every moment.'],
+    ['"Why did the clump slowly move across the box?"',2,'Both. At the symmball level it simply moved; at the marble level the cause is the uneven bombardment, in the way Brownian motion works.'],
+    ['"Does the system seem to want to avoid the green light?"',1,'The symmball level. Talk of wants lives at the high level, where patterns and their dispositions are visible. (The paper returns to this in its discussion of the intentional stance.)']
+  ];
+  let i=0, score=0, done=false; const box=g('lp-box'), nx=g('lp-next');
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="ce-tag">DONE</div><div class="ce-say" style="border-left-color:var(--forest)">You matched '+score+' of '+Q.length+'.</div><p class="small">The habit: name the level of the question, then ask which level supplies the mechanism.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{i=0;score=0;nx.textContent='Next';nx.onclick=next;show();}; g('lp-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="ce-tag">QUESTION '+(i+1)+' / '+Q.length+'</div><div class="ce-say">'+esc(q[0])+'</div><div class="ce-opts">'+O.map((o,k)=>'<button type="button" class="ce-opt" data-k="'+k+'" data-testid="lp-option-'+k+'">'+esc(o)+'</button>').join('')+'</div><div class="ce-why" id="lp-why" data-testid="lp-why" aria-live="polite"></div>';
+    box.querySelectorAll('.ce-opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); g('lp-why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+esc(q[2]); nx.disabled=false; g('lp-score').textContent=score+' of '+(i+1)+' matched'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

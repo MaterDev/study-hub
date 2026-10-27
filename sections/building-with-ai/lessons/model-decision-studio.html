@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model &amp; Effort Decision Studio</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:600; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink);}
+  .updated{display:inline-block; font-family:var(--font-ui); font-size:.7rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent); border-radius:999px; padding:3px 10px;}
+
+  /* model cards */
+  .m-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0;}
+  @media(max-width:760px){.m-grid{grid-template-columns:1fr;}}
+  .m-card{border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:var(--surface); box-shadow:var(--shadow-sm); border-top:4px solid var(--mc);}
+  .m-card h4{margin:0; font-size:1.1rem;} .m-card .api{font-family:var(--font-mono); font-size:.72rem; color:var(--ink-mute);}
+  .m-card .price{font-family:var(--font-mono); font-size:1.05rem; color:var(--ink); margin:8px 0 2px;}
+  .m-card .price small{color:var(--ink-mute); font-size:.72rem; font-family:var(--font-ui);}
+  .m-card .blurb{font-family:var(--font-ui); font-size:.84rem; color:var(--ink-mute); margin:8px 0 0;}
+  .m-tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;}
+  .m-tag{font-family:var(--font-ui); font-size:.66rem; background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:2px 8px; color:var(--ink-soft);}
+
+  /* comparison table */
+  .cmp{overflow-x:auto;}
+  .cmp table{min-width:640px;}
+  .cmp td:first-child, .cmp th:first-child{font-family:var(--font-ui); color:var(--ink-mute); font-weight:600;}
+
+  /* effort dial */
+  .dial-row{display:flex; gap:6px; margin:12px 0;}
+  .dial{flex:1; text-align:center; border:1.5px solid var(--line); border-radius:10px; padding:10px 6px; cursor:pointer; background:var(--surface); transition:all .12s; font-family:var(--font-ui);}
+  .dial:hover{border-color:var(--accent);}
+  .dial.on{border-color:var(--accent); background:var(--accent-soft);}
+  .dial.on.overthink{border-color:var(--vermil); background:var(--vermil-soft);}
+  .dial .lvl{font-weight:700; font-size:.82rem; color:var(--ink);}
+  .dial .def{font-size:.6rem; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); font-weight:700;}
+  .dial-note{font-family:var(--font-ui); font-size:.85rem; color:var(--ink-soft); min-height:2.4em; margin-top:6px;}
+
+  /* cost visualizer */
+  .cost-ctrl{display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px; font-family:var(--font-ui); font-size:.78rem;}
+  .cost-ctrl label{display:flex; flex-direction:column; gap:4px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-mute); font-weight:700; font-size:.66rem;}
+  select{font-family:var(--font-ui); font-size:.86rem; padding:7px 10px; border:1px solid var(--line-strong); border-radius:8px; background:var(--surface); color:var(--ink);}
+  input[type=range]{accent-color:var(--cobalt); width:150px;}
+  .cost-bars{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+  .cost-bar-row{display:grid; grid-template-columns:130px 1fr auto; gap:12px; align-items:center; font-family:var(--font-ui); font-size:.82rem;}
+  .cost-track{height:24px; background:var(--paper-2); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .cost-fill{height:100%; border-radius:5px; width:0; transition:width .5s cubic-bezier(.2,.8,.2,1);}
+  .cost-val{font-family:var(--font-mono); color:var(--ink); white-space:nowrap;}
+
+  /* decision picker */
+  .q-block{margin:14px 0;}
+  .q-block .q{font-family:var(--font-ui); font-weight:700; font-size:.9rem; margin-bottom:8px; color:var(--ink);}
+  .opts{display:flex; flex-wrap:wrap; gap:8px;}
+  .opt{font-family:var(--font-ui); font-size:.82rem; padding:8px 13px; border:1.5px solid var(--line); border-radius:999px; background:var(--surface); cursor:pointer; transition:all .12s;}
+  .opt:hover{border-color:var(--accent);}
+  .opt.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent); font-weight:600;}
+  .rec{background:var(--surface); border:1px solid var(--accent); border-left:4px solid var(--accent); border-radius:12px; padding:16px 18px; margin-top:14px;}
+  .rec .rec-model{font-family:var(--font-display); font-size:1.5rem; color:var(--ink); margin:0;}
+  .rec .rec-effort{font-family:var(--font-mono); font-size:.9rem; color:var(--accent);}
+  .rec .rec-why{font-family:var(--font-ui); font-size:.86rem; color:var(--ink-soft); margin-top:8px;}
+  .rec .rec-alt{font-family:var(--font-ui); font-size:.8rem; color:var(--ink-mute); margin-top:8px;}
+
+  /* subagent router */
+  .router-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+  @media(max-width:640px){.router-grid{grid-template-columns:1fr;}}
+  .route-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:var(--shadow-sm);}
+  .route-card h4{margin:0 0 4px; font-size:.92rem;}
+  .route-card .pick{font-family:var(--font-mono); font-size:.82rem; color:var(--accent); font-weight:600;}
+  .route-card p{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute); margin:6px 0 0;}
+
+  /* glossary */
+  .gloss details{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:8px;}
+  .gloss summary{font-family:var(--font-ui); font-weight:600; font-size:.9rem; cursor:pointer; color:var(--ink);}
+  .gloss p{font-family:var(--font-ui); font-size:.85rem; color:var(--ink-soft); margin:8px 0 0;}
+  .update-box{background:var(--paper-2); border:1px dashed var(--line-strong); border-radius:12px; padding:16px 18px; margin:14px 0; font-family:var(--font-ui); font-size:.86rem;}
+  .update-box code{font-size:.85em;}
+
+  /* charts */
+  svg text{font-family:var(--font-ui);}
+  .chart-svg{width:100%; height:auto; display:block;}
+  .curve-tabs{display:flex; gap:6px; margin-bottom:12px;}
+  .curve-tab{font-family:var(--font-ui); font-size:.82rem; padding:7px 14px; border:1.5px solid var(--line); border-radius:999px; background:var(--surface); cursor:pointer;}
+  .curve-tab.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent); font-weight:600;}
+  .curve-legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:10px; font-family:var(--font-ui); font-size:.76rem; color:var(--ink-mute);}
+  .lg{display:inline-flex; align-items:center; gap:6px;}
+  .lg .sw{width:16px; height:3px; border-radius:2px; display:inline-block;}
+  .lg .sw.bar{height:11px; width:11px; border-radius:3px;}
+  .lg .sw.dash{background:none; border-top:2px dashed var(--ink-mute); height:0;}
+  .basecost-row{display:grid; grid-template-columns:88px 1fr auto; gap:10px; align-items:center; margin:6px 0; font-family:var(--font-ui); font-size:.84rem;}
+  .basecost-track{height:20px; background:var(--paper-2); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .basecost-fill{height:100%; border-radius:5px;}
+  .basecost-val{font-family:var(--font-mono); color:var(--ink); font-size:.82rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Model &amp; Effort Decision Studio</h1>
+  <p class="subtitle">Which Claude, at which effort — decided in seconds, not by staring at a leaderboard.</p>
+  <p><span class="updated" id="updated-stamp">updated —</span> &nbsp;<span style="font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);">A living tool: when the lineup leapfrogs, edit one data block (§7) and every widget below refreshes.</span></p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The only three axes that matter</a></li>
+      <li><a href="#sec2">The lineup, right now</a></li>
+      <li><a href="#sec3">Effort: the dial you're under-using</a></li>
+      <li><a href="#sec4">Cost &amp; effort visualizer</a></li>
+      <li><a href="#sec5">The decision picker</a></li>
+      <li><a href="#sec6">Routing subagents</a></li>
+      <li><a href="#sec7">Reading benchmarks without drowning + keeping this current</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The only three axes that matter</h2>
+  <p class="lead">Every model choice is a trade between three things. Leaderboards only show you the first one, which is why they cause decision fatigue &mdash; they rank raw capability and hide the two axes you actually feel day to day.</p>
+  <div class="grid2" style="grid-template-columns:repeat(3,1fr);">
+    <div class="card" style="margin:0;"><h3 style="margin-top:0;">🧠 Capability</h3><p style="font-size:.9rem;">How smart/reliable on hard, multi-step work. This is what benchmarks measure &mdash; and where models leapfrog each other every few weeks.</p></div>
+    <div class="card" style="margin:0;"><h3 style="margin-top:0;">⚡ Speed</h3><p style="font-size:.9rem;">Latency to a useful answer. Matters enormously for chat, real-time, and anything you're waiting on live.</p></div>
+    <div class="card" style="margin:0;"><h3 style="margin-top:0;">💵 Cost</h3><p style="font-size:.9rem;">Price per million tokens &mdash; but the <em>real</em> bill is price × how many tokens the task burns (effort dials this hard).</p></div>
+  </div>
+  <div class="analogy">
+    <span class="emoji">🎛️</span><strong>The one principle to internalize</strong> (straight from Anthropic's docs): <em>"Tuning effort is often a better lever than switching models."</em> You have <strong>two</strong> dials, not one. Most people only ever touch "which model" and leave effort on default &mdash; that's the habit this tool is built to fix.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> The lineup, right now</h2>
+  <p>The current widely-available Claude models, cheapest to most capable. Cards and table are generated from the editable data in §7.</p>
+  <div class="m-grid" id="model-cards"></div>
+  <div class="cmp"><div id="cmp-table"></div></div>
+
+  <h3>Relative base price</h3>
+  <p style="font-family:var(--font-ui); font-size:.86rem; color:var(--ink-mute);">Output tokens dominate most bills. This is the sticker rate before effort enters the picture:</p>
+  <div class="stage"><div id="basecost"></div></div>
+
+  <h3>Cost &times; capability — the value map</h3>
+  <p style="font-family:var(--font-ui); font-size:.86rem; color:var(--ink-mute);">Where each model sits on price vs. smarts, and how each model <em>with an effort dial</em> &mdash; Fable 5, Opus 5, Sonnet 5 &mdash; walks up the curve as you raise effort. Only Haiku 4.5 has no dial, so it's a single point. The capability axis is <em>illustrative</em> (calibrate with your own evals); the prices are real.</p>
+  <div class="stage"><div id="frontier"></div>
+    <div class="curve-legend">
+      <span class="lg"><span class="sw bar" style="background:var(--ink)"></span>dot = default (high) effort</span>
+      <span class="lg"><span class="sw dash"></span>dashed = that model's effort trajectory, low → max</span>
+      <span class="lg">Haiku 4.5 = no effort dial → single point</span>
+    </div>
+  </div>
+
+  <div class="flag">
+    <strong>The leapfrog, in one sentence.</strong> Fable 5 launched as the frontier in June 2026; six weeks later Opus 5 arrived at <em>half the price</em> and now beats Fable on most published benchmarks &mdash; so "most expensive = best for my task" is no longer true. That's exactly why you re-run this analysis instead of memorizing a ranking.
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Effort: the dial you're under-using</h2>
+  <p>You mentioned you run everything on <code class="inline">high</code> and it feels like "the middle." Here's the reframe: on Opus 5 the ladder is <code class="inline">low · medium · high · xhigh · max</code>, and <strong><code class="inline">high</code> is Anthropic's recommended default</strong>, not a compromise. It's the floor you should step <em>up</em> or <em>down</em> from &mdash; deliberately. Click each level:</p>
+  <div class="stage">
+    <div class="dial-row" id="dial-row"></div>
+    <div class="dial-note" id="dial-note"></div>
+  </div>
+  <p>Two facts that change how you should use the dial:</p>
+  <div class="pitfall"><div class="icon">📈</div><div><b>Opus 5 rewards effort more than any earlier model.</b> Anthropic: it "converts additional effort into better results more reliably than any earlier Opus." So stepping <code class="inline">high → xhigh</code> on genuinely hard coding/agentic work is real upside &mdash; the lever you're not pulling.</div></div>
+  <div class="pitfall"><div class="icon">🌀</div><div><b>But <code class="inline">max</code> can overthink.</b> Anthropic notes <code class="inline">max</code> "can be prone to overthinking," and independent runs found <code class="inline">xhigh</code> often matches or beats <code class="inline">max</code> while using ~25% fewer tokens. So <code class="inline">xhigh</code> is usually the true ceiling; <code class="inline">max</code> is for rare brute-force reasoning.</div></div>
+  <p style="font-family:var(--font-ui); font-size:.9rem; color:var(--ink-mute);">Note: all three of <strong>Fable 5, Opus 5, and Sonnet 5 share this <code class="inline">low→max</code> ladder</strong> (default <code class="inline">high</code>). Fable's one twist: its thinking can't be turned <em>off</em> &mdash; but the effort dial still controls how much it spends, and even its <code class="inline">low</code> often beats older models at <code class="inline">xhigh</code>. The real exception is <strong>Haiku 4.5</strong>: no effort dial at all (it uses manual extended thinking), so it's the single-point model.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Cost, performance &amp; the sweet spot</h2>
+  <p>Here's the visual you actually wanted: as effort climbs, <strong>cost keeps rising but performance plateaus &mdash; and can dip at <code class="inline">max</code></strong>. Bars are cost per task; the line is capability; the dashed lines mark Fable 5 for reference. Watch how the model reaches Fable-level capability at <code class="inline">xhigh</code> for less than Fable's cost &mdash; and how <code class="inline">max</code> spends more for a hair <em>less</em>.</p>
+  <div class="stage">
+    <div class="curve-tabs" id="curve-tabs"></div>
+    <div id="effort-curve"></div>
+    <div class="curve-legend">
+      <span class="lg"><span class="sw bar" style="background:var(--accent)"></span>cost / task (right axis)</span>
+      <span class="lg"><span class="sw" style="background:var(--ink)"></span>capability (left axis)</span>
+      <span class="lg"><span class="sw dash"></span>Fable 5 reference</span>
+    </div>
+    <p style="font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute); margin:10px 0 0;">Capability is an illustrative shape grounded in Anthropic's documented behavior (effort improves results; <code class="inline">xhigh</code>≈peak; <code class="inline">max</code> can overthink) &mdash; not exact benchmark values.</p>
+  </div>
+
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">the other axis</div>
+    <h4>Higher effort can make the answer <em>worse</em>, not just pricier</h4>
+    <p>That dip at <code class="inline">max</code> isn't just diminishing returns &mdash; on some task types more thinking actively hurts. The ways it backfires:</p>
+    <p style="margin-top:8px;"><strong>· Overthinking</strong> &mdash; Anthropic's docs warn <code class="inline">max</code> "can lead to overthinking" on <em>structured-output or less intelligence-sensitive tasks</em>: it overcomplicates, second-guesses a right answer, or breaks a format it would've nailed at <code class="inline">high</code>.<br>
+    <strong>· Scope creep</strong> &mdash; higher effort makes the model <em>do more than you asked</em>; <code class="inline">low</code>/<code class="inline">medium</code> "scope work to what was asked."<br>
+    <strong>· Budget/clock blowout</strong> &mdash; in long agentic runs it can burn so many tokens it times out or hits limits.<br>
+    <strong>· Latency</strong> &mdash; for interactive, real-time, or high-volume work the extra thinking is pure downside.<br>
+    <strong>· Flat/bending tail</strong> &mdash; independent runs show <code class="inline">xhigh</code>≈peak, with <code class="inline">max</code> often tying or losing while using ~25% more tokens.</p>
+    <p style="margin-top:8px;">Rule: <strong><code class="inline">xhigh</code> is usually the ceiling</strong>; past it you often pay more for equal-or-worse. And on simple / structured / latency-sensitive tasks, lower effort is frequently the <em>better</em> answer, not just the cheaper one.</p>
+  </div>
+
+  <h3>Compare two exact setups</h3>
+  <p>Effort doesn't change the per-token <em>rate</em> &mdash; it changes how many invisible thinking tokens burn. Pick two model+effort combos and see the relative cost of one task side by side. Try <em>Opus at xhigh</em> vs <em>Fable at default</em>.</p>
+  <div class="stage">
+    <div class="cost-ctrl">
+      <label>Model A <select id="cost-a"></select></label>
+      <label>Effort A <select id="cost-a-eff"></select></label>
+      <label>Model B <select id="cost-b"></select></label>
+      <label>Effort B <select id="cost-b-eff"></select></label>
+      <label>Output tokens <input type="range" id="cost-tokens" min="1" max="20" value="5"><span id="cost-tok-val" style="font-family:var(--font-mono); color:var(--ink); text-transform:none;">5k</span></label>
+    </div>
+    <div class="cost-bars" id="cost-bars"></div>
+    <p style="font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute); margin:12px 0 0;" id="cost-caption"></p>
+  </div>
+  <div class="flag"><strong>Illustrative, not billing-grade.</strong> The effort multipliers are rough (thinking-token use varies wildly by task); the point is the <em>shape</em>: a cheaper model cranked to <code class="inline">xhigh</code>/<code class="inline">max</code> can cost as much as a pricier model at default. Two more real gotchas: Sonnet 5's new tokenizer produces <strong>~30% more tokens</strong> for the same text (so its effective cost is higher than the sticker), and Opus 5's optional <em>Fast mode</em> is priced at Fable's rate (<code class="inline">$10/$50</code>) &mdash; you'd be paying for speed, not intelligence.</div>
+
+  <h2 id="sec5"><span class="num">5</span> The decision picker</h2>
+  <p>Answer three quick questions; get a starting model + effort with the reasoning shown. It's a shortcut for the instinct you're building &mdash; not a rule to obey.</p>
+  <div class="stage">
+    <div class="q-block"><div class="q">1. What's the task, mostly?</div><div class="opts" data-q="task" id="q-task"></div></div>
+    <div class="q-block"><div class="q">2. How much does a wrong/mediocre answer cost you?</div><div class="opts" data-q="stakes" id="q-stakes"></div></div>
+    <div class="q-block"><div class="q">3. Biggest constraint?</div><div class="opts" data-q="constraint" id="q-constraint"></div></div>
+    <div class="rec" id="rec" style="display:none;"></div>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> Routing subagents</h2>
+  <p>Since you delegate to subagents a lot, this is high-leverage: an orchestrator can spend a lot of money running a strong model for jobs a cheap one nails. Anthropic explicitly lists <strong>sub-agent tasks</strong> as a Haiku use case. The heuristic:</p>
+  <div class="analogy">Match the model to the <em>subtask's</em> difficulty, not the parent task's. A bounded, well-specified, easy-to-verify job (extract, classify, summarize, run-and-report) should go to the <strong>cheapest model that clears the bar</strong>; reserve Opus/Fable for the orchestrator and the genuinely hard sub-steps.</div>
+  <div class="router-grid" id="router-grid"></div>
+  <div class="flag"><strong>Why this saves real money.</strong> A multi-agent run can use ~15× the tokens of a single chat. If ten parallel subagents each do a bounded lookup, running them on Haiku/Sonnet instead of Opus is often the same quality at a fraction of the cost &mdash; and faster. Escalate a subagent only when its output quality actually gates the result.</div>
+
+  <h2 id="sec7"><span class="num">7</span> Reading benchmarks without drowning &mdash; &amp; keeping this current</h2>
+  <p>You said raw sites give numbers you can't act on. Here's the translation layer, then the one thing that beats every leaderboard.</p>
+  <div class="gloss" id="gloss"></div>
+  <div class="pitfall" style="margin-top:14px;"><div class="icon">🏆</div><div><b>Why leaderboards mislead.</b> They rank by <em>raw score</em> and hide price, latency, and the effort level a score was produced at. Benchmarks also saturate and get contaminated (models train on them), and a headline number is often a <em>mean</em> that hides a bad tail. Use them to spot <em>big</em> capability gaps and trends &mdash; not to split hairs between two strong models.</div></div>
+  <div class="analogy"><strong>The move that beats any leaderboard</strong> (Anthropic's own advice): build a tiny eval from <em>your own</em> real tasks &mdash; five to twenty prompts you actually run &mdash; and compare models/effort on those. Ten minutes of that tells you more than a week of reading benchmark tables, and it's the only measure that reflects <em>your</em> work.</div>
+
+  <h3>Keeping this tool current</h3>
+  <div class="update-box">
+    <strong>When a new model or price drops, edit one block.</strong> Open this file and find <code>const MODELS = [ … ]</code> and <code>const LAST_UPDATED</code> near the top of the script. Add or edit a model entry (name, price, tier, speed, effort, tags, <code>bestFor</code>) and bump the date. Every widget above &mdash; cards, table, cost visualizer, picker, router &mdash; reads from that array, so they all update automatically. No other code changes needed. Or just tell me "refresh the model studio" and I'll re-pull the current specs and update it for you.
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Sources</h2>
+  <p class="src"><b>Primary (Anthropic).</b> <a href="https://platform.claude.com/docs/en/about-claude/models/overview" target="_blank">Models overview</a> (specs + pricing) · <a href="https://platform.claude.com/docs/en/about-claude/models/choosing-a-model" target="_blank">Choosing a model</a> ("effort is often a better lever") · <a href="https://platform.claude.com/docs/en/build-with-claude/effort" target="_blank">Effort</a></p>
+  <p class="src"><a href="https://platform.claude.com/docs/en/about-claude/models/whats-new-opus-5" target="_blank">What's new in Opus 5</a> · <a href="https://platform.claude.com/docs/en/about-claude/models/whats-new-sonnet-5" target="_blank">What's new in Sonnet 5</a> · <a href="https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5" target="_blank">Introducing Fable 5</a></p>
+  <p class="src">Benchmarks/overthinking — <a href="https://decrypt.co/374305/claude-opus-5-outscores-fable-5-most-benchmarks-half-price" target="_blank">Decrypt</a> · <a href="https://the-decoder.com/anthropics-claude-opus-5-costs-well-below-fable-5-while-matching-or-beating-it-across-most-benchmarks/" target="_blank">The Decoder</a> (xhigh vs max). Figures are vendor/press claims — confirm with your own evals.</p>
+
+  <footer>Model &amp; Effort Decision Studio · AI &amp; Agents · your Study Hub</footer>
+</div>
+
+<script>
+/* ============================================================
+   ▼▼▼  EDIT HERE WHEN THE LINEUP CHANGES  ▼▼▼
+   Bump LAST_UPDATED and edit MODELS. Every widget reads from
+   this array — nothing else needs to change.
+   tier: 1 = highest raw capability … higher number = lighter.
+   effort: full ladder array, or null if the model has no dial.
+   speed: "fastest" | "fast" | "moderate" | "slow"
+   priceIn / priceOut: USD per million tokens (standard rate).
+   ============================================================ */
+const LAST_UPDATED = "2026-07-28";
+const MODELS = [
+  {
+    id:"fable5", name:"Fable 5", api:"claude-fable-5", mc:"var(--plum)", hex:"#7d68b3",
+    cap:93, capMax:96, perfShape:[0.90,0.94,0.97,1.00,0.99], /* illustrative — high floor: even low Fable is strong */
+    tier:1, priceIn:10, priceOut:50, priceNote:"", speed:"slow",
+    context:"1M", maxOut:"128k", cutoff:"Jan 2026",
+    thinking:"always-on (can't disable); effort low→max", effort:["low","medium","high","xhigh","max"], defaultEffort:"high",
+    retention:"30-day retention required", safeguards:"strictest",
+    blurb:"Anthropic's most capable widely-released model — the frontier edge, now narrow. Even its low effort often beats prior models at xhigh.",
+    tags:["long-running agents","deep reasoning","advanced research","long-horizon autonomy"],
+    bestFor:["reasoning","research","agentic"]
+  },
+  {
+    id:"opus5", name:"Opus 5", api:"claude-opus-5", mc:"var(--cobalt)", hex:"#4a6fa8",
+    cap:91, capMax:96, perfShape:[0.82,0.90,0.95,1.00,0.985], /* perf as fraction of capMax across effort ladder — illustrative */
+    tier:1, priceIn:5, priceOut:25, priceNote:"", speed:"moderate",
+    context:"1M", maxOut:"128k", cutoff:"May 2026",
+    thinking:"adaptive on by default", effort:["low","medium","high","xhigh","max"], defaultEffort:"high",
+    retention:"no 30-day requirement", safeguards:"moderate",
+    blurb:"Frontier intelligence at half Fable's price; beats Fable on most published benchmarks.",
+    tags:["agentic coding","enterprise","refactoring","computer use","vision","knowledge work"],
+    bestFor:["coding","agentic","reasoning","research","office","vision"]
+  },
+  {
+    id:"sonnet5", name:"Sonnet 5", api:"claude-sonnet-5", mc:"var(--forest)", hex:"#437a58",
+    cap:79, capMax:85, perfShape:[0.80,0.88,0.93,1.00,0.985],
+    tier:3, priceIn:3, priceOut:15, priceNote:"intro $2/$10 thru Aug 31 2026", speed:"fast",
+    context:"1M", maxOut:"128k", cutoff:"Jan 2026",
+    thinking:"adaptive on by default", effort:["low","medium","high","xhigh","max"], defaultEffort:"high",
+    retention:"ZDR available", safeguards:"real-time cyber safeguards (first Sonnet)",
+    blurb:"The best combination of speed and intelligence — frontier-ish at a workhorse price. New tokenizer: ~30% more tokens/text.",
+    tags:["code generation","data analysis","content","visual understanding","agentic tool use","daily driver"],
+    bestFor:["coding","office","vision","chat","agentic"]
+  },
+  {
+    id:"haiku45", name:"Haiku 4.5", api:"claude-haiku-4-5", mc:"var(--ochre)", hex:"#c9a24a",
+    cap:71,
+    tier:4, priceIn:1, priceOut:5, priceNote:"", speed:"fastest",
+    context:"200k", maxOut:"64k", cutoff:"Feb 2025",
+    thinking:"manual extended thinking", effort:null, defaultEffort:null,
+    retention:"—", safeguards:"standard",
+    blurb:"Fastest model with near-frontier intelligence — Anthropic's pick for high-volume and sub-agent tasks.",
+    tags:["real-time","high-volume","cost-sensitive","sub-agent tasks"],
+    bestFor:["chat","highvolume","subagent"]
+  }
+];
+/* ▲▲▲  END EDIT ZONE  ▲▲▲ */
+
+/* rough, illustrative effort → thinking-token multipliers (NOT official) */
+const EFFORT_MULT = { none:1, low:0.35, medium:0.6, high:1, xhigh:1.8, max:2.8 };
+const EFFORT_NOTES = {
+  low:"Minimal thinking. Cheapest & fastest. Great for routine, well-specified, high-volume work and easy subagent jobs.",
+  medium:"Light thinking. A step up for slightly involved tasks where speed still matters.",
+  high:"★ THE DEFAULT. Anthropic's recommended starting point — strong quality for most real work. Step up or down from here deliberately.",
+  xhigh:"Deep thinking. The real ceiling for demanding coding & agentic work — Opus 5 rewards this step. Best value-per-quality above 'high'.",
+  max:"Maximum thinking. Can OVERTHINK: often ties or loses to xhigh while costing more. Reserve for rare open-ended brute-force reasoning."
+};
+
+/* ---------- stamp ---------- */
+document.getElementById("updated-stamp").textContent = "updated " + LAST_UPDATED;
+
+/* ---------- model cards ---------- */
+const byTier = [...MODELS].sort((a,b)=>a.priceOut-b.priceOut);
+const cardWrap = document.getElementById("model-cards");
+MODELS.forEach(m => {
+  const el = document.createElement("div");
+  el.className = "m-card"; el.style.setProperty("--mc", m.mc);
+  el.innerHTML =
+    '<h4>'+m.name+'</h4><div class="api">'+m.api+'</div>'+
+    '<div class="price">$'+m.priceIn+' <small>in</small> · $'+m.priceOut+' <small>out / Mtok</small></div>'+
+    (m.priceNote?'<div class="api" style="color:var(--warn)">'+m.priceNote+'</div>':'')+
+    '<div class="blurb">'+m.blurb+'</div>'+
+    '<div class="m-tags">'+m.tags.map(t=>'<span class="m-tag">'+t+'</span>').join('')+'</div>';
+  cardWrap.appendChild(el);
+});
+
+/* ---------- comparison table ---------- */
+(function(){
+  const rows = [
+    ["Price (in / out per Mtok)", m=>"$"+m.priceIn+" / $"+m.priceOut],
+    ["Intro pricing", m=>m.priceNote||"—"],
+    ["Speed", m=>m.speed],
+    ["Effort dial", m=>m.effort?m.effort.join(" · "):"none"],
+    ["Default effort", m=>m.defaultEffort||"—"],
+    ["Thinking", m=>m.thinking],
+    ["Context / max out", m=>m.context+" / "+m.maxOut],
+    ["Knowledge cutoff", m=>m.cutoff],
+    ["Data retention", m=>m.retention],
+    ["Cyber safeguards", m=>m.safeguards]
+  ];
+  let html = '<table><tr><th>Spec</th>'+MODELS.map(m=>'<th>'+m.name+'</th>').join('')+'</tr>';
+  rows.forEach(([label,fn])=>{ html+='<tr><td>'+label+'</td>'+MODELS.map(m=>'<td>'+fn(m)+'</td>').join('')+'</tr>'; });
+  html+='</table>';
+  document.getElementById("cmp-table").innerHTML = html;
+})();
+
+/* ---------- effort dial ---------- */
+(function(){
+  const levels = ["low","medium","high","xhigh","max"];
+  const row = document.getElementById("dial-row");
+  levels.forEach(lv=>{
+    const d = document.createElement("div");
+    d.className = "dial" + (lv==="high"?" on":"") + (lv==="max"?" overthink":"");
+    d.innerHTML = '<div class="lvl">'+lv+'</div>'+(lv==="high"?'<div class="def">default</div>':'<div class="def">&nbsp;</div>');
+    d.addEventListener("click", ()=>{
+      row.querySelectorAll(".dial").forEach(x=>x.classList.remove("on"));
+      d.classList.add("on");
+      document.getElementById("dial-note").textContent = EFFORT_NOTES[lv];
+    });
+    row.appendChild(d);
+  });
+  document.getElementById("dial-note").textContent = EFFORT_NOTES.high;
+})();
+
+/* ---------- cost visualizer ---------- */
+(function(){
+  const selA=document.getElementById("cost-a"), selB=document.getElementById("cost-b");
+  const effA=document.getElementById("cost-a-eff"), effB=document.getElementById("cost-b-eff");
+  const tok=document.getElementById("cost-tokens"), tokVal=document.getElementById("cost-tok-val");
+  MODELS.forEach(m=>{ selA.add(new Option(m.name,m.id)); selB.add(new Option(m.name,m.id)); });
+  selA.value="opus5"; selB.value="fable5";
+  function effOpts(sel, modelId){
+    const m=MODELS.find(x=>x.id===modelId); sel.innerHTML="";
+    if(m.effort){ m.effort.forEach(e=>sel.add(new Option(e,e))); sel.value=m.defaultEffort; sel.disabled=false; }
+    else { sel.add(new Option("adaptive","none")); sel.value="none"; sel.disabled=true; }
+  }
+  function money(x){ return x>=1 ? "$"+x.toFixed(2) : (x*100).toFixed(1)+"¢"; }
+  function render(){
+    const mA=MODELS.find(x=>x.id===selA.value), mB=MODELS.find(x=>x.id===selB.value);
+    const tk=+tok.value; tokVal.textContent=tk+"k";
+    // simple task-cost proxy: output tokens dominate; effort multiplies token count
+    const cA = mA.priceOut/1000 * tk * EFFORT_MULT[effA.value||"none"];
+    const cB = mB.priceOut/1000 * tk * EFFORT_MULT[effB.value||"none"];
+    const max = Math.max(cA,cB,0.001);
+    const bars=[[mA,effA.value,cA,"var(--cobalt)"],[mB,effB.value,cB,"var(--plum)"]];
+    document.getElementById("cost-bars").innerHTML = bars.map(([m,e,c,col])=>
+      '<div class="cost-bar-row"><span>'+m.name+' <span style="color:var(--ink-mute)">'+(e&&e!=="none"?"· "+e:"· adaptive")+'</span></span>'+
+      '<div class="cost-track"><div class="cost-fill" style="width:'+(c/max*100)+'%;background:'+col+'"></div></div>'+
+      '<span class="cost-val">'+money(c)+'</span></div>').join('');
+    const ratio=(Math.max(cA,cB)/Math.min(cA,cB));
+    document.getElementById("cost-caption").textContent =
+      "Per-task estimate for ~"+tk+"k output tokens. "+
+      (ratio<1.35 ? "These land within ~"+Math.round((ratio-1)*100)+"% of each other — the overlap you sensed: the cheaper model at high effort can cost about the same as the pricier one at default."
+                  : "The pricier/higher-effort option costs ~"+ratio.toFixed(1)+"× the other here.");
+  }
+  effOpts(effA,selA.value); effOpts(effB,selB.value);
+  [selA,selB].forEach(s=>s.addEventListener("change",()=>{ effOpts(s===selA?effA:effB, s.value); render(); }));
+  [effA,effB,tok].forEach(s=>s.addEventListener("input",render));
+  render();
+})();
+
+/* ---------- decision picker ---------- */
+(function(){
+  const Q = {
+    task: [["Quick Q / chat","chat"],["Coding / agentic","coding"],["Deep reasoning / research","reasoning"],["High-volume / batch","highvolume"],["A subagent job","subagent"]],
+    stakes: [["Low — reversible, cheap to redo","low"],["Medium","med"],["High — irreversible or expensive","high"]],
+    constraint: [["Speed / latency","speed"],["Cost","cost"],["Just want the best answer","quality"]]
+  };
+  const state = {task:null, stakes:null, constraint:null};
+  Object.keys(Q).forEach(key=>{
+    const wrap = document.getElementById("q-"+key);
+    Q[key].forEach(([label,val])=>{
+      const b=document.createElement("div"); b.className="opt"; b.textContent=label;
+      b.addEventListener("click",()=>{
+        wrap.querySelectorAll(".opt").forEach(x=>x.classList.remove("on"));
+        b.classList.add("on"); state[key]=val; recommend();
+      });
+      wrap.appendChild(b);
+    });
+  });
+  function recommend(){
+    if(!state.task||!state.stakes||!state.constraint) return;
+    let model, effort="high", why=[], alt="";
+    const t=state.task, s=state.stakes, c=state.constraint;
+
+    if(t==="chat"){ model="sonnet5"; effort="high"; why.push("chat/Q&A wants speed at low cost");
+      if(c==="cost"||c==="speed"){ model="haiku45"; why.push("your constraint is "+c+" → Haiku is fastest & cheapest"); } }
+    else if(t==="highvolume"){ model="haiku45"; effort="low"; why.push("high-volume favors the cheapest model that clears the bar, at low effort");
+      if(s==="high"){ model="sonnet5"; effort="medium"; why.push("but high stakes → step up to Sonnet"); } }
+    else if(t==="subagent"){ model="haiku45"; effort="low"; why.push("bounded subagent jobs should use the cheapest capable model (Anthropic lists sub-agent tasks for Haiku)");
+      if(s==="high"){ model="sonnet5"; effort="medium"; why.push("high-stakes subtask → Sonnet, still cheap"); } }
+    else if(t==="coding"){ model="opus5"; effort=(s==="high"?"xhigh":"high"); why.push("Opus 5 is the agentic-coding workhorse");
+      if(s==="high") why.push("high stakes → step effort up to xhigh (Opus rewards it)");
+      if(c==="cost"&&s!=="high"){ model="sonnet5"; effort="high"; why.push("cost-sensitive & not high-stakes → Sonnet handles most coding"); }
+      alt="If Opus at xhigh stalls on a genuinely frontier problem, try Fable 5 — but confirm it's worth 2× the price."; }
+    else if(t==="reasoning"){ model="opus5"; effort=(s==="high"?"xhigh":"high"); why.push("Opus 5 is strong on deep reasoning and now beats Fable on most benchmarks");
+      if(s==="high"&&c==="quality"){ model="fable5"; effort="xhigh"; why.push("highest stakes + quality-first → Fable's frontier edge at xhigh (accept 2× price + 30-day retention)"); }
+      alt = model==="opus5" ? "Reach for Fable 5 only if a hard reasoning problem resists Opus at xhigh." : "Opus 5 at xhigh is the cheaper first try before Fable."; }
+
+    const m = MODELS.find(x=>x.id===model);
+    const effTxt = m.effort ? (effort||"high") : (m.thinking.includes("always")?"always-on adaptive":"adaptive");
+    document.getElementById("rec").style.display="block";
+    document.getElementById("rec").innerHTML =
+      '<p class="rec-model">'+m.name+' <span class="rec-effort">· effort: '+effTxt+'</span></p>'+
+      '<p class="rec-why"><b>Why:</b> '+why.join("; ")+'.</p>'+
+      (alt?'<p class="rec-alt">↳ '+alt+'</p>':'')+
+      '<p class="rec-alt">Then trust your own eval over this suggestion — it\'s a starting point, not a verdict.</p>';
+  }
+})();
+
+/* ---------- subagent router ---------- */
+(function(){
+  const jobs = [
+    ["Extract / classify / tag", "Haiku 4.5 · low", "Bounded, verifiable, high-volume — the cheapest model clears it."],
+    ["Summarize a doc / thread", "Haiku 4.5 · low–med", "Easy to check; cheap model is fine unless nuance is load-bearing."],
+    ["Run a tool & report back", "Haiku 4.5 · low", "The intelligence is in the tool, not the model."],
+    ["Search + synthesize findings", "Sonnet 5 · high", "Needs judgment; Sonnet balances quality and cost for parallel fan-out."],
+    ["Write/refactor real code", "Opus 5 · high–xhigh", "Quality gates the result — don't cheap out on the code itself."],
+    ["Critic / verify another agent", "Sonnet 5 or Opus 5", "Reviewer should be at least as strong as the do-er; Opus if stakes are high."],
+    ["The orchestrator / lead", "Opus 5 · high", "Plans and delegates; worth a strong model since it steers everything."],
+    ["Frontier-hard sub-step", "Fable 5", "Only the rare sub-step that truly resists Opus at xhigh."]
+  ];
+  document.getElementById("router-grid").innerHTML = jobs.map(([j,p,d])=>
+    '<div class="route-card"><h4>'+j+'</h4><div class="pick">'+p+'</div><p>'+d+'</p></div>').join('');
+})();
+
+/* ---------- benchmark glossary ---------- */
+(function(){
+  const G = [
+    ["SWE-bench / SWE-bench Pro","Can the model fix real GitHub issues in real repos? The headline 'can it code agentically' benchmark. Higher = better at multi-file, tool-using coding."],
+    ["Terminal-Bench / Frontier-Bench","Long-horizon agent tasks in a real shell — can it stay on task across many tool calls without derailing or timing out? Rewards stamina, not just smarts."],
+    ["GPQA / MMLU","Hard graduate-level (GPQA) and broad general-knowledge (MMLU) Q&A. Proxy for raw reasoning/knowledge. Increasingly saturated, so small gaps mean little."],
+    ["tau-bench / GDPval","Realistic tool-use and economically-valuable work tasks (agentic workflows, business tasks). Closer to 'does it do real jobs' than pure Q&A."],
+    ["ARC-AGI","Abstract puzzle-solving meant to resist memorization — a proxy for fluid reasoning rather than recalled knowledge."],
+    ["p50 / p95 / p99","Not a benchmark — a distribution. p99 = 'the worst 1% of runs.' A good mean can hide a bad p99. Always prefer percentiles over averages for anything you'll feel repeatedly."],
+    ["'Effort-conditioned' scores","A score is meaningless without the effort level it used. The same model can post very different numbers at high vs max — always check what setting produced a figure."]
+  ];
+  document.getElementById("gloss").innerHTML = G.map(([t,d])=>
+    '<details><summary>'+t+'</summary><p>'+d+'</p></details>').join('');
+})();
+
+/* ---------- VISUAL: base price bars ---------- */
+(function(){
+  const max = Math.max(...MODELS.map(m=>m.priceOut));
+  document.getElementById("basecost").innerHTML = MODELS.map(m=>
+    '<div class="basecost-row"><span>'+m.name+'</span>'+
+    '<div class="basecost-track"><div class="basecost-fill" style="width:'+(m.priceOut/max*100).toFixed(1)+'%;background:'+m.hex+'"></div></div>'+
+    '<span class="basecost-val">$'+m.priceOut+' out · $'+m.priceIn+' in</span></div>').join('');
+})();
+
+/* ---------- VISUAL: cost × capability frontier ---------- */
+(function(){
+  const W=640,H=380,L=54,R=22,T=22,B=52, pw=W-L-R, ph=H-T-B;
+  const cMin=4,cMax=150,capMin=60,capHi=100;
+  const lx=c=>L+(Math.log(c)-Math.log(cMin))/(Math.log(cMax)-Math.log(cMin))*pw;
+  const ly=v=>T+(capHi-v)/(capHi-capMin)*ph;
+  let s='<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+  s+='<line x1="'+L+'" y1="'+(T+ph)+'" x2="'+(L+pw)+'" y2="'+(T+ph)+'" stroke="#7ea6c9"/>';
+  s+='<line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+(T+ph)+'" stroke="#7ea6c9"/>';
+  [5,10,25,50,100].forEach(c=>{ const x=lx(c); s+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(T+ph)+'" stroke="#dcedfb"/>'; s+='<text x="'+x+'" y="'+(T+ph+16)+'" font-size="11" fill="#56628a" text-anchor="middle">$'+c+'</text>'; });
+  [70,80,90,100].forEach(v=>{ const y=ly(v); s+='<line x1="'+L+'" y1="'+y+'" x2="'+(L+pw)+'" y2="'+y+'" stroke="#dcedfb"/>'; s+='<text x="'+(L-8)+'" y="'+(y+4)+'" font-size="11" fill="#56628a" text-anchor="end">'+v+'</text>'; });
+  s+='<text x="'+(L+pw/2)+'" y="'+(H-10)+'" font-size="12" fill="#2f3a5f" text-anchor="middle">cost / task  ($ per Mtok out, log scale) →</text>';
+  s+='<text transform="translate(15,'+(T+ph/2)+') rotate(-90)" font-size="12" fill="#2f3a5f" text-anchor="middle">capability (illustrative) →</text>';
+  MODELS.filter(m=>m.effort).forEach(m=>{
+    const traj=m.effort.map((e,i)=>({e,x:lx(m.priceOut*EFFORT_MULT[e]),y:ly(m.capMax*m.perfShape[i])}));
+    s+='<polyline points="'+traj.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')+'" fill="none" stroke="'+m.hex+'" stroke-width="2" stroke-dasharray="5 4" opacity="0.7"/>';
+    traj.forEach(p=>{ s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.2" fill="'+m.hex+'"/>'; if(["low","xhigh","max"].includes(p.e)) s+='<text x="'+p.x.toFixed(1)+'" y="'+(p.y-8).toFixed(1)+'" font-size="9" fill="'+m.hex+'" text-anchor="middle">'+p.e+'</text>'; });
+  });
+  MODELS.forEach(m=>{ const x=lx(m.priceOut),y=ly(m.cap);
+    s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="7" fill="'+m.hex+'" stroke="#ffffff" stroke-width="2"/>';
+    s+='<text x="'+x.toFixed(1)+'" y="'+(y+23).toFixed(1)+'" font-size="12" fill="#2a3150" text-anchor="middle" font-weight="600">'+m.name+'</text>'; });
+  s+='</svg>';
+  document.getElementById("frontier").innerHTML=s;
+})();
+
+/* ---------- VISUAL: effort → performance + cost curve ---------- */
+let curCurve="opus5";
+function renderEffortCurve(id){
+  const m=MODELS.find(x=>x.id===id), fable=MODELS.find(x=>x.id==="fable5");
+  const W=620,H=340,L=46,R=52,T=30,B=46, pw=W-L-R, ph=H-T-B;
+  const capLo=60,capHi=100,costHi=150, n=m.effort.length;
+  const yCap=v=>T+(capHi-v)/(capHi-capLo)*ph;
+  const yCost=v=>T+(costHi-v)/costHi*ph;
+  const xC=i=>L+(i+0.5)/n*pw, slotW=pw/n, bw=Math.min(46,slotW*0.5);
+  let s='<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+  const xhi=m.effort.indexOf("xhigh");
+  if(xhi>=0){ const x=xC(xhi); s+='<rect x="'+(x-slotW/2).toFixed(1)+'" y="'+T+'" width="'+slotW.toFixed(1)+'" height="'+ph+'" fill="rgba(74,111,168,0.09)"/>'; s+='<text x="'+x.toFixed(1)+'" y="'+(T-10)+'" font-size="11" fill="#4a6fa8" text-anchor="middle" font-weight="700">sweet spot</text>'; }
+  [60,70,80,90,100].forEach(v=>{ const y=yCap(v); s+='<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(L+pw)+'" y2="'+y.toFixed(1)+'" stroke="#dcedfb"/>'; s+='<text x="'+(L-8)+'" y="'+(y+4).toFixed(1)+'" font-size="10" fill="#56628a" text-anchor="end">'+v+'</text>'; });
+  [0,50,100,150].forEach(v=>{ const y=yCost(v); s+='<text x="'+(L+pw+8)+'" y="'+(y+4).toFixed(1)+'" font-size="10" fill="#56628a" text-anchor="start">$'+v+'</text>'; });
+  s+='<line x1="'+L+'" y1="'+(T+ph)+'" x2="'+(L+pw)+'" y2="'+(T+ph)+'" stroke="#7ea6c9"/>';
+  s+='<text x="'+(L-8)+'" y="'+(T-14)+'" font-size="10" fill="#2a3150" text-anchor="end">capability</text>';
+  s+='<text x="'+(L+pw+8)+'" y="'+(T-14)+'" font-size="10" fill="#2a3150" text-anchor="start">cost $</text>';
+  // cost bars
+  m.effort.forEach((e,i)=>{ const c=m.priceOut*EFFORT_MULT[e], x=xC(i), y=yCost(c), h=(T+ph)-y;
+    s+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="4" fill="'+m.hex+'" opacity="0.30"/>';
+    s+='<text x="'+x.toFixed(1)+'" y="'+(y-4).toFixed(1)+'" font-size="9" fill="#56628a" text-anchor="middle">$'+c.toFixed(0)+'</text>';
+    s+='<text x="'+x.toFixed(1)+'" y="'+(T+ph+16)+'" font-size="11" fill="#2f3a5f" text-anchor="middle"'+(e==="high"?' font-weight="700"':'')+'>'+e+'</text>'; });
+  // fable references (only when viewing another model — redundant on Fable's own curve)
+  if(id!=="fable5"){
+    const fy=yCost(fable.priceOut); s+='<line x1="'+L+'" y1="'+fy.toFixed(1)+'" x2="'+(L+pw)+'" y2="'+fy.toFixed(1)+'" stroke="'+fable.hex+'" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.7"/>'; s+='<text x="'+(L+pw).toFixed(1)+'" y="'+(fy-5).toFixed(1)+'" font-size="9" fill="'+fable.hex+'" text-anchor="end">Fable cost (high)</text>';
+    const fcy=yCap(fable.cap); s+='<line x1="'+L+'" y1="'+fcy.toFixed(1)+'" x2="'+(L+pw)+'" y2="'+fcy.toFixed(1)+'" stroke="'+fable.hex+'" stroke-width="1.5" stroke-dasharray="2 3" opacity="0.6"/>'; s+='<text x="'+(L+6)+'" y="'+(fcy-5).toFixed(1)+'" font-size="9" fill="'+fable.hex+'">Fable capability (high)</text>';
+  }
+  // perf line
+  const pts=m.effort.map((e,i)=>({x:xC(i),y:yCap(m.capMax*m.perfShape[i])}));
+  s+='<polyline points="'+pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')+'" fill="none" stroke="#2a3150" stroke-width="2.5"/>';
+  pts.forEach(p=>{ s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="#2a3150"/>'; });
+  const mi=m.effort.indexOf("max");
+  if(mi>0 && m.perfShape[mi]<m.perfShape[mi-1]){ const x=xC(mi); s+='<text x="'+x.toFixed(1)+'" y="'+(yCap(m.capMax*m.perfShape[mi])-13).toFixed(1)+'" font-size="10" fill="#b35c5c" text-anchor="middle">overthinks ↓</text>'; }
+  s+='</svg>';
+  document.getElementById("effort-curve").innerHTML=s;
+}
+(function(){
+  const tabs=document.getElementById("curve-tabs");
+  MODELS.filter(m=>m.effort).forEach(m=>{
+    const b=document.createElement("div"); b.className="curve-tab"+(m.id===curCurve?" on":""); b.textContent=m.name;
+    b.addEventListener("click",()=>{ curCurve=m.id; tabs.querySelectorAll(".curve-tab").forEach(x=>x.classList.remove("on")); b.classList.add("on"); renderEffortCurve(m.id); });
+    tabs.appendChild(b);
+  });
+  renderEffortCurve(curCurve);
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

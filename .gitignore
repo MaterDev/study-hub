@@ -1,0 +1,5 @@
+.DS_Store
+.hub-data/
+node_modules/
+# unrelated scratch file that lives in the same folder
+matrix-concept-art-app-stitch-project.md

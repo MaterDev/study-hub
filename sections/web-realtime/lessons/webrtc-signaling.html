@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebRTC &amp; Signaling</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--forest); --accent-soft:var(--forest-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:600; font-size:.85rem; cursor:pointer;}
+  .controls{display:flex; gap:10px; margin-top:14px; align-items:center; flex-wrap:wrap;}
+  /* signaling sequence */
+  .sig{display:grid; grid-template-columns:80px 1fr 80px; gap:8px; align-items:center; margin:6px 0;}
+  .peer{background:var(--paper-2); border:1px solid var(--line-strong); border-radius:10px; padding:10px 6px; text-align:center; font-family:var(--font-ui); font-weight:600; font-size:.78rem;}
+  .peer.host{border-color:var(--cobalt); color:var(--cobalt);} .peer.guest{border-color:var(--forest); color:var(--forest);}
+  .sig-step{opacity:.18; transition:opacity .4s;}
+  .sig-step.on{opacity:1;}
+  .msg{border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-family:var(--font-mono); font-size:.76rem; text-align:center; background:var(--surface); position:relative;}
+  .msg .dir{position:absolute; top:-9px; left:50%; transform:translateX(-50%); font-size:.9rem; color:var(--ink-faint);}
+  .msg.server{border-style:dashed; color:var(--ink-mute);}
+  .caption{font-family:var(--font-ui); font-size:.74rem; color:var(--ink-mute); text-align:center; margin-top:2px;}
+  .relay-note{text-align:center; font-family:var(--font-hand); font-size:1.15rem; color:var(--ink-mute); margin:10px 0;}
+  .stun-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:14px 0;}
+  @media(max-width:700px){.stun-grid{grid-template-columns:1fr;}}
+  .sbox{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:var(--shadow-sm);}
+  .sbox h4{margin:0 0 4px; font-size:.95rem;} .sbox p{margin:0; font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .sbox .pct{font-family:var(--font-mono); font-size:1.3rem; color:var(--ink); display:block; margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>WebRTC &amp; Signaling</h1>
+  <p class="subtitle">How two browsers find each other and open a direct pipe — and why they still need a middleman to do it.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The chicken-and-egg problem</a></li>
+      <li><a href="#sec2">The signaling handshake (offer / answer)</a></li>
+      <li><a href="#sec3">ICE, STUN &amp; TURN: punching through NAT</a></li>
+      <li><a href="#sec4">DataChannels: your actual game pipe</a></li>
+      <li><a href="#sec5">The awkward realities</a></li>
+      <li><a href="#sec6">Your spike's signaling server</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The chicken-and-egg problem</h2>
+  <p class="lead">WebRTC promises a <em>direct</em> connection between two browsers &mdash; no server relaying every message. But there's a bootstrapping paradox: to connect directly to someone, you need to know their address and capabilities... and you have no direct way to tell them yours <em>until you're connected</em>. Something else has to carry those first "how do I reach you?" messages.</p>
+  <div class="analogy">
+    <span class="emoji">📞</span><strong>Analogy:</strong> Two people want a private phone call, but neither knows the other's number. They both text a mutual friend their number and availability; the friend passes the notes back and forth. Once they've swapped numbers, they call each other directly and the friend is no longer involved. That mutual friend is the <strong>signaling server</strong>; the private call is the <strong>peer connection</strong>.
+  </div>
+  <p>So even "serverless" P2P WebRTC needs a small server for the introduction. It's cheap &mdash; it only carries a few setup messages, then goes quiet &mdash; but it's mandatory. Your spike uses a WebSocket endpoint (<code class="inline">/signal</code>) for exactly this.</p>
+
+  <h2 id="sec2"><span class="num">2</span> The signaling handshake (offer / answer)</h2>
+  <p>The introduction is a scripted exchange. One peer is the <strong>offerer</strong>, the other the <strong>answerer</strong>. They swap <code class="inline">SDP</code> blobs (Session Description Protocol &mdash; a text description of "here's the media/data I support and how to reach me"), then trickle network candidates. Press play:</p>
+  <div class="stage">
+    <div class="sig sig-step" id="ss-0">
+      <div class="peer host">HOST<br><span style="font-weight:400;color:var(--ink-mute)">offerer</span></div>
+      <div><div class="msg"><span class="dir">→</span>offer (SDP)</div><div class="caption">"here's what I support"</div></div>
+      <div class="peer guest">GUEST<br><span style="font-weight:400;color:var(--ink-mute)">answerer</span></div>
+    </div>
+    <div class="relay-note sig-step" id="ss-r">↑ both messages pass through the signaling server ↑</div>
+    <div class="sig sig-step" id="ss-1">
+      <div class="peer host">HOST</div>
+      <div><div class="msg"><span class="dir">←</span>answer (SDP)</div><div class="caption">"great, here's mine"</div></div>
+      <div class="peer guest">GUEST</div>
+    </div>
+    <div class="sig sig-step" id="ss-2">
+      <div class="peer host">HOST</div>
+      <div><div class="msg">⇄ ice-candidate × many</div><div class="caption">"try reaching me at these addresses"</div></div>
+      <div class="peer guest">GUEST</div>
+    </div>
+    <div class="sig sig-step" id="ss-3">
+      <div class="peer host">HOST</div>
+      <div><div class="msg" style="border-color:var(--forest); color:var(--forest);">🔗 direct P2P DataChannel open</div><div class="caption">signaling server no longer involved</div></div>
+      <div class="peer guest">GUEST</div>
+    </div>
+    <div class="controls"><button class="btn" id="sig-play">▶ Play the handshake</button></div>
+  </div>
+  <p>The offer and answer describe capabilities and encryption keys; the <code class="inline">ice-candidate</code> messages are the possible network routes (see next section). Once one route works, the DataChannel opens and traffic flows <strong>directly</strong> between the two browsers. The server has done its job.</p>
+
+  <h2 id="sec3"><span class="num">3</span> ICE, STUN &amp; TURN: punching through NAT</h2>
+  <p>Why so many candidate addresses? Because almost no home computer has a real public address on the internet &mdash; it sits behind <strong>NAT</strong> (your router, sharing one public IP among all your devices). Two machines behind two routers can't just dial each other. Three technologies solve this:</p>
+  <div class="stun-grid">
+    <div class="sbox"><h4 style="color:var(--forest)">ICE</h4><p>The framework that gathers every possible route to you (local IP, public IP, relayed) and tries them until one connects.</p></div>
+    <div class="sbox"><h4 style="color:var(--cobalt)">STUN</h4><p>A tiny server that tells you "here's how the outside world sees you" &mdash; your public IP + port through the NAT. Cheap, and usually enough.</p></div>
+    <div class="sbox"><h4 style="color:var(--vermil)">TURN</h4><p>A fallback <em>relay</em> server for when direct connection is impossible. It works always &mdash; but it forwards all traffic, so you lose the P2P speed win.</p></div>
+  </div>
+  <div class="flag">
+    <strong>The number that matters &mdash; honestly.</strong> Most connections succeed peer-to-peer via STUN, but a meaningful minority need a TURN <em>relay</em>, which adds a hop and erases WebRTC's latency advantage over WebSocket. Be skeptical of hard figures: the oft-repeated "15&ndash;30%" is video-call telemetry, not games, and there is <strong>no authoritative single number</strong> &mdash; credible guidance is "anywhere from ~0&ndash;50% depending on your users' networks; measure it, don't guess." The failure mode is specific and real: per MDN, <strong>STUN alone cannot traverse a <em>symmetric</em> NAT</strong>, and carrier-grade NAT (common on cellular) behaves like one &mdash; so a STUN-only build silently fails for those users.
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> DataChannels: your actual game pipe</h2>
+  <p>Once connected, you don't send video &mdash; you open a <strong>DataChannel</strong>, an arbitrary two-way message pipe. Its reliability is configurable, which is the whole reason to use WebRTC for a game:</p>
+  <table>
+    <tr><th>Config</th><th>Behaves like</th><th>Use for</th></tr>
+    <tr><td class="mono"><code class="inline">{ordered:false, maxRetransmits:0}</code></td><td>UDP (unreliable)</td><td>Per-tick input &amp; snapshots &mdash; newest wins, drops don't stall</td></tr>
+    <tr><td class="mono"><code class="inline">{ordered:true}</code> (default)</td><td>TCP (reliable)</td><td>Match setup, run/result control messages</td></tr>
+  </table>
+  <p>Your spike opens <em>both</em>: an unreliable channel for the fast <code class="inline">input</code>/<code class="inline">snapshot</code>/<code class="inline">ping</code> traffic, and a separate reliable-ordered channel for <code class="inline">run</code>/<code class="inline">result</code> setup. Two more rules from the research:</p>
+  <ul>
+    <li><code class="inline">maxRetransmits</code> and <code class="inline">maxPacketLifeTime</code> are mutually exclusive &mdash; you pick one way to bound retries.</li>
+    <li>Keep unreliable payloads under <code class="inline">~1192B</code> to avoid SCTP fragmentation: if one fragment is lost, you lose the whole snapshot. (Lesson 5 shows your snapshots are tiny &mdash; well under this.)</li>
+  </ul>
+
+  <h2 id="sec5"><span class="num">5</span> The awkward realities</h2>
+  <div class="pitfall"><div class="icon">🤝</div><div><b>Glare.</b> If both peers try to send an <code class="inline">offer</code> at the same moment, negotiation breaks. The general fix is a fiddly "polite/impolite peer" state machine. Your spike sidesteps it <em>structurally</em>: roles are fixed (first to join a room is <code class="inline">host</code>), and only the host may send an offer, only the guest an answer. Simpler &mdash; works because rooms are exactly two named roles, not an open mesh.</div></div>
+  <div class="pitfall"><div class="icon">🚧</div><div><b>Silent failure.</b> When NAT traversal fails, the connection just... never opens, with no obvious error. Your spike watches its own <code class="inline">RTCPeerConnection.connectionState</code>; on <code class="inline">'failed'</code> it sends an <code class="inline">ice-failed</code> message through the signaling server so <em>both</em> ends can show "connection failed" instead of hanging.</div></div>
+  <div class="pitfall"><div class="icon">🔐</div><div><b>Always encrypted.</b> WebRTC data is mandatorily encrypted (DTLS). Nice for free, but it means there's real setup cost per connection &mdash; another reason the signaling dance exists.</div></div>
+
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">field notes · from the refactor</div>
+    <h4>Two WebRTC realities the refactor surfaced</h4>
+    <p><strong>1. STUN-only won't survive real deployment.</strong> The spike currently configures STUN but <em>no TURN</em> server. That's fine for two laptops on the same office Wi-Fi, but it will fail on symmetric/carrier-grade NAT &mdash; exactly the cellular/varied-network conditions a real two-machine test needs. The fix is a config-injectable <code class="inline">iceServers</code> list plus an actual TURN server, and labeling each result with the ICE candidate type (host / srflx / relay) so you know whether a run went truly P2P.</p>
+    <p><strong>2. ICE candidates can arrive early.</strong> Candidates sometimes show up <em>before</em> <code class="inline">setRemoteDescription</code> has run; calling <code class="inline">addIceCandidate</code> then throws <code class="inline">InvalidStateError</code> (MDN), so those candidates must be <em>buffered</em> and replayed once the remote description is set. The spike dropped early candidates &mdash; a subtle, intermittent connection failure. This is the exact class of bug MDN's "perfect negotiation" pattern exists to prevent.</p>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> Your spike's signaling server</h2>
+  <p>The <code class="inline">/signal</code> endpoint (documented in <code class="inline">server/PROTOCOL.md</code>) is a small WebSocket relay. Key design points, now that you can read them:</p>
+  <ul>
+    <li>It's a <strong>pure relay</strong>: it forwards <code class="inline">offer</code> → guest, <code class="inline">answer</code> → host, and <code class="inline">ice-candidate</code> either way, plus <code class="inline">peer-joined</code>/<code class="inline">peer-left</code> presence. It never inspects the actual game data.</li>
+    <li>Rooms are joined by URL: <code class="inline">/signal?room=&lt;id&gt;&amp;role=host|guest</code> &mdash; the same <code class="inline">room</code> id the two players share (this is what <code class="inline">?room=probe2&amp;role=guest</code> in the app URL is doing).</li>
+    <li><strong>Once signaling completes, the DataChannels are pure peer-to-peer &mdash; "this server has no visibility into them at all."</strong> The server only helps them meet.</li>
+  </ul>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">why this matters for the verdict</div>
+    <h4>Signaling is WebSocket; the payload is WebRTC</h4>
+    <p>Notice the elegant irony: your spike uses a <em>WebSocket</em> (reliable, server-relayed) to set up a <em>WebRTC</em> (unreliable, peer-to-peer) connection. They're not competitors here &mdash; WebSocket is perfect for the handful of setup messages, and WebRTC is what you want for the 60Hz game stream. The spike's "WS vs WebRTC" contest is only about that fast game-data path, not the setup.</p>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li>P2P WebRTC needs a <b>signaling server</b> to introduce peers (offer/answer + ICE candidates); after that, traffic is direct.</li>
+    <li><b>STUN</b> discovers your public address (works ~70–80% of the time); <b>TURN</b> relays when direct fails (~15–30%) and erases the speed win.</li>
+    <li>The game pipe is a <b>DataChannel</b>; configure it unreliable (<code class="inline">maxRetransmits:0</code>) for per-tick data, reliable for setup; keep payloads under <code class="inline">~1192B</code>.</li>
+  </ul>
+  <p class="src"><b>Primary sources.</b> MDN — <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling" target="_blank">Signaling &amp; video calling</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Connectivity" target="_blank">Connectivity</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Protocols" target="_blank">Protocols (STUN/TURN/symmetric NAT)</a></p>
+  <p class="src">IETF — <a href="https://www.ietf.org/rfc/rfc9429.html" target="_blank">RFC 9429 (JSEP)</a> · <a href="https://www.rfc-editor.org/info/rfc8445/" target="_blank">RFC 8445 (ICE)</a> · <a href="https://www.rfc-editor.org/info/rfc8489/" target="_blank">RFC 8489 (STUN)</a> · <a href="https://www.rfc-editor.org/info/rfc8656/" target="_blank">RFC 8656 (TURN)</a></p>
+  <p class="src">MDN — <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createDataChannel" target="_blank">createDataChannel (ordered/maxRetransmits)</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addIceCandidate" target="_blank">addIceCandidate</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation" target="_blank">Perfect negotiation</a> · <a href="https://lgrahl.de/articles/demystifying-webrtc-dc-size-limit.html" target="_blank">DataChannel size limits</a></p>
+  <p class="src">Your spike — <code class="inline">server/PROTOCOL.md</code> (<code class="inline">/signal</code>), <code class="inline">server/signaling.ts</code>, <code class="inline">webrtc.ts</code>, <code class="inline">research.md §B</code></p>
+
+  <footer>WebRTC &amp; Signaling · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+document.getElementById('sig-play').addEventListener('click',()=>{
+  const steps=['ss-0','ss-r','ss-1','ss-2','ss-3'];
+  steps.forEach(id=>document.getElementById(id).classList.remove('on'));
+  steps.forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('on'), i*750));
+});
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

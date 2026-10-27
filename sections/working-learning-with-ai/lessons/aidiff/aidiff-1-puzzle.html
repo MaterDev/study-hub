@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1 · The puzzle: same tools, different results</title>
+<link rel="stylesheet" href="../../../../shared/theme.css">
+<link rel="stylesheet" href="aidiff.css">
+<style>
+  .qbars{display:flex; align-items:flex-end; gap:14px; height:230px; padding:26px 6px 0; border-bottom:3px solid var(--outline);}
+  .qb{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .qb .bar{width:72%; border:3px solid var(--outline); border-bottom:none; border-radius:4px 4px 0 0; background:var(--forest-soft); transition:height .7s steps(8); height:0;}
+  .qb .v{font-family:var(--font-mono); font-size:.85rem; color:var(--ink); margin-bottom:4px; min-height:1.2em;}
+  .qlab{display:flex; gap:14px; padding:6px 6px 0;} .qlab span{flex:1; text-align:center; font-family:var(--font-ui); font-size:.76rem; color:var(--ink-mute);}
+  .ex-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0;}
+  @media(max-width:700px){.ex-grid{grid-template-columns:1fr 1fr;}}
+  .ex{background:var(--surface); border:3px solid var(--outline); border-radius:6px; padding:12px; cursor:pointer; text-align:center; box-shadow:3px 3px 0 rgba(86,98,138,.14); transition:transform .1s steps(2);}
+  .ex:hover{transform:translateY(-3px);} .ex.on{background:var(--vermil-soft);}
+  .ex .em{font-size:1.5rem;} .ex b{display:block; font-family:var(--font-display); font-size:1rem; color:var(--ink); margin-top:4px;}
+  .ex-detail{background:var(--paper); border:3px solid var(--outline); border-radius:6px; padding:16px 18px; font-size:.97rem; min-height:150px;}
+  .ex-detail h4{margin:0 0 6px;} .ex-detail .src{font-family:var(--font-ui); font-size:.84rem; color:var(--ink-mute); margin-top:8px;}
+  .web{display:block; width:100%; max-width:520px; margin:6px auto 0;}
+  .web line{stroke:#a9c1da; stroke-width:2;} .web .hl{stroke:var(--vermil); stroke-width:3.5;}
+</style>
+</head>
+<body data-step="1">
+<div class="wrap">
+  <div id="mod-strip"></div>
+  <h1>The Puzzle: Same Tools, Different Results</h1>
+  <p class="subtitle">Who actually benefits from generative AI &mdash; and why "it depends" is the honest answer.</p>
+  <div class="objectives"><b class="h">IN THIS LESSON</b><ul>
+    <li>See the compression effect in real field data.</li><li>Explore six candidate explanations and how strong the evidence is for each.</li><li>Understand why user "typologies" don't solve the puzzle.</li></ul></div>
+
+  <h2 id="sec1"><span class="num">1</span> The variance is real</h2>
+  <p class="lead">Across customer service, consulting, software development and professional writing, people with similar backgrounds given the same tool get strikingly different results. Some gain a lot; some produce worse work.</p>
+  <div class="tiles">
+    <div class="tile"><div class="n up">+15%</div><div class="l">resolutions/hour, 5,172 support agents (avg)</div></div>
+    <div class="tile"><div class="n up">−40%</div><div class="l">writing time, 453 professionals (quality +18%)</div></div>
+    <div class="tile"><div class="n up">+26%</div><div class="l">completed tasks, 4,867 developers (wide CI)</div></div>
+    <div class="tile"><div class="n">27%</div><div class="l">of US white-collar workers use AI frequently (2025)</div></div>
+  </div>
+  <p class="cap">Brynjolfsson et al. 2025 (QJE) · Noy &amp; Zhang 2023 (Science) · Cui et al. 2026 (Mgmt Sci) · Gallup 2025.</p>
+
+  <h2 id="sec2"><span class="num">2</span> The compression effect</h2>
+  <p>The customer-support study is the clearest picture of <em>who</em> gains. Productivity gains shrink steadily as baseline skill rises &mdash; and at the very top, there was no significant gain plus small drops in quality measures.</p>
+  <div class="stage">
+    <div class="row"><span class="seg" id="q-seg"><button class="on" data-m="gain">Productivity gain by skill</button><button data-m="tenure">Speed-up by tenure</button></span></div>
+    <div class="qbars" id="qbars"></div><div class="qlab" id="qlab"></div>
+    <p class="cap" id="q-cap"></p>
+  </div>
+  <div class="caveat"><b>Check before you quote:</b> the widely shared "14% average / 34% for novices" are from the 2023 working paper. The published QJE version reports <b>+15%</b> average, <b>+30%</b> for less-skilled agents and <b>+36%</b> for the lowest-skill quintile. It was a staggered rollout at one firm, not a randomized trial.</div>
+  <div class="keyidea">Compression means two things are true at once: lower performers gain the most <em>relative</em> to where they started, while top performers still post the best <em>absolute</em> results. "Who benefits most?" depends on which number you're looking at.</div>
+
+  <h2 id="sec3"><span class="num">3</span> Six candidate explanations</h2>
+  <p>The paper reviews six factors. They're not mutually exclusive &mdash; they interact. Click each to see the claim and how solid the evidence is:</p>
+  <div class="ex-grid" id="ex-grid"></div>
+  <div class="ex-detail" id="ex-detail"></div>
+
+  <h2 id="sec4"><span class="num">4</span> Why it's an interaction, not a single cause</h2>
+  <p>The paper's position is that outcomes come from combinations: someone with deep expertise but low metacognition may excel on familiar tasks and struggle on novel ones; someone well-calibrated but new to a domain may use AI well for learning and poorly for expert judgment. Hover a factor to see what it interacts with:</p>
+  <div class="stage">
+    <svg class="web" viewBox="0 0 520 300" id="web"></svg>
+    <p class="cap" id="web-cap">Hover or tap a factor.</p>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> The typology trap</h2>
+  <p>Since late 2022, researchers have proposed many ways to classify AI users &mdash; interaction modes, coder profiles from "AI-independent" to "AI-reliant," engagement levels. They're descriptively useful, but the paper argues they share three limits:</p>
+  <div class="pitfall"><div class="icon">🔮</div><div><b>No predictive validity.</b> None has shown it can forecast performance, skill development, or learning transfer.</div></div>
+  <div class="pitfall"><div class="icon">⚙️</div><div><b>No causal mechanism.</b> Is an "AI-reliant" user lazy, strategic, or under-confident? Without a cause, interventions are guesswork.</div></div>
+  <div class="pitfall"><div class="icon">🎓</div><div><b>Wrong population.</b> Most were built on undergraduates doing artificial tasks, not professionals doing real work.</div></div>
+  <div class="analogy">Treat any "which kind of AI user are you?" label as a mirror, not a measurement. The useful question isn't <em>what type am I</em> but <em>what does this habit do to my results and my skills over time</em> &mdash; which is where the rest of the module goes.</div>
+
+  <div id="mod-next"></div>
+  <footer>Lesson 1 · AI Effectiveness module · your Study Hub</footer>
+</div>
+<script src="aidiff.js"></script>
+<script>
+/* compression chart */
+(function(){
+  const D={
+    gain:{labels:['Q1 lowest','Q2','Q3','Q4','Q5 highest'], vals:[36,27,18,8,0], fmt:v=>v?'+'+v+'%':'≈0', max:40,
+      cap:'Resolutions per hour by pre-AI skill quintile. Q1 (+36%) and the average less-skilled gain (+30%) are reported; Q2–Q4 are interpolated to show the gradient; Q5 had no significant gain. Source: Brynjolfsson, Li & Raymond 2025, QJE.'},
+    tenure:{labels:['AI @ 2 mo','no AI @ 2 mo','no AI @ 6 mo+'], vals:[100,62,100], fmt:v=>v+'', max:110,
+      cap:'Relative productivity (illustrative scale): agents with AI at two months matched agents without AI at six months or more — AI compressed the learning curve. Same source.'}
+  };
+  const bars=document.getElementById('qbars'), lab=document.getElementById('qlab'), cap=document.getElementById('q-cap');
+  function r(m){ const d=D[m];
+    bars.innerHTML=d.vals.map(v=>'<div class="qb"><span class="v"></span><div class="bar"></div></div>').join('');
+    lab.innerHTML=d.labels.map(l=>'<span>'+l+'</span>').join(''); cap.textContent=d.cap;
+    requestAnimationFrame(()=>bars.querySelectorAll('.qb').forEach((q,i)=>{ q.querySelector('.bar').style.height=Math.max(3,d.vals[i]/d.max*170)+'px';
+      q.querySelector('.v').textContent=d.fmt(d.vals[i]); if(m==='tenure') q.querySelector('.bar').style.background=i===0?'var(--forest-soft)':'var(--cobalt-soft)'; })); }
+  aidiffSeg('q-seg',r); r('gain');
+})();
+
+/* explanations */
+const EX=[
+ ['🧠','Cognitive capacity','More working memory and executive attention should help you evaluate AI output and override automatic acceptance (effortful "Type 2" thinking). But direct tests are scarce — and the compression effect complicates any "smarter people benefit more" story.','<span class="ev theory">theory-led</span> Sweller 1988 · Engle 2002 · Evans & Stanovich 2013 · Hemmer et al. 2021 (review notes the gap)'],
+ ['🎓','Domain expertise','Experts have mental models to judge suggestions — yet among 140 radiologists reading chest X-rays, experience, subspecialty and AI familiarity did not reliably predict who benefited. What matters is task–AI fit (Lesson 2).','<span class="ev lab">reader study</span> Yu et al. 2024, Nature Medicine'],
+ ['🪞','Metacognition','Monitoring your own understanding, evaluating AI contributions, regulating your effort. Unscaffolded ChatGPT users improved essay scores but showed no gain in knowledge or transfer — the authors call it "metacognitive laziness." Promising because it\'s both a predictor and trainable.','<span class="ev lab">lab, 117 students</span> Fan et al. 2025 · Tankelevitch et al. 2024 · Xu et al. 2025'],
+ ['⚖️','Epistemic calibration','Matching confidence to real competence — yours and the model\'s. With AI, people\'s scores rose about 3 points while they overestimated by about 4, and higher AI literacy came with worse self-assessment (Lesson 2).','<span class="ev lab">2 studies, n=246 & 452</span> Fernandes et al. 2025/26 · Kruger & Dunning 1999'],
+ ['🧩','Personality','Among 1,016 students, Conscientiousness (β≈.27) and Openness (β≈.25) predicted <em>more</em> AI use and Neuroticism predicted less. <strong>Caution:</strong> this measures how much students <em>use</em> AI, not how well it works for them — the paper leans on it harder than the data allows.','<span class="ev self">self-report survey</span> Arpaci et al. 2025 · Stein et al. 2024'],
+ ['🌍','Culture & background','An "AI literacy divide": first-generation and minority students benefited from AI tools but transferred AI knowledge to new contexts less. Different groups may need different competencies, not one universal curriculum.','<span class="ev review">education studies</span> Hadar Shoval 2025 · Chee et al. 2025']
+];
+(function(){
+  const g=document.getElementById('ex-grid'), d=document.getElementById('ex-detail');
+  function show(i){ const e=EX[i]; d.innerHTML='<h4>'+e[0]+' '+e[1]+'</h4><p style="margin:0">'+e[2]+'</p><div class="src">'+e[3]+'</div>'; g.querySelectorAll('.ex').forEach((x,k)=>x.classList.toggle('on',k===i)); }
+  EX.forEach((e,i)=>{ const c=document.createElement('div'); c.className='ex'; c.innerHTML='<div class="em">'+e[0]+'</div><b>'+e[1]+'</b>'; c.addEventListener('click',()=>show(i)); g.appendChild(c); });
+  show(2);
+})();
+
+/* interaction web */
+(function(){
+  const svg=document.getElementById('web'), cap=document.getElementById('web-cap');
+  const N=EX.map((e,i)=>{ const a=-Math.PI/2+i*Math.PI*2/6; return {x:260+Math.cos(a)*115, y:150+Math.sin(a)*112, t:e[1]}; });
+  const links=[[0,1],[1,2],[2,3],[1,3],[0,2],[4,2],[5,3],[4,5],[3,0]];
+  const notes={0:'Capacity enables effortful checking — but only if metacognition triggers it.',1:'Expertise without metacognition: great on familiar tasks, shaky on novel ones.',2:'Metacognition is the hub — it decides whether the other factors get used.',3:'Calibration without expertise: good for learning, risky for expert judgment.',4:'Conscientiousness → verifying; Openness → exploring. Use ≠ effectiveness, though.',5:'Background shapes which competencies people need and whether learning transfers.'};
+  let s=''; links.forEach(([a,b],k)=>s+='<line id="l'+k+'" x1="'+N[a].x+'" y1="'+N[a].y+'" x2="'+N[b].x+'" y2="'+N[b].y+'"/>');
+  N.forEach((n,i)=>s+='<g data-i="'+i+'" style="cursor:pointer"><rect x="'+(n.x-62)+'" y="'+(n.y-17)+'" width="124" height="34" rx="5" fill="#fff" stroke="#56628a" stroke-width="3"/><text x="'+n.x+'" y="'+(n.y+5)+'" font-size="12" text-anchor="middle" fill="#2a3150" font-weight="700">'+n.t+'</text></g>');
+  svg.innerHTML=s;
+  svg.querySelectorAll('g').forEach(gg=>{ const f=()=>{ const i=+gg.dataset.i; links.forEach(([a,b],k)=>svg.querySelector('#l'+k).classList.toggle('hl',a===i||b===i)); cap.textContent=notes[i]; };
+    gg.addEventListener('mouseenter',f); gg.addEventListener('click',f); });
+})();
+</script>
+<script src="../../../registry.js"></script>
+<script src="../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

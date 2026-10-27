@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scoring Feasibility Honestly</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--forest); --accent-soft:var(--forest-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .controls{display:flex; gap:16px; margin-top:14px; flex-wrap:wrap;}
+  .controls label{display:flex; flex-direction:column; gap:4px; font-family:var(--font-ui); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
+  input[type=range]{accent-color:var(--forest); width:150px;}
+  .score-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:6px 0 14px;}
+  @media(max-width:640px){.score-grid{grid-template-columns:repeat(2,1fr);}}
+  .sub{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center;}
+  .sub .k{font-family:var(--font-ui); font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
+  .sub .v{font-family:var(--font-mono); font-size:1.3rem; color:var(--ink);}
+  .sub .b{font-family:var(--font-ui); font-size:.6rem; font-weight:700; text-transform:uppercase; padding:1px 7px; border-radius:999px; display:inline-block; margin-top:3px;}
+  .b.good{background:var(--good-soft); color:var(--good);} .b.acc{background:var(--warn-soft); color:var(--warn);} .b.bad{background:var(--bad-soft); color:var(--bad);}
+  .composite{display:flex; gap:24px; align-items:center; justify-content:center; margin:8px 0; flex-wrap:wrap;}
+  .comp-box{text-align:center;}
+  .comp-box .cl{font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute);}
+  .comp-box .cv{font-family:var(--font-mono); font-size:2.4rem; line-height:1;}
+  .additive .cv{color:var(--ink-mute);} .honest .cv{color:var(--ink);}
+  .verdict-strip{text-align:center; font-family:var(--font-ui); font-weight:700; margin-top:8px; padding:8px; border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Scoring Feasibility Honestly</h1>
+  <p class="subtitle">How to turn a pile of measurements into one trustworthy verdict — without lying with math.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The problem with one number</a></li>
+      <li><a href="#sec2">Bands: anchoring to humans, not data</a></li>
+      <li><a href="#sec3">The additive trap (interactive)</a></li>
+      <li><a href="#sec4">Geometric mean + min-gate</a></li>
+      <li><a href="#sec5">Don't average unlike questions</a></li>
+      <li><a href="#sec6">How your spike scores</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The problem with one number</h2>
+  <p class="lead">Your spike measures a dozen things &mdash; latency, jitter, loss resilience, snapshot cost, input lag, determinism readiness. A meeting wants <em>one answer</em>: "is this feasible, yes or no?" Collapsing many numbers into one is genuinely useful &mdash; and genuinely dangerous, because the <em>method</em> of collapsing can flip the verdict while looking neutral.</p>
+  <div class="analogy">
+    <span class="emoji">🍜</span><strong>Analogy:</strong> Rating a restaurant 8/10 by averaging food (10), service (10), and "the kitchen passed its health inspection" (2/10)... gives 7.3, "pretty good." But a failed health inspection isn't something great food <em>compensates for</em> &mdash; it's a gate. Some failures can't be averaged away, and a feasibility score has to know the difference.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> Bands: anchoring to humans, not data</h2>
+  <p>Before combining scores you must <em>normalize</em> each metric to a common 0&ndash;100 scale. The critical choice: anchor to <strong>human thresholds</strong>, not to your dataset's spread. Your spike maps every metric through the Good / Acceptable / Bad bands from Lesson 6 (e.g. RTT &lt;30ms = good, &gt;150ms = bad) &mdash; fixed human-meaningful lines, the same whether you measured 5 runs or 500.</p>
+  <div class="flag"><strong>Why this matters:</strong> "normalization <em>is</em> weighting." If you instead scaled each metric to "best-in-my-dataset = 100," a great result in a weak batch would look excellent and the score would drift every time you add data. Anchoring to human bands keeps the verdict stable and meaningful.</div>
+
+  <h2 id="sec3"><span class="num">3</span> The additive trap</h2>
+  <p>Here's the danger, live. Below are four sub-scores. Drag input-lag down to failing (a real BAD) and watch two aggregation methods react. One lets a great score <em>hide</em> the fatal one; the other doesn't.</p>
+  <div class="stage">
+    <div class="score-grid">
+      <div class="sub"><div class="k">latency</div><div class="v" id="v-lat">90</div><span class="b good" id="b-lat">good</span></div>
+      <div class="sub"><div class="k">jitter</div><div class="v" id="v-jit">85</div><span class="b good" id="b-jit">good</span></div>
+      <div class="sub"><div class="k">snapshot cost</div><div class="v" id="v-snap">95</div><span class="b good" id="b-snap">good</span></div>
+      <div class="sub"><div class="k">input lag</div><div class="v" id="v-inp">30</div><span class="b bad" id="b-inp">bad</span></div>
+    </div>
+    <div class="composite">
+      <div class="comp-box additive"><div class="cl">Additive average (naïve)</div><div class="cv" id="c-add">75</div></div>
+      <div class="comp-box honest"><div class="cl">Geo-mean + min-gate (honest)</div><div class="cv" id="c-honest">30</div></div>
+    </div>
+    <div class="verdict-strip" id="v-strip"></div>
+    <div class="controls">
+      <label>input lag score
+        <input type="range" id="inp-slider" min="10" max="95" value="30">
+      </label>
+      <span style="font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute); align-self:end;">Drag it. The additive average stays comfortable; the honest one collapses with it.</span>
+    </div>
+  </div>
+  <p>With input lag failing, the plain average still reads <code class="inline">75</code> ("looks fine!") &mdash; the three good scores <em>compensated</em> for the fatal one. That's the trap: for a <em>feasibility</em> question, one BAD should sink the verdict, because a game that's unplayable on input lag isn't rescued by tiny snapshots.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Geometric mean + min-gate</h2>
+  <p>Your spike uses two honesty mechanisms together (this is the real math from <code class="inline">scoring.ts</code>):</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">✕ Geometric mean</h3>
+      <p style="font-size:.92rem;">Multiply the scores and take the root, instead of adding and dividing. A near-zero anywhere drags the product toward zero &mdash; so weak spots hurt far more than in a plain average. Compensation is much harder.</p>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">🚪 Min-gate</h3>
+      <p style="font-size:.92rem;">A single <code class="inline">bad</code>-band sub-score <em>caps</em> the whole composite at that sub-score's own value. One fatal metric sets the ceiling &mdash; nothing else can lift the verdict above it. That's the "failed health inspection" rule.</p>
+    </div>
+  </div>
+  <p>Together: the geometric mean punishes weakness, and the min-gate makes any single BAD an absolute cap. This is why your spike's composite is <strong>49/100 "not feasible as measured"</strong> &mdash; it's <em>gated by the input-lag BAD</em>, exactly as it should be, rather than floating up on the strength of the cheap-snapshot win.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Don't average unlike questions</h2>
+  <p>The subtlest rule. Your spike measures two <em>different questions</em>: "is host-authoritative good enough?" (feasibility, 49/100) and "would rollback be affordable?" (determinism readiness, 25/100). It deliberately keeps them on <strong>separate axes</strong> and never blends them.</p>
+  <div class="pitfall"><div class="icon">🧭</div><div>Averaging them into one "netcode score" would be meaningless &mdash; a low determinism score isn't a <em>flaw</em> in the host-authoritative model (which needs no determinism at all); it's information about a <em>different</em> option. Blending them would answer no real question. Keep distinct questions on distinct axes.</div></div>
+
+  <h2 id="sec6"><span class="num">6</span> How your spike scores</h2>
+  <p>Now you can read the <code class="inline">/summary</code> page fluently. Every design choice is an honesty choice:</p>
+  <ul>
+    <li><strong>Every sub-score shows its band, weight, and rationale</strong> &mdash; nothing is a black box. The engineer-skeptic can audit exactly why the number is what it is.</li>
+    <li><strong>You can perturb the weights</strong> and watch the verdict move &mdash; because "composite scores are decision-unstable under re-weighting," the honest move is to <em>let you see</em> that instability rather than hide it.</li>
+    <li><strong>Failed runs are shown, never averaged in</strong> &mdash; a broken experiment doesn't silently count as zero and drag the score; it's displayed as failed.</li>
+    <li><strong>Lighthouse-style presentation:</strong> one traffic-light verdict up top, a handful of headline metrics, expandable sub-scores with distributions &mdash; passes the "30-second time-to-answer" test.</li>
+  </ul>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">field note · from the refactor</div>
+    <h4>Honest aggregation can't save a dishonest input</h4>
+    <p>The min-gate did its job <em>perfectly</em> &mdash; and that's the cautionary tale. It faithfully propagated a <code class="inline">bad</code> input-lag sub-score into the <code class="inline">49 "not feasible"</code> composite. But that sub-score was itself untrustworthy: 4&ndash;5 samples, measured under an 80ms RTT that's 2&times; the project's own target (Lesson 6). Garbage in, faithfully-gated garbage out. The scoring math was never the problem &mdash; the <em>input</em> was. Two related traps the reviews caught:</p>
+  </div>
+  <div class="pitfall"><div class="icon">0️⃣</div><div><b>Zero samples scored "good."</b> When no felt-lag samples were attributed (the clock-skew bug, Lesson 5), the distribution over an empty array came back all-zeros, and <code class="inline">frameBand(0)</code> → <em>good</em>: a completed, confident "0.0ms, band good" backed by nothing. Fix: a metric with zero samples must <strong>fail</strong>, never score.</div></div>
+  <div class="pitfall"><div class="icon">🎨</div><div><b>Red ≠ failed.</b> A <code class="inline">bad</code>-band score is a <em>valid measurement of a bad result</em>; a <em>failed run</em> is a broken experiment. The dashboard blurred the two (a solo-preview default that's red by construction didn't help). And the banding <em>copy</em> ("bad ≥6 frames") didn't even match the banding <em>code</em> (&gt;3 frames) &mdash; docs and thresholds must agree.</div></div>
+  <div class="flag">
+    <strong>The meta-point.</strong> A feasibility spike's whole value is a <em>trustworthy</em> verdict. If the scoring could be gamed by a generous average, the number would be worthless. Your spike's scoring is built to be hard to fool &mdash; geometric mean, min-gate, human-anchored bands, visible rationale, separate axes &mdash; so "49/100, not feasible" is a claim an engineer can actually stand behind (once the real two-machine runs confirm the input-lag input).
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li>Collapsing many metrics into one verdict is useful but easy to fake &mdash; the aggregation method can flip the answer.</li>
+    <li>Normalize to <b>human-anchored bands</b> (normalization is weighting); don't scale to your own dataset.</li>
+    <li>Use <b>geometric mean + a min-gate</b> so one BAD can't be averaged away &mdash; right for feasibility.</li>
+    <li>Keep <b>unlike questions on separate axes</b>; show every sub-score, band, weight, and rationale; let users perturb weights.</li>
+  </ul>
+  <p class="src"><b>Primary sources.</b> OECD — <a href="https://www.oecd.org/content/dam/oecd/en/publications/reports/2005/08/handbook-on-constructing-composite-indicators_g17a16e3/533411815016.pdf" target="_blank">Handbook on Constructing Composite Indicators</a> (normalization = weighting; additive compensation)</p>
+  <p class="src">Small-n percentiles — <a href="https://www.ibm.com/support/pages/why-p99-latency-metrics-are-unreliable-low-traffic-workloads" target="_blank">IBM: p99 unreliable at low traffic</a> · <a href="https://aerospike.com/blog/what-is-p99-latency/" target="_blank">What is p99 latency</a></p>
+  <p class="src">Your spike — <code class="inline">src/lib/experience/scoring.ts</code>, <code class="inline">metrics.ts</code>, <code class="inline">research.md §D</code>, the <code class="inline">/summary</code> page, and the review passes</p>
+
+  <footer>Scoring Feasibility Honestly · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+const slider=document.getElementById('inp-slider');
+const scores={lat:90,jit:85,snap:95,inp:30};
+function bandOf(v){ return v>=70?'good':v>=45?'acc':'bad'; }
+function bandLabel(b){ return b==='good'?'good':b==='acc'?'acceptable':'bad'; }
+function update(){
+  scores.inp=+slider.value;
+  document.getElementById('v-inp').textContent=scores.inp;
+  const bi=bandOf(scores.inp);
+  const chip=document.getElementById('b-inp'); chip.className='b '+bi; chip.textContent=bandLabel(bi);
+  const vals=[scores.lat,scores.jit,scores.snap,scores.inp];
+  // additive
+  const add=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+  // geo mean
+  const geo=Math.exp(vals.reduce((a,b)=>a+Math.log(Math.max(b,1)),0)/vals.length);
+  // min-gate: cap at any 'bad' value
+  const bads=vals.filter(v=>bandOf(v)==='bad');
+  const honest=Math.round(bads.length? Math.min(geo,Math.min(...bads)) : geo);
+  document.getElementById('c-add').textContent=add;
+  document.getElementById('c-honest').textContent=honest;
+  const strip=document.getElementById('v-strip');
+  if(honest<45){ strip.textContent='Honest verdict: NOT FEASIBLE — gated by the input-lag BAD'; strip.style.background='var(--bad-soft)'; strip.style.color='var(--bad)'; }
+  else if(honest<70){ strip.textContent='Honest verdict: marginal'; strip.style.background='var(--warn-soft)'; strip.style.color='var(--warn)'; }
+  else { strip.textContent='Honest verdict: feasible'; strip.style.background='var(--good-soft)'; strip.style.color='var(--good)'; }
+}
+slider.addEventListener('input',update); update();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

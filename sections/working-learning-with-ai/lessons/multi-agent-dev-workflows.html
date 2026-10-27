@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Individual AI Workflows</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{
+    --accent:var(--forest); --accent-soft:var(--forest-soft);
+    --panel:var(--surface); --panel2:var(--paper-2); --border:var(--line);
+    --text:var(--ink); --muted:var(--ink-mute); --code-bg:#353d5e;
+  }
+  /* bottleneck funnel */
+  .funnel{display:flex; flex-direction:column; align-items:center; gap:0; margin:18px 0;}
+  .agents-row{display:flex; gap:10px; margin-bottom:8px;}
+  .agent-chip{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute);}
+  .fnl{width:0;height:0;border-left:120px solid transparent;border-right:120px solid transparent;border-top:60px solid var(--paper-2);}
+  .neck{background:var(--vermil); color:#fff; padding:10px 20px; border-radius:0 0 10px 10px; font-family:var(--font-ui); font-weight:600; font-size:.85rem;}
+  .ship{margin-top:8px; color:var(--forest); font-family:var(--font-ui); font-size:.85rem;}
+
+  /* ladder */
+  .rungs{display:flex; flex-direction:column-reverse; gap:6px; margin:16px 0;}
+  .rung{display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; padding:12px 16px; cursor:pointer; transition:border-color .15s, transform .12s;}
+  .rung:hover{border-color:var(--forest); transform:translateX(4px);}
+  .rung.sel{border-color:var(--forest); background:var(--forest-soft);}
+  .rung .lv{width:30px; height:30px; border-radius:8px; background:var(--cobalt); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-ui); font-weight:700; flex:none;}
+  .rung.sweet .lv{background:var(--forest); color:#fff;}
+  .rung .rt{flex:1;} .rung .rt b{font-family:var(--font-ui); font-size:.95rem; color:var(--ink);} .rung .rt span{font-family:var(--font-ui); font-size:.8rem; color:var(--ink-mute); display:block;}
+  .sweet-tag{font-family:var(--font-ui); font-size:.6rem; text-transform:uppercase; letter-spacing:.05em; background:var(--forest-soft); color:var(--forest); padding:2px 7px; border-radius:10px;}
+  .rung-detail{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px; margin-top:8px; font-size:.95rem;}
+  .rung-detail .kv{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin-top:10px; font-family:var(--font-ui); font-size:.86rem;}
+  .rung-detail .kv b{color:var(--ink-mute);}
+
+  /* technique cards */
+  .tech{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:10px 0; box-shadow:var(--shadow-sm);}
+  .tech-head{display:flex; align-items:center; gap:10px; cursor:pointer;}
+  .tech-head .rank{width:26px;height:26px;border-radius:7px;background:var(--paper-2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-ui);font-size:.78rem;font-weight:700;color:var(--forest);flex:none;}
+  .tech-head h4{margin:0; flex:1; font-size:1.05rem;}
+  .meters{display:flex; gap:14px; margin:10px 0 0; font-family:var(--font-ui); font-size:.72rem;}
+  .meter{flex:1;} .meter .ml{color:var(--ink-mute); margin-bottom:3px;}
+  .meter .track{height:6px; background:var(--paper-2); border-radius:4px; overflow:hidden;}
+  .meter .fill{height:100%; border-radius:4px;}
+  .save .fill{background:var(--forest);} .over .fill{background:var(--ochre);} .risk .fill{background:var(--vermil);}
+  .tech-body{display:none; margin-top:12px; font-size:.95rem; color:var(--ink-soft);}
+  .tech.open .tech-body{display:block;}
+  .tech-body .lbl{color:var(--forest); font-weight:600; font-family:var(--font-ui);}
+  .caret{color:var(--ink-faint); transition:transform .2s;} .tech.open .caret{transform:rotate(90deg);}
+
+  /* day tabs */
+  .tabs{display:flex; gap:6px; flex-wrap:wrap;}
+  .tab-btn{background:var(--paper-2); border:1px solid var(--line); color:var(--ink-mute); border-bottom:none;
+    border-radius:8px 8px 0 0; padding:8px 14px; cursor:pointer; font-family:var(--font-ui); font-size:.82rem;}
+  .tab-btn.active{background:var(--surface); color:var(--ink);}
+  .tab-panel{display:none; background:var(--surface); border:1px solid var(--line); border-radius:0 10px 10px 10px; padding:18px;}
+  .tab-panel.active{display:block;}
+  .tab-panel ol{margin:8px 0 0; padding-left:20px;} .tab-panel li{margin-bottom:6px; color:var(--ink-soft); font-size:.95rem;}
+
+  /* plan flow */
+  .planflow{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:16px 0;}
+  .pf{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-family:var(--font-ui); font-size:.84rem;}
+  .pf.gate{border-color:var(--forest); color:var(--forest); background:var(--forest-soft);}
+  .pf-arrow{color:var(--ink-faint);}
+
+  /* 2x2 matrix */
+  .matrix{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0;}
+  .mcell{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; min-height:110px;}
+  .mcell h4{margin:0 0 6px; font-size:.95rem;} .mcell p{margin:0; font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .mcell.go{border-color:var(--forest);} .mcell.go h4{color:var(--forest);}
+  .mcell.care{border-color:var(--ochre);} .mcell.care h4{color:var(--warn);}
+  .mcell.stop{border-color:var(--vermil);} .mcell.stop h4{color:var(--bad);}
+  .axis-note{font-family:var(--font-ui); font-size:.75rem; color:var(--ink-mute); text-align:center; margin-top:4px;}
+
+  /* quality stack */
+  .qstack{display:flex; flex-direction:column; gap:4px; margin:16px 0;}
+  .qlayer{border:1px solid var(--line); border-radius:8px; padding:10px 16px; font-family:var(--font-ui); font-size:.86rem; text-align:center; background:var(--surface);}
+  .qlayer.top{background:var(--ochre); color:#3a2c05; font-weight:600;}
+  .qlayer:nth-child(2){background:rgba(67,122,88,.16);}
+  .qlayer:nth-child(3){background:rgba(67,122,88,.12);}
+  .qlayer:nth-child(4){background:rgba(67,122,88,.09);}
+  .qlayer:nth-child(5){background:rgba(67,122,88,.05);}
+
+  /* timeline */
+  .timeline{border-left:2px solid var(--line-strong); margin:16px 0 16px 10px; padding-left:22px;}
+  .tl-item{position:relative; margin-bottom:18px;}
+  .tl-item::before{content:""; position:absolute; left:-29px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--forest); border:2px solid var(--paper);}
+  .tl-item b{color:var(--ink); font-family:var(--font-ui);} .tl-item p{margin:4px 0 0; font-size:.95rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Individual AI Workflows</h1>
+  <p class="subtitle">Getting faster and buying back time as one person — no heavyweight process, no loss of quality.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Your real bottleneck</a></li>
+      <li><a href="#sec2">The maturity ladder</a></li>
+      <li><a href="#sec3">Techniques ranked by payoff</a></li>
+      <li><a href="#sec4">Day-in-the-life patterns</a></li>
+      <li><a href="#sec5">Plan-then-execute</a></li>
+      <li><a href="#sec6">Keeping quality high</a></li>
+      <li><a href="#sec7">Anti-patterns</a></li>
+      <li><a href="#sec8">Start next week</a></li>
+      <li><a href="#sec9">Sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Your real bottleneck</h2>
+  <p class="lead">The single most useful reframe from every credible practitioner: the constraint on your output is not how fast the AI writes &mdash; it's <strong>how much you can review and direct</strong>. More agents don't help if you can't check their work.</p>
+  <div class="funnel">
+    <div class="agents-row">
+      <div class="agent-chip">agent</div><div class="agent-chip">agent</div><div class="agent-chip">agent</div><div class="agent-chip">agent</div>
+    </div>
+    <div class="fnl"></div>
+    <div class="neck">your review capacity</div>
+    <div class="ship">↓ shipped work you trust</div>
+  </div>
+  <div class="analogy">
+    So the goal isn't "run more agents." It's <strong>get more done per unit of your attention without lowering quality</strong>. That single idea explains why the sweet spot for most individuals is <em>disciplined delegation of well-specified work</em> &mdash; not a swarm of parallel bots. And the good news: the highest-leverage moves are personal habits, not org-wide change. You don't need your team to adopt anything.
+  </div>
+  <div class="flag">
+    A caveat the practitioners themselves stress: this space is fast-moving and hype-saturated. Simon Willison: "if someone tells you that coding with LLMs is easy they are (probably unintentionally) misleading you." Treat the <em>tools</em> named here as replaceable; the <em>principles</em> are the durable part.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> The maturity ladder</h2>
+  <p>A spectrum from lowest to highest delegation. Each rung adds capability &mdash; and review/coordination overhead. <strong>Most people get ~80% of the benefit living at rungs 2&ndash;3</strong> and dipping into 4 only for specific task types. Higher is not automatically better. Click a rung.</p>
+  <div class="rungs" id="rungs"></div>
+  <div class="rung-detail" id="rung-detail"></div>
+
+  <h2 id="sec3"><span class="num">3</span> Techniques ranked by payoff</h2>
+  <p>Ordered roughly by efficiency-per-effort for one person. Each shows rough <span style="color:var(--forest)">time-save</span>, <span style="color:var(--warn)">setup overhead</span>, and <span style="color:var(--bad)">quality risk</span>. Click to expand.</p>
+  <div id="tech-list"></div>
+
+  <h2 id="sec4"><span class="num">4</span> Day-in-the-life patterns</h2>
+  <p>How real practitioners actually string these together.</p>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="d1">Small feature (Willison)</button>
+    <button class="tab-btn" data-tab="d2">Architect/Implementer (Vincent)</button>
+    <button class="tab-btn" data-tab="d3">Minimalist (Orosz)</button>
+    <button class="tab-btn" data-tab="d4">Selective parallel</button>
+  </div>
+  <div class="tab-panel active" id="d1">
+    <p style="margin:0;">Rungs 1&ndash;2. The payoff isn't just speed &mdash; it's shipping projects you "wouldn't have bothered to build at all."</p>
+    <ol>
+      <li>Research options in chat → prototype to prove feasibility.</li>
+      <li>Switch to "authoritarian" mode: dictate exact behavior to the agent.</li>
+      <li>Inspect output; small corrective prompts ("it's a conversation").</li>
+      <li>Watch closely on unfamiliar territory; <b>step in and finish by hand</b> when that's faster than prompting.</li>
+    </ol>
+  </div>
+  <div class="tab-panel" id="d2">
+    <p style="margin:0;">Rung 3 &mdash; the model quality-preservation flow. Separate the roles across two sessions.</p>
+    <ol>
+      <li>New git worktree per task; run lint/tests to confirm a clean baseline.</li>
+      <li>"Brainstorm" prompt → agent asks <b>one question at a time</b> → writes the design to <code class="inline">docs/plans/</code>.</li>
+      <li>Separate "planning" prompt → bite-sized implementation plan (DRY, YAGNI, TDD, frequent commits).</li>
+      <li>New session = "implementer"; original = "architect." You play PM, copying reviews between them.</li>
+      <li>Implementer does 3&ndash;4 tasks → architect checks carefully → <code class="inline">/clear</code> and restart fresh for the next chunk.</li>
+      <li>Wrap external review feedback in a <b>skeptical</b> role-play so the agent doesn't blindly apply wrong suggestions.</li>
+    </ol>
+  </div>
+  <div class="tab-panel" id="d3">
+    <p style="margin:0;">Pragmatic minimalist &mdash; classic software basics applied to agents.</p>
+    <ol>
+      <li>Unit tests on everything ("I learned to not trust my own work").</li>
+      <li>Small, descriptive tasks with examples.</li>
+      <li>Every 3rd&ndash;4th task is a refactor of the agent's own code.</li>
+      <li>Keep the IDE open and <b>hand-edit anything that's a few lines</b> to stay aware of the codebase.</li>
+    </ol>
+  </div>
+  <div class="tab-panel" id="d4">
+    <p style="margin:0;">Rung 4, used <b>selectively</b>. Parallel agents only on safe, independent work.</p>
+    <ol>
+      <li>Multiple terminals, different agents, low-approval mode <b>only</b> where malicious input can't enter context.</li>
+      <li>Restrict parallel work to three safe categories: research / proof-of-concept, "how does this work again?" explanations, and small low-stakes maintenance.</li>
+      <li>Plus carefully-specified real work that's cheap to review <em>because you wrote the spec</em>.</li>
+    </ol>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Plan-then-execute (the quality backbone)</h2>
+  <p>The biggest quality-per-effort jump comes from separating <em>design</em> from <em>implementation</em>. Reviewing the output of <strong>your own reviewed spec</strong> is far cheaper than reviewing surprise code. Note the two human checkpoints (green).</p>
+  <div class="planflow">
+    <div class="pf">Brainstorm<br><small style="color:var(--ink-mute)">agent asks you Qs</small></div>
+    <span class="pf-arrow">→</span>
+    <div class="pf">spec.md</div>
+    <span class="pf-arrow">→</span>
+    <div class="pf">Plan<br><small style="color:var(--ink-mute)">bite-sized tasks</small></div>
+    <span class="pf-arrow">→</span>
+    <div class="pf gate">✓ you review the plan</div>
+    <span class="pf-arrow">→</span>
+    <div class="pf">Implement<br><small style="color:var(--ink-mute)">one small chunk</small></div>
+    <span class="pf-arrow">→</span>
+    <div class="pf gate">✓ tests / CI gate</div>
+    <span class="pf-arrow">→</span>
+    <div class="pf">Commit</div>
+    <span class="pf-arrow">↺</span>
+  </div>
+  <p style="font-family:var(--font-ui); font-size:.9rem; color:var(--ink-mute);">This is the core of "spec-driven development" &mdash; sometimes called "waterfall in 15 minutes." It feels slow upfront and pays off by preventing the model from confidently solving the wrong problem. But keep deterministic checks (tests/CI) as your real source of truth: specs drift and hallucinate too.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Keeping quality high</h2>
+  <p>The striking consensus: <strong>LLMs reward classic senior-engineering discipline.</strong> The practices don't change &mdash; they matter more. This is the "without loss of quality" part, so it's worth reading in full.</p>
+  <div class="qstack">
+    <div class="qlayer top">👤 Human review + accountability — "never commit code you can't explain"</div>
+    <div class="qlayer">🔍 Second-model / fresh-session review (the doer isn't the grader)</div>
+    <div class="qlayer">⚙️ CI · linters · type-checkers — deterministic ground truth</div>
+    <div class="qlayer">🧪 Automated tests — the safety net that lets agents "fly"</div>
+    <div class="qlayer">🤖 Agent output</div>
+  </div>
+  <p style="font-family:var(--font-ui); font-size:.92rem;">Key habits, in order of impact:</p>
+  <ul>
+    <li><strong>Tests are the safety net.</strong> Without them an agent may claim something works without having run it. "If you haven't seen it run, it's not a working system."</li>
+    <li><strong>Small diffs, small tasks, frequent commits.</strong> Commits are "save points in a game" &mdash; you can revert an AI misstep cheaply. Monolithic asks produce a jumbled mess "like 10 devs worked without talking."</li>
+    <li><strong>Plan before code</strong> (§5), and review the output of your own spec.</li>
+    <li><strong>Independent verification.</strong> Use a fresh session or second model to review the first — the agent doing the work shouldn't grade it. And be <em>skeptical of AI reviewers too</em>; don't let a credulous agent apply wrong review suggestions.</li>
+    <li><strong>Know when NOT to delegate.</strong> Stay hands-on for anything security-critical, architecturally load-bearing, or in a domain you can't evaluate. AI amplifies existing expertise &mdash; it also amplifies confusion if you lack the foundation.</li>
+  </ul>
+
+  <h3>When to delegate — the 2×2</h3>
+  <div class="matrix">
+    <div class="mcell go"><h4>Low stakes · you know the domain</h4><p>YOLO / parallel agents OK. Great for throughput and experiments.</p></div>
+    <div class="mcell care"><h4>High stakes · you know the domain</h4><p>Single agent, tight leash + tests. You can catch its mistakes.</p></div>
+    <div class="mcell go"><h4>Low stakes · new domain</h4><p>Fantastic for learning — let it teach you, verify as you go.</p></div>
+    <div class="mcell stop"><h4>High stakes · new domain</h4><p><b>Don't delegate blindly</b> — or verify heavily with an expert. Highest danger zone.</p></div>
+  </div>
+  <div class="axis-note">columns: stakes low → high · rows: your domain expertise high → low</div>
+
+  <h2 id="sec7"><span class="num">7</span> Anti-patterns that waste time</h2>
+  <div class="pitfall"><div class="icon">🕳️</div><div><b>The review-bottleneck trap.</b> Firing off more agents than you can review leaves you further behind. Parallelism can create the <em>feeling</em> of productivity without the substance.</div></div>
+  <div class="pitfall"><div class="icon">🗿</div><div><b>Monolithic asks.</b> One giant prompt → inconsistent, un-architected mess that becomes a painful refactor.</div></div>
+  <div class="pitfall"><div class="icon">🙈</div><div><b>Blind trust.</b> Models are over-confident, make "deeply inhuman" errors (hallucinated libraries), and won't tell you something's wrong unless you catch it.</div></div>
+  <div class="pitfall"><div class="icon">🧟</div><div><b>Context rot.</b> Performance degrades as the window fills; compacting preserves the bloat. Sometimes the fix is to wipe the slate and start fresh.</div></div>
+  <div class="pitfall"><div class="icon">🐌</div><div><b>Slow tool loops.</b> A build that takes a minute vs. 3ms drastically degrades the agent's self-correction loop. Make test/run fast and observable.</div></div>
+  <div class="pitfall"><div class="icon">🧰</div><div><b>Over-adopting tooling.</b> Every extra layer (heavy orchestration, MCP for everything) is another thing that can break. Plain scripts and CLIs are often more reliable. Add complexity only when it pays.</div></div>
+
+  <h2 id="sec8"><span class="num">8</span> Start next week</h2>
+  <p>A low-risk ramp. None of it requires team buy-in, and the "more time to breathe" payoff comes mostly from rungs 1&ndash;3.</p>
+  <div class="timeline">
+    <div class="tl-item"><b>Day 1&ndash;2 — zero risk (rung 1).</b><p>Use a chat model for the low-stakes wins: "what are my options for X?" and "explain this codebase/module." Notice where it's wrong — that's your calibration.</p></div>
+    <div class="tl-item"><b>Day 2&ndash;3 — set up your foundation.</b><p>Create one context file (<code class="inline">CLAUDE.md</code>/<code class="inline">AGENTS.md</code>) with 10&ndash;15 lines: how to run tests, lint rules, key conventions, "don't do X." Make test/build fast and log to a tailable file.</p></div>
+    <div class="tl-item"><b>Day 3&ndash;4 — one real bounded task (rung 2).</b><p>Something you'd do anyway. Authoritarian, signature-level prompting. Commit before you start, test the output, hand-edit the last mile.</p></div>
+    <div class="tl-item"><b>End of week 1 — one plan-then-execute cycle (rung 3).</b><p>Brainstorm → spec.md → review the plan → implement in small chunks. Feel how much cheaper spec-driven review is.</p></div>
+    <div class="tl-item"><b>Week 2 — reusable leverage + a review loop.</b><p>Turn your best repeated prompt into a saved command/skill. Try a second-session review on one change. Adopt "commit after every small task."</p></div>
+    <div class="tl-item"><b>Week 3+ — dip into async/parallel, selectively.</b><p>One background agent on a low-stakes maintenance task, or a research "scout" spike. Only add parallel agents once your review habit is solid — and only for genuinely independent work.</p></div>
+  </div>
+
+  <h2 id="sec9"><span class="num">9</span> Sources</h2>
+  <p class="src">Simon Willison — <a href="https://simonwillison.net/2025/Mar/11/using-llms-for-code/" target="_blank">How I use LLMs to help me write code</a> · <a href="https://simonwillison.net/2025/Oct/7/vibe-engineering/" target="_blank">Vibe engineering</a> · <a href="https://simonwillison.net/2025/Oct/5/parallel-coding-agents/" target="_blank">Parallel coding agents</a></p>
+  <p class="src">Armin Ronacher — <a href="https://lucumr.pocoo.org/2025/6/12/agentic-coding/" target="_blank">Agentic Coding Recommendations</a></p>
+  <p class="src">Addy Osmani — <a href="https://addyosmani.com/blog/ai-coding-workflow/" target="_blank">My LLM coding workflow going into 2026</a></p>
+  <p class="src">Jesse Vincent — <a href="https://blog.fsck.com/2025/10/05/how-im-using-coding-agents-in-september-2025/" target="_blank">How I'm using coding agents</a></p>
+  <p class="src">Gergely Orosz — <a href="https://blog.pragmaticengineer.com/new-trend-programming-by-kicking-off-parallel-ai-agents/" target="_blank">Programming by kicking off parallel AI agents</a></p>
+  <p class="src">Thoughtworks — <a href="https://www.thoughtworks.com/en-us/insights/blog/agile-engineering-practices/spec-driven-development-unpacking-2025-new-engineering-practices" target="_blank">Spec-driven development</a></p>
+  <div class="flag" style="margin-top:16px;">
+    <strong>Confidence flags.</strong> High confidence: plan-before-code, tests-as-safety-net, small commits, human-in-loop, "review capacity is the bottleneck" — these recur across every independent source. Contested: whether parallel agents net a real individual productivity gain (treat rung 4+ as experimental). Discount: any claim of effortless "just describe it and ship."
+  </div>
+
+  <footer>Individual AI Workflows · part of your Study Hub</footer>
+</div>
+
+<script>
+/* ---------- maturity ladder ---------- */
+const RUNGS = [
+  {lv:0, title:"Autocomplete", sub:"Inline suggestions as you type",
+    cost:"Near-zero learning", gain:"Faster typing, boilerplate", who:"Everyone — baseline"},
+  {lv:1, title:"Chat assistant", sub:"Ask questions, paste code in/out, explore designs",
+    cost:"Low; context-management skill", gain:"Research, learning, unblocking. The safest high-value entry point", who:"Everyone"},
+  {lv:2, title:"Single agent, tight leash", sub:"Agent edits/runs, but you drive task-by-task", sweet:true,
+    cost:"Moderate; learn to specify precisely and review continuously", gain:"You design the function, it types the body. Whole features in minutes. Where most durable productivity lives", who:"The main workhorse"},
+  {lv:3, title:"Delegated subtasks / plan-then-execute", sub:"Plan reviewed first, then implemented in chunks", sweet:true,
+    cost:"Upfront planning + review discipline", gain:"The biggest quality-per-effort jump. Reviewing your own spec's output is cheap", who:"Sweet spot for keep-it work"},
+  {lv:4, title:"Parallel agents", sub:"2–5 agents at once on independent tasks",
+    cost:"High cognitive load — 'only so much my mind can review'", gain:"Throughput on independent, low-coupling work. 'Surprisingly effective, if mentally exhausting'", who:"Seniors with strong review habits; use selectively"},
+  {lv:5, title:"Orchestrated pipelines", sub:"Agents spawning sub-agents; async cloud PRs",
+    cost:"Highest; token cost + coordination can invert gains", gain:"Bulk operations: codebase-wide sweeps, multi-angle research", who:"Rarely needed by an individual"}
+];
+const rungsEl = document.getElementById("rungs");
+RUNGS.forEach(r => {
+  const d = document.createElement("div");
+  d.className = "rung" + (r.sweet ? " sweet" : "");
+  d.innerHTML = '<div class="lv">'+r.lv+'</div><div class="rt"><b>'+r.title+'</b><span>'+r.sub+'</span></div>'+
+    (r.sweet ? '<span class="sweet-tag">sweet spot</span>' : '');
+  d.addEventListener("click", () => { showRung(r);
+    document.querySelectorAll(".rung").forEach(x=>x.classList.remove("sel")); d.classList.add("sel"); });
+  rungsEl.appendChild(d);
+});
+function showRung(r){
+  document.getElementById("rung-detail").innerHTML =
+    '<b style="font-family:var(--font-display); font-size:1.15rem; color:var(--ink);">Rung '+r.lv+' — '+r.title+'</b>'+
+    '<div class="kv"><b>Costs you</b><span>'+r.cost+'</span><b>You gain</b><span>'+r.gain+'</span><b>Who it suits</b><span>'+r.who+'</span></div>';
+}
+showRung(RUNGS[2]);
+
+/* ---------- technique cards ---------- */
+const TECH = [
+  {rank:1, name:"\"Ask for options\" + codebase Q&A", save:70, over:5, risk:15,
+    what:"Use a chat model as a research assistant — 'what are the options for X, with examples?' or dump a repo in and ask 'how does this work / where is X set?'",
+    start:"Next time you'd Google or spelunk unfamiliar code, ask a long-context model instead.",
+    risk_note:"Low. Training cutoff may miss the newest libraries — verify anything load-bearing; prefer stable libraries the model actually knows."},
+  {rank:2, name:"Authoritarian, signature-level prompting", save:80, over:25, risk:35,
+    what:"For production code, treat it like a digital intern: give exact signatures, tech choices, and constraints — not vague wishes. You design, it builds the body.",
+    start:"Write the function signature + a precise spec of behavior/edge cases; ask for it, then 'now write the tests.'",
+    risk_note:"Over-confident wrong code. You must run/test it; small follow-up prompts beat expecting a perfect first shot."},
+  {rank:3, name:"Plan-then-execute / spec-first", save:75, over:40, risk:20,
+    what:"Separate design from implementation. Brainstorm a spec (have it ask you questions), review it, then implement chunk by chunk.",
+    start:"Use a brainstorming prompt that asks one question at a time; save the plan to docs/plans/.",
+    risk_note:"Spec drift/hallucination are hard to fully avoid — keep tests/CI as the real source of truth."},
+  {rank:4, name:"Context / rules files (CLAUDE.md)", save:55, over:15, risk:15,
+    what:"A per-repo 'constitution' the agent reads every session: conventions, lint rules, 'don't do X,' how to run tests.",
+    start:"Create one file with 10–15 lines of your actual project rules and gotchas. Grow it as you catch repeated mistakes.",
+    risk_note:"Stale rules mislead — prune periodically; keep security-critical instructions explicit."},
+  {rank:5, name:"Fast, observable tooling + logs", save:60, over:30, risk:10,
+    what:"Make build/test/run fast and make output visible to the agent (log to a file it can read). 'Anything can be a tool… tools need to be fast.'",
+    start:"Add a make dev / make test; log to a tailable file; guard against double-spawned servers.",
+    risk_note:"Mostly upside; balance log verbosity to avoid token bloat."},
+  {rank:6, name:"Custom slash commands / skills", save:50, over:15, risk:10,
+    what:"Package a repeated procedure (security review, plan writing) as a reusable command instead of retyping.",
+    start:"Turn your single best repeated prompt into one saved command.",
+    risk_note:"Low. Keep them narrowly scoped."},
+  {rank:7, name:"Subagent delegation (offload noise)", save:55, over:25, risk:25,
+    what:"Hand a bounded, noisy, easy-to-summarize job (e.g. 'review this for security') to a subagent with its own context, so your main thread stays clean.",
+    start:"Ask explicitly: 'Use a subagent to review this code.'",
+    risk_note:"Fragmented context if overused on coupled work — follow the bounded/noisy heuristic."},
+  {rank:8, name:"Git worktrees / parallel agents", save:70, over:55, risk:50,
+    what:"Separate working dirs per branch so multiple agents don't collide; run several tasks at once.",
+    start:"git worktree add — but start simpler (a fresh checkout) before adopting worktrees.",
+    risk_note:"Review capacity is the ceiling; two agents in one dir overwrite each other. Only parallelize genuinely independent, low-stakes tasks."},
+  {rank:9, name:"Async / background agents", save:65, over:35, risk:45,
+    what:"Cloud agents that clone the repo, work in the background, and open a PR — fire off 'from your phone.'",
+    start:"Use for a low-risk maintenance task or a research 'scout' spike you don't intend to keep.",
+    risk_note:"Runs with network access → data-leak/blast-radius concerns. Sandbox it; reserve for low-stakes or non-sensitive work."}
+];
+const list = document.getElementById("tech-list");
+TECH.forEach(t => {
+  const el = document.createElement("div");
+  el.className = "tech";
+  el.innerHTML =
+    '<div class="tech-head"><div class="rank">'+t.rank+'</div><h4>'+t.name+'</h4><span class="caret">▸</span></div>'+
+    '<div class="meters">'+meter("save","time-save",t.save)+meter("over","setup overhead",t.over)+meter("risk","quality risk",t.risk)+'</div>'+
+    '<div class="tech-body"><p><span class="lbl">What:</span> '+t.what+'</p>'+
+      '<p><span class="lbl">Start:</span> '+t.start+'</p>'+
+      '<p><span class="lbl">Quality risk &amp; mitigation:</span> '+t.risk_note+'</p></div>';
+  el.querySelector(".tech-head").addEventListener("click", () => el.classList.toggle("open"));
+  list.appendChild(el);
+});
+function meter(cls,label,val){
+  return '<div class="meter '+cls+'"><div class="ml">'+label+'</div><div class="track"><div class="fill" style="width:'+val+'%"></div></div></div>';
+}
+
+/* ---------- day tabs ---------- */
+document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+  b.classList.add("active"); document.getElementById(b.dataset.tab).classList.add("active");
+}));
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

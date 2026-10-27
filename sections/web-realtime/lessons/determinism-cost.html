@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Determinism &amp; Rollback Cost</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--ochre); --accent-soft:var(--ochre-soft); --accent-text:#8a5d00; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#2a3150; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:600; font-size:.85rem; cursor:pointer;}
+  .controls{display:flex; gap:12px; margin-top:14px; align-items:center; flex-wrap:wrap;}
+  /* two-run determinism demo */
+  .runs{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:640px){.runs{grid-template-columns:1fr;}}
+  .run{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:12px;}
+  .run h4{margin:0 0 8px; font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .seq{font-family:var(--font-mono); font-size:.95rem; letter-spacing:2px; min-height:1.4em; color:var(--ink);}
+  .verdict-line{margin-top:10px; font-family:var(--font-ui); font-weight:700; text-align:center; min-height:1.4em;}
+  .toggle-row{display:flex; align-items:center; gap:10px; font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute);}
+  /* readiness gauge */
+  .gauge{height:18px; border-radius:9px; background:var(--paper-2); border:1px solid var(--line); overflow:hidden; margin:6px 0;}
+  .gauge-fill{height:100%; width:25%; background:linear-gradient(90deg,var(--vermil),var(--ochre));}
+  .cost-list .pitfall{margin:10px 0;}
+  .cheap{color:var(--good); font-weight:600;} .exp{color:var(--bad); font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Determinism &amp; Rollback Cost</h1>
+  <p class="subtitle">Why the best-feeling netcode demands a sim that replays identically — and why that's so expensive to retrofit.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">What "deterministic" means</a></li>
+      <li><a href="#sec2">Same seed, same fight (interactive)</a></li>
+      <li><a href="#sec3">The three enemies of determinism</a></li>
+      <li><a href="#sec4">Cheap to seed vs. structural to fix</a></li>
+      <li><a href="#sec5">The 8-man-year number</a></li>
+      <li><a href="#sec6">What your spike found</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> What "deterministic" means</h2>
+  <p class="lead">A simulation is <strong>deterministic</strong> if the same starting state plus the same sequence of inputs <em>always</em> produces the exact same result &mdash; bit for bit, on any machine, every time. Sounds obvious, but ordinary game code is quietly full of things that break it.</p>
+  <div class="analogy">
+    <span class="emoji">🎲</span><strong>Analogy:</strong> A deterministic sim is a player piano: feed the same paper roll and you get the identical performance, note for note, forever. A non-deterministic sim is a jazz musician &mdash; same sheet music, but a little different every time. Delightful for music; fatal for netcode, where two machines <em>must</em> perform the identical fight from the same inputs.
+  </div>
+  <p>Why does netcode care? Because <strong>rollback</strong> (Lesson 4 &mdash; the best-feeling model) works by re-simulating past frames with corrected inputs. If the sim isn't deterministic, replaying produces a <em>different</em> result than the first time, the two machines drift apart, and the game desyncs. No determinism → no rollback. Full stop.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Same seed, same fight</h2>
+  <p>The randomness in a game usually comes from a random number generator. If it's <em>seeded</em> (started from a fixed number both machines share), the "random" sequence is actually fixed and reproducible. Toggle the seed and run both machines:</p>
+  <div class="stage">
+    <div class="toggle-row" style="margin-bottom:12px;">
+      <label class="toggle-row"><input type="checkbox" id="seed-toggle"> Seed the RNG (share a fixed starting number)</label>
+    </div>
+    <div class="runs">
+      <div class="run"><h4>Machine A</h4><div class="seq" id="seq-a"></div></div>
+      <div class="run"><h4>Machine B</h4><div class="seq" id="seq-b"></div></div>
+    </div>
+    <div class="verdict-line" id="det-verdict"></div>
+    <div class="controls"><button class="btn" id="det-run">▶ Run the same inputs on both</button></div>
+  </div>
+  <p>Unseeded, each machine rolls its own "random" crits and the fights diverge &mdash; desync. Seeded, both roll the identical sequence and stay locked together. Your spike proved this headlessly: <em>"same seed + same input tape → identical outcome."</em> That's the good news &mdash; the RNG part is cheap.</p>
+
+  <h2 id="sec3"><span class="num">3</span> The three enemies of determinism</h2>
+  <p>Three common things silently break reproducibility. Your spike audited the game and found exactly which apply:</p>
+  <div class="cost-list">
+    <div class="pitfall"><div class="icon">🎲</div><div><b>Unseeded randomness.</b> Any <code class="inline">Math.random()</code> call. Your game has exactly <em>three</em>: a crit roll, one bug-prone spot, and the announcer's line pick. <span class="cheap">Cheap to fix</span> &mdash; swap in a seeded RNG.</div></div>
+    <div class="pitfall"><div class="icon">⏱️</div><div><b>Variable timestep.</b> If the sim advances by real elapsed time (Lesson 1), two machines with slightly different frame timing compute different physics. Your game is variable-timestep with no tick counter. <span class="exp">Structural to fix</span> &mdash; requires reworking the whole update loop to a fixed step.</div></div>
+    <div class="pitfall"><div class="icon">🔢</div><div><b>Floating-point &amp; physics divergence.</b> Different CPUs/browsers can compute floating-point math with tiny differences that compound over thousands of frames; physics engines are notoriously non-reproducible. <span class="exp">Structural to fix</span> &mdash; needs deterministic, snapshot-restorable physics.</div></div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Cheap to seed vs. structural to fix</h2>
+  <p>This is the key nuance: determinism isn't one switch. Some sources are a one-line fix; others require rebuilding the engine's spine. Your spike scores the game's <strong>determinism-readiness at 25/100</strong>:</p>
+  <div class="stage">
+    <div style="font-family:var(--font-ui); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute); display:flex; justify-content:space-between;"><span>determinism readiness</span><span style="font-family:var(--font-mono); color:var(--bad);">25 / 100</span></div>
+    <div class="gauge"><div class="gauge-fill"></div></div>
+    <p style="font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute); margin:8px 0 0;">The 3 RNG sites are cheap to seed (that's the 25). Fixed-timestep + deterministic/restorable physics are the expensive, structural remainder &mdash; and rollback needs <em>all</em> of it, not just the cheap part.</p>
+  </div>
+  <p>Rollback doesn't just need determinism &mdash; it needs <strong>snapshot + restore every tick</strong> (rewind to any recent frame and replay). That's a much taller order than host-authoritative's "snapshot only" (Lesson 4). The sim has to be able to save <em>and reload</em> its entire state cheaply, dozens of times per second.</p>
+
+  <h2 id="sec5"><span class="num">5</span> The 8-man-year number</h2>
+  <p>How expensive is retrofitting determinism + rollback onto an already-shipped, non-deterministic game? Your research anchors it to a real, brutal data point:</p>
+  <div class="analogy">
+    <span class="emoji">🏗️</span><strong>Mortal Kombat X</strong> reportedly took roughly <strong>8 man-years</strong> to retrofit rollback (about 2 of those just on serialization), and a naive first attempt <em>tripled</em> the per-frame cost &mdash; from <code class="inline">10ms</code> to <code class="inline">32ms</code>, blowing the <code class="inline">16.67ms</code> budget. The consensus: rollback is only worth it if you build deterministic from day one. Retrofitting is a mountain.
+  </div>
+  <p>This is why your multiplayer plan chose host-authoritative in the first place &mdash; not because it feels better (it doesn't), but because rollback's retrofit cost looked prohibitive. The determinism experiment exists to <em>check that assumption with a real number</em> rather than fear.</p>
+
+  <h2 id="sec6"><span class="num">6</span> What your spike found</h2>
+  <p>The <code class="inline">/determinism-cost</code> page is an <em>offline analysis</em> mode (no network) that measures how hard determinism would be. Its conclusion:</p>
+  <ul>
+    <li><strong>Reproducibility is provable</strong> where it's cheap: seed the 3 RNG sites + a fixed timestep and the same input tape yields an identical outcome (verified headlessly).</li>
+    <li><strong>But the structural parts are expensive:</strong> fixed-timestep conversion + deterministic/snapshot-restorable physics are a real rewrite, anchored to that ~8-man-year figure.</li>
+    <li><strong>Verdict: rollback does not reopen.</strong> "The determinism retrofit is structural and expensive; Decision 1's host-authoritative choice stands on cost grounds."</li>
+  </ul>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">field note · from the refactor</div>
+    <h4>Read 25/100 as an estimate, not a measurement</h4>
+    <p>A later review flagged that the reproducibility demo is real but <em>low-information</em>: it runs on synthetic character defs with a monkey-patched <code class="inline">Math.random</code>, not the real <code class="inline">FightScene</code>. Seeding 3 pure RNG calls was never in doubt &mdash; so "reproducible = true" is nearly tautological. The <code class="inline">25/100</code> readiness is a reasoned <em>estimate</em> of the structural work (fixed timestep + deterministic/restorable physics), not a benchmarked number like the snapshot byte-costs. Fine for a feasibility call &mdash; just don't read it as a hard measurement.</p>
+  </div>
+  <div class="flag">
+    <strong>Why it's scored on a separate axis.</strong> Your spike deliberately does <em>not</em> blend determinism-readiness (25/100) into the host-authoritative feasibility score (49/100). They answer different questions: one asks "is the model we chose good enough?" the other asks "would the alternative be affordable?" Averaging them would be dishonest &mdash; the next lesson (Scoring) explains exactly why mixing unlike questions produces a misleading number.
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Deterministic</b> = same state + same inputs → identical result, every machine, every time. It's the prerequisite for rollback.</li>
+    <li>Three enemies: unseeded <b>RNG</b> (cheap), <b>variable timestep</b> (structural), <b>float/physics divergence</b> (structural).</li>
+    <li>Rollback also needs cheap <b>snapshot + restore</b> every tick — much more than host-authoritative's snapshot-only.</li>
+    <li>Retrofitting it is famously brutal (<b>~8 man-years</b> for MKX) — which is why your plan chose host-authoritative, and why the spike scores determinism <b>25/100</b> on a separate axis.</li>
+  </ul>
+  <p class="src"><b>Primary sources.</b> Gaffer on Games — <a href="https://gafferongames.com/post/floating_point_determinism/" target="_blank">Floating-point determinism</a> · Bruce Dawson — <a href="https://randomascii.wordpress.com/2013/07/16/floating-point-determinism/" target="_blank">Floating-point determinism</a> (why FP differs across machines)</p>
+  <p class="src">Rollback cost — Infil — <a href="https://words.infil.net/w02-netcode-p5.html" target="_blank">rollback &amp; the MKX retrofit</a></p>
+  <p class="src">Your spike — <code class="inline">determinismHarness.ts</code>, <code class="inline">determinismCost.ts</code>, <code class="inline">research.md §A &amp; §C</code>, plus the review passes</p>
+
+  <footer>Determinism &amp; Rollback Cost · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+const seqA=document.getElementById('seq-a'), seqB=document.getElementById('seq-b');
+const verdict=document.getElementById('det-verdict'), seedToggle=document.getElementById('seed-toggle');
+function rollSeq(seeded){
+  // seeded: deterministic pseudo-sequence; unseeded: Math.random
+  const out=[];
+  let s=12345;
+  for(let i=0;i<8;i++){
+    let r;
+    if(seeded){ s=(s*1103515245+12345)&0x7fffffff; r=s/0x7fffffff; }
+    else { r=Math.random(); }
+    out.push(r<0.5?'·':(r<0.8?'✦':'💥'));
+  }
+  return out;
+}
+document.getElementById('det-run').addEventListener('click',()=>{
+  const seeded=seedToggle.checked;
+  const a=rollSeq(seeded), b=rollSeq(seeded);
+  seqA.textContent=''; seqB.textContent=''; verdict.textContent='';
+  a.forEach((c,i)=>setTimeout(()=>{ seqA.textContent+=c+' '; },i*140));
+  b.forEach((c,i)=>setTimeout(()=>{ seqB.textContent+=c+' '; },i*140));
+  setTimeout(()=>{
+    const same=a.join('')===b.join('');
+    if(seeded){ verdict.textContent='✓ identical fights — machines stay in sync'; verdict.style.color='var(--good)'; }
+    else { verdict.textContent='✗ diverged — DESYNC (rollback would break)'; verdict.style.color='var(--bad)'; }
+  }, 8*140+200);
+});
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

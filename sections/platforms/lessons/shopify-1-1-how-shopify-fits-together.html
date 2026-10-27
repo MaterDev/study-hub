@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Shopify Fits Together</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--forest); --accent-soft:var(--forest-soft); --accent-text:#2c5a3f; --mer:var(--ochre); --dev:var(--cobalt); --shp:var(--plum); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:700; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+
+  /* platform map */
+  .pmap{display:grid; gap:10px;}
+  .row{display:grid; gap:10px;} .row.top{grid-template-columns:1fr 1.2fr 1fr 1fr .8fr;}
+  @media(max-width:760px){.row.top{grid-template-columns:1fr 1fr;}}
+  .blk{border:3px solid var(--outline); border-radius:10px; padding:10px 12px; background:var(--paper); font-family:var(--font-ui); font-size:.84rem; font-weight:800; color:var(--ink); cursor:pointer; text-align:left; box-shadow:0 3px 0 var(--outline);}
+  .blk small{display:block; font-weight:600; font-size:.68rem; color:var(--ink-mute); margin-top:2px;}
+  .blk.m{border-left:10px solid var(--mer);} .blk.d{border-left:10px solid var(--dev);} .blk.s{border-left:10px solid var(--shp);}
+  .blk.on{background:var(--forest-soft); outline:3px solid var(--forest);}
+  .blk.lit{background:var(--ochre-soft);}
+  .rowlab{font-family:var(--font-pixel); font-size:.42rem; color:var(--ink-mute); letter-spacing:.05em; margin:2px 0 -4px;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-family:var(--font-ui); font-size:.76rem; color:var(--ink-soft); margin:10px 0 0;}
+  .legend b{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px;}
+  .pdoc{border:2px solid var(--forest); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; margin-top:12px; min-height:150px;}
+  .pdoc h4{margin:0 0 6px; color:var(--accent-text);} .pdoc dl{margin:6px 0 0; display:grid; grid-template-columns:150px 1fr; gap:4px 12px;} .pdoc dt{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); font-weight:800; padding-top:3px;} .pdoc dd{margin:0;}
+  @media(max-width:640px){.pdoc dl{grid-template-columns:1fr;}}
+
+  /* journey */
+  .jr{display:grid; grid-template-columns:1fr; gap:10px;}
+  .jbar{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .jstep{border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--paper); font-family:var(--font-ui); font-size:.84rem; opacity:.5; transition:opacity .15s steps(3);}
+  .jstep.on{opacity:1; border-color:var(--forest); background:var(--forest-soft);} .jstep.done{opacity:.85;}
+  .jstep b{display:block; color:var(--ink);} .jstep .who{display:inline-block; font-size:.64rem; font-weight:800; padding:2px 6px; border:2px solid var(--outline); border-radius:3px; margin-top:4px; background:var(--surface);}
+  .jctl{display:flex; gap:8px; margin-top:6px;}
+
+  /* which surface */
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tag{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--paper); color:var(--ink); font:700 .84rem var(--font-ui); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--forest);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em;} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+
+  /* theme owns */
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0;}
+  @media(max-width:760px){.two{grid-template-columns:1fr;}}
+  .col{border-radius:12px; padding:14px 16px; font-family:var(--font-ui); font-size:.86rem; box-shadow:var(--shadow-sm);}
+  .col h4{margin:0 0 8px;} .col ul{margin:0; padding-left:18px;} .col li{margin-bottom:5px;}
+  .col.yes{border:2px solid var(--forest); background:var(--forest-soft);} .col.no{border:2px solid var(--vermil); background:var(--vermil-soft);}
+
+  /* app anatomy */
+  .anat{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px; margin:12px 0;}
+  .part{border:2px solid var(--dev); border-radius:10px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.82rem; cursor:pointer; text-align:left; color:var(--ink);}
+  .part b{display:block;} .part .more{display:none; margin-top:6px; color:var(--ink-soft);} .part.open{background:var(--cobalt-soft);} .part.open .more{display:block;}
+  .pickrow{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+
+  /* api picker */
+  .apis{display:grid; grid-template-columns:1fr 1.2fr; gap:14px;}
+  @media(max-width:760px){.apis{grid-template-columns:1fr;}}
+  .callers{display:flex; flex-direction:column; gap:8px;}
+  .caller{border:2px solid var(--line-strong); border-radius:10px; padding:9px 12px; background:var(--paper); color:var(--ink); font:700 .82rem var(--font-ui); cursor:pointer; text-align:left;}
+  .caller.on{border-color:var(--forest); background:var(--forest-soft);}
+  .adoc{border:2px solid var(--forest); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; min-height:190px;}
+  .adoc h4{margin:0 0 6px; color:var(--accent-text);} .adoc p{margin:6px 0;}
+
+  /* stores */
+  .stores{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px;}
+  .store{border:3px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; cursor:pointer; text-align:left; color:var(--ink); box-shadow:0 3px 0 var(--outline);}
+  .store b{display:block; font-size:.95rem; margin-bottom:4px;} .store.on{background:var(--forest-soft); outline:3px solid var(--forest);}
+  .store ul{margin:6px 0 0; padding-left:18px; display:none;} .store.on ul{display:block;}
+
+  .verify{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0;}
+  .vchip{font-family:var(--font-ui); font-size:.78rem; font-weight:700; padding:6px 12px; border:2px solid var(--ochre); border-radius:999px; background:var(--ochre-soft); color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>How Shopify Fits Together</h1>
+  <p class="subtitle">Stores, themes, apps, checkout and APIs: a map of where a developer's work lives, and how to tell which surface a problem belongs to.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The map (interactive)</a></li>
+      <li><a href="#sec2">One purchase, end to end (interactive)</a></li>
+      <li><a href="#sec3">Which surface? (interactive)</a></li>
+      <li><a href="#sec4">Themes: one surface among several</a></li>
+      <li><a href="#sec5">Apps: what they are and where they appear</a></li>
+      <li><a href="#sec6">The APIs: who is calling? (interactive)</a></li>
+      <li><a href="#sec7">Stores and plans: what you work in</a></li>
+      <li><a href="#sec8">What changes fast</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The map</h2>
+  <p class="lead">Most people meet Shopify as "a theme". A theme is only one of several surfaces. Before you write any Liquid, it pays to know the whole shape: <strong>which parts the merchant runs, which parts you build, and which parts Shopify runs for everyone.</strong> Click any block.</p>
+  <div class="stage" data-testid="platform-map">
+    <div class="pmap">
+      <div class="rowlab">WHERE PEOPLE USE IT</div>
+      <div class="row top" id="row-top"></div>
+      <div class="rowlab">WHAT EXTENDS IT</div>
+      <div class="row" id="row-apps"></div>
+      <div class="rowlab">HOW CODE TALKS TO IT</div>
+      <div class="row" id="row-apis"></div>
+      <div class="rowlab">WHAT IT HOLDS</div>
+      <div class="row" id="row-core"></div>
+    </div>
+    <div class="legend"><span><b style="background:var(--mer)"></b>Run by the merchant</span><span><b style="background:var(--dev)"></b>Built by developers</span><span><b style="background:var(--shp)"></b>Run by Shopify</span></div>
+    <div class="pdoc" id="pdoc" data-testid="map-doc"></div>
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> One purchase, end to end</h2>
+  <p>The fastest way to see how the pieces connect is to follow one order. Step through it; the surfaces involved light up on the map above as you go.</p>
+  <div class="stage" data-testid="journey">
+    <div class="jr"><div class="jbar" id="jbar"></div></div>
+    <div class="jctl"><button class="btn sec" id="j-prev" data-testid="journey-prev">← Back</button><button class="btn" id="j-next" data-testid="journey-next">Next step →</button><span class="small" id="j-label"></span></div>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> Which surface?</h2>
+  <p>The practical skill this lesson builds: given a request, know where it belongs <em>before</em> you start building. Pick a home for each request. Notice how often the right answer is something the platform already ships.</p>
+  <div class="stage" data-testid="surface-quiz">
+    <div class="scn" id="scn"></div>
+    <div class="scn-nav"><button class="btn" id="scn-next" data-testid="surface-next" disabled>Next →</button><span class="small" id="scn-score" data-testid="surface-score"></span></div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Themes: one surface among several</h2>
+  <p>A theme controls the online-store experience. It is built with Liquid (Shopify's templating language) plus HTML, CSS, JavaScript and JSON, and you can start from Shopify's Skeleton theme or customise an existing one. The current architecture is called <strong>Online Store 2.0</strong>: it lets you add and remove sections on any template and prepares a theme for app blocks. Tooling in the docs: the <b>Shopify CLI</b> to run and preview a theme locally, <b>Theme Check</b> to catch errors, and a <b>GitHub integration</b> for managing theme code from the admin. The next lesson takes the theme apart; here, what matters is the boundary.</p>
+  <div class="two">
+    <div class="col yes"><h4>A theme owns</h4><ul><li>How the storefront pages look and behave</li><li>Templates, sections and the theme editor experience</li><li>Front-end JavaScript on those pages (for example cart interactions via the Ajax and Section Rendering APIs)</li><li>Theme settings and translations</li></ul></div>
+    <div class="col no"><h4>A theme does not own</h4><ul><li>Checkout, customer accounts and POS (separate surfaces)</li><li>The data itself: products, customers and orders live in Shopify</li><li>Business logic that has to run inside Shopify, such as discount and delivery rules</li><li>Back-end work for the merchant: sync, reports, workflows</li></ul></div>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Apps: what they are and where they appear</h2>
+  <p>In the docs' framing, an app is a <strong>set of declared components</strong>. Shopify runs most of them; the developer hosts only the backend. Click a component.</p>
+  <div class="anat" id="anat" data-testid="app-anatomy"></div>
+  <p>Apps can appear in the <b>app's own admin page (App Home)</b>, the <b>admin</b>, <b>checkout</b>, <b>customer accounts</b>, the <b>online store</b> (alongside the theme) and <b>point of sale</b>. They are distributed one of two ways:</p>
+  <div class="two" data-testid="app-distribution">
+    <div class="col yes"><h4>Public app</h4><ul><li>Listed in the Shopify App Store</li><li>Shopify reviews each listing before it goes live</li><li>Once approved, any merchant can install it</li><li>Billing plans are defined in the listing</li></ul></div>
+    <div class="col yes"><h4>Custom app</h4><ul><li>Installed directly by a single organisation</li><li>No App Store listing and no review</li><li>The usual route for work built for one client</li></ul></div>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> The APIs: who is calling?</h2>
+  <p>"The Shopify API" is really several, each aimed at a different caller. Each has its own token and header, and <em>access scopes</em> control what a token can read and write. Pick who is calling.</p>
+  <div class="stage" data-testid="api-picker">
+    <div class="apis"><div class="callers" id="callers"></div><div class="adoc" id="adoc" data-testid="api-doc"></div></div>
+  </div>
+  <p class="small">Shopify releases a new API version every quarter and supports each for a year, so integrations need a plan for version upgrades; the changelog lists deprecations.</p>
+
+  <h2 id="sec7"><span class="num">7</span> Stores and plans: what you work in</h2>
+  <p>As a developer you rarely work in the merchant's live store first. Click each kind of store.</p>
+  <div class="stage" data-testid="stores">
+    <div class="stores" id="stores"></div>
+  </div>
+  <p>Plans matter to you in practice because some capabilities depend on the tier. The docs name Basic, Grow, Advanced and Plus for development stores (and list more tiers on the plans page, such as Starter, Lite, Retail and enterprise). The detail of what each plan unlocks is the kind of thing to check at the time of scoping, not to assume from memory.</p>
+
+  <h2 id="sec8"><span class="num">8</span> What changes fast</h2>
+  <p>This lesson is a map, and the platform keeps redrawing parts of it. Before you scope work, verify these against current documentation:</p>
+  <div class="verify" data-testid="verify-list">
+    <span class="vchip">What can be customised at checkout, and on which plan</span><span class="vchip">What each plan includes</span><span class="vchip">Current API version and deprecations</span><span class="vchip">Which theme building blocks (including theme blocks) are current</span><span class="vchip">Headless options such as Hydrogen and the Storefront Web Components</span>
+  </div>
+  <div class="flag"><b>My own judgment, not from the docs:</b> when a request arrives, the cheapest question to ask is "does the platform already do this?" Admin configuration and built-in features cost nothing to build and nothing to maintain. A theme change is next, then an app. Headless is the most expensive answer, and it only pays when you need a front end Shopify's theme system can't give you.</div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Shopify is several surfaces,</b> not one: admin, online store (a theme), checkout, customer accounts, POS, with apps and APIs around them.</li>
+    <li><b>Know who owns what:</b> the merchant runs the admin; developers build themes and apps; Shopify runs checkout and the core data.</li>
+    <li><b>A theme owns the storefront pages,</b> not checkout, the data, or logic that must run inside Shopify.</li>
+    <li><b>An app is a set of declared components</b> (auth, extensions, Functions, data storage, webhooks); you host the backend, Shopify runs the rest. Public apps are reviewed and listed; custom apps serve one organisation.</li>
+    <li><b>There are several APIs for different callers,</b> each with its own token and scopes, versioned quarterly.</li>
+    <li><b>Develop in a dev store,</b> and use a client transfer store when the merchant will own the result.</li>
+    <li><b>Ask "does the platform already do this?" first.</b></li>
+  </ul>
+  <p class="src"><b>Primary (Shopify).</b> <a href="https://shopify.dev/docs/api" target="_blank">Shopify API overview</a> · <a href="https://shopify.dev/docs/storefronts/themes/getting-started" target="_blank">Themes: getting started</a> · <a href="https://shopify.dev/docs/apps/getting-started" target="_blank">Apps: getting started</a> · <a href="https://shopify.dev/docs/apps/build/dev-dashboard/development-stores" target="_blank">Development stores</a> · <a href="https://help.shopify.com/en/manual/intro-to-shopify/pricing-plans/plans-features" target="_blank">Shopify plans</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> The platform map, the order walkthrough, the practice requests and the cost ordering in section 8 are my own synthesis. Verify the items in "What changes fast" before relying on them.</p>
+
+  <footer>How Shopify Fits Together · Shopify for Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- platform map ---------- */
+const BLOCKS={
+  admin:{t:'Admin',own:'m',sub:'merchant\'s control panel',what:'Where merchants run their business: products, orders, customers, settings, and the theme editor.',who:'The merchant, day to day.',how:'You extend it with app surfaces (an App Home page, or UI extensions) rather than editing it directly.'},
+  store:{t:'Online store',own:'d',sub:'the theme',what:'The storefront buyers browse, rendered by a theme built with Liquid, HTML, CSS, JavaScript and JSON.',who:'Developers build and customise the theme; merchants edit content and settings in the theme editor.',how:'Theme code, plus app blocks from apps. Cart interactions use the Ajax and Section Rendering APIs.'},
+  checkout:{t:'Checkout',own:'s',sub:'the purchase path',what:'The buyer\'s path from cart to paid order, run by Shopify.',who:'Shopify runs it; merchants configure it; developers extend it in limited, defined ways.',how:'Checkout UI extensions and Functions (discounts, delivery, payment customisation). How much you can change depends on plan and Shopify\'s current rules: verify.'},
+  accounts:{t:'Customer accounts',own:'s',sub:'orders, returns, profiles',what:'Where buyers track orders, start returns and manage their profile.',who:'Shopify runs it; developers can extend it.',how:'Customer account UI extensions; the Customer Account API for identity and order history in custom experiences.'},
+  pos:{t:'Point of sale',own:'s',sub:'in person',what:'The in-person selling interface for staff.',who:'Shopify runs it.',how:'POS UI extensions delivered through an app.'},
+  apps:{t:'Apps',own:'d',sub:'extensions · Functions · webhooks · backend',what:'A set of declared components: authentication, extensions that put UI inside Shopify, Functions that run logic in Shopify\'s request path, custom data storage, and webhooks. The developer hosts only the backend.',who:'Developers build them; merchants install them.',how:'Public apps are listed in the App Store after review; custom apps are installed directly by one organisation.'},
+  api:{t:'APIs',own:'s',sub:'Admin · Storefront · Customer Account',what:'The ways code reads and writes Shopify: the GraphQL Admin API (the data behind the admin), the Storefront API (building blocks for custom storefronts), the Customer Account API, and the theme-side Ajax and Section Rendering APIs.',who:'Shopify provides them; developers call them.',how:'Each API has its own token and header; access scopes limit what a token can do. New versions ship quarterly.'},
+  core:{t:'Core data & logic',own:'s',sub:'products · customers · orders · inventory',what:'The commerce data Shopify holds, extended with metafields and metaobjects for custom data.',who:'Shopify holds it; merchants and apps edit it.',how:'Through the Admin API, the admin itself, and webhooks that announce changes.'}
+};
+const OWN={m:'Run by the merchant',d:'Built by developers',s:'Run by Shopify'};
+const blkEls={};
+function mk(k,wrap,cls){ const b=BLOCKS[k]; const e=document.createElement('button'); e.type='button'; e.className='blk '+b.own+(cls?' '+cls:''); e.innerHTML=b.t+'<small>'+b.sub+'</small>'; e.setAttribute('data-testid','map-'+k); e.onclick=()=>showBlock(k); wrap.appendChild(e); blkEls[k]=e; return e; }
+['admin','store','checkout','accounts','pos'].forEach(k=>mk(k,$('row-top')));
+mk('apps',$('row-apps')); mk('api',$('row-apis')); mk('core',$('row-core'));
+function showBlock(k){ Object.values(blkEls).forEach(e=>e.classList.remove('on')); blkEls[k].classList.add('on'); const b=BLOCKS[k];
+  $('pdoc').innerHTML='<h4>'+b.t+'</h4><dl><dt>What it is</dt><dd>'+b.what+'</dd><dt>Who changes it</dt><dd>'+b.who+'</dd><dt>How you work with it</dt><dd>'+b.how+'</dd><dt>Owner</dt><dd>'+OWN[b.own]+'</dd></dl>'; }
+showBlock('store');
+
+/* ---------- journey ---------- */
+(function(){
+  const S=[
+    ['A buyer opens a product page','Shopify renders the theme\'s Liquid templates on its servers and returns HTML.',['store'],'Theme'],
+    ['They tap "Add to cart"','Theme JavaScript calls the Ajax API (for example the cart add endpoint) without reloading the page.',['store','api'],'Theme + Ajax API'],
+    ['The cart drawer refreshes','The Section Rendering API returns fresh HTML for just the affected sections.',['store','api'],'Theme + Section Rendering API'],
+    ['They check out','Checkout is run by Shopify. A discount Function runs inside Shopify\'s request path to apply a custom rule; a checkout UI extension may add a field.',['checkout','apps'],'Checkout + app extension / Function'],
+    ['The order is placed','It is stored in Shopify\'s core data. Subscribed apps are notified by a webhook.',['core','apps'],'Core data + webhook'],
+    ['An app reacts','The app\'s backend, which the developer hosts, syncs the order to another system and reads or updates data through the Admin API.',['apps','api'],'App backend + Admin API'],
+    ['The merchant sees the result','The order appears in the admin, and an app page or extension may show extra information there.',['admin','apps'],'Admin + App Home']
+  ];
+  let i=0; const bar=$('jbar');
+  function draw(){
+    bar.innerHTML=S.map((s,k)=>'<div class="jstep'+(k===i?' on':'')+(k<i?' done':'')+'" data-testid="journey-step-'+k+'" style="flex:1 1 150px"><b>'+(k+1)+'. '+s[0]+'</b>'+(k===i?s[1]:'')+'<br><span class="who">'+s[3]+'</span></div>').join('');
+    Object.entries(blkEls).forEach(([k,e])=>e.classList.toggle('lit',S[i][2].includes(k)));
+    $('j-prev').disabled=i===0; $('j-next').disabled=i===S.length-1; $('j-label').textContent='Step '+(i+1)+' of '+S.length;
+  }
+  $('j-next').onclick=()=>{ if(i<S.length-1){ i++; draw(); } }; $('j-prev').onclick=()=>{ if(i>0){ i--; draw(); } }; draw();
+})();
+
+/* ---------- which surface ---------- */
+(function(){
+  const O=['Theme code','Admin settings (no code)','An app','Storefront API / headless'];
+  const Q=[
+    ['Change the product page layout and add a size-guide accordion.',0,'The storefront pages are the theme\'s job: templates, sections and front-end code.'],
+    ['Change the header logo and the announcement-bar text.',1,'This is content and settings the merchant can edit in the theme editor. No developer work is needed, and building it would add cost for nothing.'],
+    ['Give 10% off when a cart has three items from one collection.',1,'Check the built-in discount settings first. If the rule is too custom for them, that is when a Function (delivered by an app) earns its place.'],
+    ['Add a gift-message field at checkout.',2,'Checkout is not a theme. Extending it means a checkout UI extension, which ships as part of an app (and the available options depend on plan and current rules).'],
+    ['Send every new order to the client\'s ERP system.',2,'This is back-end integration: an app backend receives a webhook for the order and uses the Admin API to read or update data.'],
+    ['Build a fully custom React storefront with its own hosting and routing.',3,'When you need a front end the theme system cannot give you, you build on the Storefront API (Hydrogen is Shopify\'s React framework for it), accepting the trade-offs.'],
+    ['Show merchants a custom report inside the Shopify admin.',2,'The admin is extended through apps: an App Home page or admin UI extension.']
+  ];
+  let i=0, score=0, done=false; const box=$('scn'), nx=$('scn-next');
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="tag">DONE</div><div class="say" style="border-left-color:var(--forest)">You placed '+score+' of '+Q.length+' requests where the platform guidance puts them.</div><p class="small">The habit to keep: ask what the platform already does, then pick the cheapest surface that can do the job.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{ i=0; score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; $('scn-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tag">REQUEST '+(i+1)+' / '+Q.length+'</div><div class="say">'+q[0]+'</div><div class="opts">'+O.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'" data-testid="surface-option-'+k+'">'+o+'</button>').join('')+'</div><div class="why" id="why"></div>';
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good');
+      $('why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+q[2]; nx.disabled=false; $('scn-score').textContent=score+' of '+(i+1)+' placed correctly'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+})();
+
+/* ---------- app anatomy ---------- */
+(function(){
+  const A=[['Authentication','Access tokens tied to the scopes a merchant grants when installing the app.'],['Extensions','UI that Shopify hosts and renders inside its own surfaces: admin, checkout, customer accounts, POS.'],['Functions','Custom logic that runs inside Shopify\'s request path, for discounts, payments and delivery.'],['Data storage','Custom data kept in metafields and metaobjects.'],['Webhooks','Notifications that tell your backend when store data changes.'],['Your backend','The one part you host yourself: receives webhooks, calls APIs, serves App Home if you use an iframe.']];
+  const box=$('anat'); A.forEach(([t,d],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='part'; b.setAttribute('data-testid','app-part-'+i); b.innerHTML='<b>'+t+'</b><span class="small">tap to expand</span><div class="more">'+d+'</div>'; b.onclick=()=>b.classList.toggle('open'); box.appendChild(b); });
+})();
+
+/* ---------- API picker ---------- */
+(function(){
+  const C=[
+    ['A merchant tool or integration that reads and writes store data','GraphQL Admin API','The same data that sits behind the admin: products, customers, orders, inventory.','Merchant-facing and server-side: keep its token out of any browser.'],
+    ['A custom buyer-facing storefront','Storefront API','Building blocks for custom storefronts. Hydrogen, Shopify\'s React framework, is built on it.','Buyer-facing. This is the headless route, with the trade-offs that come with leaving the theme system.'],
+    ['Buyer identity and order history in a custom experience','Customer Account API','Access to customer identity and order history (with the Customer Privacy API recording consent).','Part of the custom-experience toolkit; scopes and approvals apply.'],
+    ['JavaScript inside a Shopify theme (cart updates)','Ajax API + Section Rendering API','The theme-side endpoints for interactivity such as cart changes without a page reload, and for re-fetching just the sections that changed.','These are the theme\'s own tools; no separate app is needed.'],
+    ['Custom logic inside discounts, payments or delivery','Shopify Functions','Code that runs inside Shopify\'s request path, delivered through an app.','Not an API you call; logic you ship to run on Shopify.'],
+    ['Reacting when something changes in the store','Webhooks and Events','Webhooks notify an app when store data changes; Events report changes to GraphQL resources with configurable payloads.','Push, not poll: your backend receives the notification.']
+  ];
+  const box=$('callers'), doc=$('adoc');
+  C.forEach((c,i)=>{ const b=document.createElement('button'); b.type='button'; b.className='caller'; b.setAttribute('data-testid','api-caller-'+i); b.textContent=c[0];
+    b.onclick=()=>{ box.querySelectorAll('.caller').forEach(x=>x.classList.remove('on')); b.classList.add('on'); doc.innerHTML='<h4>'+c[1]+'</h4><p>'+c[2]+'</p><p><b>Note:</b> '+c[3]+'</p><p class="small">Each API has its own token and header, and access scopes limit what a token can read and write.</p>'; }; box.appendChild(b); });
+  box.children[0].click();
+})();
+
+/* ---------- stores ---------- */
+(function(){
+  const S=[
+    ['Development store','Where you build and test.',['A testing environment you own and control','Create with a Partner account or developer permissions (CLI or the Dev Dashboard)','Choose a plan (Basic, Grow, Advanced or Plus) and optionally load demo data','Test orders use the Test gateway or a provider\'s test mode','Always password protected; the myshopify.com URL is permanent','Cannot process real transactions, cannot become a production store, and cannot be transferred to a client','Limit of 250 per organisation; deletion is permanent']],
+    ['Client transfer store','Where you build when the merchant will own the result.',['Shopify recommends it over a dev store when you are building a store for a merchant who will own it','A dev store cannot be handed over, which is the reason this option exists','Check Shopify\'s current process for creating and transferring one before you promise a timeline']],
+    ['Merchant\'s live store','Where real customers buy.',['Real products, orders and payments','Changes here affect revenue: preview themes and staging first','Which capabilities you can use depends on the store\'s plan']]
+  ];
+  const box=$('stores'); S.forEach(([t,s,l],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='store'+(i===0?' on':''); b.setAttribute('data-testid','store-'+i); b.innerHTML='<b>'+t+'</b>'+s+'<ul>'+l.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; b.onclick=()=>{ box.querySelectorAll('.store').forEach(x=>x.classList.remove('on')); b.classList.add('on'); }; box.appendChild(b); });
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+/* ============================================================
+   STUDY HUB — Shared Design System
+   Theme: "Sky Cartridge" — sky-blue 16-bit console vibes.
+   Chunky pixel borders, hard drop-shadows, RPG dialog boxes,
+   item-block section numbers, drifting clouds, spinning coins.
+   Original pixel sprites only (generated, crisp SVG).
+   Used by index.html + every lesson. Pages set their --accent.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Pixelify+Sans:wght@400;500;600;700&family=Press+Start+2P&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('theme-sega.css');   /* dark skin, inert unless <html data-theme="sega"> */
+
+:root{
+  /* sky + panels */
+  --sky-1:#a9d3f2; --sky-2:#cbe5f7; --sky-3:#eef6fc;
+  --paper:#eaf6ff; --paper-2:#e0f1ff; --surface:#ffffff; --sunken:#d3ebfc;
+  --ink:#2a3150; --ink-soft:#3e4768; --ink-mute:#525c83; --ink-faint:#a0a9c6;
+  --line:#d3e3f1; --line-strong:#a9c1da; --outline:#56628a;
+
+  /* 16-bit face-button palette (names kept for compatibility) */
+  --cobalt:#4a6fa8;  --cobalt-soft:rgba(74,111,168,.13);
+  --vermil:#b35c5c;  --vermil-soft:rgba(179,92,92,.13);
+  --ochre:#c9a24a;   --ochre-soft:rgba(201,162,74,.18);
+  --forest:#437a58;  --forest-soft:rgba(67,122,88,.13);
+  --plum:#7d68b3;    --plum-soft:rgba(125,104,179,.14);  --plum-deep:#5b4a94;
+  --gold:#f6dc8a;
+
+  --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); --accent-ink:#fff;
+  --accent-text:color-mix(in srgb, var(--accent) 60%, #1e2440);          /* pages with a light accent override this */
+  --link:#3d63a3;
+
+  --good:#3a7a52; --good-soft:rgba(31,158,74,.12);
+  --warn:#86620f; --warn-soft:rgba(245,183,0,.18);
+  --bad:#a44646;  --bad-soft:rgba(226,59,59,.11);
+
+  --font-display:'Pixelify Sans','Nunito',system-ui,sans-serif;
+  --font-pixel:'Press Start 2P',monospace;
+  --font-body:'Nunito',system-ui,-apple-system,sans-serif;
+  --font-ui:'Nunito',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+  --font-hand:'Pixelify Sans','Nunito',sans-serif;
+
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;--sp-12:48px;--sp-16:64px;
+  --r-sm:3px; --r-md:5px; --r-lg:6px; --r-xl:8px;
+  --px:3px;                                  /* border weight */
+  --shadow-sm:4px 4px 0 rgba(86,98,138,.16);
+  --shadow-riso:6px 6px 0 rgba(86,98,138,.2);
+  --content-w:1080px;      /* page width: wide enough for interactive widgets */
+  --measure:78ch;          /* comfortable reading width for running text */
+
+  --spr-cloud:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20110%2034%22%20width=%22110%22%20height=%2234%22%20shape-rendering=%22crispEdges%22%3E%3Crect%20x=%2214%22%20y=%223%22%20width=%224%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2212%22%20y=%224%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2214%22%20y=%224%22%20width=%224%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2218%22%20y=%224%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2211%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2212%22%20y=%225%22%20width=%228%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2220%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2223%22%20y=%225%22%20width=%224%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%229%22%20y=%226%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2211%22%20y=%226%22%20width=%2210%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2221%22%20y=%226%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2223%22%20y=%226%22%20width=%224%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2227%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%228%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%229%22%20y=%227%22%20width=%2219%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2228%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%227%22%20y=%228%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%228%22%20y=%228%22%20width=%2221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2229%22%20y=%228%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%226%22%20y=%229%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%227%22%20y=%229%22%20width=%2222%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2229%22%20y=%229%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%226%22%20y=%2210%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%227%22%20y=%2210%22%20width=%2221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2228%22%20y=%2210%22%20width=%221%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2229%22%20y=%2210%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%226%22%20y=%2211%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%227%22%20y=%2211%22%20width=%221%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%228%22%20y=%2211%22%20width=%2218%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2226%22%20y=%2211%22%20width=%223%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2229%22%20y=%2211%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%226%22%20y=%2212%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%227%22%20y=%2212%22%20width=%223%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2210%22%20y=%2212%22%20width=%2213%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2223%22%20y=%2212%22%20width=%225%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2228%22%20y=%2212%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%227%22%20y=%2213%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%228%22%20y=%2213%22%20width=%2219%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2227%22%20y=%2213%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%228%22%20y=%2214%22%20width=%2219%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2274%22%20y=%2220%22%20width=%224%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2272%22%20y=%2221%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2274%22%20y=%2221%22%20width=%224%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2278%22%20y=%2221%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2271%22%20y=%2222%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2272%22%20y=%2222%22%20width=%228%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2280%22%20y=%2222%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2283%22%20y=%2222%22%20width=%224%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2269%22%20y=%2223%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2271%22%20y=%2223%22%20width=%2210%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2281%22%20y=%2223%22%20width=%222%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2283%22%20y=%2223%22%20width=%224%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2287%22%20y=%2223%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2268%22%20y=%2224%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2269%22%20y=%2224%22%20width=%2219%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2288%22%20y=%2224%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2267%22%20y=%2225%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2268%22%20y=%2225%22%20width=%2221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2289%22%20y=%2225%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2266%22%20y=%2226%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2267%22%20y=%2226%22%20width=%2222%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2289%22%20y=%2226%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2266%22%20y=%2227%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2267%22%20y=%2227%22%20width=%2221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2288%22%20y=%2227%22%20width=%221%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2289%22%20y=%2227%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2266%22%20y=%2228%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2267%22%20y=%2228%22%20width=%221%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2268%22%20y=%2228%22%20width=%2218%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2286%22%20y=%2228%22%20width=%223%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2289%22%20y=%2228%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2266%22%20y=%2229%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2267%22%20y=%2229%22%20width=%223%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2270%22%20y=%2229%22%20width=%2213%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2283%22%20y=%2229%22%20width=%225%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2288%22%20y=%2229%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2267%22%20y=%2230%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2268%22%20y=%2230%22%20width=%2219%22%20height=%221%22%20fill=%22%23dcecfa%22/%3E%3Crect%20x=%2287%22%20y=%2230%22%20width=%221%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3Crect%20x=%2268%22%20y=%2231%22%20width=%2219%22%20height=%221%22%20fill=%22%23b3cbe4%22/%3E%3C/svg%3E");
+  --spr-coin:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%208%209%22%20width=%228%22%20height=%229%22%20shape-rendering=%22crispEdges%22%3E%3Crect%20x=%222%22%20y=%220%22%20width=%224%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%221%22%20width=%224%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%226%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%222%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%23fff8d6%22/%3E%3Crect%20x=%223%22%20y=%222%22%20width=%224%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%227%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%222%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23fff8d6%22/%3E%3Crect%20x=%223%22%20y=%223%22%20width=%223%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%226%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23d6aa45%22/%3E%3Crect%20x=%227%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%222%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23fff8d6%22/%3E%3Crect%20x=%223%22%20y=%224%22%20width=%223%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%226%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23d6aa45%22/%3E%3Crect%20x=%227%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%222%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23fff8d6%22/%3E%3Crect%20x=%223%22%20y=%225%22%20width=%223%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%226%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23d6aa45%22/%3E%3Crect%20x=%227%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%226%22%20width=%224%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%225%22%20y=%226%22%20width=%222%22%20height=%221%22%20fill=%22%23d6aa45%22/%3E%3Crect%20x=%227%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%227%22%20width=%222%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%224%22%20y=%227%22%20width=%222%22%20height=%221%22%20fill=%22%23d6aa45%22/%3E%3Crect%20x=%226%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%228%22%20width=%224%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3C/svg%3E");
+  --spr-star:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%209%209%22%20width=%229%22%20height=%229%22%20shape-rendering=%22crispEdges%22%3E%3Crect%20x=%224%22%20y=%220%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%223%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%224%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%225%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%223%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%224%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%225%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%223%22%20width=%224%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%224%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%225%22%20y=%223%22%20width=%224%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%224%22%20width=%227%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%228%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%225%22%20width=%225%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%227%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%226%22%20width=%222%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%224%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%225%22%20y=%226%22%20width=%222%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%227%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%227%22%20width=%222%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%223%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%225%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%226%22%20y=%227%22%20width=%222%22%20height=%221%22%20fill=%22%23f6d469%22/%3E%3Crect%20x=%228%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%228%22%20width=%223%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%226%22%20y=%228%22%20width=%223%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3C/svg%3E");
+  --spr-heart:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%207%206%22%20width=%227%22%20height=%226%22%20shape-rendering=%22crispEdges%22%3E%3Crect%20x=%221%22%20y=%220%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%224%22%20y=%220%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%23f2a8a8%22/%3E%3Crect%20x=%222%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%23e07a7a%22/%3E%3Crect%20x=%223%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%224%22%20y=%221%22%20width=%222%22%20height=%221%22%20fill=%22%23e07a7a%22/%3E%3Crect%20x=%226%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%220%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%222%22%20width=%225%22%20height=%221%22%20fill=%22%23e07a7a%22/%3E%3Crect%20x=%226%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%223%22%20width=%223%22%20height=%221%22%20fill=%22%23e07a7a%22/%3E%3Crect%20x=%225%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%223%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23e07a7a%22/%3E%3Crect%20x=%224%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%223%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3C/svg%3E");
+  --spr-bit:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2012%22%20width=%2224%22%20height=%2212%22%20shape-rendering=%22crispEdges%22%3E%3Crect%20x=%224%22%20y=%220%22%20width=%224%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%221%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%224%22%20y=%221%22%20width=%225%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%229%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%222%22%20width=%228%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2210%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%223%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%224%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%225%22%20y=%223%22%20width=%222%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%227%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%228%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%229%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2210%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%223%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%224%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%225%22%20y=%224%22%20width=%222%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%227%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%228%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%229%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2210%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%225%22%20width=%228%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2210%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%23ee86ad%22/%3E%3Crect%20x=%223%22%20y=%226%22%20width=%226%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%229%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%23ee86ad%22/%3E%3Crect%20x=%2210%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%221%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%227%22%20width=%228%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2210%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%228%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%223%22%20y=%228%22%20width=%226%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%229%22%20y=%228%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%222%22%20y=%229%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%228%22%20y=%229%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2216%22%20y=%221%22%20width=%224%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%222%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2216%22%20y=%222%22%20width=%225%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2221%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2213%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%223%22%20width=%228%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2222%22%20y=%223%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2213%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2215%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2216%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2217%22%20y=%224%22%20width=%222%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2219%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2220%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2221%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2222%22%20y=%224%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2213%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2215%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2216%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2217%22%20y=%225%22%20width=%222%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2219%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%2220%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2221%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2222%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2213%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%226%22%20width=%228%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2222%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2213%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23ee86ad%22/%3E%3Crect%20x=%2215%22%20y=%227%22%20width=%226%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2221%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23ee86ad%22/%3E%3Crect%20x=%2222%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2213%22%20y=%228%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%228%22%20width=%228%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2222%22%20y=%228%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2214%22%20y=%229%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2215%22%20y=%229%22%20width=%226%22%20height=%221%22%20fill=%22%23f5a3c7%22/%3E%3Crect%20x=%2221%22%20y=%229%22%20width=%221%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2215%22%20y=%2210%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3Crect%20x=%2219%22%20y=%2210%22%20width=%222%22%20height=%221%22%20fill=%22%233b4566%22/%3E%3C/svg%3E");
+  --spr-ground:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%20width=%2216%22%20height=%2216%22%20shape-rendering=%22crispEdges%22%3E%3Crect%20x=%220%22%20y=%220%22%20width=%224%22%20height=%221%22%20fill=%22%23c6efb3%22/%3E%3Crect%20x=%224%22%20y=%220%22%20width=%222%22%20height=%221%22%20fill=%22%239ad986%22/%3E%3Crect%20x=%226%22%20y=%220%22%20width=%226%22%20height=%221%22%20fill=%22%23c6efb3%22/%3E%3Crect%20x=%2212%22%20y=%220%22%20width=%222%22%20height=%221%22%20fill=%22%239ad986%22/%3E%3Crect%20x=%2214%22%20y=%220%22%20width=%222%22%20height=%221%22%20fill=%22%23c6efb3%22/%3E%3Crect%20x=%220%22%20y=%221%22%20width=%2216%22%20height=%221%22%20fill=%22%239ad986%22/%3E%3Crect%20x=%220%22%20y=%222%22%20width=%222%22%20height=%221%22%20fill=%22%2374bd66%22/%3E%3Crect%20x=%222%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%239ad986%22/%3E%3Crect%20x=%223%22%20y=%222%22%20width=%225%22%20height=%221%22%20fill=%22%2374bd66%22/%3E%3Crect%20x=%228%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%239ad986%22/%3E%3Crect%20x=%229%22%20y=%222%22%20width=%224%22%20height=%221%22%20fill=%22%2374bd66%22/%3E%3Crect%20x=%2213%22%20y=%222%22%20width=%221%22%20height=%221%22%20fill=%22%239ad986%22/%3E%3Crect%20x=%2214%22%20y=%222%22%20width=%222%22%20height=%221%22%20fill=%22%2374bd66%22/%3E%3Crect%20x=%220%22%20y=%223%22%20width=%2216%22%20height=%221%22%20fill=%22%2374bd66%22/%3E%3Crect%20x=%220%22%20y=%224%22%20width=%2216%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%225%22%20width=%223%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%223%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%224%22%20y=%225%22%20width=%228%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%2212%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%2213%22%20y=%225%22%20width=%223%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%226%22%20width=%227%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%227%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%228%22%20y=%226%22%20width=%228%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%221%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%222%22%20y=%227%22%20width=%2212%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%2214%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%2215%22%20y=%227%22%20width=%221%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%228%22%20width=%229%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%229%22%20y=%228%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%2210%22%20y=%228%22%20width=%226%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%229%22%20width=%224%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%224%22%20y=%229%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%225%22%20y=%229%22%20width=%2211%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%2210%22%20width=%2211%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%2211%22%20y=%2210%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%2212%22%20y=%2210%22%20width=%224%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%2211%22%20width=%221%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%221%22%20y=%2211%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%222%22%20y=%2211%22%20width=%225%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%227%22%20y=%2211%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%228%22%20y=%2211%22%20width=%228%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%2212%22%20width=%2215%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%2215%22%20y=%2212%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%220%22%20y=%2213%22%20width=%226%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%226%22%20y=%2213%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%227%22%20y=%2213%22%20width=%229%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%2214%22%20width=%223%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%223%22%20y=%2214%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%224%22%20y=%2214%22%20width=%228%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%2212%22%20y=%2214%22%20width=%221%22%20height=%221%22%20fill=%22%23b98c5f%22/%3E%3Crect%20x=%2213%22%20y=%2214%22%20width=%223%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3Crect%20x=%220%22%20y=%2215%22%20width=%2216%22%20height=%221%22%20fill=%22%23d9ae82%22/%3E%3C/svg%3E");
+  --spr-spark:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%207%207%22%20width=%227%22%20height=%227%22%20shape-rendering=%22crispEdges%22%3E%3Crect%20x=%223%22%20y=%220%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%223%22%20y=%221%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%222%22%20y=%222%22%20width=%223%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%220%22%20y=%223%22%20width=%227%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%222%22%20y=%224%22%20width=%223%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%223%22%20y=%225%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3Crect%20x=%223%22%20y=%226%22%20width=%221%22%20height=%221%22%20fill=%22%23ffffff%22/%3E%3C/svg%3E");
+}
+
+/* ══ Reset & base ══ */
+*,*::before,*::after{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth; -webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--font-body); font-size:17px; line-height:1.7; color:var(--ink-soft);
+  background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 48%,var(--sky-3) 100%) fixed;
+  min-height:100vh; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+/* drifting pixel clouds (two parallax layers) */
+body::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background-image:var(--spr-cloud),var(--spr-cloud),var(--spr-cloud);
+  background-repeat:repeat-x;
+  background-size:660px 204px, 440px 136px, 880px 272px;
+  background-position:0 4%, 220px 46%, 520px 88%;
+  image-rendering:pixelated; opacity:.95;
+  animation:sky-drift 90s linear infinite;
+}
+@keyframes sky-drift{ to{ background-position:-660px 4%, -220px 46%, -360px 88%; } }
+img,svg,video{display:block; max-width:100%;}
+button{font-family:inherit; cursor:pointer;}
+::selection{background:var(--gold); color:var(--ink);}
+
+/* ══ Typography ══ */
+h1,h2,h3,h4{font-family:var(--font-display); color:var(--ink); line-height:1.15; font-weight:700; letter-spacing:.01em;}
+h1{font-size:clamp(2rem,4.6vw,2.9rem); text-shadow:3px 3px 0 var(--gold);}
+h2{font-size:clamp(1.45rem,3vw,1.9rem); margin-top:var(--sp-16); margin-bottom:var(--sp-5); padding-bottom:var(--sp-3);
+   display:flex; align-items:center; gap:var(--sp-3);
+   background:repeating-linear-gradient(90deg,var(--ink) 0 10px,transparent 10px 16px) bottom/100% 4px no-repeat;}
+h3{font-size:1.3rem; margin-top:var(--sp-8); margin-bottom:var(--sp-3);}
+h4{font-size:1.06rem; margin-bottom:var(--sp-2);}
+p{margin-bottom:var(--sp-5);} p:last-child{margin-bottom:0;}
+a{color:var(--link); text-decoration:none; font-weight:700;
+  background:linear-gradient(currentColor,currentColor) left bottom/0 2px no-repeat; transition:background-size .18s steps(4);}
+a:hover{background-size:100% 2px;}
+strong{font-weight:800; color:var(--ink);} em{font-style:italic;}
+ul,ol{padding-left:var(--sp-6); margin-bottom:var(--sp-5);}
+li{margin-bottom:var(--sp-2);} li::marker{color:var(--accent-text); font-weight:800;}
+.lead{font-size:1.14rem; color:var(--ink-soft);}
+.subtitle{font-family:var(--font-display); font-size:1.25rem; color:var(--ink-mute); margin:6px 0 var(--sp-10); line-height:1.35;}
+.subtitle::before{content:"▶ "; color:var(--vermil); animation:blink 1.1s steps(2,start) infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+code.inline, :not(pre) > code{
+  font-family:var(--font-mono); font-size:.84em; background:var(--sunken); border:2px solid var(--line-strong);
+  padding:0 5px; border-radius:var(--r-sm); color:var(--ink); white-space:nowrap;
+}
+
+/* ══ Lesson window ══ */
+.wrap{
+  position:relative; max-width:var(--content-w); margin:34px auto 60px;
+  padding:var(--sp-12) var(--sp-10) var(--sp-16);
+  background:var(--surface); border:4px solid var(--outline); border-radius:var(--r-xl);
+  box-shadow:inset 0 0 0 4px #fff, inset 0 0 0 6px var(--sunken), 10px 10px 0 rgba(86,98,138,.16);
+}
+/* Wider page, same reading width: prose keeps a comfortable line length while widgets can use the full page. */
+.wrap > p, .wrap > ul, .wrap > ol, .wrap > .lead, .wrap > .subtitle{max-width:var(--measure);}
+/* Grid/flex children may shrink below their content width, so long unbreakable text can't push a column out of the box. */
+.stage div, .stage section{min-width:0;}
+/* console face-buttons in the corner */
+.wrap::before{
+  content:""; position:absolute; top:14px; right:18px; width:62px; height:16px;
+  background:
+    radial-gradient(circle at 8px 8px,var(--vermil) 0 6px,transparent 6.5px),
+    radial-gradient(circle at 24px 8px,var(--ochre) 0 6px,transparent 6.5px),
+    radial-gradient(circle at 40px 8px,var(--forest) 0 6px,transparent 6.5px),
+    radial-gradient(circle at 56px 8px,var(--cobalt) 0 6px,transparent 6.5px);
+  filter:drop-shadow(0 2px 0 rgba(86,98,138,.35));
+}
+@keyframes win-in{from{opacity:0; transform:translateY(18px) scale(.985);} to{opacity:1; transform:none;}}
+@media(max-width:640px){ .wrap{margin:16px 10px 40px; padding:var(--sp-8) var(--sp-5) var(--sp-12);} }
+
+/* ══ Section number → item block ══ */
+h2 .num{
+  flex:none; display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px;
+  background:linear-gradient(180deg,#fbebb3,var(--gold) 55%,#e6c46a);
+  border:3px solid var(--outline); border-radius:5px; color:var(--ink);
+  font-family:var(--font-pixel); font-size:.8rem;
+  box-shadow:inset 3px 3px 0 rgba(255,255,255,.65), inset -3px -3px 0 rgba(0,0,0,.18), 3px 3px 0 rgba(86,98,138,.3);
+  animation:block-bob 2.4s steps(3) infinite;
+}
+h2:hover .num{animation:block-bump .35s steps(3) 1;}
+@keyframes block-bob{0%,70%,100%{transform:translateY(0);} 80%{transform:translateY(-3px);} 90%{transform:translateY(-1px);}}
+@keyframes block-bump{0%{transform:translateY(0);} 40%{transform:translateY(-9px);} 100%{transform:translateY(0);}}
+
+/* ══ TOC = level select ══ */
+.toc{background:var(--paper); border:var(--px) solid var(--outline); border-radius:var(--r-lg); padding:var(--sp-5) var(--sp-6);
+  margin-bottom:var(--sp-6); box-shadow:var(--shadow-sm);}
+.toc strong{font-family:var(--font-pixel); font-size:.62rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink);
+  display:block; margin-bottom:var(--sp-4);}
+.toc strong::before{content:"◆ "; color:var(--vermil);}
+.toc ol{margin:0; padding-left:var(--sp-6); columns:2; column-gap:var(--sp-8);}
+.toc li{margin-bottom:var(--sp-2); font-size:.98rem;}
+.toc a{color:var(--ink-soft); font-weight:700;}
+.toc a:hover{color:var(--link);}
+@media(max-width:640px){.toc ol{columns:1;}}
+
+/* ══ Cards ══ */
+.card{background:var(--surface); border:var(--px) solid var(--outline); border-radius:var(--r-lg);
+  padding:var(--sp-6); margin:var(--sp-5) 0; box-shadow:var(--shadow-sm); transition:transform .12s steps(2), box-shadow .12s steps(2);}
+.card:hover{transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(86,98,138,.25);}
+.card--riso{box-shadow:var(--shadow-riso);}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4);}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+body .stage{border:var(--px) solid var(--outline); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);}
+
+/* ══ Analogy → RPG dialog window ══ */
+.analogy{
+  position:relative; color:var(--ink-soft); font-size:1.02rem; margin:var(--sp-8) 0; padding:var(--sp-5) var(--sp-6) var(--sp-6);
+  background:linear-gradient(180deg,#e4ebfb 0%,#d8e2f8 100%);
+  border:3px solid #fff; border-radius:var(--r-lg);
+  box-shadow:0 0 0 3px var(--outline), 7px 7px 0 3px rgba(86,98,138,.28);
+}
+.analogy strong{color:var(--plum-deep);} .analogy em{color:var(--ink);} .analogy a{color:var(--link);}
+.analogy code.inline, .analogy code{background:#fff; color:var(--ink); border-color:var(--line-strong);}
+.analogy::after{content:"▼"; position:absolute; right:12px; bottom:4px; font-size:.75rem; color:var(--plum-deep); animation:dlg-next 1s steps(2) infinite;}
+@keyframes dlg-next{50%{transform:translateY(3px);}}
+.analogy .emoji{font-size:1.4rem; margin-right:6px;}
+
+/* ══ Flag → "!" note block ══ */
+.flag{position:relative; background:#fdf7e1; border:var(--px) solid var(--outline); border-left-width:10px; border-left-color:var(--ochre);
+  border-radius:var(--r-md); padding:var(--sp-4) var(--sp-5) var(--sp-4) var(--sp-6); margin:var(--sp-8) 0 var(--sp-5); font-size:.97rem; box-shadow:var(--shadow-sm);}
+.flag::before{content:"!"; position:absolute; top:-14px; left:-14px; width:26px; height:26px; display:grid; place-items:center;
+  font-family:var(--font-pixel); font-size:.62rem; color:var(--ink); background:var(--gold); border:3px solid var(--outline); border-radius:4px;
+  animation:block-bob 2.6s steps(3) infinite;}
+
+/* ══ Pitfall row ══ */
+.pitfall{display:flex; gap:var(--sp-4); background:var(--surface); border:var(--px) solid var(--outline); border-left-width:10px; border-left-color:var(--vermil);
+  border-radius:var(--r-md); padding:var(--sp-4) var(--sp-5); margin:var(--sp-4) 0; box-shadow:var(--shadow-sm); transition:transform .12s steps(2);}
+.pitfall:hover{transform:translateX(3px);}
+.pitfall .icon{font-size:1.45rem; flex:none; transition:transform .2s steps(3);}
+.pitfall:hover .icon{transform:translateY(-4px) rotate(-8deg);}
+
+/* ══ Recipe ══ */
+.recipe{background:var(--surface); border:var(--px) solid var(--outline); border-radius:var(--r-lg);
+  padding:var(--sp-5) var(--sp-6); margin:var(--sp-4) 0; box-shadow:var(--shadow-sm);}
+.recipe .rtag{display:inline-block; font-family:var(--font-pixel); font-size:.55rem; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--ink); background:var(--gold); border:2px solid var(--outline); padding:5px 9px; border-radius:3px; margin-bottom:var(--sp-3);}
+.flow{font-family:var(--font-mono); font-size:.82rem; color:#eef1ff; background:#353d5e; border:var(--px) solid var(--outline);
+  border-radius:var(--r-md); padding:var(--sp-3) var(--sp-4); margin-top:var(--sp-2); overflow-x:auto; white-space:pre-wrap; line-height:1.6;}
+
+/* ══ Tangent → save point ══ */
+.tangent-block{position:relative; background:linear-gradient(180deg,#f3eeff,#e8e0ff); border:var(--px) solid var(--outline);
+  border-radius:var(--r-lg); padding:var(--sp-6) var(--sp-6) var(--sp-5); margin:var(--sp-10) 0; font-size:.98rem; box-shadow:var(--shadow-sm);}
+.tangent-eyebrow{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-pixel); font-size:.55rem; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--ink); background:#e3dbf6; border:2px solid var(--outline); padding:5px 9px; border-radius:3px; margin-bottom:var(--sp-3);}
+.tangent-eyebrow::before{content:""; width:12px; height:12px; background:var(--spr-star) center/contain no-repeat; image-rendering:pixelated;
+  animation:spin-y 1.6s steps(4) infinite;}
+.tangent-block h4{margin-top:0;}
+@keyframes spin-y{0%{transform:scaleX(1);} 25%{transform:scaleX(.45);} 50%{transform:scaleX(-1);} 75%{transform:scaleX(-.45);} 100%{transform:scaleX(1);}}
+
+/* ══ Tables ══ */
+table{width:100%; border-collapse:separate; border-spacing:0; margin:var(--sp-5) 0; font-family:var(--font-ui); font-size:.92rem;
+  background:var(--surface); border:var(--px) solid var(--outline); border-radius:var(--r-md); overflow:hidden; box-shadow:var(--shadow-sm);}
+th,td{padding:var(--sp-3) var(--sp-4); text-align:left; border-bottom:2px solid var(--line);}
+th{background:#e6ddf8; color:var(--ink); font-family:var(--font-display); font-size:.9rem; font-weight:600; letter-spacing:.02em; border-bottom:var(--px) solid var(--outline);}
+tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even) td, tr:nth-child(even) td{background:#f7fbfe;}
+td:first-child{color:var(--ink); font-weight:700;}
+.good{color:var(--good); font-weight:800;} .mid{color:var(--warn); font-weight:800;} .bad{color:var(--bad); font-weight:800;}
+
+/* ══ Code ══ */
+pre{background:#353d5e; color:#eef1ff; border:var(--px) solid var(--outline); border-radius:var(--r-lg);
+  padding:var(--sp-5) var(--sp-6); font-family:var(--font-mono); font-size:.83rem; line-height:1.65;
+  overflow-x:auto; margin:var(--sp-4) 0; box-shadow:inset 0 0 0 2px #48517a, var(--shadow-sm);}
+pre .c-comment{color:#8b96d0; font-style:italic;} pre .c-str{color:#9df58f;} pre .c-kw{color:#ff8be0;}
+pre .c-fn{color:#7fd4ff;} pre .c-num{color:#ffd23f;}
+
+/* ══ Tags / pills / badges ══ */
+.tag,.badge,.pill{display:inline-block; font-family:var(--font-ui); font-size:.68rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+  padding:3px 9px; border-radius:3px; background:var(--surface); border:2px solid var(--outline); color:var(--ink);}
+
+/* ══ Tooltip ══ */
+.tooltip{position:relative; display:inline; cursor:help; border-bottom:2px dashed var(--link); color:var(--ink);}
+.tooltip::after{content:attr(data-tip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(4px);
+  background:var(--ink); color:#fff; font-family:var(--font-ui); font-size:.78rem; font-weight:600; line-height:1.4; padding:var(--sp-2) var(--sp-3);
+  border:2px solid #fff; border-radius:4px; box-shadow:3px 3px 0 rgba(86,98,138,.3); width:max-content; max-width:250px; text-align:center;
+  opacity:0; pointer-events:none; transition:opacity .12s steps(2), transform .12s steps(2); z-index:50;}
+.tooltip:hover::after{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* ══ Buttons (lessons) → face buttons with press ══ */
+body .btn{border:3px solid var(--outline) !important; border-radius:6px; font-family:var(--font-display); font-weight:600; letter-spacing:.02em;
+  box-shadow:0 4px 0 var(--outline); transition:transform .06s steps(1), box-shadow .06s steps(1); position:relative; top:0;}
+body .btn:hover{filter:brightness(1.08);}
+body .btn:active{transform:translateY(4px); box-shadow:0 0 0 var(--outline);}
+
+/* ══ Diagram figure ══ */
+.diagram-figure{margin:var(--sp-8) 0; background:var(--surface); border:var(--px) solid var(--outline); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--shadow-sm);}
+.diagram-figure figcaption{font-family:var(--font-ui); font-size:.8rem; color:var(--ink-mute); text-align:center;
+  padding:var(--sp-3) var(--sp-5) var(--sp-4); border-top:2px solid var(--line); background:var(--paper);}
+
+/* ══ Sources ══ */
+.src{font-size:.95rem; margin:var(--sp-2) 0;}
+
+/* ══ Footer with spinning coin ══ */
+footer{display:flex; align-items:center; justify-content:center; gap:12px; text-align:center; color:var(--ink-mute);
+  font-family:var(--font-pixel); font-size:.55rem; letter-spacing:.04em; line-height:1.8; text-transform:uppercase;
+  margin-top:var(--sp-16); padding-top:var(--sp-6); background:repeating-linear-gradient(90deg,var(--line-strong) 0 10px,transparent 10px 16px) top/100% 3px no-repeat;}
+footer::before{content:""; flex:none; width:24px; height:27px; background:var(--spr-coin) center/contain no-repeat; image-rendering:pixelated;
+  animation:spin-y 1.2s steps(4) infinite;}
+
+/* ══ Scrollbar ══ */
+*{scrollbar-width:thin; scrollbar-color:var(--line-strong) transparent;}
+
+/* ══ Reduced motion ══ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important;}
+}

@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Keyframe Animations — Lesson 03</title>
+  <style>
+/* ─── Reset & Variables ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f4f8fd;
+  --surface:   #ffffff;
+  --surface2:  #353d5e;
+  --surface3:  #f3f6fc;
+  --border:    #c3d3e6;
+  --text:      #2a3150;
+  --dim:       #525c83;
+  --faint:     #a9c1da;
+  --accent:    #6a55a3;
+  --accent-dim:rgba(124,110,255,.15);
+  --cyan:      #2f7fa8;
+  --green:     #3a7a52;
+  --yellow:    #b8902e;
+  --orange:    #b8692e;
+  --red:       #b35c5c;
+  --radius:    8px;
+  --mono:      'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+}
+
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px 0;
+}
+.header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.lesson-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid rgba(124,110,255,.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+h1 { font-size: 1.1rem; font-weight: 700; }
+.subtitle { font-size: .78rem; color: var(--dim); font-family: var(--mono); }
+
+/* ─── Tabs ───────────────────────────────────────────────── */
+.tab-nav { display: flex; gap: 2px; }
+.tab {
+  background: none;
+  border: none;
+  color: var(--dim);
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.app-main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.tab-intro { font-size: .88rem; color: var(--dim); margin-bottom: 20px; }
+
+/* ─── Controls panel (shared) ────────────────────────────── */
+.controls-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: start;
+}
+.ctrl-section { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.ctrl-section:last-child { border-bottom: none; padding-bottom: 0; }
+.ctrl-section:first-child { padding-top: 0; }
+.ctrl-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--dim);
+  display: block;
+  margin-bottom: 8px;
+}
+.ctrl-row-lbl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.ctrl-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--cyan);
+}
+
+input[type=range] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 4px;
+}
+
+select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: .82rem;
+  padding: 6px 8px;
+  cursor: pointer;
+  outline: none;
+}
+select:focus { border-color: var(--accent); }
+
+/* Segmented control */
+.seg-ctrl {
+  display: flex;
+  gap: 3px;
+}
+.seg-ctrl-wrap { flex-wrap: wrap; }
+.seg-ctrl-v { flex-direction: column; gap: 3px; }
+.seg {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--dim);
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 5px 4px;
+  cursor: pointer;
+  transition: all .12s;
+  text-align: center;
+  white-space: nowrap;
+}
+.seg-ctrl-v .seg { flex: none; text-align: left; padding: 6px 10px; }
+.seg:hover { color: var(--text); border-color: var(--faint); }
+.seg.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Buttons */
+.btn-play-state {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 8px;
+  cursor: pointer;
+  transition: all .12s;
+}
+.btn-play-state:hover { border-color: var(--accent); color: var(--accent); }
+.btn-play-state.paused {
+  background: rgba(74,222,128,.1);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.btn-replay {
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 700;
+  padding: 9px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity .12s;
+}
+.btn-replay:hover { opacity: .85; }
+
+/* ─── Code blocks ─────────────────────────────────────────── */
+.code-block {
+  background: #eaf2fb;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.code-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.code-hd-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all .12s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+.code-body {
+  font-family: var(--mono);
+  font-size: .75rem;
+  line-height: 1.8;
+  color: var(--cyan);
+  padding: 14px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* Syntax highlight tokens (set via innerHTML) */
+.tok-kw  { color: var(--accent); }
+.tok-val { color: var(--green); }
+.tok-sel { color: var(--cyan); }
+.tok-cmt { color: var(--faint); font-style: italic; }
+.tok-num { color: var(--yellow); }
+
+/* ─── TAB 1: LAB ─────────────────────────────────────────── */
+.lab-layout {
+  display: flex;
+  gap: 20px;
+  align-items: start;
+}
+.lab-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Preset grid */
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.preset-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--dim);
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 7px 6px;
+  cursor: pointer;
+  transition: all .12s;
+  text-align: center;
+}
+.preset-btn:hover { color: var(--text); border-color: var(--faint); }
+.preset-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Stage */
+.lab-stage {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+/* Subtle grid background */
+.lab-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: .4;
+}
+
+.lab-element {
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #6a55a3, #2f7fa8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 32px rgba(124,110,255,.35), 0 2px 8px rgba(0,0,0,.4);
+}
+.lab-el-icon {
+  font-size: 28px;
+  color: rgba(255,255,255,.9);
+  text-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+/* Timeline bar */
+.lab-tl {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+.tl-delay-seg {
+  background: var(--faint);
+  transition: width .2s;
+}
+.tl-anim-seg {
+  background: var(--accent);
+  flex: 1;
+  transition: all .2s;
+}
+.tl-delay-seg.is-negative {
+  background: rgba(251,146,60,.4);
+}
+.tl-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--faint);
+  padding: 0 2px;
+}
+
+/* ─── TAB 2: PATTERN GALLERY ──────────────────────────────── */
+.patterns-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.pat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s, transform .15s;
+}
+.pat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.pat-card.active { border-color: var(--accent); background: var(--surface3); }
+
+.pat-preview {
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.pat-el {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+}
+
+/* Pattern-specific elements */
+.pat-el-circle { border-radius: 50%; }
+.pat-el-pill { width: 72px; height: 28px; border-radius: 14px; }
+.pat-el-text {
+  width: auto; height: auto; background: none;
+  font-family: var(--mono); font-size: 13px; font-weight: 700;
+  color: var(--accent); white-space: nowrap; border-radius: 0;
+  overflow: hidden; border-right: 2px solid var(--accent);
+}
+.pat-el-ping-wrap {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.pat-el-ping {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--green); position: relative; z-index: 1;
+  width: 48px; height: 48px; background: none; border-radius: 0;
+}
+.pat-el-ping::before, .pat-el-ping::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--green);
+  animation: pat-ping 1.8s ease-out infinite;
+}
+.pat-el-ping::after { animation-delay: .9s; }
+.pat-el-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--green); position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  z-index: 2;
+}
+
+.pat-info { padding: 10px 12px; }
+.pat-name { font-size: .82rem; font-weight: 700; margin-bottom: 3px; }
+.pat-use  {
+  font-size: .72rem; color: var(--dim);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 3px; padding: 1px 5px; display: inline-block;
+}
+
+/* Pattern drawer */
+.pat-drawer {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  margin-top: 12px;
+  overflow: hidden;
+}
+.pat-drawer.open { display: block; }
+.drawer-hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--surface3);
+  border-bottom: 1px solid var(--border);
+}
+.drawer-hd-left { display: flex; align-items: center; gap: 10px; }
+.drawer-hd-right { display: flex; align-items: center; gap: 8px; }
+.drawer-name { font-size: .88rem; font-weight: 700; }
+.drawer-tag {
+  font-size: .72rem; color: var(--cyan);
+  background: rgba(56,189,248,.1); border: 1px solid rgba(56,189,248,.25);
+  border-radius: 3px; padding: 1px 6px;
+}
+.drawer-close {
+  background: none; border: none; color: var(--dim);
+  font-size: 14px; cursor: pointer; padding: 2px 6px;
+  border-radius: 4px; transition: color .12s;
+}
+.drawer-close:hover { color: var(--text); }
+
+/* ─── TAB 3: STAGGER ──────────────────────────────────────── */
+.stagger-layout {
+  display: flex;
+  gap: 20px;
+  align-items: start;
+}
+.stagger-right {
+  flex: 1;
+  min-width: 0;
+}
+.stagger-stage {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 12px 12px 0;
+  overflow: hidden;
+}
+.sg-bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  min-width: 0;
+  transform-origin: bottom center;
+}
+
+/* ─── TAB 4: SCROLL ───────────────────────────────────────── */
+.scroll-layout {
+  display: flex;
+  gap: 24px;
+  align-items: start;
+}
+.scroll-info {
+  flex: 1;
+  min-width: 0;
+}
+.scroll-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.scroll-desc {
+  font-size: .88rem;
+  color: var(--dim);
+  margin-bottom: 16px;
+  line-height: 1.65;
+}
+.scroll-ex-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.scroll-ex-tab {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--dim);
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all .12s;
+}
+.scroll-ex-tab.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.support-note {
+  margin-top: 12px;
+  font-size: .8rem;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.support-note a { color: var(--cyan); text-decoration: none; }
+.support-note a:hover { text-decoration: underline; }
+.support-badge {
+  font-size: .7rem; font-weight: 700; letter-spacing: .05em;
+  background: rgba(74,222,128,.1); border: 1px solid var(--green);
+  color: var(--green); border-radius: 4px; padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* Scroll demo */
+.scroll-demo-col { width: 340px; flex-shrink: 0; }
+.scroll-hint { font-size: .8rem; color: var(--faint); margin-bottom: 8px; text-align: center; }
+.scroll-viewport {
+  height: 420px;
+  overflow-y: scroll;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  position: relative;
+  scroll-timeline-name: --sdemo;
+}
+.sdemo-progress {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+  z-index: 10;
+  animation: sdemo-bar linear both;
+  animation-timeline: scroll(self block);
+}
+@keyframes sdemo-bar {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.sdemo-hero {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .88rem;
+  color: var(--faint);
+  letter-spacing: .08em;
+}
+.sdemo-section {
+  padding: 24px 20px;
+}
+.sdemo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: sdemo-reveal linear both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 70%;
+}
+@keyframes sdemo-reveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.sdemo-icon { font-size: 20px; color: var(--accent); margin-bottom: 8px; }
+.sdemo-card h4 { font-size: .85rem; font-weight: 700; margin-bottom: 6px; color: var(--cyan); }
+.sdemo-card p  { font-size: .8rem; color: var(--dim); line-height: 1.6; }
+.sdemo-spacer  { height: 80px; }
+
+/* Multi-demo switching */
+.sdemo-panel { display: none; }
+.sdemo-panel.active { display: block; }
+
+/* Plain info card (no animation) */
+.sdemo-plain-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: .82rem;
+  color: var(--dim);
+  line-height: 1.65;
+}
+.sdemo-plain-card code {
+  font-family: var(--mono);
+  font-size: .78rem;
+  color: var(--cyan);
+  background: rgba(56,189,248,.08);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+/* Parallax scene */
+.sdemo-parallax-scene {
+  height: 460px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #eaf2fb 0%, #ece6f8 100%);
+  border-radius: 0;
+}
+.sdemo-parallax-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  font-family: var(--mono);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  animation: sdemo-parallax linear both;
+  animation-timeline: scroll(nearest block);
+}
+.sdemo-parallax-layer span {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  opacity: .7;
+}
+.sdemo-pl-far {
+  font-size: .65rem;
+  color: var(--green);
+  animation-name: sdemo-par-far;
+}
+.sdemo-pl-far span { background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.2); }
+.sdemo-pl-mid {
+  font-size: .85rem;
+  color: var(--cyan);
+  animation-name: sdemo-par-mid;
+}
+.sdemo-pl-mid span { background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.2); }
+.sdemo-pl-close {
+  font-size: 1.3rem;
+  color: var(--accent);
+  animation-name: sdemo-par-close;
+}
+.sdemo-pl-close span { background: rgba(124,110,255,.1); border: 1px solid rgba(124,110,255,.25); }
+.sdemo-parallax-fg {
+  position: absolute;
+  bottom: 16px;
+  inset-inline: 0;
+  text-align: center;
+  font-size: .78rem;
+  color: rgba(255,255,255,.35);
+  pointer-events: none;
+}
+@keyframes sdemo-par-far   { from { transform: translateY(0); }   to { transform: translateY(-20%); } }
+@keyframes sdemo-par-mid   { from { transform: translateY(0); }   to { transform: translateY(-50%); } }
+@keyframes sdemo-par-close { from { transform: translateY(10%); } to { transform: translateY(-90%); } }
+
+/* ─── Pattern preview animations ─────────────────────────── */
+/* applied to .pat-el via JS-injected class / direct animation property */
+@keyframes pat-fade-up    { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+@keyframes pat-bounce     { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-28px)} 60%{transform:translateY(-14px)} 80%{transform:translateY(-6px)} }
+@keyframes pat-pulse      { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(124,110,255,0)} 50%{transform:scale(1.14);box-shadow:0 0 0 14px rgba(124,110,255,.18)} }
+@keyframes pat-slide-in   { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:translateX(0)} }
+@keyframes pat-shake      { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-10px)rotate(-3deg)} 30%{transform:translateX(10px)rotate(3deg)} 45%{transform:translateX(-7px)} 60%{transform:translateX(7px)} 75%{transform:translateX(-4px)} 90%{transform:translateX(4px)} }
+@keyframes pat-float      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+@keyframes pat-ping       { 0%{transform:translate(-50%,-50%)scale(0);opacity:.8} 100%{transform:translate(-50%,-50%)scale(3.5);opacity:0} }
+@keyframes pat-flip       { 0%{transform:perspective(400px)rotateY(0deg)} 50%{transform:perspective(400px)rotateY(90deg)} 51%{transform:perspective(400px)rotateY(-90deg)} 100%{transform:perspective(400px)rotateY(0deg)} }
+@keyframes pat-typewriter { from{width:0} to{width:100%} }
+@keyframes pat-cursor-blink { 0%,100%{border-color:var(--accent)} 50%{border-color:transparent} }
+
+/* ─── Stagger keyframes ───────────────────────────────────── */
+@keyframes sg-slide-up   { from{opacity:0;transform:translateY(100%)} to{opacity:1;transform:translateY(0)} }
+@keyframes sg-fade-scale { from{opacity:0;transform:scaleY(0)} to{opacity:1;transform:scaleY(1)} }
+@keyframes sg-bounce-in  { 0%{opacity:0;transform:translateY(100%)} 60%{transform:translateY(-12%)} 80%{transform:translateY(6%)} 100%{opacity:1;transform:translateY(0)} }
+@keyframes sg-flip-in    { from{opacity:0;transform:rotateX(90deg);transform-origin:bottom} to{opacity:1;transform:rotateX(0);transform-origin:bottom} }
+
+/* ─── Lab keyframes ───────────────────────────────────────── */
+@keyframes l-slide-up  { from{opacity:0;transform:translateY(56px)}    to{opacity:1;transform:translateY(0)} }
+@keyframes l-bounce    { 0%,100%{transform:translateY(0)} 28%{transform:translateY(-60px)} 58%{transform:translateY(-28px)} 78%{transform:translateY(-10px)} }
+@keyframes l-pulse     { 0%,100%{transform:scale(1);box-shadow:0 8px 32px rgba(124,110,255,.35)} 50%{transform:scale(1.2);box-shadow:0 8px 48px rgba(124,110,255,.7),0 0 0 20px rgba(124,110,255,.12)} }
+@keyframes l-spin      { from{transform:rotate(0deg)}  to{transform:rotate(360deg)} }
+@keyframes l-shake     { 0%,100%{transform:translateX(0)rotate(0deg)} 15%{transform:translateX(-14px)rotate(-4deg)} 30%{transform:translateX(14px)rotate(4deg)} 45%{transform:translateX(-10px)rotate(-2deg)} 60%{transform:translateX(10px)rotate(2deg)} 75%{transform:translateX(-6px)rotate(-1deg)} 90%{transform:translateX(6px)rotate(1deg)} }
+@keyframes l-float     { 0%,100%{transform:translateY(0)rotate(0deg)}  50%{transform:translateY(-24px)rotate(8deg)} }
+@keyframes l-flip      { 0%{transform:perspective(500px)rotateY(0)} 50%{transform:perspective(500px)rotateY(90deg)} 51%{transform:perspective(500px)rotateY(-90deg)} 100%{transform:perspective(500px)rotateY(0)} }
+@keyframes l-fade-in   { from{opacity:0;transform:scale(.7)}            to{opacity:1;transform:scale(1)} }
+
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-top">
+        <span class="lesson-badge">Lesson 03</span>
+        <h1>CSS Keyframe Animations</h1>
+        <p class="subtitle">animation-name · duration · delay · timing · fill · direction · iteration · play-state</p>
+      </div>
+      <nav class="tab-nav">
+        <button class="tab active" data-tab="lab">⚗ Lab</button>
+        <button class="tab" data-tab="patterns">◈ Patterns</button>
+        <button class="tab" data-tab="stagger">⁘ Stagger</button>
+        <button class="tab" data-tab="scroll">↕ Scroll-Driven</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- TAB 1: ANIMATION LAB -->
+    <div class="tab-pane active" id="tab-lab">
+      <div class="lab-layout">
+        <aside class="controls-panel">
+
+          <div class="ctrl-section">
+            <div class="ctrl-label">Preset</div>
+            <div class="preset-grid" id="preset-grid"></div>
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-row-lbl">
+              <span class="ctrl-label">Duration</span>
+              <span class="ctrl-val" id="val-duration">1s</span>
+            </div>
+            <input type="range" id="ctrl-duration" min="100" max="4000" step="100" value="1000">
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-row-lbl">
+              <span class="ctrl-label">Delay</span>
+              <span class="ctrl-val" id="val-delay">0s</span>
+            </div>
+            <input type="range" id="ctrl-delay" min="-2000" max="3000" step="100" value="0">
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-label">Iterations</div>
+            <div class="seg-ctrl" id="ctrl-iter">
+              <button class="seg active" data-val="1">1×</button>
+              <button class="seg" data-val="2">2×</button>
+              <button class="seg" data-val="3">3×</button>
+              <button class="seg" data-val="infinite">∞</button>
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-label">Direction</div>
+            <div class="seg-ctrl seg-ctrl-wrap" id="ctrl-dir">
+              <button class="seg active" data-val="normal">normal</button>
+              <button class="seg" data-val="reverse">reverse</button>
+              <button class="seg" data-val="alternate">alternate</button>
+              <button class="seg" data-val="alternate-reverse">alt-reverse</button>
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-label">Fill mode</div>
+            <div class="seg-ctrl" id="ctrl-fill">
+              <button class="seg active" data-val="none">none</button>
+              <button class="seg" data-val="forwards">fwd</button>
+              <button class="seg" data-val="backwards">back</button>
+              <button class="seg" data-val="both">both</button>
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-label">Easing</div>
+            <select id="ctrl-easing">
+              <option value="ease">ease</option>
+              <option value="linear">linear</option>
+              <option value="ease-in">ease-in</option>
+              <option value="ease-out">ease-out</option>
+              <option value="ease-in-out">ease-in-out</option>
+              <option value="cubic-bezier(0.34,1.56,0.64,1)">spring (overshoot)</option>
+              <option value="cubic-bezier(0.22,1,0.36,1)">expo out</option>
+              <option value="cubic-bezier(0.68,-0.55,0.27,1.55)">back in-out</option>
+              <option value="steps(6)">steps(6)</option>
+              <option value="steps(12)">steps(12)</option>
+            </select>
+          </div>
+
+          <div class="ctrl-section">
+            <button class="btn-play-state" id="btn-play">⏸ Pause</button>
+          </div>
+
+        </aside>
+
+        <div class="lab-right">
+          <div class="lab-stage">
+            <div class="lab-element" id="lab-el">
+              <span class="lab-el-icon">◆</span>
+            </div>
+          </div>
+
+          <div class="lab-tl" id="lab-tl">
+            <div class="tl-delay-seg" id="tl-delay"></div>
+            <div class="tl-anim-seg"  id="tl-anim"></div>
+          </div>
+          <div class="tl-labels">
+            <span id="tl-lbl-l"></span>
+            <span id="tl-lbl-r"></span>
+          </div>
+
+          <div class="code-block">
+            <div class="code-hd">
+              <span class="code-hd-title">Generated CSS</span>
+              <button class="copy-btn" id="copy-lab">Copy</button>
+            </div>
+            <pre class="code-body" id="lab-css"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PATTERN GALLERY -->
+    <div class="tab-pane" id="tab-patterns">
+      <p class="tab-intro">Eight animation patterns covering the most common UI use cases. Click any to see the CSS.</p>
+      <div class="patterns-grid" id="patterns-grid"></div>
+      <div class="pat-drawer" id="pat-drawer">
+        <div class="drawer-hd">
+          <div class="drawer-hd-left">
+            <span class="drawer-name" id="drawer-name"></span>
+            <span class="drawer-tag"  id="drawer-tag"></span>
+          </div>
+          <div class="drawer-hd-right">
+            <button class="copy-btn" id="drawer-copy">Copy CSS</button>
+            <button class="drawer-close" id="drawer-close">✕</button>
+          </div>
+        </div>
+        <pre class="code-body" id="drawer-code"></pre>
+      </div>
+    </div>
+
+    <!-- TAB 3: STAGGER STUDIO -->
+    <div class="tab-pane" id="tab-stagger">
+      <div class="stagger-layout">
+        <aside class="controls-panel">
+
+          <div class="ctrl-section">
+            <div class="ctrl-row-lbl">
+              <span class="ctrl-label">Elements</span>
+              <span class="ctrl-val" id="val-sg-count">12</span>
+            </div>
+            <input type="range" id="ctrl-sg-count" min="4" max="24" value="12">
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-row-lbl">
+              <span class="ctrl-label">Stagger delay</span>
+              <span class="ctrl-val" id="val-sg-delay">60ms</span>
+            </div>
+            <input type="range" id="ctrl-sg-delay" min="0" max="300" step="10" value="60">
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-row-lbl">
+              <span class="ctrl-label">Duration</span>
+              <span class="ctrl-val" id="val-sg-dur">600ms</span>
+            </div>
+            <input type="range" id="ctrl-sg-dur" min="200" max="2000" step="100" value="600">
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-label">Animation</div>
+            <div class="seg-ctrl seg-ctrl-v" id="ctrl-sg-anim">
+              <button class="seg active" data-val="sg-slide-up">slide up</button>
+              <button class="seg" data-val="sg-fade-scale">fade + scale</button>
+              <button class="seg" data-val="sg-bounce-in">bounce in</button>
+              <button class="seg" data-val="sg-flip-in">flip in</button>
+            </div>
+          </div>
+
+          <div class="ctrl-section">
+            <div class="ctrl-label">Order</div>
+            <div class="seg-ctrl seg-ctrl-v" id="ctrl-sg-order">
+              <button class="seg active" data-val="forward">→ forward</button>
+              <button class="seg" data-val="reverse">← reverse</button>
+              <button class="seg" data-val="center">center out</button>
+              <button class="seg" data-val="edges">edges in</button>
+            </div>
+          </div>
+
+          <button class="btn-replay" id="btn-sg-replay">↺ Replay</button>
+
+        </aside>
+
+        <div class="stagger-right">
+          <div class="stagger-stage" id="stagger-stage"></div>
+          <div class="code-block" style="margin-top:14px">
+            <div class="code-hd">
+              <span class="code-hd-title">The CSS pattern</span>
+              <button class="copy-btn" id="copy-sg">Copy</button>
+            </div>
+            <pre class="code-body" id="sg-css"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SCROLL-DRIVEN -->
+    <div class="tab-pane" id="tab-scroll">
+      <div class="scroll-layout">
+
+        <div class="scroll-info">
+          <h3 class="scroll-heading">CSS Scroll-Driven Animations</h3>
+          <p class="scroll-desc">Scroll position directly controls animation progress — no JavaScript, no scroll events. Runs on the compositor thread.</p>
+
+          <div class="scroll-ex-tabs" id="scroll-ex-tabs">
+            <button class="scroll-ex-tab active" data-ex="progress">Progress bar</button>
+            <button class="scroll-ex-tab" data-ex="reveal">Reveal on scroll</button>
+            <button class="scroll-ex-tab" data-ex="parallax">Parallax</button>
+          </div>
+
+          <div class="code-block">
+            <div class="code-hd">
+              <span class="code-hd-title" id="scroll-code-title">Progress bar</span>
+              <button class="copy-btn" id="copy-scroll">Copy</button>
+            </div>
+            <pre class="code-body" id="scroll-css"></pre>
+          </div>
+
+          <p class="support-note">
+            <span class="support-badge">Chrome 115+</span>
+            Supported in all modern browsers. See <a href="https://caniuse.com/css-scroll-driven-animations" target="_blank">caniuse</a>.
+          </p>
+        </div>
+
+        <div class="scroll-demo-col">
+          <div class="scroll-hint">↓ Scroll inside the box</div>
+
+          <!-- Demo 1: Progress bar -->
+          <div class="scroll-viewport sdemo-panel active" id="sdemo-progress-demo">
+            <div class="sdemo-progress"></div>
+            <div class="sdemo-hero"><span>↓ Scroll to fill the bar</span></div>
+            <div class="sdemo-section"><div class="sdemo-plain-card">
+              <p>The bar above is a sticky element with <code>transform: scaleX()</code> driven by <code>scroll(self block)</code>. As you scroll this container, its width grows from 0 → 100%.</p>
+            </div></div>
+            <div class="sdemo-section"><div class="sdemo-plain-card">
+              <p><code>transform-origin: left</code> is the key — without it the bar would scale from its centre.</p>
+            </div></div>
+            <div class="sdemo-section"><div class="sdemo-plain-card">
+              <p>Zero JavaScript. The compositor thread handles it entirely — no scroll event listeners.</p>
+            </div></div>
+            <div class="sdemo-spacer"></div>
+          </div>
+
+          <!-- Demo 2: Reveal on scroll -->
+          <div class="scroll-viewport sdemo-panel" id="sdemo-reveal-demo">
+            <div class="sdemo-hero"><span>↓ Scroll to reveal</span></div>
+            <div class="sdemo-section"><div class="sdemo-card">
+              <div class="sdemo-icon">◆</div>
+              <h4>animation-timeline: view()</h4>
+              <p>The element's intersection with the scroll container drives its animation progress.</p>
+            </div></div>
+            <div class="sdemo-section"><div class="sdemo-card">
+              <div class="sdemo-icon">◇</div>
+              <h4>animation-range: entry 10% entry 60%</h4>
+              <p>The animation runs from when the element is 10% visible to when it's 60% visible.</p>
+            </div></div>
+            <div class="sdemo-section"><div class="sdemo-card">
+              <div class="sdemo-icon">○</div>
+              <h4>No IntersectionObserver</h4>
+              <p>Previously required a JS observer + class toggle. Now it's four CSS lines.</p>
+            </div></div>
+            <div class="sdemo-section"><div class="sdemo-card">
+              <div class="sdemo-icon">△</div>
+              <h4>Works in reverse too</h4>
+              <p>Scroll back up — the card un-reveals. The animation is bidirectional by default.</p>
+            </div></div>
+            <div class="sdemo-spacer"></div>
+          </div>
+
+          <!-- Demo 3: Parallax -->
+          <div class="scroll-viewport sdemo-panel" id="sdemo-parallax-demo">
+            <div class="sdemo-parallax-scene">
+              <div class="sdemo-parallax-layer sdemo-pl-far">
+                <span>far</span><span>far</span><span>far</span>
+              </div>
+              <div class="sdemo-parallax-layer sdemo-pl-mid">
+                <span>mid</span><span>mid</span>
+              </div>
+              <div class="sdemo-parallax-layer sdemo-pl-close">
+                <span>close</span>
+              </div>
+              <div class="sdemo-parallax-fg">
+                <p>↓ Scroll — each layer moves at a different rate</p>
+              </div>
+            </div>
+            <div class="sdemo-section" style="margin-top:20px"><div class="sdemo-plain-card">
+              <p>Three layers, three <code>translateY</code> rates: <strong style="color:var(--green)">far (−20%)</strong>, <strong style="color:var(--cyan)">mid (−50%)</strong>, <strong style="color:var(--accent)">close (−90%)</strong>. All driven by <code>scroll(self block)</code> — no JS.</p>
+            </div></div>
+            <div class="sdemo-spacer"></div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <style id="lab-injected"></style>
+  <style id="sg-injected"></style>
+  <script>
+/* ============================================================
+   Lesson 03 — CSS Keyframe Animations — Interactive Lab
+   main.js
+   ============================================================ */
+
+'use strict';
+
+// ─── Tab switching ─────────────────────────────────────────
+const tabs    = document.querySelectorAll('.tab');
+const panes   = document.querySelectorAll('.tab-pane');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const id = tab.dataset.tab;
+    tabs.forEach(t => t.classList.remove('active'));
+    panes.forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+  });
+});
+
+// ─── Utility helpers ───────────────────────────────────────
+function segCtrl(containerSel, onChange) {
+  const el = document.querySelector(containerSel);
+  if (!el) return { get: () => null };
+  el.querySelectorAll('.seg').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.seg').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      onChange(btn.dataset.val);
+    });
+  });
+  return {
+    get: () => { const a = el.querySelector('.seg.active'); return a ? a.dataset.val : null; },
+    set: (val) => {
+      el.querySelectorAll('.seg').forEach(b => {
+        b.classList.toggle('active', b.dataset.val === val);
+      });
+    }
+  };
+}
+
+function copyBtn(btnEl, getText) {
+  btnEl.addEventListener('click', () => {
+    navigator.clipboard.writeText(getText()).then(() => {
+      btnEl.textContent = '✓ Copied';
+      btnEl.classList.add('copied');
+      setTimeout(() => { btnEl.textContent = 'Copy'; btnEl.classList.remove('copied'); }, 1500);
+    });
+  });
+}
+
+function hl(css) {
+  // Very light syntax highlight for CSS snippets
+  return css
+    .replace(/(\/\*.*?\*\/)/g, '<span class="tok-cmt">$1</span>')
+    .replace(/(animation|animation-name|animation-duration|animation-delay|animation-timing-function|animation-iteration-count|animation-direction|animation-fill-mode|animation-play-state|@keyframes|from|to|transform|opacity|will-change|animation-timeline|animation-range|scroll|view)\b/g,
+             '<span class="tok-kw">$1</span>')
+    .replace(/:\s*([^;{}\n]+)/g, (m, val) => ': <span class="tok-val">' + val + '</span>')
+    .replace(/(\d+(?:\.\d+)?(?:ms|s|px|%|deg|fr|em|rem))/g, '<span class="tok-num">$1</span>');
+}
+
+// ─────────────────────────────────────────────────────────────
+// TAB 1 — ANIMATION LAB
+// ─────────────────────────────────────────────────────────────
+const labEl  = document.getElementById('lab-el');
+const labCss = document.getElementById('lab-css');
+const labStyleTag = document.getElementById('lab-injected');
+
+const tlDelay = document.getElementById('tl-delay');
+const tlAnim  = document.getElementById('tl-anim');
+const tlLblL  = document.getElementById('tl-lbl-l');
+const tlLblR  = document.getElementById('tl-lbl-r');
+
+const ctrlDuration = document.getElementById('ctrl-duration');
+const valDuration  = document.getElementById('val-duration');
+const ctrlDelay    = document.getElementById('ctrl-delay');
+const valDelay     = document.getElementById('val-delay');
+const btnPlay      = document.getElementById('btn-play');
+
+// Lab state
+const lab = {
+  preset:    'bounce',
+  duration:  1200,
+  delay:     0,
+  iter:      'infinite',
+  dir:       'normal',
+  fill:      'none',
+  easing:    'ease',
+  playing:   true,
+};
+
+// Presets: [name, duration, delay, iter, dir, fill, easing, icon]
+const PRESETS = [
+  { id: 'bounce',   label: '↕ Bounce',   dur: 1000, delay: 0,    iter: 'infinite', dir: 'normal',    fill: 'none',     ease: 'ease',         icon: '🏀' },
+  { id: 'pulse',    label: '◎ Pulse',    dur: 1400, delay: 0,    iter: 'infinite', dir: 'normal',    fill: 'none',     ease: 'ease-in-out',  icon: '💫' },
+  { id: 'spin',     label: '↺ Spin',     dur: 900,  delay: 0,    iter: 'infinite', dir: 'normal',    fill: 'none',     ease: 'linear',       icon: '⚙️' },
+  { id: 'float',    label: '~ Float',    dur: 2400, delay: 0,    iter: 'infinite', dir: 'alternate',  fill: 'none',     ease: 'ease-in-out',  icon: '🌊' },
+  { id: 'shake',    label: '⚡ Shake',   dur: 600,  delay: 0,    iter: '1',        dir: 'normal',    fill: 'none',     ease: 'ease',         icon: '⚡' },
+  { id: 'flip',     label: '⟳ Flip',    dur: 1600, delay: 200,  iter: 'infinite', dir: 'normal',    fill: 'none',     ease: 'ease-in-out',  icon: '🎴' },
+  { id: 'slide-up', label: '↑ Slide-up', dur: 800,  delay: 400,  iter: '1',        dir: 'normal',    fill: 'forwards', ease: 'cubic-bezier(0.22,1,0.36,1)', icon: '📦' },
+  { id: 'fade-in',  label: '◌ Fade',    dur: 1000, delay: 600,  iter: '1',        dir: 'normal',    fill: 'both',     ease: 'ease-out',     icon: '✨' },
+];
+
+// Map preset id → keyframe name
+const PRESET_KF = {
+  'bounce':   'l-bounce',
+  'pulse':    'l-pulse',
+  'spin':     'l-spin',
+  'float':    'l-float',
+  'shake':    'l-shake',
+  'flip':     'l-flip',
+  'slide-up': 'l-slide-up',
+  'fade-in':  'l-fade-in',
+};
+
+// Build preset grid
+const presetGrid = document.getElementById('preset-grid');
+PRESETS.forEach(p => {
+  const btn = document.createElement('button');
+  btn.className = 'preset-btn';
+  btn.dataset.id = p.id;
+  btn.textContent = p.label;
+  btn.addEventListener('click', () => applyPreset(p));
+  presetGrid.appendChild(btn);
+});
+
+const iterCtrl = segCtrl('#ctrl-iter',  v => { lab.iter  = v; updateLabAnim(); });
+const dirCtrl  = segCtrl('#ctrl-dir',   v => { lab.dir   = v; updateLabAnim(); });
+const fillCtrl = segCtrl('#ctrl-fill',  v => { lab.fill  = v; updateLabAnim(); });
+const easeCtrl = document.getElementById('ctrl-easing');
+
+easeCtrl.addEventListener('change', () => { lab.easing = easeCtrl.value; updateLabAnim(); });
+
+ctrlDuration.addEventListener('input', () => {
+  lab.duration = +ctrlDuration.value;
+  valDuration.textContent = lab.duration + 'ms';
+  updateLabAnim();
+});
+ctrlDelay.addEventListener('input', () => {
+  lab.delay = +ctrlDelay.value;
+  valDelay.textContent = lab.delay + 'ms';
+  updateLabAnim();
+});
+
+btnPlay.addEventListener('click', () => {
+  lab.playing = !lab.playing;
+  const el = document.querySelector('.lab-element');
+  if (el) el.style.animationPlayState = lab.playing ? 'running' : 'paused';
+  btnPlay.textContent = lab.playing ? '⏸ Pause' : '▶ Resume';
+  btnPlay.classList.toggle('paused', lab.playing);
+});
+
+function applyPreset(p) {
+  lab.preset   = p.id;
+  lab.duration = p.dur;
+  lab.delay    = p.delay;
+  lab.iter     = p.iter;
+  lab.dir      = p.dir;
+  lab.fill     = p.fill;
+  lab.easing   = p.ease;
+  lab.playing  = true;
+
+  // Sync controls
+  ctrlDuration.value     = p.dur;
+  valDuration.textContent = p.dur + 'ms';
+  ctrlDelay.value        = p.delay;
+  valDelay.textContent   = p.delay + 'ms';
+  iterCtrl.set(p.iter);
+  dirCtrl.set(p.dir);
+  fillCtrl.set(p.fill);
+  easeCtrl.value = p.ease;
+
+  btnPlay.textContent = '⏸ Pause';
+  btnPlay.classList.add('paused');
+
+  // Update active preset button
+  presetGrid.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === p.id);
+  });
+
+  // Update icon
+  document.querySelector('.lab-el-icon').textContent = p.icon;
+
+  updateLabAnim();
+}
+
+
+// Copy button for lab
+const labCopyBtn = document.getElementById('copy-lab');
+if (labCopyBtn) copyBtn(labCopyBtn, () => {
+  const el = document.getElementById('lab-css');
+  return el ? el.textContent : '';
+});
+
+// Init with bounce preset
+applyPreset(PRESETS[0]);
+
+function updateLabAnim() {
+  const kf = PRESET_KF[lab.preset] || 'l-bounce';
+  const css = `${kf} ${lab.duration}ms ${lab.easing} ${lab.delay}ms ${lab.iter === '1' ? '1' : lab.iter} ${lab.dir} ${lab.fill}`;
+  const el = document.querySelector('.lab-element');
+  if (!el) return;
+
+  // Force reflow to restart animation
+  el.style.animation = 'none';
+  el.style.opacity;
+  el.style.animation = css;
+  el.style.animationPlayState = lab.playing ? 'running' : 'paused';
+
+  // Timeline
+  const total = Math.max(Math.abs(lab.delay) + lab.duration, 1);
+  const delayPct = Math.abs(lab.delay) / total * 100;
+  if (tlDelay) {
+    tlDelay.style.width = delayPct.toFixed(1) + '%';
+    tlDelay.classList.toggle('is-negative', lab.delay < 0);
+  }
+  if (tlLblL) tlLblL.textContent = lab.delay !== 0 ? `delay: ${lab.delay}ms` : '0';
+  if (tlLblR) tlLblR.textContent = `${lab.duration}ms`;
+
+  // Code block
+  const raw = `.element {
+  animation-name:            ${kf};
+  animation-duration:        ${lab.duration}ms;
+  animation-timing-function: ${lab.easing};
+  animation-delay:           ${lab.delay}ms;
+  animation-iteration-count: ${lab.iter === '1' ? '1' : lab.iter};
+  animation-direction:       ${lab.dir};
+  animation-fill-mode:       ${lab.fill};
+}`;
+  if (labCss) labCss.innerHTML = hl(raw);
+}
+
+
+// Call once at init
+setTimeout(updateLabAnim, 0);
+
+// ─────────────────────────────────────────────────────────────
+// TAB 2 — PATTERN GALLERY
+// ─────────────────────────────────────────────────────────────
+const PATTERNS = [
+  {
+    id: 'fade-up',
+    name: 'Fade Up',
+    tag: 'entrance',
+    elClass: '',
+    anim: 'pat-fade-up 1s ease-in-out infinite alternate',
+    repeat: 'pat-fade-up 0.6s ease both',
+    use: 'Page loads, list items',
+    desc: 'The workhorse entrance animation. Elements feel like they\'re emerging from below. Works because upward motion implies arrival.',
+    keyframes: `@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}`,
+    css: `.card {
+  animation: fade-up 0.6s ease both;
+}
+/* Stagger on siblings */
+.card:nth-child(2) { animation-delay: 80ms; }
+.card:nth-child(3) { animation-delay: 160ms; }`
+  },
+  {
+    id: 'bounce',
+    name: 'Bounce',
+    tag: 'attention',
+    elClass: 'pat-el-circle',
+    anim: 'pat-bounce 1.2s ease-in-out infinite',
+    use: 'Notifications, CTAs',
+    desc: 'Mimics physics: the element bounces like a real object. Multiple keyframe stops at 30%, 60%, 80% fake deceleration and elastic contact.',
+    keyframes: `@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  30%       { transform: translateY(-28px); }
+  60%       { transform: translateY(-14px); }
+  80%       { transform: translateY(-6px); }
+}`,
+    css: `.badge {
+  animation: bounce 1.2s ease-in-out infinite;
+  /* pause when user prefers */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}`
+  },
+  {
+    id: 'pulse',
+    name: 'Pulse',
+    tag: 'attention',
+    elClass: '',
+    anim: 'pat-pulse 2s ease-in-out infinite',
+    use: 'Live indicators, status',
+    desc: 'Scale + expanding box-shadow creates a heartbeat feel. Entirely on the compositor — no layout cost, safe at 60fps.',
+    keyframes: `@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(124,110,255,0);
+  }
+  50% {
+    transform: scale(1.14);
+    box-shadow: 0 0 0 14px rgba(124,110,255,.18);
+  }
+}`,
+    css: `.live-dot {
+  will-change: transform;
+  animation: pulse 2s ease-in-out infinite;
+}`
+  },
+  {
+    id: 'slide-in',
+    name: 'Slide In',
+    tag: 'entrance',
+    elClass: 'pat-el-pill',
+    anim: 'pat-slide-in 1s ease-in-out infinite alternate',
+    use: 'Toasts, drawers, panels',
+    desc: 'Spring-like easing (cubic-bezier with overshoot) makes the panel feel physical. The `both` fill-mode ensures it starts hidden.',
+    keyframes: `@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}`,
+    css: `.toast {
+  /* spring easing: starts fast, overshoots slightly */
+  animation: slide-in 0.5s
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+}`
+  },
+  {
+    id: 'shake',
+    name: 'Shake',
+    tag: 'feedback',
+    elClass: '',
+    anim: 'pat-shake 0.6s ease-in-out infinite',
+    use: 'Form errors, invalid input',
+    desc: 'Decaying oscillation (large displacement → small) mimics real physics. Run once (not infinite) so it stops after communicating the error.',
+    keyframes: `@keyframes shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  15%       { transform: translateX(-10px) rotate(-3deg); }
+  30%       { transform: translateX(10px) rotate(3deg); }
+  45%       { transform: translateX(-7px); }
+  60%       { transform: translateX(7px); }
+  75%       { transform: translateX(-4px); }
+  90%       { transform: translateX(4px); }
+}`,
+    css: `.input.error {
+  animation: shake 0.5s ease both;
+  border-color: var(--red);
+}
+/* Re-trigger: remove + re-add class in JS */`
+  },
+  {
+    id: 'float',
+    name: 'Float',
+    tag: 'ambient',
+    elClass: '',
+    anim: 'pat-float 3s ease-in-out infinite',
+    use: 'Hero elements, cards',
+    desc: '`animation-direction: alternate` runs the keyframe forward then backward — creates smooth infinite looping without a jarring jump at 100%.',
+    keyframes: `@keyframes float {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-14px); }
+}`,
+    css: `.hero-img {
+  /* alternate = ping-pong, no jump at loop end */
+  animation: float 3s ease-in-out infinite alternate;
+}`
+  },
+  {
+    id: 'ping',
+    name: 'Ping',
+    tag: 'attention',
+    elClass: 'pat-el-ping',
+    anim: '',
+    use: 'Online status, live dots',
+    desc: 'Two expanding rings using ::before and ::after, offset by half a cycle. The rings start from scale(0) and fade out at scale(3.5). Pure CSS, no JS.',
+    keyframes: `@keyframes ping {
+  0%   { transform: translate(-50%,-50%) scale(0);
+          opacity: .8; }
+  100% { transform: translate(-50%,-50%) scale(3.5);
+          opacity: 0; }
+}`,
+    css: `.dot { position: relative; }
+.dot::before, .dot::after {
+  content: '';
+  position: absolute;
+  inset: 0; border-radius: 50%;
+  background: currentColor;
+  animation: ping 1.8s ease-out infinite;
+}
+.dot::after { animation-delay: .9s; }`
+  },
+  {
+    id: 'flip',
+    name: '3D Flip',
+    tag: 'entrance',
+    elClass: '',
+    anim: 'pat-flip 2.2s ease-in-out infinite',
+    use: 'Cards, image reveals',
+    desc: 'At 50% the element is edge-on (rotateY 90°), so we jump to -90° without the viewer seeing the switch. This is how card-flip "front and back" works.',
+    keyframes: `@keyframes flip-reveal {
+  0%   { transform: perspective(400px) rotateY(0deg); }
+  50%  { transform: perspective(400px) rotateY(90deg); }
+  51%  { transform: perspective(400px) rotateY(-90deg); }
+  100% { transform: perspective(400px) rotateY(0deg); }
+}`,
+    css: `.card {
+  transform-style: preserve-3d;
+  animation: flip-reveal 0.6s ease-in-out both;
+}`
+  },
+];
+
+// Build pattern grid
+const patternsGrid = document.getElementById('patterns-grid');
+const patDrawer    = document.getElementById('pat-drawer');
+const drawerName   = document.getElementById('drawer-name');
+const drawerTag    = document.getElementById('drawer-tag');
+const drawerCopy   = document.getElementById('drawer-copy');
+const drawerClose  = document.getElementById('drawer-close');
+const drawerCode   = document.getElementById('drawer-code');
+
+let activePatCard = null;
+let activePatTimeout = null;
+
+PATTERNS.forEach(p => {
+  const card = document.createElement('div');
+  card.className = 'pat-card';
+  card.dataset.id = p.id;
+
+  // Preview element
+  let elInner = '';
+  if (p.id === 'ping') {
+    elInner = `<div class="pat-el pat-el-ping"><div class="pat-el-dot"></div></div>`;
+  } else {
+    elInner = `<div class="pat-el ${p.elClass || ''}"></div>`;
+  }
+
+  card.innerHTML = `
+    <div class="pat-preview">${elInner}</div>
+    <div class="pat-info">
+      <div class="pat-name">${p.name}</div>
+      <span class="pat-use">${p.use}</span>
+    </div>`;
+
+  // Apply animation to preview element (not ping — it uses CSS keyframes on pseudo)
+  if (p.id !== 'ping' && p.anim) {
+    const preview = card.querySelector('.pat-el');
+    preview.style.animation = p.anim;
+  }
+
+  card.addEventListener('click', () => openPatDrawer(p, card));
+  patternsGrid.appendChild(card);
+});
+
+function openPatDrawer(p, card) {
+  if (activePatCard) activePatCard.classList.remove('active');
+  card.classList.add('active');
+  activePatCard = card;
+
+  drawerName.textContent = p.name;
+  drawerTag.textContent  = p.tag;
+  drawerCode.innerHTML   = hl(p.css);
+  copyBtn(drawerCopy, () => p.css);
+  patDrawer.classList.add('open');
+}
+
+drawerClose.addEventListener('click', () => {
+  patDrawer.classList.remove('open');
+  if (activePatCard) activePatCard.classList.remove('active');
+  activePatCard = null;
+});
+
+// ─────────────────────────────────────────────────────────────
+// TAB 3 — STAGGER LAB
+// ─────────────────────────────────────────────────────────────
+const staggerStage  = document.getElementById('stagger-stage');
+const sgCss         = document.getElementById('sg-css');
+const sgStyleTag    = document.getElementById('sg-injected');
+const btnSgReplay   = document.getElementById('btn-sg-replay');
+const ctrlSgCount   = document.getElementById('ctrl-sg-count');
+const valSgCount    = document.getElementById('val-sg-count');
+const ctrlSgDelay   = document.getElementById('ctrl-sg-delay');
+const valSgDelay    = document.getElementById('val-sg-delay');
+const ctrlSgDur     = document.getElementById('ctrl-sg-dur');
+const valSgDur      = document.getElementById('val-sg-dur');
+
+const sg = {
+  count:  8,
+  delay:  60,
+  dur:    500,
+  anim:   'sg-slide-up',
+  order:  'ltr',
+};
+
+const SG_COLORS = [
+  '#6a55a3','#4a6fa8','#2f7fa8','#2f7fa8',
+  '#2f7fa8','#3a7a52','#b8902e','#b8692e',
+  '#b35c5c','#7d68b3','#b35c8a','#4a6fa8',
+];
+
+const sgAnimCtrl  = segCtrl('#ctrl-sg-anim',  v => { sg.anim  = v; buildStagger(); });
+const sgOrderCtrl = segCtrl('#ctrl-sg-order', v => { sg.order = v; buildStagger(); });
+
+ctrlSgCount.addEventListener('input', () => {
+  sg.count = +ctrlSgCount.value;
+  valSgCount.textContent = sg.count;
+  buildStagger();
+});
+ctrlSgDelay.addEventListener('input', () => {
+  sg.delay = +ctrlSgDelay.value;
+  valSgDelay.textContent = sg.delay + 'ms';
+  buildStagger();
+});
+ctrlSgDur.addEventListener('input', () => {
+  sg.dur = +ctrlSgDur.value;
+  valSgDur.textContent = sg.dur + 'ms';
+  buildStagger();
+});
+btnSgReplay.addEventListener('click', buildStagger);
+
+function buildStagger() {
+  staggerStage.innerHTML = '';
+
+  const indices = Array.from({ length: sg.count }, (_, i) => i);
+  const ordered = sg.order === 'rtl'    ? [...indices].reverse()
+                : sg.order === 'center' ? indices.sort((a, b) => Math.abs(a - sg.count/2 - .5) - Math.abs(b - sg.count/2 - .5))
+                : sg.order === 'random' ? [...indices].sort(() => Math.random() - .5)
+                : indices; // ltr
+
+  // Build delay lookup: ordered[i] → delay index i
+  const delayFor = new Array(sg.count);
+  ordered.forEach((origIdx, seqPos) => { delayFor[origIdx] = seqPos; });
+
+  const rows = Math.floor(Math.random() * 4) + 4; // random bar heights
+
+  indices.forEach(i => {
+    const bar = document.createElement('div');
+    bar.className = 'sg-bar';
+    const h = 40 + Math.floor(Math.random() * 160);
+    const color = SG_COLORS[i % SG_COLORS.length];
+    bar.style.cssText = `
+      height: ${h}px;
+      background: ${color};
+      animation: ${sg.anim} ${sg.dur}ms cubic-bezier(0.22,1,0.36,1) ${delayFor[i] * sg.delay}ms both;
+      transform-origin: bottom;
+    `;
+    staggerStage.appendChild(bar);
+  });
+
+  // Code
+  const orderComment = sg.order === 'ltr'    ? 'left to right'
+                     : sg.order === 'rtl'    ? 'right to left'
+                     : sg.order === 'center' ? 'center out'
+                     : 'random';
+  const raw = `.bar {
+  /* ${orderComment} stagger — set --i via HTML or JS */
+  animation: ${sg.anim} ${sg.dur}ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    calc(var(--i) * ${sg.delay}ms) both;
+  transform-origin: bottom;
+}
+
+/* Set in JS: el.style.setProperty('--i', index) */`;
+  if (sgCss) sgCss.innerHTML = hl(raw);
+}
+
+// Stagger copy button
+const sgCopyBtn = document.getElementById('copy-sg');
+if (sgCopyBtn) copyBtn(sgCopyBtn, () => sgCss ? sgCss.textContent : '');
+
+buildStagger();
+
+// ─────────────────────────────────────────────────────────────
+// TAB 4 — SCROLL-DRIVEN
+// ─────────────────────────────────────────────────────────────
+const scrollExTabs = document.querySelectorAll('.scroll-ex-tab');
+const scrollCode   = document.getElementById('scroll-css');
+
+const SCROLL_EXAMPLES = [
+  {
+    label: 'Progress bar',
+    code: `/* Sticky progress bar tied to page scroll */
+.progress-bar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  transform-origin: left;
+  transform: scaleX(0);
+
+  animation: grow-bar linear both;
+  animation-timeline: scroll(root block);
+}
+
+@keyframes grow-bar {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}`
+  },
+  {
+    label: 'Reveal on enter',
+    code: `/* Fade-up as element enters the viewport */
+.card {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fade-up linear both;
+
+  /* view() = scroll position relative
+     to THIS element's visibility  */
+  animation-timeline: view();
+
+  /* starts when element is 10% in view,
+     completes at 60% in view            */
+  animation-range: entry 10% entry 60%;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}`
+  },
+  {
+    label: 'Parallax',
+    code: `/* Parallax: element moves slower than scroll */
+.parallax-layer {
+  animation: parallax linear both;
+  animation-timeline: scroll(root block);
+}
+
+@keyframes parallax {
+  /* translateY moves at 40% of scroll speed */
+  from { transform: translateY(0); }
+  to   { transform: translateY(-40vh); }
+}
+
+/* Different rates create depth layers */
+.layer-far   { --rate: -20vh; }
+.layer-mid   { --rate: -40vh; }
+.layer-close { --rate: -80vh; }
+
+.parallax-layer {
+  animation: parallax linear both;
+  animation-timeline: scroll(root block);
+}`
+  },
+];
+
+const scrollDemos = [
+  document.getElementById('sdemo-progress-demo'),
+  document.getElementById('sdemo-reveal-demo'),
+  document.getElementById('sdemo-parallax-demo'),
+];
+
+scrollExTabs.forEach((tab, i) => {
+  tab.addEventListener('click', () => {
+    scrollExTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    if (scrollCode) scrollCode.innerHTML = hl(SCROLL_EXAMPLES[i].code);
+    scrollDemos.forEach((d, j) => d && d.classList.toggle('active', j === i));
+    // Reset scroll position on demo switch
+    if (scrollDemos[i]) scrollDemos[i].scrollTop = 0;
+  });
+});
+
+// Init first tab
+if (scrollCode && SCROLL_EXAMPLES[0]) {
+  scrollCode.innerHTML = hl(SCROLL_EXAMPLES[0].code);
+}
+
+// Scroll copy button
+const scrollCopyBtn = document.getElementById('copy-scroll');
+if (scrollCopyBtn) copyBtn(scrollCopyBtn, () => scrollCode ? scrollCode.textContent : '');
+
+
+  </script>
+
+<link rel="stylesheet" href="../../../skin-anim.css">
+</body>
+</html>

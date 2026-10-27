@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 05 — JavaScript Animation Fundamentals</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #f4f8fd; --surface: #ffffff; --surface2: #353d5e; --surface3: #f3f6fc;
+      --border:  #c3d3e6; --text: #2a3150; --dim: #525c83; --faint: #a9c1da;
+      --accent:  #6a55a3; --cyan: #2f7fa8; --green: #3a7a52;
+      --yellow:  #b8902e; --orange: #b8692e; --red: #b35c5c;
+      --mono:    'JetBrains Mono','Fira Code',monospace;
+      --measure: 68ch;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.75; }
+    .page { max-width: 800px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── Header ── */
+    .lesson-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .badge { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; }
+    .badge-num  { background: var(--accent); color: #fff; }
+    .badge-lvl  { background: rgba(250,204,21,.15); color: var(--yellow); border: 1px solid rgba(250,204,21,.3); }
+    .badge-time { background: rgba(56,189,248,.1); color: var(--cyan); border: 1px solid rgba(56,189,248,.25); }
+    h1 { font-size: 2rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; margin-bottom: 12px; }
+    .lead { font-size: 1.1rem; color: var(--dim); max-width: 60ch; line-height: 1.6; margin-bottom: 40px; }
+
+    /* ── Nav ── */
+    .section-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; }
+    .section-nav a { font-size: .8rem; font-weight: 600; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; color: var(--dim); text-decoration: none; transition: all .12s; }
+    .section-nav a:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Typography ── */
+    h2 { font-size: 1.35rem; font-weight: 700; margin: 52px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.05rem; font-weight: 700; margin: 32px 0 10px; color: var(--cyan); }
+    p  { max-width: var(--measure); margin-bottom: 14px; }
+    a  { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul, ol { padding-left: 1.4em; margin-bottom: 14px; max-width: var(--measure); }
+    li { margin-bottom: 5px; }
+    li::marker { color: var(--accent); }
+    code { font-family: var(--mono); font-size: .82em; background: rgba(124,110,255,.12); color: var(--accent); padding: 2px 6px; border-radius: 4px; }
+    pre { background: #eaf2fb; border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; overflow-x: auto; margin: 16px 0 20px; max-width: var(--measure); }
+    pre code { background: none; padding: 0; font-size: .83rem; color: var(--cyan); line-height: 1.8; }
+    .kw  { color: var(--accent); } .val { color: var(--green); }
+    .cmt { color: var(--faint); font-style: italic; } .sel { color: var(--cyan); }
+    .fn  { color: var(--yellow); }
+
+    /* ── Callouts ── */
+    .callout { border-radius: 8px; padding: 16px 18px; margin: 20px 0; max-width: var(--measure); font-size: .92rem; line-height: 1.65; }
+    .callout-title { font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: .88rem; }
+    .callout p { margin-bottom: 6px; max-width: 100%; }
+    .callout p:last-child, .callout ul:last-child { margin-bottom: 0; }
+    .callout-insight  { background: rgba(124,110,255,.1);  border-left: 3px solid var(--accent); }
+    .callout-insight .callout-title  { color: var(--accent); }
+    .callout-warning  { background: rgba(248,113,113,.1);  border-left: 3px solid var(--red); }
+    .callout-warning .callout-title  { color: var(--red); }
+    .callout-devtools { background: rgba(74,222,128,.08);  border-left: 3px solid var(--green); }
+    .callout-devtools .callout-title { color: var(--green); }
+    .callout-hood     { background: rgba(56,189,248,.08);  border-left: 3px solid var(--cyan); }
+    .callout-hood .callout-title     { color: var(--cyan); }
+    .callout-industry { background: rgba(250,204,21,.07);  border-left: 3px solid var(--yellow); }
+    .callout-industry .callout-title { color: var(--yellow); }
+    .callout-connects { background: rgba(124,110,255,.06); border-left: 3px solid var(--faint); }
+    .callout-connects .callout-title { color: var(--dim); }
+
+    /* ── Reading list ── */
+    .reading-list { list-style: none; padding: 0; }
+    .reading-list li { margin-bottom: 8px; display: flex; align-items: baseline; gap: 10px; }
+    .reading-tag { font-size: .68rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
+    .tag-spec    { background: rgba(124,110,255,.2); color: var(--accent); }
+    .tag-article { background: rgba(56,189,248,.15); color: var(--cyan); }
+    .tag-tool    { background: rgba(74,222,128,.15); color: var(--green); }
+
+    /* ── Practical anchor ── */
+    .practical { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px 32px; margin-top: 40px; }
+    .practical h2 { margin-top: 0; border: none; padding-bottom: 0; }
+    .practical-steps { counter-reset: step; list-style: none; padding: 0; }
+    .practical-steps li { counter-increment: step; padding: 8px 0 8px 44px; position: relative; border-bottom: 1px solid var(--border); max-width: var(--measure); }
+    .practical-steps li:last-child { border-bottom: none; }
+    .practical-steps li::before { content: counter(step); position: absolute; left: 0; top: 8px; width: 28px; height: 28px; background: rgba(124,110,255,.15); border: 1px solid rgba(124,110,255,.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; color: var(--accent); }
+
+    /* ════════════════════════════════════════════
+       VISUAL: setInterval vs rAF timeline diagram
+    ════════════════════════════════════════════ */
+    .vsync-diagram {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .vsd-title { font-size: .75rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin-bottom: 16px; }
+    .vsd-row { margin-bottom: 18px; }
+    .vsd-row:last-child { margin-bottom: 0; }
+    .vsd-label { font-size: .72rem; font-weight: 700; margin-bottom: 6px; }
+    .vsd-label.bad  { color: var(--red); }
+    .vsd-label.good { color: var(--green); }
+    .vsd-track {
+      height: 36px; background: var(--surface2); border-radius: 5px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+    }
+    /* vsync ticks */
+    .vsd-track::before {
+      content: '';
+      position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(16.67% - 1px),
+        rgba(56,189,248,.15) calc(16.67% - 1px),
+        rgba(56,189,248,.15) 16.67%
+      );
+    }
+    .vsd-vsync-label {
+      position: absolute; top: 2px; left: 0; right: 0;
+      display: flex; justify-content: space-between; padding: 0 2px;
+      pointer-events: none;
+    }
+    .vsd-tick { font-size: .52rem; color: rgba(56,189,248,.5); font-family: var(--mono); }
+    .vsd-fire {
+      position: absolute; top: 4px; bottom: 4px; width: 10px;
+      border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    }
+    .vsd-fire-interval { background: rgba(248,113,113,.7); }
+    .vsd-fire-raf      { background: rgba(74,222,128,.7); }
+    .vsd-legend { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+    .vsd-leg { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--dim); }
+    .vsd-leg-dot { width: 10px; height: 10px; border-radius: 2px; }
+    .vsd-vsync-line { width: 2px; height: 100%; background: rgba(56,189,248,.25); position: absolute; top: 0; }
+    /* Animated interval fires */
+    @keyframes interval-march { 0%{opacity:0} 2%{opacity:1} 98%{opacity:1} 100%{opacity:0} }
+
+    /* ════════════════════════════════════════════
+       VISUAL: rAF loop visualizer
+    ════════════════════════════════════════════ */
+    .raf-viz {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .raf-controls { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+    .raf-btn {
+      font-size: .78rem; font-weight: 700; padding: 6px 16px; border-radius: 6px;
+      border: 1px solid var(--border); cursor: pointer; transition: all .12s;
+      background: var(--surface2); color: var(--text);
+    }
+    .raf-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .raf-btn.running { background: rgba(248,113,113,.15); border-color: var(--red); color: var(--red); }
+    .raf-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+      margin-bottom: 14px;
+    }
+    .raf-stat {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .raf-stat-label { font-size: .65rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin-bottom: 4px; }
+    .raf-stat-val { font-family: var(--mono); font-size: 1.05rem; font-weight: 700; color: var(--cyan); }
+    .raf-canvas-wrap { height: 80px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; position: relative; }
+    .raf-spinner {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 3px solid var(--faint);
+      border-top-color: var(--accent);
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%,-50%) rotate(0deg);
+      transition: none;
+    }
+    .raf-pulse {
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    }
+
+    /* ════════════════════════════════════════════
+       VISUAL: Delta time demo
+    ════════════════════════════════════════════ */
+    .delta-demo {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+      max-width: var(--measure);
+    }
+    .delta-controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    .delta-btn {
+      font-size: .78rem; font-weight: 700; padding: 6px 14px; border-radius: 6px;
+      border: 1px solid var(--border); cursor: pointer; background: var(--surface2); color: var(--text); transition: all .12s;
+    }
+    .delta-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .delta-btn.stress-on { background: rgba(248,113,113,.15); border-color: var(--red); color: var(--red); }
+    .delta-track-wrap { margin-bottom: 10px; }
+    .delta-track-label { font-size: .7rem; font-weight: 700; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .delta-track {
+      height: 44px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; position: relative; overflow: hidden;
+    }
+    .delta-ball {
+      width: 36px; height: 36px; border-radius: 50%;
+      position: absolute; top: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; letter-spacing: 0; color: #fff;
+    }
+    .delta-ball-a { background: radial-gradient(circle at 35% 35%, var(--red), #f8e2e2); }
+    .delta-ball-b { background: radial-gradient(circle at 35% 35%, var(--green), #e3f2e8); }
+    .delta-readout { display: flex; gap: 14px; flex-wrap: wrap; }
+    .delta-read-item { font-size: .75rem; font-family: var(--mono); color: var(--dim); }
+    .delta-read-item span { color: var(--text); }
+
+    /* ════════════════════════════════════════════
+       VISUAL: Easing function visualizer
+    ════════════════════════════════════════════ */
+    .easing-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin: 24px 0; max-width: var(--measure);
+    }
+    @media (max-width: 540px) { .easing-grid { grid-template-columns: 1fr 1fr; } }
+    .easing-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px; cursor: pointer;
+      transition: border-color .12s;
+    }
+    .easing-card:hover { border-color: var(--accent); }
+    .easing-card.active { border-color: var(--accent); background: rgba(124,110,255,.07); }
+    .ec-name { font-size: .75rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .ec-svg { display: block; width: 100%; height: 72px; }
+    .ec-formula { font-family: var(--mono); font-size: .6rem; color: var(--faint); margin-top: 6px; }
+    .ec-ball-track {
+      height: 10px; background: var(--surface2); border-radius: 5px;
+      margin-top: 8px; position: relative; overflow: hidden;
+    }
+    .ec-ball {
+      width: 10px; height: 10px; border-radius: 50%;
+      position: absolute; top: 0; left: 0;
+      background: var(--accent);
+    }
+    .easing-preview-all {
+      margin: 0 0 14px;
+      font-size: .78rem; font-weight: 700; padding: 7px 18px; border-radius: 6px;
+      border: 1px solid var(--border); cursor: pointer; background: var(--surface2); color: var(--text); transition: all .12s;
+    }
+    .easing-preview-all:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ════════════════════════════════════════════
+       VISUAL: DevTools mockup
+    ════════════════════════════════════════════ */
+    .devtools-mockup {
+      background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
+      overflow: hidden; margin: 24px 0; max-width: var(--measure);
+      font-family: var(--mono); font-size: .75rem;
+    }
+    .dtm-header {
+      background: #161b22; border-bottom: 1px solid #30363d;
+      display: flex; overflow-x: auto;
+    }
+    .dtm-tab {
+      padding: 7px 14px; color: #7d8590; white-space: nowrap;
+      font-size: .72rem; border-right: 1px solid #30363d; cursor: default;
+    }
+    .dtm-tab.active { color: #e6edf3; border-bottom: 2px solid #388bfd; }
+    .dtm-body { padding: 12px 14px; }
+    .dtm-section-title { font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #7d8590; margin-bottom: 8px; margin-top: 12px; }
+    .dtm-section-title:first-child { margin-top: 0; }
+
+    /* The Performance timeline rows */
+    .dtm-timeline { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .dtm-tl-lane { display: flex; align-items: center; gap: 8px; }
+    .dtm-tl-name { width: 100px; font-size: .65rem; color: #7d8590; text-align: right; flex-shrink: 0; }
+    .dtm-tl-track {
+      flex: 1; height: 22px; background: rgba(255,255,255,.03);
+      border-radius: 3px; position: relative; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .dtm-tl-block {
+      position: absolute; height: 100%; border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .58rem; font-weight: 700; letter-spacing: .03em;
+      white-space: nowrap; overflow: hidden; padding: 0 3px;
+    }
+    .dtl-task   { background: rgba(150,120,255,.55); color: #2a3150; }
+    .dtl-raf    { background: rgba(74,222,128,.5);   color: #111; }
+    .dtl-style  { background: rgba(124,110,255,.5);  color: #fff; }
+    .dtl-paint  { background: rgba(56,189,248,.45);  color: #fff; }
+    .dtl-idle   { background: rgba(255,255,255,.03); color: #555; border: 1px dashed rgba(255,255,255,.08); }
+    .dtm-frames-row { display: flex; gap: 2px; margin-bottom: 8px; }
+    .dtm-frame { height: 14px; flex: 1; border-radius: 2px; }
+    .dtm-frame.green  { background: rgba(74,222,128,.6); }
+    .dtm-frame.yellow { background: rgba(250,204,21,.6); }
+    .dtm-frame.red    { background: rgba(248,113,113,.7); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══════════════════════════════════
+       HEADER
+  ══════════════════════════════════ -->
+  <div class="lesson-meta">
+    <span class="badge badge-num">Lesson 05</span>
+    <span class="badge badge-lvl">Intermediate</span>
+    <span class="badge badge-time">~18 min read</span>
+  </div>
+  <h1>JavaScript Animation Fundamentals</h1>
+  <p class="lead">requestAnimationFrame from first principles — the game loop, delta time, easing functions by hand, and why rAF is the only right way to animate with JavaScript.</p>
+
+  <nav class="section-nav">
+    <a href="#hook">Why rAF</a>
+    <a href="#mental-model">Mental model</a>
+    <a href="#setinterval-problem">setInterval problem</a>
+    <a href="#raf-loop">The rAF loop</a>
+    <a href="#delta-time">Delta time</a>
+    <a href="#easing">Easing functions</a>
+    <a href="#game-loop">Game loop patterns</a>
+    <a href="#performance">Performance</a>
+    <a href="#connections">Connections</a>
+    <a href="#practical">Practical</a>
+  </nav>
+
+  <!-- ══════════════════════════════════
+       1. OPENING HOOK
+  ══════════════════════════════════ -->
+  <h2 id="hook">Why requestAnimationFrame exists</h2>
+
+  <p>CSS animation handles a surprising amount — smooth transitions, looping keyframes, even scroll-linked effects. But once animation logic depends on user input, physics, real-time data, or state that JavaScript already owns, you need to drive it from code. The question is: how?</p>
+
+  <p>The naive answers — <code>setInterval</code>, <code>setTimeout</code> — both get it wrong in ways that produce jank, battery drain, and animations that break at different screen refresh rates. <code>requestAnimationFrame</code> was designed specifically to fix those failures. Every JavaScript animation library you will ever use — GSAP, Framer Motion, Anime.js, Three.js, PixiJS — is built on top of it. Understanding rAF from first principles demystifies all of them at once.</p>
+
+  <p>This lesson builds a working animation engine from scratch. By the end you will understand the game loop, delta time, easing math, and how to start, stop, pause, and resume animations cleanly — with no library.</p>
+
+  <div class="callout callout-connects">
+    <div class="callout-title">🔗 Where this fits in the arc</div>
+    <p><strong>Lesson 1</strong> established that the browser targets 16.67ms per frame (60fps) and that the compositor thread handles <code>transform</code> and <code>opacity</code> for free. <strong>Lessons 2–4</strong> showed how to use CSS animation — which offloads to that thread automatically. Now we drop down one level: driving animation from JavaScript, which runs on the main thread. The mental model from Lesson 1 governs every performance decision here.</p>
+  </div>
+
+  <!-- ══════════════════════════════════
+       2. MENTAL MODEL
+  ══════════════════════════════════ -->
+  <h2 id="mental-model">The mental model: frames and render loops</h2>
+
+  <p>Your monitor refreshes at a fixed rate — typically 60Hz, sometimes 90Hz or 120Hz. Each refresh is a <em>frame</em>: the display hardware scans out a new image. If you want animation to look smooth, you need to update your scene once per frame, right before each scan-out.</p>
+
+  <p>A <strong>render loop</strong> is the pattern that makes this happen:</p>
+
+  <ol>
+    <li><strong>Update</strong> — advance your animation state (move a ball, increment a counter, apply physics)</li>
+    <li><strong>Render</strong> — reflect that state in the DOM or canvas</li>
+    <li><strong>Repeat</strong> — schedule the next call</li>
+  </ol>
+
+  <p>Game developers have used this pattern for decades — the "game loop" is one of the oldest patterns in interactive software. The web's version is <code>requestAnimationFrame</code>, which wires step 3 directly into the browser's rendering cycle. When the browser is about to paint a new frame, it calls your callback first, giving you a precisely-timed opportunity to update state before anything is drawn to screen.</p>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 Key insight — rAF is a render hook, not a timer</div>
+    <p><code>requestAnimationFrame</code> does not fire on a fixed millisecond interval. It fires <em>once per browser render cycle</em>, synchronized to the display's vsync signal. On a 60Hz display that's ~16.67ms; on a 120Hz display it's ~8.33ms. This distinction matters enormously: code running at 120Hz gets twice as many calls as code on 60Hz, so speed expressed in "pixels per frame" will be twice as fast. Delta time (covered below) is the solution.</p>
+  </div>
+
+  <!-- ══════════════════════════════════
+       3. SETINTERVAL PROBLEM
+  ══════════════════════════════════ -->
+  <h2 id="setinterval-problem">The problem with setInterval</h2>
+
+  <p>Before rAF existed, developers animated with <code>setInterval(fn, 16)</code>. This seems reasonable — 1000ms / 60 = 16.67ms — but it fails in three ways:</p>
+
+  <ul>
+    <li><strong>Timer drift.</strong> <code>setInterval</code> fires based on the JavaScript event loop timer queue, which has no relationship to the display's vsync signal. Your 16ms interval and the 16.67ms frame boundary drift apart constantly, producing tearing and micro-jank.</li>
+    <li><strong>Background tabs.</strong> <code>setInterval</code> keeps firing even when the page is invisible — wasting CPU, draining battery. rAF automatically pauses when the tab is hidden.</li>
+    <li><strong>No timestamp.</strong> setInterval gives you no information about when exactly it fired. rAF passes a high-resolution timestamp, making time-based animation trivial.</li>
+  </ul>
+
+  <p>The diagram below shows the misalignment. Each vertical blue line is a display vsync signal (16.67ms apart). setInterval fires at its own 16ms cadence — sometimes early, sometimes landing in the gap between two frames, guaranteeing that at least some updates arrive too late and are either duplicated or dropped:</p>
+
+  <!-- setInterval vs rAF animated diagram -->
+  <div class="vsync-diagram">
+    <div class="vsd-title">setInterval vs requestAnimationFrame — alignment with vsync</div>
+
+    <div class="vsd-row">
+      <div class="vsd-label bad">❌ setInterval(fn, 16) — fires at 16ms regardless</div>
+      <div class="vsd-track" id="vsd-interval-track">
+        <div class="vsd-vsync-label" id="vsd-ticks-interval"></div>
+      </div>
+    </div>
+
+    <div class="vsd-row">
+      <div class="vsd-label good">✓ requestAnimationFrame — fires exactly on vsync</div>
+      <div class="vsd-track" id="vsd-raf-track">
+        <div class="vsd-vsync-label" id="vsd-ticks-raf"></div>
+      </div>
+    </div>
+
+    <div class="vsd-legend">
+      <div class="vsd-leg"><div class="vsd-leg-dot" style="background:rgba(56,189,248,.4)"></div>vsync boundary</div>
+      <div class="vsd-leg"><div class="vsd-leg-dot" style="background:rgba(248,113,113,.7)"></div>setInterval fires</div>
+      <div class="vsd-leg"><div class="vsd-leg-dot" style="background:rgba(74,222,128,.7)"></div>rAF fires</div>
+    </div>
+  </div>
+
+  <div class="callout callout-hood">
+    <div class="callout-title">📐 Under the hood — the vsync signal and display compositing</div>
+    <p>Modern displays use <strong>vsync</strong> (vertical sync) — a hardware signal that fires at the display's refresh rate and tells the GPU "I'm about to scan out a new frame, hand me the pixel data." The operating system's window compositor (Quartz on macOS, DWM on Windows, Wayland compositors on Linux) synchronizes with vsync so each frame appears cleanly without tearing. The browser hooks into this same signal: when the compositor is about to present a new frame, it notifies the browser's rendering engine, which runs rAF callbacks, then style/layout/paint/composite — all before the next vsync. This is why rAF callbacks are sometimes called "before-paint" callbacks. The <code>requestAnimationFrame</code> spec actually says the callback fires "before the next repaint" — vsync is the mechanism behind that.</p>
+  </div>
+
+  <!-- ══════════════════════════════════
+       4. THE RAF LOOP
+  ══════════════════════════════════ -->
+  <h2 id="raf-loop">The requestAnimationFrame loop</h2>
+
+  <h3>Basic structure</h3>
+
+  <p>The minimal rAF loop looks like this:</p>
+
+<pre><code><span class="kw">function</span> <span class="fn">tick</span>(timestamp) {
+  <span class="cmt">// 1. Update state</span>
+  x += <span class="val">1</span>;
+
+  <span class="cmt">// 2. Render</span>
+  el.style.transform = <span class="val">`translateX(<span class="kw">${x}</span>px)`</span>;
+
+  <span class="cmt">// 3. Schedule next call</span>
+  <span class="fn">requestAnimationFrame</span>(tick);
+}
+
+<span class="cmt">// Kick it off</span>
+<span class="fn">requestAnimationFrame</span>(tick);</code></pre>
+
+  <p>The browser calls <code>tick</code>, tick schedules itself again, and this continues until you call <code>cancelAnimationFrame</code> on the returned handle. The callback receives a single argument: a <code>DOMHighResTimeStamp</code>.</p>
+
+  <h3>DOMHighResTimeStamp</h3>
+
+  <p>The timestamp passed to your rAF callback is a <code>DOMHighResTimeStamp</code> — a floating-point number of milliseconds since the page's <em>time origin</em> (roughly when the page started loading). It has sub-millisecond precision (typically microsecond resolution), and it is <em>monotonically increasing</em> — it never goes backward, even if the system clock changes.</p>
+
+<pre><code><span class="kw">function</span> <span class="fn">tick</span>(now) { <span class="cmt">// 'now' is a DOMHighResTimeStamp</span>
+  console.<span class="fn">log</span>(now); <span class="cmt">// e.g. 4823.617 (ms since page load)</span>
+  <span class="fn">requestAnimationFrame</span>(tick);
+}</code></pre>
+
+  <p>You can also get the same timestamp at any point via <code>performance.now()</code> — the same clock, accessible anywhere.</p>
+
+  <!-- Live rAF loop visualizer -->
+  <div class="raf-viz">
+    <div style="font-size:.75rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-bottom:12px">Live: rAF loop running in this page</div>
+    <div class="raf-controls">
+      <button class="raf-btn" id="raf-toggle-btn">Stop Loop</button>
+      <span style="font-size:.75rem;color:var(--dim)">Watch the timestamp advance each frame</span>
+    </div>
+    <div class="raf-stats">
+      <div class="raf-stat">
+        <div class="raf-stat-label">Timestamp (ms)</div>
+        <div class="raf-stat-val" id="raf-timestamp">—</div>
+      </div>
+      <div class="raf-stat">
+        <div class="raf-stat-label">Frame delta (ms)</div>
+        <div class="raf-stat-val" id="raf-delta">—</div>
+      </div>
+      <div class="raf-stat">
+        <div class="raf-stat-label">Rolling FPS</div>
+        <div class="raf-stat-val" id="raf-fps">—</div>
+      </div>
+    </div>
+    <div class="raf-canvas-wrap">
+      <div class="raf-spinner" id="raf-spinner"></div>
+      <div class="raf-pulse" id="raf-pulse"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       5. DELTA TIME
+  ══════════════════════════════════ -->
+  <h2 id="delta-time">Delta time — frame-rate independence</h2>
+
+  <p>The loop above has a hidden bug: <code>x += 1</code> advances by <em>one pixel per frame</em>. On a 60Hz display that's 60 pixels per second. On a 120Hz display it's 120 pixels per second — twice as fast. On a throttled laptop dropping to 30fps it's 30 pixels per second. Your animation speed is at the mercy of hardware.</p>
+
+  <p>The fix is <strong>delta time</strong> (dt): calculate how many milliseconds elapsed since the last frame, and express speed in <em>pixels per millisecond</em> instead of pixels per frame.</p>
+
+<pre><code><span class="kw">let</span> prevTime = <span class="val">0</span>;
+
+<span class="kw">function</span> <span class="fn">tick</span>(now) {
+  <span class="kw">const</span> dt = now - prevTime;  <span class="cmt">// milliseconds since last frame</span>
+  prevTime = now;
+
+  <span class="cmt">// ✅ frame-rate independent: speed in px/ms</span>
+  x += SPEED * dt;
+
+  <span class="fn">requestAnimationFrame</span>(tick);
+}
+<span class="fn">requestAnimationFrame</span>(tick);</code></pre>
+
+  <p>Now <code>SPEED = 0.12</code> (px/ms) means 120 px/s on any display. A ball that takes 2 seconds to cross 240px will take the same 2 seconds whether the frame rate is 30, 60, or 120.</p>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">⚠️ Cap your delta on the first frame and after tab focus</div>
+    <p>On the very first frame, <code>prevTime</code> is 0 so <code>dt</code> will be something like 4800ms — the time since page load. After returning to a hidden tab, rAF was paused, so the first frame back might have <code>dt = 3000ms</code>, launching every object across the screen instantly. Cap it: <code>const dt = Math.min(now - prevTime, 100)</code>. A 100ms cap means the maximum jump per frame is 10% of a second — invisible to the user, safe for physics.</p>
+  </div>
+
+  <!-- Delta time demo: two balls -->
+  <div class="delta-demo">
+    <div style="font-size:.75rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-bottom:12px">Demo: delta-correct vs frame-dependent animation</div>
+    <div class="delta-controls">
+      <button class="delta-btn" id="delta-stress-btn">Stress (simulate dropped frames)</button>
+      <span style="font-size:.75rem;color:var(--dim)" id="delta-stress-label">Off — both balls are identical speed</span>
+    </div>
+    <div class="delta-track-wrap">
+      <div class="delta-track-label">
+        <span style="color:var(--red)">Ball A — no delta time (x += 2/frame)</span>
+        <span class="delta-read-item" id="delta-a-read">x: 0</span>
+      </div>
+      <div class="delta-track" id="delta-track-a">
+        <div class="delta-ball delta-ball-a" id="delta-ball-a">A</div>
+      </div>
+    </div>
+    <div class="delta-track-wrap">
+      <div class="delta-track-label">
+        <span style="color:var(--green)">Ball B — with delta time (x += 120 * dt px/s)</span>
+        <span class="delta-read-item" id="delta-b-read">x: 0</span>
+      </div>
+      <div class="delta-track" id="delta-track-b">
+        <div class="delta-ball delta-ball-b" id="delta-ball-b">B</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-hood">
+    <div class="callout-title">📐 Under the hood — why this is the same problem as game physics</div>
+    <p>Game developers have wrestled with frame-rate independence since the 1980s. The classic fix is identical: express all motion in world units per second, multiply by the frame's elapsed time. A physics simulation running <code>velocity += gravity * dt</code> and <code>position += velocity * dt</code> is numerically solving differential equations using <em>Euler integration</em> — the simplest integration scheme in computational mathematics. It accumulates error over time (which is why game engines use more sophisticated integrators like Runge-Kutta for precise physics), but for visual animation, Euler integration with a capped delta is accurate enough and has negligible cost. The web animation stack is, in this sense, just a specialized physics simulation where the "physics" is aesthetic motion.</p>
+  </div>
+
+  <!-- ══════════════════════════════════
+       6. EASING FUNCTIONS
+  ══════════════════════════════════ -->
+  <h2 id="easing">Easing functions from scratch</h2>
+
+  <p>An easing function takes a progress value <code>t</code> from 0 to 1 (where 0 = animation start, 1 = animation end) and returns a <em>transformed</em> progress value that controls the pacing. Linear easing returns <code>t</code> unchanged — constant speed. Everything else accelerates, decelerates, overshoots, or bounces.</p>
+
+<pre><code><span class="cmt">// t is progress from 0 to 1</span>
+<span class="kw">const</span> ease = {
+  <span class="fn">linear</span>:    t => t,
+  <span class="fn">easeIn</span>:    t => t * t,
+  <span class="fn">easeOut</span>:   t => t * (<span class="val">2</span> - t),
+  <span class="fn">easeInOut</span>: t => t < <span class="val">0.5</span> ? <span class="val">2</span>*t*t : -<span class="val">1</span> + (<span class="val">4</span>-<span class="val">2</span>*t)*t,
+};
+
+<span class="cmt">// lerp is a separate utility — different signature, different role</span>
+<span class="kw">const</span> <span class="fn">lerp</span> = (a, b, t) => a + (b - a) * t;</code></pre>
+
+  <p><strong>Lerp</strong> (linear interpolation) is the fundamental tool: given a start value <code>a</code>, end value <code>b</code>, and eased progress <code>t</code>, it returns the value at that point between them. Combine lerp with any easing function:</p>
+
+<pre><code><span class="kw">const</span> startX = <span class="val">0</span>, endX = <span class="val">500</span>;
+<span class="kw">const</span> duration = <span class="val">1000</span>; <span class="cmt">// ms</span>
+<span class="kw">let</span> startTime = <span class="kw">null</span>;
+
+<span class="kw">function</span> <span class="fn">tick</span>(now) {
+  <span class="kw">if</span> (!startTime) startTime = now;
+  <span class="kw">const</span> elapsed = now - startTime;
+  <span class="kw">const</span> t = <span class="fn">Math.min</span>(elapsed / duration, <span class="val">1</span>); <span class="cmt">// clamp to [0,1]</span>
+
+  <span class="kw">const</span> easedT = ease.<span class="fn">easeOut</span>(t);
+  <span class="kw">const</span> x = ease.<span class="fn">lerp</span>(startX, endX, easedT);
+
+  el.style.transform = <span class="val">`translateX(<span class="kw">${x}</span>px)`</span>;
+
+  <span class="kw">if</span> (t < <span class="val">1</span>) <span class="fn">requestAnimationFrame</span>(tick);
+}
+<span class="fn">requestAnimationFrame</span>(tick);</code></pre>
+
+  <!-- Easing visualizer -->
+  <button class="easing-preview-all" id="ease-preview-all">Preview all easing functions simultaneously</button>
+  <div class="easing-grid" id="easing-grid"></div>
+
+  <p>Two of the curves above — <strong>elastic</strong> and <strong>bounce</strong> — behave differently from the others in an important way: they return values <em>outside</em> the range [0, 1]. Elastic overshoots (goes above 1.0 and briefly below 0.0), simulating the snap of a spring that stretches past its resting point before settling. Bounce stays within [0, 1] but oscillates against the target in a piecewise quadratic pattern — the mathematical equivalent of a ball hitting the floor multiple times with decreasing energy.</p>
+  <p>This matters in practice: if you feed an elastic <code>t</code> value directly into a position lerp, your element will briefly move <em>past</em> its destination and snap back. That's usually intentional (it's what gives elastic motion its physical, characterful feel), but you need to make sure the surrounding layout can accommodate it — an overshooting element can clip its container if <code>overflow: hidden</code> is set.</p>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 These are the same curves as CSS cubic-bezier</div>
+    <p>The CSS timing functions you used in Lesson 3 — <code>ease-in</code>, <code>ease-out</code>, <code>ease-in-out</code> — are cubic Bezier curves that closely approximate these polynomial functions. The math underneath is the same. GSAP's <code>Power1.out</code> is easeOut, <code>Power2.in</code> is a cubic easeIn (<code>t³</code>). All roads lead back to the same arithmetic.</p>
+  </div>
+
+  <!-- ══════════════════════════════════
+       7. GAME LOOP PATTERNS
+  ══════════════════════════════════ -->
+  <h2 id="game-loop">The game loop: start, stop, pause, resume</h2>
+
+  <p>A production animation loop needs clean lifecycle management. The pattern below encapsulates everything: a handle for cancellation, a pause/resume mechanism, and a one-time start guard.</p>
+
+<pre><code><span class="kw">const</span> loop = (<span class="kw">function</span>() {
+  <span class="kw">let</span> rafId   = <span class="kw">null</span>;
+  <span class="kw">let</span> paused  = <span class="kw">false</span>;
+  <span class="kw">let</span> prevTime = <span class="val">0</span>;
+
+  <span class="kw">function</span> <span class="fn">tick</span>(now) {
+    <span class="kw">if</span> (paused) <span class="kw">return</span>;
+
+    <span class="kw">const</span> dt = <span class="fn">Math.min</span>(now - prevTime, <span class="val">100</span>);
+    prevTime = now;
+
+    <span class="fn">update</span>(dt);
+    <span class="fn">render</span>();
+
+    rafId = <span class="fn">requestAnimationFrame</span>(tick);
+  }
+
+  <span class="kw">return</span> {
+    <span class="fn">start</span>() {
+      <span class="kw">if</span> (rafId !== <span class="kw">null</span>) <span class="kw">return</span>; <span class="cmt">// already running</span>
+      prevTime = <span class="fn">performance.now</span>();
+      rafId = <span class="fn">requestAnimationFrame</span>(tick);
+    },
+    <span class="fn">stop</span>() {
+      <span class="fn">cancelAnimationFrame</span>(rafId);
+      rafId = <span class="kw">null</span>;
+    },
+    <span class="fn">pause</span>()  { paused = <span class="kw">true</span>; },
+    <span class="fn">resume</span>() {
+      paused = <span class="kw">false</span>;
+      prevTime = <span class="fn">performance.now</span>(); <span class="cmt">// reset dt on resume</span>
+    },
+  };
+})();</code></pre>
+
+  <p>Notice that <code>resume()</code> resets <code>prevTime</code> — otherwise the first frame after a long pause would have a massive delta. This is the same principle as the cap from the delta-time section, applied at the lifecycle level.</p>
+
+  <h3>cancelAnimationFrame — cleaning up</h3>
+
+  <p><code>requestAnimationFrame</code> returns an integer handle. Pass it to <code>cancelAnimationFrame</code> to stop the loop. Always store and cancel the handle when a component unmounts or a modal closes — an orphaned rAF loop is a memory and CPU leak that will run forever.</p>
+
+<pre><code><span class="cmt">// In a component teardown, event listener cleanup, etc.</span>
+<span class="kw">const</span> id = <span class="fn">requestAnimationFrame</span>(tick);
+
+<span class="cmt">// Later, when you're done:</span>
+<span class="fn">cancelAnimationFrame</span>(id);</code></pre>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">⚠️ The most common memory leak in JS animation</div>
+    <p>A rAF loop that schedules itself recursively and is never cancelled will run for the entire lifetime of the page — even after the UI it was animating has been removed from the DOM. In a single-page app where components mount and unmount, this compounds: each navigation that creates a new animation component without cancelling the old one's loop adds another perpetual rAF call. Profile it: DevTools → Performance → record → stop → look for CPU activity with no corresponding visible output.</p>
+  </div>
+
+  <!-- ══════════════════════════════════
+       8. PERFORMANCE & DEVTOOLS
+  ══════════════════════════════════ -->
+  <h2 id="performance">Performance &amp; debugging</h2>
+
+  <h3>What to keep out of your rAF callback</h3>
+
+  <p>Your callback has a 16.67ms budget on a 60Hz display. Anything that runs over that budget causes a dropped frame. The most common offenders inside animation loops:</p>
+
+  <ul>
+    <li><strong>DOM reads that force layout</strong> — <code>offsetWidth</code>, <code>getBoundingClientRect()</code>, <code>getComputedStyle()</code>. If you need these values, read them before the loop starts, not inside it.</li>
+    <li><strong>Heavy computation</strong> — physics for thousands of objects, pathfinding, sorting. Move this to a Web Worker or pre-compute it.</li>
+    <li><strong>DOM writes that trigger layout</strong> — setting <code>width</code>, <code>height</code>, <code>top</code>, <code>left</code>. Use <code>transform</code> instead (Lesson 1/4 principle: compositor-only properties).</li>
+    <li><strong>Texture uploads</strong> — creating new <code>Image</code> objects or large canvas operations inside the loop. Prepare assets outside.</li>
+  </ul>
+
+  <div class="callout callout-devtools">
+    <div class="callout-title">🛠 DevTools tip — finding your rAF callbacks in the Performance panel</div>
+    <p>Open DevTools → Performance → Record while your animation runs → Stop. In the flame chart, look at the Main thread row. You'll see green bars labeled <strong>Animation Frame Fired</strong> — these are your rAF callbacks. Click one to see the exact JS call stack inside it and its duration. If your callback takes more than ~10ms, the remaining 6ms becomes too short for style/layout/paint and frames start dropping.</p>
+  </div>
+
+  <!-- DevTools mockup -->
+  <div class="devtools-mockup">
+    <div class="dtm-header">
+      <div class="dtm-tab">Elements</div>
+      <div class="dtm-tab">Console</div>
+      <div class="dtm-tab active">Performance</div>
+      <div class="dtm-tab">Memory</div>
+    </div>
+    <div class="dtm-body">
+      <div class="dtm-section-title">Frames</div>
+      <div class="dtm-frames-row" id="dtm-frames"></div>
+      <div class="dtm-section-title">Main thread</div>
+      <div class="dtm-timeline">
+        <div class="dtm-tl-lane">
+          <div class="dtm-tl-name">Frame 1</div>
+          <div class="dtm-tl-track">
+            <div class="dtm-tl-block dtl-raf"   style="left:0;width:28%">Animation Frame Fired</div>
+            <div class="dtm-tl-block dtl-style" style="left:28%;width:10%">Style</div>
+            <div class="dtm-tl-block dtl-paint" style="left:38%;width:14%">Paint</div>
+            <div class="dtm-tl-block dtl-idle"  style="left:52%;width:48%">idle</div>
+          </div>
+        </div>
+        <div class="dtm-tl-lane">
+          <div class="dtm-tl-name">Frame 2</div>
+          <div class="dtm-tl-track">
+            <div class="dtm-tl-block dtl-raf"   style="left:0;width:28%">Animation Frame Fired</div>
+            <div class="dtm-tl-block dtl-style" style="left:28%;width:10%">Style</div>
+            <div class="dtm-tl-block dtl-paint" style="left:38%;width:14%">Paint</div>
+            <div class="dtm-tl-block dtl-idle"  style="left:52%;width:48%">idle</div>
+          </div>
+        </div>
+        <div class="dtm-tl-lane">
+          <div class="dtm-tl-name">Frame 3 ⚠️</div>
+          <div class="dtm-tl-track">
+            <div class="dtm-tl-block dtl-task"  style="left:0;width:58%">Long Task (layout thrash in rAF)</div>
+            <div class="dtm-tl-block dtl-style" style="left:58%;width:14%">Style</div>
+            <div class="dtm-tl-block dtl-paint" style="left:72%;width:28%;background:rgba(248,113,113,.5)">Paint — DROPPED</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:.68rem;color:#7d8590;margin-top:8px">Frame 3 ran over budget — a layout-reading property inside the rAF callback forced a synchronous layout flush, pushing total frame time past 16.67ms.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-industry">
+    <div class="callout-title">🌐 Industry pulse — rAF is the heartbeat of every major animation library (2024–2025)</div>
+    <p>GSAP 3's internal ticker runs a single master rAF loop and multiplexes every tween through it — never more than one rAF call regardless of how many animations are active. Framer Motion uses the same pattern via its internal <code>frameloop</code> package (also called <code>@motionone/dom</code> under the hood). Three.js, PixiJS, and Babylon.js all expose an <code>animate()</code> or render loop that wraps rAF. The shift toward single-ticker architectures (one rAF per page, not one per animation) became standard after 2020 when profilers showed that multiple competing rAF loops could cause subtle scheduling conflicts and higher CPU usage than a single orchestrator. Understanding raw rAF is the prerequisite for understanding why these libraries are architected the way they are.</p>
+  </div>
+
+  <!-- ══════════════════════════════════
+       9. CONNECTIONS
+  ══════════════════════════════════ -->
+  <h2 id="connections">Connections</h2>
+
+  <div class="callout callout-connects">
+    <div class="callout-title">🔗 What this builds on</div>
+    <ul>
+      <li><strong>Lesson 1</strong> — the 16.67ms frame budget and the pipeline stages are the performance ceiling everything here runs against.</li>
+      <li><strong>Lesson 3</strong> — CSS easing functions (cubic-bezier) are the same polynomial math as the easing functions you just wrote by hand.</li>
+      <li><strong>Lesson 4</strong> — never read layout-forcing properties inside a rAF callback; batch reads before the loop.</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-connects">
+    <div class="callout-title">🔗 What this unlocks</div>
+    <ul>
+      <li><strong>Lesson 6 (WAAPI)</strong> — the Web Animations API is a browser-native abstraction over exactly this: it manages the loop, timestamp tracking, and easing for you.</li>
+      <li><strong>Lesson 7 (GSAP)</strong> — GSAP is a higher-level abstraction: tweens are just delta-time + easing + lerp managed by a single rAF ticker.</li>
+      <li><strong>Lesson 10 (Canvas 2D)</strong> — the canvas render loop is this loop verbatim, with a <code>ctx.clearRect()</code> before every render call.</li>
+      <li><strong>Lesson 13 (WebGL)</strong> and <strong>Lesson 15 (WebGPU)</strong> — both use the same rAF loop; the render step calls GPU draw commands instead of DOM mutations.</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════
+       10. FURTHER READING
+  ══════════════════════════════════ -->
+  <h2 id="sec-10">Further reading</h2>
+  <ul class="reading-list">
+    <li><span class="reading-tag tag-spec">MDN</span><a href="https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame" target="_blank">MDN — requestAnimationFrame</a></li>
+    <li><span class="reading-tag tag-spec">MDN</span><a href="https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp" target="_blank">MDN — DOMHighResTimeStamp</a></li>
+    <li><span class="reading-tag tag-article">Article</span><a href="https://web.dev/articles/animations-and-performance" target="_blank">web.dev — Animations and performance</a></li>
+    <li><span class="reading-tag tag-article">Article</span><a href="https://www.html5rocks.com/en/tutorials/speed/rendering/" target="_blank">HTML5 Rocks — requestAnimationFrame for Smart Animating (the original case against setInterval)</a></li>
+    <li><span class="reading-tag tag-article">Article</span><a href="https://gist.github.com/paulirish/1579671" target="_blank">Paul Irish — requestAnimationFrame polyfill & explanation</a></li>
+    <li><span class="reading-tag tag-tool">Tool</span><a href="https://easings.net/" target="_blank">easings.net — visual reference for every common easing function with formulas</a></li>
+  </ul>
+
+  <!-- ══════════════════════════════════
+       11. PRACTICAL ANCHOR
+  ══════════════════════════════════ -->
+  <div class="practical" id="practical">
+    <h2 id="sec-11">🔨 Practical: ball from A to B — raw rAF, delta time, custom easing</h2>
+    <p style="color:var(--dim);font-size:.9rem;margin-bottom:20px">No libraries. Build the complete animation engine from scratch.</p>
+    <ol class="practical-steps">
+      <li>Open the <strong>Easing Lab</strong> tab in the example app and click through each easing function. Observe the SVG curve and the ball movement — connect the shape of the curve to the feel of the motion.</li>
+      <li>Open a blank HTML file. Set up a minimal rAF loop that logs <code>now</code> and the computed delta to the console. Verify delta is ~16ms at 60fps.</li>
+      <li>Add a <code>&lt;div&gt;</code> and animate it from <code>x = 0</code> to <code>x = 400</code> using <code>transform: translateX()</code> and a 1000ms duration. Use <code>Math.min(elapsed / duration, 1)</code> as your <code>t</code> value.</li>
+      <li>Apply the <code>easeOut</code> function to <code>t</code> before passing to lerp. Run it. Then swap to <code>easeIn</code> and observe the difference.</li>
+      <li>Now duplicate the element. Ball A uses <code>x += 2</code> (no delta). Ball B uses <code>x += 120 * dt / 1000</code>. Open the <strong>Delta Time</strong> tab in the example app and hit STRESS — watch them diverge.</li>
+      <li>Add start/stop/pause/resume buttons using the lifecycle pattern from this lesson. <strong>Bonus:</strong> Chain two animations (A to B, then B to A) by starting the second in the <code>onComplete</code> of the first.</li>
+    </ol>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════
+   setInterval vs rAF diagram
+══════════════════════════════════ */
+(function() {
+  const FRAMES = 6;
+  const VSYNC_MS = 16.67;
+  const INTERVAL_MS = 16;
+
+  function buildTrack(trackId, fireFn) {
+    const track = document.getElementById(trackId);
+    if (!track) return;
+    // Vsync boundary markers are handled by CSS repeating-linear-gradient
+    // We add fire dots
+    const fires = fireFn(FRAMES, VSYNC_MS, INTERVAL_MS);
+    fires.forEach(pct => {
+      const dot = document.createElement('div');
+      dot.className = 'vsd-fire ' + (trackId.includes('interval') ? 'vsd-fire-interval' : 'vsd-fire-raf');
+      dot.style.left = pct + '%';
+      track.appendChild(dot);
+    });
+  }
+
+  // setInterval fires at 16ms, 32ms, 48ms... in a 100ms window
+  // rAF fires at 16.67ms, 33.33ms, 50ms... in same window
+  const totalMs = FRAMES * VSYNC_MS; // ~100ms
+
+  buildTrack('vsd-interval-track', () => {
+    const positions = [];
+    for (let t = INTERVAL_MS; t < totalMs; t += INTERVAL_MS) {
+      positions.push((t / totalMs) * 100 - 0.5);
+    }
+    return positions;
+  });
+
+  buildTrack('vsd-raf-track', () => {
+    const positions = [];
+    for (let t = VSYNC_MS; t < totalMs; t += VSYNC_MS) {
+      positions.push((t / totalMs) * 100 - 0.5);
+    }
+    return positions;
+  });
+})();
+
+/* ══════════════════════════════════
+   Live rAF loop visualizer
+══════════════════════════════════ */
+(function() {
+  const tsEl    = document.getElementById('raf-timestamp');
+  const dtEl    = document.getElementById('raf-delta');
+  const fpsEl   = document.getElementById('raf-fps');
+  const spinner = document.getElementById('raf-spinner');
+  const pulse   = document.getElementById('raf-pulse');
+  const btn     = document.getElementById('raf-toggle-btn');
+
+  let running = true;
+  let rafId   = null;
+  let prevTime = 0;
+  let angle    = 0;
+  const deltaBuf = [];
+  const BUF_SIZE = 60;
+
+  function tick(now) {
+    const dt = prevTime ? Math.min(now - prevTime, 100) : 16.67;
+    prevTime = now;
+
+    // Update
+    angle += dt * 0.36; // 360 deg/s
+    deltaBuf.push(dt);
+    if (deltaBuf.length > BUF_SIZE) deltaBuf.shift();
+
+    const avgDelta = deltaBuf.reduce((a, b) => a + b, 0) / deltaBuf.length;
+    const fps = Math.round(1000 / avgDelta);
+
+    // Render
+    tsEl.textContent = now.toFixed(1);
+    dtEl.textContent = dt.toFixed(2);
+    fpsEl.textContent = fps;
+    fpsEl.style.color = fps >= 55 ? 'var(--green)' : fps >= 28 ? 'var(--yellow)' : 'var(--red)';
+    spinner.style.transform = `translate(-50%,-50%) rotate(${angle}deg)`;
+
+    // Pulse blink
+    pulse.style.opacity = (Math.floor(now / 250) % 2 === 0) ? '1' : '0.2';
+
+    if (running) rafId = requestAnimationFrame(tick);
+  }
+
+  function start() {
+    running = true;
+    prevTime = 0;
+    btn.textContent = 'Stop Loop';
+    btn.classList.add('running');
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stop() {
+    running = false;
+    cancelAnimationFrame(rafId);
+    btn.textContent = 'Start Loop';
+    btn.classList.remove('running');
+  }
+
+  btn.addEventListener('click', () => { running ? stop() : start(); });
+  start();
+})();
+
+/* ══════════════════════════════════
+   Delta time two-ball demo
+══════════════════════════════════ */
+(function() {
+  const ballA    = document.getElementById('delta-ball-a');
+  const ballB    = document.getElementById('delta-ball-b');
+  const readA    = document.getElementById('delta-a-read');
+  const readB    = document.getElementById('delta-b-read');
+  const stressBtn = document.getElementById('delta-stress-btn');
+  const stressLbl = document.getElementById('delta-stress-label');
+  const trackA   = document.getElementById('delta-track-a');
+  const trackB   = document.getElementById('delta-track-b');
+
+  let xA = 0, xB = 0, prevTime = 0;
+  let stressOn = false;
+  let frameCount = 0;
+
+  stressBtn.addEventListener('click', () => {
+    stressOn = !stressOn;
+    stressBtn.classList.toggle('stress-on', stressOn);
+    stressLbl.textContent = stressOn
+      ? 'STRESS ON — every other frame delayed by 50ms. Watch Ball A jump!'
+      : 'Off — both balls are identical speed';
+  });
+
+  function tick(now) {
+    let dt = prevTime ? Math.min(now - prevTime, 200) : 16.67;
+    prevTime = now;
+    frameCount++;
+
+    // Simulate stress: busy-wait on odd frames
+    if (stressOn && frameCount % 2 === 0) {
+      const t0 = performance.now();
+      while (performance.now() - t0 < 50) { /* spin */ }
+      // Do NOT add 50 to dt — next frame's natural dt already includes the delay
+    }
+
+    const W_A = (trackA.clientWidth || 400) - 36;
+    const W_B = (trackB.clientWidth || 400) - 36;
+
+    // Ball A: pixels per FRAME (wrong — frame-rate dependent)
+    xA += 2;
+    if (xA > W_A) xA = 0;
+
+    // Ball B: pixels per SECOND via dt (correct)
+    xB += 120 * (dt / 1000);
+    if (xB > W_B) xB = 0;
+
+    ballA.style.left = xA + 'px';
+    ballB.style.left = xB + 'px';
+    readA.innerHTML = `x: <span>${Math.round(xA)}</span>`;
+    readB.innerHTML = `x: <span>${Math.round(xB)}</span>`;
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ══════════════════════════════════
+   Easing function visualizer
+══════════════════════════════════ */
+(function() {
+  const eases = [
+    {
+      name: 'linear',
+      fn: t => t,
+      formula: 't => t',
+      path: 'M 0 60 L 60 0',
+    },
+    {
+      name: 'easeIn (quadratic)',
+      fn: t => t * t,
+      formula: 't => t * t',
+      path: null,
+    },
+    {
+      name: 'easeOut',
+      fn: t => t * (2 - t),
+      formula: 't => t * (2 - t)',
+      path: null,
+    },
+    {
+      name: 'easeInOut',
+      fn: t => t < 0.5 ? 2*t*t : -1 + (4-2*t)*t,
+      formula: 't < 0.5 ? 2t² : -1+(4-2t)t',
+      path: null,
+    },
+    {
+      name: 'elastic',
+      fn: t => {
+        if (t === 0 || t === 1) return t;
+        return Math.pow(2, -10*t) * Math.sin((t*10 - 0.75) * (2*Math.PI/3)) + 1;
+      },
+      formula: 'pow(2,-10t)·sin(...)+1',
+      path: null,
+    },
+    {
+      name: 'bounce',
+      fn: t => {
+        const n1 = 7.5625, d1 = 2.75;
+        if (t < 1/d1)       return n1*t*t;
+        else if (t < 2/d1)  return n1*(t-=1.5/d1)*t + 0.75;
+        else if (t < 2.5/d1)return n1*(t-=2.25/d1)*t + 0.9375;
+        else                 return n1*(t-=2.625/d1)*t + 0.984375;
+      },
+      formula: 'piecewise n1·t² segments',
+      path: null,
+    },
+  ];
+
+  const grid = document.getElementById('easing-grid');
+  const SIZE = 60;
+
+  function buildSVGPath(fn) {
+    const pts = [];
+    for (let i = 0; i <= 60; i++) {
+      const t = i / 60;
+      const y  = fn(t);
+      const yc = Math.max(-0.2, Math.min(1.2, y)); // clamp for SVG bounds
+      pts.push(`${i},${SIZE - yc * SIZE}`);
+    }
+    return 'M ' + pts.join(' L ');
+  }
+
+  function animateBall(ball, fn, duration = 900) {
+    let start = null;
+    function step(now) {
+      if (!start) start = now;
+      const t = Math.min((now - start) / duration, 1);
+      const et = fn(t);
+      // Allow overshoot so elastic/bounce visually demonstrate their behavior
+      ball.style.left = `calc(${et * 100}% - ${et * 10}px)`;
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  eases.forEach((e, i) => {
+    const card = document.createElement('div');
+    card.className = 'easing-card';
+    card.dataset.idx = i;
+
+    const pathD = buildSVGPath(e.fn);
+
+    card.innerHTML = `
+      <div class="ec-name">${e.name}</div>
+      <svg class="ec-svg" viewBox="0 -12 60 84" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M 0 60 L 60 0" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/>
+        <path d="${pathD}" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="ec-formula">${e.formula}</div>
+      <div class="ec-ball-track">
+        <div class="ec-ball" id="ec-ball-${i}"></div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.easing-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      animateBall(document.getElementById(`ec-ball-${i}`), e.fn);
+    });
+
+    grid.appendChild(card);
+  });
+
+  document.getElementById('ease-preview-all').addEventListener('click', () => {
+    eases.forEach((e, i) => {
+      animateBall(document.getElementById(`ec-ball-${i}`), e.fn);
+    });
+  });
+})();
+
+/* ══════════════════════════════════
+   DevTools frame row
+══════════════════════════════════ */
+(function() {
+  const framesEl = document.getElementById('dtm-frames');
+  if (!framesEl) return;
+  ['green','green','green','green','yellow','green','green','red','green','green','green','green','yellow','green','green','green'].forEach(c => {
+    const f = document.createElement('div');
+    f.className = 'dtm-frame ' + c;
+    framesEl.appendChild(f);
+  });
+})();
+</script>
+
+<link rel="stylesheet" href="../../skin-anim.css">
+<script src="../../../../registry.js"></script>
+<script src="../../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

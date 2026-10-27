@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Data Simulator · FE Perf Workshop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── This scenario's visual identity: a clean analytics / data dashboard ── */
+    :root {
+      --bg:       #0f1117;
+      --surface:  #181c27;
+      --elevated: #1f2435;
+      --border:   #2a2f42;
+      --text:     #e2e8f0;
+      --muted:    #8b97b0;
+      --dim:      #4a5268;
+      --green:    #4ade80;
+      --yellow:   #fbbf24;
+      --red:      #f87171;
+      --blue:     #60a5fa;
+      --indigo:   #818cf8;
+      --radius:   10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 15px; }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    /* ── Workshop bar ── */
+    .workshop-bar {
+      background: #1e1b4b; color: #c7d2fe;
+      padding: 7px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.7rem; font-family: 'IBM Plex Mono', monospace;
+      border-bottom: 1px solid rgba(165,180,252,0.1);
+    }
+    .workshop-bar a { color: #a5b4fc; text-decoration: none; }
+    .workshop-bar a:hover { color: #fff; }
+
+    /* ── App shell ── */
+    .app { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 32px); }
+    @media(max-width:768px){ .app { grid-template-columns: 1fr; } }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .sidebar-title {
+      font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--dim); padding: 0 20px 12px;
+    }
+    .sidebar-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-section-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+    .device-btn-group { display: flex; flex-direction: column; gap: 4px; }
+    .device-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      cursor: pointer; font-family: inherit; font-size: 0.8rem;
+      transition: all 0.15s; text-align: left;
+    }
+    .device-btn:hover { border-color: var(--indigo); color: var(--text); }
+    .device-btn.active { background: rgba(129,140,248,0.12); border-color: rgba(129,140,248,0.4); color: var(--indigo); }
+    .device-btn .icon { font-size: 1rem; }
+    .network-select {
+      width: 100%; padding: 8px 10px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--elevated);
+      color: var(--text); font-family: inherit; font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .network-select:focus { outline: none; border-color: var(--indigo); }
+    .sidebar-note {
+      padding: 14px 20px;
+      font-size: 0.72rem; color: var(--muted); line-height: 1.5;
+    }
+
+    /* ── Main panel ── */
+    .main-panel { padding: 28px 32px; overflow-y: auto; }
+    @media(max-width:768px){ .main-panel { padding: 20px; } }
+
+    .panel-header { margin-bottom: 24px; }
+    .panel-header h1 { font-size: 1.3rem; font-weight: 600; margin-bottom: 4px; }
+    .panel-header p  { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── Score cards ── */
+    .score-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+    @media(max-width:580px){ .score-cards { grid-template-columns: 1fr; } }
+    .score-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 18px;
+    }
+    .sc-label { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+    .sc-value { font-size: 1.6rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; line-height: 1; margin-bottom: 6px; transition: color 0.4s; }
+    .sc-badge { font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; display: inline-block; transition: all 0.3s; }
+    .badge-good  { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+    .badge-needs { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+    .badge-poor  { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+    /* ── Distribution chart ── */
+    .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .chart-title  { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .chart-sub    { font-size: 0.68rem; color: var(--dim); }
+    .dist-chart   { height: 80px; display: flex; align-items: flex-end; gap: 2px; position: relative; }
+    .dist-bar { flex: 1; border-radius: 3px 3px 0 0; transition: height 0.5s cubic-bezier(.25,.8,.25,1), background 0.3s; min-width: 4px; }
+    .dist-axis { display: flex; margin-top: 6px; gap: 2px; }
+    .dist-axis span { flex: 1; font-size: 0.52rem; color: var(--dim); font-family: 'IBM Plex Mono', monospace; text-align: center; }
+    .pct-line {
+      position: absolute; top: 0; bottom: 0; width: 2px;
+      background: var(--indigo); opacity: 0.5; border-radius: 1px;
+    }
+    .pct-line-label {
+      position: absolute; top: -18px;
+      font-size: 0.58rem; font-weight: 700; color: var(--indigo);
+      white-space: nowrap; transform: translateX(-50%);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── Insight boxes ── */
+    .insights { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:580px){ .insights { grid-template-columns: 1fr; } }
+    .insight-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 18px;
+    }
+    .insight-box h4 { font-size: 0.78rem; font-weight: 600; margin-bottom: 6px; }
+    .insight-box p  { font-size: 0.73rem; color: var(--muted); line-height: 1.5; margin: 0; }
+    .insight-box .diff-val {
+      font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 700;
+      margin: 6px 0;
+    }
+    .diff-worse { color: var(--red); }
+    .diff-same  { color: var(--green); }
+
+    .compare-row { display: flex; gap: 12px; margin-top: 8px; }
+    .compare-item { flex: 1; text-align: center; }
+    .compare-item .ci-label { font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .compare-item .ci-val   { font-size: 0.88rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+
+    /* ── Key takeaway section ── */
+    .takeaway {
+      background: rgba(129,140,248,0.07);
+      border: 1px solid rgba(129,140,248,0.2);
+      border-radius: var(--radius); padding: 16px 20px; margin-top: 20px;
+      font-size: 0.8rem; color: var(--muted); line-height: 1.6;
+    }
+    .takeaway strong { color: var(--indigo); }
+  </style>
+</head>
+<body>
+<div class="workshop-bar">
+  <a href="../../../../../../index.html">← Examples: 1.1</a>
+  <span>Scenario: Field Data Simulator · Switch device/network in the sidebar</span>
+</div>
+
+<div class="app">
+  <!-- Sidebar: device + network controls -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Simulation Settings</div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Device</div>
+      <div class="device-btn-group" id="device-group">
+        <button class="device-btn active" data-device="laptop">
+          <span class="icon">💻</span>
+          <div><div style="font-weight:500;">MacBook Pro</div><div style="font-size:0.65rem;opacity:0.6;">8-core · fast GPU</div></div>
+        </button>
+        <button class="device-btn" data-device="midphone">
+          <span class="icon">📱</span>
+          <div><div style="font-weight:500;">Mid-range Android</div><div style="font-size:0.65rem;opacity:0.6;">Pixel 6a · 4× CPU slowdown</div></div>
+        </button>
+        <button class="device-btn" data-device="lowphone">
+          <span class="icon">📵</span>
+          <div><div style="font-weight:500;">Low-end Phone</div><div style="font-size:0.65rem;opacity:0.6;">Entry Android · 6× CPU slowdown</div></div>
+        </button>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Network</div>
+      <select class="network-select" id="network-select">
+        <option value="wifi">Wi-Fi (100mbps)</option>
+        <option value="4g">4G LTE (12mbps)</option>
+        <option value="3g">Slow 3G (1.6mbps)</option>
+        <option value="edge">EDGE (0.24mbps)</option>
+      </select>
+    </div>
+    <div class="sidebar-note">
+      This simulates how the <strong>same page</strong> performs under different real-world conditions. Notice how your MacBook/Wi-Fi score is never representative of your users.
+    </div>
+  </aside>
+
+  <!-- Main dashboard -->
+  <main class="main-panel">
+    <div class="panel-header">
+      <h1>CWV Field Data Simulator</h1>
+      <p>Simulated 75th-percentile scores for a typical content page across real-world device and network conditions.</p>
+    </div>
+
+    <div class="score-cards">
+      <div class="score-card">
+        <div class="sc-label">LCP</div>
+        <div class="sc-value" id="sc-lcp-val">1.8s</div>
+        <div class="sc-badge badge-good" id="sc-lcp-badge">Good</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-label">INP</div>
+        <div class="sc-value" id="sc-inp-val">94ms</div>
+        <div class="sc-badge badge-good" id="sc-inp-badge">Good</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-label">CLS</div>
+        <div class="sc-value" id="sc-cls-val">0.04</div>
+        <div class="sc-badge badge-good" id="sc-cls-badge">Good</div>
+      </div>
+    </div>
+
+    <!-- LCP Distribution -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <div><div class="chart-title">LCP Distribution</div><div class="chart-sub" id="dist-sub">Across all page loads · 28-day window</div></div>
+      </div>
+      <div class="dist-chart" id="lcp-dist-chart">
+        <div class="pct-line" id="pct-line"><div class="pct-line-label">75th %ile</div></div>
+      </div>
+      <div class="dist-axis" id="lcp-dist-axis"></div>
+    </div>
+
+    <!-- Insights -->
+    <div class="insights">
+      <div class="insight-box">
+        <h4 style="color:var(--indigo);">vs. Your Local Lighthouse Score</h4>
+        <div class="diff-val" id="vs-lab-val">—</div>
+        <p id="vs-lab-desc">Switch to a lower-spec device to see how field data diverges from lab results.</p>
+      </div>
+      <div class="insight-box">
+        <h4 style="color:var(--indigo);">Bottleneck This Device/Network</h4>
+        <p id="bottleneck-desc">Loading at top speed on the best hardware.</p>
+        <div class="compare-row" id="bottleneck-row"></div>
+      </div>
+    </div>
+
+    <div class="takeaway" id="takeaway-box">
+      <strong>Key insight:</strong> On a MacBook with fast Wi-Fi, this page passes all three vitals comfortably. Your Lighthouse score reflects this. But the majority of your real users aren't on a MacBook.
+    </div>
+  </main>
+</div>
+
+<script>
+  // ── Data: simulated 75th-percentile scores per device/network combo ──
+  const DATA = {
+    laptop:    { wifi: { lcp:1800, inp:94,  cls:0.04 }, '4g': { lcp:2200, inp:110, cls:0.04 }, '3g': { lcp:3800, inp:130, cls:0.06 }, edge: { lcp:7200, inp:150, cls:0.08 } },
+    midphone:  { wifi: { lcp:2100, inp:180, cls:0.06 }, '4g': { lcp:3200, inp:240, cls:0.09 }, '3g': { lcp:5400, inp:380, cls:0.14 }, edge: { lcp:11000,inp:480, cls:0.22 } },
+    lowphone:  { wifi: { lcp:2900, inp:280, cls:0.08 }, '4g': { lcp:4500, inp:420, cls:0.14 }, '3g': { lcp:8200, inp:590, cls:0.26 }, edge: { lcp:18000,inp:780, cls:0.38 } },
+  };
+  const LAB_LCP = 1650; // Simulated local Lighthouse score
+
+  let currentDevice = 'laptop';
+  let currentNetwork = 'wifi';
+
+  function getRating(metric, val) {
+    if (metric === 'lcp') return val <= 2500 ? 'good' : val <= 4000 ? 'needs' : 'poor';
+    if (metric === 'inp') return val <= 200  ? 'good' : val <= 500  ? 'needs' : 'poor';
+    if (metric === 'cls') return val <= 0.1  ? 'good' : val <= 0.25 ? 'needs' : 'poor';
+  }
+
+  function fmt(metric, val) {
+    if (metric === 'lcp') return (val / 1000).toFixed(1) + 's';
+    if (metric === 'inp') return val + 'ms';
+    if (metric === 'cls') return val.toFixed(2);
+  }
+
+  function badgeClass(r) { return 'sc-badge badge-' + (r === 'needs' ? 'needs' : r); }
+  function badgeText(r)  { return r === 'good' ? 'Good' : r === 'needs' ? 'Needs work' : 'Poor'; }
+  function scoreColor(r) { return r === 'good' ? 'var(--green)' : r === 'needs' ? 'var(--yellow)' : 'var(--red)'; }
+
+  function buildDistChart(lcpMs) {
+    const chart = document.getElementById('lcp-dist-chart');
+    const axis  = document.getElementById('lcp-dist-axis');
+    // Generate plausible distribution centred around lcpMs
+    const bars = 24;
+    const peak = lcpMs / 1000;
+    const spread = peak * 0.55;
+    const heights = Array.from({length: bars}, (_, i) => {
+      const x = (i / (bars - 1)) * (peak * 2.2);
+      const y = Math.exp(-0.5 * Math.pow((x - peak) / spread, 2));
+      return Math.max(4, Math.round(y * 76));
+    });
+    // Remove old bars/axis content
+    chart.querySelectorAll('.dist-bar').forEach(e => e.remove());
+    axis.innerHTML = '';
+    // threshold split: good < 2.5, needs < 4.0
+    heights.forEach((h, i) => {
+      const xVal = (i / (bars - 1)) * (peak * 2.2);
+      const cl = xVal <= 2.5 ? '#4ade80' : xVal <= 4.0 ? '#fbbf24' : '#f87171';
+      const bar = document.createElement('div');
+      bar.className = 'dist-bar';
+      bar.style.cssText = `height:${h}px;background:${cl};opacity:0.7;`;
+      chart.appendChild(bar);
+    });
+    // axis labels
+    for (let i = 0; i <= 6; i++) {
+      const span = document.createElement('span');
+      span.textContent = (i * (peak * 2.2 / 6)).toFixed(1) + 's';
+      axis.appendChild(span);
+    }
+    // 75th percentile line
+    const pctLine = document.getElementById('pct-line');
+    pctLine.style.left = '75%';
+  }
+
+  function updateInsights(device, network, data) {
+    const labDiff = data.lcp - LAB_LCP;
+    const pct = Math.round((labDiff / LAB_LCP) * 100);
+    const vsEl = document.getElementById('vs-lab-val');
+    const vsDesc = document.getElementById('vs-lab-desc');
+    if (pct <= 10) {
+      vsEl.textContent = '≈ Lab match';
+      vsEl.className = 'diff-val diff-same';
+      vsDesc.textContent = 'Field data is close to your Lighthouse score. Lab results are representative here.';
+    } else {
+      vsEl.textContent = `+${pct}% slower`;
+      vsEl.className = 'diff-val diff-worse';
+      vsDesc.textContent = `Real users experience LCP ${(labDiff/1000).toFixed(1)}s slower than your local Lighthouse score. This gap is normal and often larger in production.`;
+    }
+
+    // Bottleneck
+    const bottleneckDesc = document.getElementById('bottleneck-desc');
+    const bottleneckRow  = document.getElementById('bottleneck-row');
+    const bottleneckMap = {
+      'laptop-wifi':    'No significant bottleneck. Fast CPU + fast network — best case scenario.',
+      'laptop-4g':      'Network is the bottleneck. 4G LTE adds ~400ms to resource fetch times.',
+      'laptop-3g':      'Network is the bottleneck. 3G dramatically extends resource load time.',
+      'laptop-edge':    'Network is the severe bottleneck. EDGE makes even small resources slow.',
+      'midphone-wifi':  'CPU is the bottleneck. 4× CPU slowdown delays JS execution and rendering.',
+      'midphone-4g':    'Both CPU and network. A common combination for 50%+ of real users.',
+      'midphone-3g':    'Both CPU and network at meaningful scale. This is a significant UX failure.',
+      'midphone-edge':  'CPU + network failure. INP fails because JS takes 6× longer to run.',
+      'lowphone-wifi':  'CPU is the primary bottleneck. 6× slower JS makes INP fail even on Wi-Fi.',
+      'lowphone-4g':    'CPU + network. LCP and INP both fail. ~15% of global users are here.',
+      'lowphone-3g':    'Severe failure across all three vitals. CLS also fails due to slow rendering.',
+      'lowphone-edge':  'All three vitals fail badly. This represents the bottom ~5% of conditions.',
+    };
+    bottleneckDesc.textContent = bottleneckMap[`${device}-${network}`] || '';
+    // Show lab vs field comparison
+    bottleneckRow.innerHTML = `
+      <div class="compare-item">
+        <div class="ci-label">Lab (Lighthouse)</div>
+        <div class="ci-val" style="color:var(--green);">${(LAB_LCP/1000).toFixed(1)}s</div>
+      </div>
+      <div class="compare-item" style="color:var(--dim);font-size:1.2rem;padding-top:14px;">→</div>
+      <div class="compare-item">
+        <div class="ci-label">Field (this config)</div>
+        <div class="ci-val" style="color:${scoreColor(getRating('lcp',data.lcp))};">${(data.lcp/1000).toFixed(1)}s</div>
+      </div>
+    `;
+  }
+
+  function updateTakeaway(device, network) {
+    const el = document.getElementById('takeaway-box');
+    const msgs = {
+      'laptop-wifi':   '<strong>Key insight:</strong> Best case. Your Lighthouse score and field data are close. But this is not representative of most real-world users.',
+      'laptop-4g':     '<strong>Key insight:</strong> LCP slips to "Needs Improvement" on 4G. A common device+network combination — many desktop users have slower connections than you expect.',
+      'laptop-3g':     '<strong>Key insight:</strong> Even a powerful laptop fails LCP on slow 3G. Network is the bottleneck, not CPU. Fixing LCP here means smaller resources and better delivery (CDN, compression).',
+      'midphone-wifi': '<strong>Key insight:</strong> LCP passes on fast Wi-Fi, but INP is on the edge. The 4× CPU slowdown slows JS execution enough to push interaction latency into "Needs Improvement".',
+      'midphone-4g':   '<strong>Key insight:</strong> This is roughly median global conditions. LCP fails, INP is struggling. This is what your Google Search Console data likely reflects.',
+      'midphone-3g':   '<strong>Key insight:</strong> A significant percentage of global mobile users are here. All three vitals are failing or at risk. This is why optimising for fast hardware alone is insufficient.',
+      'lowphone-wifi': '<strong>Key insight:</strong> CPU-bound failure. Even with fast Wi-Fi, JS execution is so slow that INP fails. The network isn\'t the problem — the main thread is.',
+      'lowphone-edge': '<strong>Key insight:</strong> All three vitals fail. This represents bottom-tier conditions but billions of users globally. Performance is also an equity issue — slow devices + slow networks compound.',
+    };
+    el.innerHTML = msgs[`${device}-${network}`] || msgs['laptop-wifi'];
+  }
+
+  function update() {
+    const data = DATA[currentDevice][currentNetwork];
+    // Update score cards
+    ['lcp','inp','cls'].forEach(m => {
+      const r = getRating(m, data[m]);
+      document.getElementById(`sc-${m}-val`).textContent = fmt(m, data[m]);
+      document.getElementById(`sc-${m}-val`).style.color  = scoreColor(r);
+      document.getElementById(`sc-${m}-badge`).textContent = badgeText(r);
+      document.getElementById(`sc-${m}-badge`).className   = badgeClass(r);
+    });
+    buildDistChart(data.lcp);
+    updateInsights(currentDevice, currentNetwork, data);
+    updateTakeaway(currentDevice, currentNetwork);
+    document.getElementById('dist-sub').textContent = `${currentDevice === 'laptop' ? 'Desktop' : 'Mobile'} · ${currentNetwork.toUpperCase()} · 28-day window`;
+  }
+
+  // Device buttons
+  document.getElementById('device-group').addEventListener('click', e => {
+    const btn = e.target.closest('[data-device]');
+    if (!btn) return;
+    document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDevice = btn.dataset.device;
+    update();
+  });
+  // Network select
+  document.getElementById('network-select').addEventListener('change', e => {
+    currentNetwork = e.target.value;
+    update();
+  });
+
+  update();
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+/* ============================================================
+   Study Hub — "Console Black" skin (dark counterpart to Sky Cartridge)
+   Inspired by 16-bit Sega-era styling: black fields, bold cobalt blue,
+   red + gold accents, checkerboard floors, hard edges.
+   Activated by <html data-theme="sega">; inert otherwise.
+   Loaded by theme.css, so every lesson and the hub shell get it.
+   ============================================================ */
+html[data-theme="sega"]{
+  color-scheme:dark;
+  --sky-1:#05060d; --sky-2:#080c1c; --sky-3:#0a1126;
+  --paper:#0b1228; --paper-2:#0e1736; --surface:#0f1730; --sunken:#0a1126;
+  --ink:#f2f6ff; --ink-soft:#d3ddf5; --ink-mute:#9db0dc; --ink-faint:#5f719f;
+  --line:#1b2a58; --line-strong:#2c4690; --outline:#4f93ff;
+
+  --cobalt:#1f6bff;  --cobalt-soft:rgba(31,107,255,.2);
+  --vermil:#e4002b;  --vermil-soft:rgba(228,0,43,.18);
+  --ochre:#ffd200;   --ochre-soft:rgba(255,210,0,.16);
+  --forest:#18b26b;  --forest-soft:rgba(24,178,107,.18);
+  --plum:#8a6bff;    --plum-soft:rgba(138,107,255,.2);  --plum-deep:#b9a4ff;
+  --gold:#ffd200;
+
+  --accent-text:color-mix(in srgb, var(--accent) 55%, #ffffff);
+  --link:#74b4ff;
+  --good:#45d68d; --good-soft:rgba(69,214,141,.14);
+  --warn:#ffd200; --warn-soft:rgba(255,210,0,.14);
+  --bad:#ff6b82;  --bad-soft:rgba(255,107,130,.14);
+
+  --shadow-sm:4px 4px 0 rgba(0,0,0,.55);
+  --shadow-riso:6px 6px 0 rgba(0,0,0,.55);
+}
+html[data-theme="sega"] body{
+  background:
+    repeating-linear-gradient(115deg,transparent 0 120px,rgba(31,107,255,.09) 120px 150px,transparent 150px 270px) fixed,
+    linear-gradient(180deg,#05060d 0%,#070b1d 60%,#0a1432 100%) fixed;
+}
+html[data-theme="sega"] body::before{ background:none; animation:none; }
+html[data-theme="sega"] ::selection{background:var(--vermil); color:#fff;}
+html[data-theme="sega"] h1{text-shadow:3px 3px 0 var(--vermil);}
+html[data-theme="sega"] .subtitle::before{color:var(--ochre);}
+html[data-theme="sega"] .wrap,
+html[data-theme="sega"] .title-card{
+  box-shadow:inset 0 0 0 4px #000, inset 0 0 0 6px var(--line-strong), 10px 10px 0 rgba(0,0,0,.6);
+}
+html[data-theme="sega"] .wrap::before,
+html[data-theme="sega"] .title-card::before{
+  background:
+    radial-gradient(circle at 8px 8px,var(--vermil) 0 6px,transparent 6.5px),
+    radial-gradient(circle at 24px 8px,var(--ochre) 0 6px,transparent 6.5px),
+    radial-gradient(circle at 40px 8px,#fff 0 6px,transparent 6.5px),
+    radial-gradient(circle at 56px 8px,var(--cobalt) 0 6px,transparent 6.5px);
+}
+html[data-theme="sega"] code.inline,
+html[data-theme="sega"] :not(pre) > code{background:#0a1740; border-color:var(--line-strong); color:#cfe2ff;}
+html[data-theme="sega"] pre{background:#02030a !important; color:#d7e6ff; border-color:var(--line-strong) !important;}
+html[data-theme="sega"] .lm{background:var(--surface) !important; border-color:var(--outline) !important; color:var(--ink-soft) !important;}
+html[data-theme="sega"] .lm *{border-color:var(--line-strong) !important;}
+html[data-theme="sega"] .lm-d{background:var(--paper) !important; color:var(--ink-soft) !important;}
+html[data-theme="sega"] .lm-d small{color:var(--ink-mute) !important;}
+html[data-theme="sega"] .lm-d b{color:var(--ink) !important;}
+html[data-theme="sega"] .lm-d.key{background:rgba(255,210,0,.18) !important; border-color:var(--ochre) !important;}
+html[data-theme="sega"] .lm-chip{color:var(--ink) !important; background:var(--paper);}
+html[data-theme="sega"] .lm-read button{background:var(--paper) !important; color:var(--ink) !important; border-color:var(--outline) !important; box-shadow:0 3px 0 #000 !important;}
+html[data-theme="sega"] .lm-read.is-read button{background:rgba(24,178,107,.3) !important;}
+html[data-theme="sega"] .lm summary, html[data-theme="sega"] .lm-mod, html[data-theme="sega"] .lm-read{color:var(--ink-mute) !important;}
+html[data-theme="sega"] table, html[data-theme="sega"] th, html[data-theme="sega"] td{border-color:var(--line-strong);}
+html[data-theme="sega"] th{background:#0a1a4a; color:var(--ink);}
+html[data-theme="sega"] input, html[data-theme="sega"] select, html[data-theme="sega"] textarea{background:var(--paper); color:var(--ink); border-color:var(--line-strong);}
+
+/* ── hub shell ── */
+html[data-theme="sega"] .hub-nav{
+  background:linear-gradient(180deg,#0b1230 0%,#05060d 100%); border-bottom-color:var(--cobalt); box-shadow:0 4px 0 #000;}
+html[data-theme="sega"] .nav-logo{color:#fff;}
+html[data-theme="sega"] .nav-logo .accent{color:var(--ochre);}
+html[data-theme="sega"] .nav-mobile-toggle{background:var(--cobalt); color:#fff; border-color:#fff;}
+html[data-theme="sega"] .hub-sidebar{
+  background:linear-gradient(180deg,#07102c 0%,#050a1f 60%,#03060f 100%);
+  border-right-color:var(--cobalt); box-shadow:inset 0 0 0 3px #000, inset 0 0 0 5px var(--line-strong);}
+html[data-theme="sega"] .hs-head{border-bottom-color:var(--line-strong);}
+html[data-theme="sega"] .hs-title, html[data-theme="sega"] .hs-group-label .gname,
+html[data-theme="sega"] .hs-lesson-btn::before, html[data-theme="sega"] .welcome-tips b,
+html[data-theme="sega"] .welcome-tips::after, html[data-theme="sega"] .fx-txt{color:var(--ochre);}
+html[data-theme="sega"] .hs-toggle{background:var(--cobalt); color:#fff; border-color:#fff; box-shadow:0 3px 0 #000;}
+html[data-theme="sega"] .hs-group-label .world, html[data-theme="sega"] .wgroup .world{border-color:#fff;}
+html[data-theme="sega"] .hs-lesson-btn:hover, html[data-theme="sega"] .hs-section:hover{background:rgba(31,107,255,.2);}
+html[data-theme="sega"] .hs-lesson.active > .hs-lesson-btn{background:rgba(31,107,255,.32);}
+html[data-theme="sega"] .hs-section.active{background:rgba(255,210,0,.14); box-shadow:inset 4px 0 0 var(--ochre);}
+html[data-theme="sega"] .hs-sections{background:rgba(0,0,0,.4);}
+html[data-theme="sega"] .hs-section-title{color:var(--ink-soft);}
+html[data-theme="sega"] .hs-read{background:var(--paper) !important;}
+html[data-theme="sega"] iframe{background:var(--sky-1);}
+html[data-theme="sega"] .warp{background:#000;}
+html[data-theme="sega"] .welcome-tips, html[data-theme="sega"] .toast{
+  background:linear-gradient(180deg,#0f2a73,#081a4d); border-color:#fff; box-shadow:0 0 0 3px var(--cobalt), 7px 7px 0 3px rgba(0,0,0,.6);}
+html[data-theme="sega"] .title{color:#fff;
+  text-shadow:-3px 0 0 var(--cobalt),3px 0 0 var(--cobalt),0 -3px 0 var(--cobalt),0 3px 0 var(--cobalt),-3px -3px 0 var(--cobalt),3px 3px 0 var(--cobalt),-3px 3px 0 var(--cobalt),3px -3px 0 var(--cobalt),7px 7px 0 var(--vermil);}
+html[data-theme="sega"] .press-start{color:var(--ochre);}
+html[data-theme="sega"] .stat{box-shadow:3px 3px 0 rgba(0,0,0,.6);}
+html[data-theme="sega"] .wgroup .gname{color:#fff; text-shadow:2px 2px 0 #000;}
+html[data-theme="sega"] .wcard{box-shadow:5px 5px 0 rgba(0,0,0,.6);}
+html[data-theme="sega"] .wcard:hover{box-shadow:8px 8px 0 rgba(0,0,0,.6);}
+html[data-theme="sega"] .ground{
+  background:repeating-conic-gradient(#0a3fb0 0 25%,#06133a 0 50%) 0 0/32px 32px; border-top-color:var(--cobalt);}
+
+
+/* ── shell: pastel chips, badges and rows → dark equivalents ── */
+html[data-theme="sega"] .hs-group-label .world, html[data-theme="sega"] .wgroup .world{color:#fff; background:var(--vermil); border-color:#fff; box-shadow:2px 2px 0 #000;}
+html[data-theme="sega"] .hs-lesson.active > .hs-lesson-btn, html[data-theme="sega"] .hs-grp.active > .hs-grp-btn{background:rgba(31,107,255,.32); box-shadow:inset 4px 0 0 var(--ochre);}
+html[data-theme="sega"] .hs-sec.active > .hs-group-label{background:rgba(31,107,255,.28); box-shadow:inset 4px 0 0 var(--vermil);}
+html[data-theme="sega"] .hs-sec{border-bottom-color:var(--line);}
+html[data-theme="sega"] .hs-lesson-title, html[data-theme="sega"] .hs-chevron{color:var(--ink);}
+html[data-theme="sega"] .wc-stage{color:#fff; background:color-mix(in srgb,var(--wc) 70%,#000);}
+html[data-theme="sega"] .welcome-tips{color:var(--ink-soft);}
+html[data-theme="sega"] .hs-mod{background:#1a1450; color:#cfc2ff;}
+html[data-theme="sega"] .wcard.mod{background-color:#0f1236;}
+html[data-theme="sega"] .wg-home{background:var(--ochre); color:#000; border-color:#fff;}
+html[data-theme="sega"] .wg-sum{background:rgba(31,107,255,.12) !important; color:var(--ink-mute) !important; border-color:var(--line-strong) !important;}
+html[data-theme="sega"] .wc-date, html[data-theme="sega"] .hs-date, html[data-theme="sega"] .wc-read, html[data-theme="sega"] .hs-readcount.all{background:var(--paper); color:var(--ink-mute); border-color:var(--line-strong);}
+html[data-theme="sega"] .hs-date.stub, html[data-theme="sega"] .stat.stub{background:repeating-linear-gradient(135deg,#1a1700 0 5px,#0d0b00 5px 10px); color:var(--ochre); border-color:var(--ochre);}
+html[data-theme="sega"] .wc-meter .t{background:repeating-linear-gradient(135deg,#1a1700 0 5px,#0d0b00 5px 10px);}
+html[data-theme="sega"] .wc-meter .f{background:var(--forest);}
+html[data-theme="sega"] .stat.read, html[data-theme="sega"] .wc-read, html[data-theme="sega"] .hs-readcount.all{background:rgba(24,178,107,.2); color:#8cf0bf;}
+html[data-theme="sega"] .hs-read{background:var(--paper) !important;}
+html[data-theme="sega"] .hs-read.opened{background:color-mix(in srgb,var(--pc) 35%,#000) !important;}
+html[data-theme="sega"] .hs-read.is-read{box-shadow:0 0 0 2px #000, 0 0 0 3px var(--forest);}
+html[data-theme="sega"] .hs-sidebar, html[data-theme="sega"] .hub-sidebar{color:var(--ink); scrollbar-color:var(--line-strong) transparent;}
+
+
+/* ── lesson components with hard-coded pastel fills → dark tints ── */
+html[data-theme="sega"] .ev.rct, html[data-theme="sega"] .st.ok, html[data-theme="sega"] .who.you, html[data-theme="sega"] .pipe span.you,
+html[data-theme="sega"] .sbox.in, html[data-theme="sega"] .age, html[data-theme="sega"] .age.fresh, html[data-theme="sega"] .mx .c.good, html[data-theme="sega"] td.good,
+html[data-theme="sega"] .ring.virtuous .rn.hot{background:rgba(24,178,107,.22); color:#a6f3cb;}
+html[data-theme="sega"] .ev.pre, html[data-theme="sega"] .st.no, html[data-theme="sega"] .age.due, html[data-theme="sega"] .pipe span.lost,
+html[data-theme="sega"] .sbox.out, html[data-theme="sega"] .mod-strip .mod-name, html[data-theme="sega"] .mx .c.bad, html[data-theme="sega"] td.bad,
+html[data-theme="sega"] .ring.vicious .rn.hot{background:rgba(228,0,43,.24); color:#ffb3bf;}
+html[data-theme="sega"] .ev.obs, html[data-theme="sega"] .st.part, html[data-theme="sega"] .age.soon, html[data-theme="sega"] .ev.self, html[data-theme="sega"] td.mid{background:rgba(255,210,0,.18); color:#ffe680;}
+html[data-theme="sega"] .ev.field, html[data-theme="sega"] .ev.theory, html[data-theme="sega"] .ev.review, html[data-theme="sega"] .st.unk{background:rgba(31,107,255,.22); color:#b9d3ff;}
+html[data-theme="sega"] .ev.lab, html[data-theme="sega"] .who.ai, html[data-theme="sega"] .pipe span.ai, html[data-theme="sega"] .tg-tag{background:rgba(138,107,255,.24); color:#d6cbff;}
+html[data-theme="sega"] tbody tr:nth-child(even) td, html[data-theme="sega"] tr:nth-child(even) td{background:rgba(31,107,255,.08);}
+html[data-theme="sega"] td{background:transparent;}
+html[data-theme="sega"] td:first-child{color:var(--ink);}
+
+
+html[data-theme="sega"] .flag{background:#1a1600; border-color:var(--ochre);}
+html[data-theme="sega"] .tangent-block{background:linear-gradient(180deg,#140f33,#0d0a26);}
+html[data-theme="sega"] .tangent-eyebrow, html[data-theme="sega"] .bp .tool{background:rgba(138,107,255,.3); color:#e3dcff;}
+html[data-theme="sega"] .sbox.test{background:rgba(255,210,0,.14);}
+html[data-theme="sega"] .lbox, html[data-theme="sega"] .opt, html[data-theme="sega"] .dial, html[data-theme="sega"] .ring .rn, html[data-theme="sega"] .meter .t{background:var(--surface); color:var(--ink);}
+html[data-theme="sega"] .opt.on, html[data-theme="sega"] .dial.on{background:var(--accent-soft);}
+html[data-theme="sega"] .dial.on.overthink{background:var(--vermil-soft);}
+/* inline-styled pastel evidence chips/bars keep their pastel fill, so pin dark text on them */
+html[data-theme="sega"] .ev[style], html[data-theme="sega"] .rung .bar[style]{color:#141a45 !important;}
+
+html[data-theme="sega"] .analogy{background:linear-gradient(180deg,#0f1a45 0%,#0a1236 100%); border-color:var(--outline); box-shadow:0 0 0 3px #000, 7px 7px 0 3px rgba(0,0,0,.6); color:var(--ink-soft);}
+html[data-theme="sega"] .analogy code.inline, html[data-theme="sega"] .analogy code{background:#0a1740; color:#cfe2ff;}
+html[data-theme="sega"] .analogy::after{color:var(--ochre);}
+
+/* ── theme switch (shell) ── */
+.theme-switch{display:inline-flex; align-items:stretch; border:3px solid var(--outline); border-radius:5px; overflow:hidden; background:var(--paper); box-shadow:0 3px 0 var(--outline); flex:none;}
+.theme-switch button{font-family:var(--font-pixel); font-size:.48rem; letter-spacing:.04em; padding:7px 9px; border:0; background:transparent; color:var(--ink-mute); cursor:pointer;}
+.theme-switch button[aria-pressed="true"]{background:var(--cobalt); color:#fff;}
+html[data-theme="sega"] .theme-switch{background:#000; border-color:#fff; box-shadow:0 3px 0 #000;}
+html[data-theme="sega"] .theme-switch button[aria-pressed="true"]{background:var(--vermil);}
+@media(max-width:640px){ .theme-switch{display:none;} }

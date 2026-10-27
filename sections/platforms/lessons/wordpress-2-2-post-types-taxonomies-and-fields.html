@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom Post Types, Taxonomies and Fields</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .stage div{min-width:0;}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ctl input[type=text],.ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-mono); text-transform:none; letter-spacing:0; max-width:100%;}
+  .chk{display:flex; gap:6px; align-items:center; font-family:var(--font-mono); font-size:.76rem; color:var(--ink);} .chk input{accent-color:var(--cobalt);}
+  .pt-src{font-family:var(--font-mono); font-size:.78rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:8px 0; overflow-x:auto; line-height:1.6;}
+  .pt-src .ln{display:block; padding:0 14px; white-space:pre; border-left:4px solid transparent;} .pt-src .ln.on{background:rgba(143,184,255,.22); border-left-color:#ffd23f;}
+  .pt-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.pt-two{grid-template-columns:minmax(0,1fr);}}
+  .pt-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); overflow-wrap:anywhere;}
+  .pt-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .pt-note{font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-height:2.6em; margin-top:8px; overflow-wrap:anywhere;}
+  .pt-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .pt-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:6px 10px; font:700 .76rem var(--font-ui); cursor:pointer;} .pt-seg button:last-child{border-right:0;} .pt-seg button.on{background:var(--cobalt); color:#fff;}
+  .pt-menu{display:flex; flex-direction:column; gap:2px; font-family:var(--font-ui); font-size:.82rem;}
+  .pt-mi{padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--line); color:var(--ink);} .pt-mi.new{border-color:var(--forest); background:var(--forest-soft); font-weight:800;} .pt-mi.gone{opacity:.45; font-style:italic;}
+  .pt-url{font-family:var(--font-mono); font-size:.76rem; padding:3px 0; color:var(--ink); overflow-wrap:anywhere;} .pt-url.no{color:var(--ink-mute); text-decoration:line-through;}
+  .pt-ok{color:var(--forest); font-weight:800;} .pt-bad{color:var(--vermil); font-weight:800;}
+  .pt-tree{font-family:var(--font-ui); font-size:.82rem; color:var(--ink);} .pt-tree div{padding:2px 0;} .pt-tree .l1{padding-left:18px;}
+  .pt-chip{display:inline-block; font-family:var(--font-mono); font-size:.74rem; border:2px solid var(--line-strong); border-radius:6px; padding:2px 8px; margin:2px 4px 2px 0; background:var(--paper); color:var(--ink);}
+  .pt-lanes{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:10px;} @media(max-width:700px){.pt-lanes{grid-template-columns:minmax(0,1fr);}}
+  .pt-lane{border:2px dashed var(--line-strong); border-radius:10px; padding:8px 10px; font-family:var(--font-ui); font-size:.8rem; color:var(--ink); min-height:70px;} .pt-lane.hit{border-style:solid; border-color:var(--forest); background:var(--forest-soft);} .pt-lane b{display:block; font-family:var(--font-pixel); font-size:.44rem; color:var(--ink-mute); margin-bottom:4px; letter-spacing:.05em;}
+  .pt-fields{display:flex; flex-wrap:wrap; gap:8px;} .pt-f{border:2px solid var(--line-strong); border-radius:10px; padding:8px 10px; background:var(--paper); color:var(--ink); font:700 .78rem var(--font-ui); cursor:pointer; text-align:left;} .pt-f.on{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .pt-rows{display:flex; flex-direction:column; gap:6px; margin:8px 0;} .pt-r{display:flex; gap:6px; align-items:center; border:2px solid var(--line-strong); border-radius:8px; padding:5px 8px; background:var(--paper); font-family:var(--font-mono); font-size:.76rem; color:var(--ink);} .pt-r.on{border-color:var(--cobalt); background:var(--cobalt-soft);} .pt-r span{flex:1; cursor:pointer; overflow-wrap:anywhere;} .pt-r button{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); border-radius:5px; cursor:pointer; font:700 .74rem var(--font-ui); padding:2px 7px;}
+  .pt-page{border:2px solid var(--outline); border-radius:10px; padding:10px; background:var(--paper-2); font-family:var(--font-ui); font-size:.82rem; color:var(--ink);} .pt-page div{border-radius:6px; padding:6px 8px; margin-bottom:6px; background:var(--surface); border:1px solid var(--line);} .pt-page div.on{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .pt-chain{display:flex; flex-direction:column; gap:4px; font-family:var(--font-mono); font-size:.78rem; margin-top:8px;} .pt-chain div{border:2px solid var(--line-strong); border-radius:6px; padding:4px 10px; background:var(--paper); color:var(--ink); overflow-wrap:anywhere;} .pt-chain div.first{border-color:var(--forest); background:var(--forest-soft); font-weight:800;} .pt-chain div.skip{opacity:.55;}
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tg{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .78rem var(--font-mono); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--cobalt);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em; font-family:var(--font-ui);} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Custom Post Types, Taxonomies and Fields</h1>
+  <p class="subtitle">How to model your own kind of content in WordPress: a post type for the thing, taxonomies for grouping it, and fields for its details, with the choice between native post meta and a field plugin such as ACF.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Model the content first</a></li>
+      <li><a href="#sec2">register_post_type, argument by argument</a></li>
+      <li><a href="#sec3">Taxonomies: flat or hierarchical</a></li>
+      <li><a href="#sec4">Where does each piece live?</a></li>
+      <li><a href="#sec5">Post meta, hands on</a></li>
+      <li><a href="#sec6">ACF and flexible content</a></li>
+      <li><a href="#sec7">Templates for your model</a></li>
+      <li><a href="#sec8">Choosing, and changing your mind</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Model the content first</h2>
+  <p class="lead">Before any code, decide what the things on the site <em>are</em>. A case study is not a blog post: it has a client, an industry, a results figure and a gallery. WordPress lets you describe that once and then gives editors a proper screen for it.</p>
+  <p>WordPress ships with five default post types: <b>post</b>, <b>page</b>, <b>attachment</b>, <b>revision</b> and <b>nav menu items</b>. Lesson 1.1 had a widget that sorted site content into the right type; this lesson is how you add a type of your own. Three tools make up the model: a <b>post type</b> for the thing itself, <b>taxonomies</b> to group things (by industry, by service), and <b>fields</b> (post meta, native or through a plugin) for its individual details.</p>
+  <p>One decision comes before all three: <b>where the registration code lives</b>. The handbook recommends registering post types in a plugin rather than a theme, so the content stays intact if the theme changes. Switch the theme below and see what happens to the editor's menu.</p>
+  <div class="stage" data-testid="pt-where-demo">
+    <div class="row"><span class="small">Registered in the:</span>
+      <div class="pt-seg" data-testid="pt-where-reg"><button type="button" class="on" data-v="theme" data-testid="pt-where-theme">theme</button><button type="button" data-v="plugin" data-testid="pt-where-plugin">plugin</button></div>
+      <span class="small">Active theme:</span>
+      <div class="pt-seg" data-testid="pt-where-active"><button type="button" class="on" data-v="a" data-testid="pt-where-a">Theme A</button><button type="button" data-v="b" data-testid="pt-where-b">Theme B</button></div></div>
+    <div class="pt-two"><div class="pt-box"><h5>EDITOR'S ADMIN MENU</h5><div class="pt-menu" id="pt-where-menu" data-testid="pt-where-menu"></div></div><div class="pt-box"><h5>WHAT HAPPENED TO THE 40 CASE STUDIES</h5><div id="pt-where-out" data-testid="pt-where-out"></div></div></div>
+    <div class="pt-note" id="pt-where-note"></div>
+  </div>
+  <p class="small">In this demo the Theme A code registers the type; "Theme B" is a redesign that does not copy that code across. The 40 is illustrative. The rows stay in the database either way (background knowledge); what disappears is the screen and the front-end URLs.</p>
+
+  <h2 id="sec2"><span class="num">2</span> register_post_type, argument by argument</h2>
+  <p>You register a type by calling <code class="inline">register_post_type()</code> on the <code class="inline">init</code> hook (lesson 1.1 covered hooks). It takes an identifier and an array of arguments. The identifier is at most <b>20 characters</b> (it has to fit a database column), may hold only lowercase letters, numbers, dashes and underscores, should carry a prefix that identifies your plugin, theme or site, and must not begin with <code class="inline">wp_</code>, which core reserves. Everything about the new screen comes from the arguments, and most of them default to off. Change them below.</p>
+  <div class="stage" data-testid="pt-builder">
+    <div class="row">
+      <label class="ctl">identifier<input type="text" id="pb-id" value="kc_case_study" data-testid="pb-identifier" style="width:200px"></label>
+      <label class="ctl">rewrite slug<input type="text" id="pb-slug" value="work" data-testid="pb-slug" style="width:120px"></label>
+      <label class="ctl">menu_icon<select id="pb-icon" data-testid="pb-icon"><option value="">(default)</option><option value="dashicons-portfolio" selected>dashicons-portfolio</option><option value="dashicons-awards">dashicons-awards</option></select></label>
+    </div>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="pb-public" checked data-testid="pb-public"> public</label>
+      <label class="chk"><input type="checkbox" id="pb-archive" checked data-testid="pb-has-archive"> has_archive</label>
+      <label class="chk"><input type="checkbox" id="pb-rest" checked data-testid="pb-show-in-rest"> show_in_rest</label>
+      <label class="chk"><input type="checkbox" id="pb-thumb" checked data-testid="pb-supports-thumbnail"> supports thumbnail</label>
+      <label class="chk"><input type="checkbox" id="pb-excerpt" data-testid="pb-supports-excerpt"> supports excerpt</label>
+    </div>
+    <div class="pt-two">
+      <div class="pt-src" id="pb-code" data-testid="pb-code"></div>
+      <div>
+        <div class="pt-box"><h5>ADMIN MENU</h5><div class="pt-menu" id="pb-menu" data-testid="pb-menu"></div></div>
+        <div class="pt-box" style="margin-top:10px"><h5>FRONT-END URLS</h5><div id="pb-urls" data-testid="pb-urls"></div></div>
+      </div>
+    </div>
+    <div class="pt-note" id="pb-note" data-testid="pb-note"></div>
+  </div>
+  <p>What each argument does, per the <a href="https://developer.wordpress.org/reference/functions/register_post_type/" target="_blank">register_post_type() reference</a>: <code class="inline">public</code> sets the defaults for several visibility options and is off by default; <code class="inline">has_archive</code> turns on an archive page (off by default); <code class="inline">supports</code> lists the core features and defaults to title and editor; <code class="inline">show_in_rest</code> exposes the type to the REST API and is required for the block editor; <code class="inline">rewrite</code> controls the permalink and its slug defaults to the identifier; <code class="inline">menu_icon</code> takes a Dashicons class, an image URL or a data URI. A slug clash can be fixed later by changing the slug, but an identifier clash cannot be fixed without disabling one of the two types, which is why a prefix matters.</p>
+  <div class="flag"><b>After changing URLs, rewrite rules need flushing.</b> The reference says a plugin should flush rewrite rules on activation (and deactivation) after registering, and a theme should do it on the <code class="inline">after_switch_theme</code> hook. If new URLs 404, this is the usual cause; saving the Permalinks settings screen is the quick manual fix (background knowledge, not stated on that page).</div>
+
+  <h2 id="sec3"><span class="num">3</span> Taxonomies: flat or hierarchical</h2>
+  <p>A <b>taxonomy</b> groups content. You register one with <code class="inline">register_taxonomy()</code>, also on <code class="inline">init</code>, giving an identifier, the post type or types it applies to, and arguments. The one argument that changes the model most is <code class="inline">hierarchical</code>. With <code class="inline">true</code> it behaves like categories: terms have parents and children, and the edit screen shows a checkbox list. With <code class="inline">false</code> (the default) it behaves like tags: a flat list, typed in as free text. WordPress also builds a term archive for each term. Toggle it and watch the edit screen change.</p>
+  <div class="stage" data-testid="pt-tax">
+    <div class="row"><label class="chk"><input type="checkbox" id="tx-h" checked data-testid="tx-hierarchical"> hierarchical</label><label class="chk"><input type="checkbox" id="tx-col" checked data-testid="tx-admin-column"> show_admin_column</label><label class="chk"><input type="checkbox" id="tx-rest" checked data-testid="tx-show-in-rest"> show_in_rest</label></div>
+    <div class="pt-two">
+      <div class="pt-src" id="tx-code" data-testid="tx-code"></div>
+      <div>
+        <div class="pt-box"><h5>ON THE CASE STUDY EDIT SCREEN</h5><div id="tx-ui" data-testid="tx-ui"></div></div>
+        <div class="pt-box" style="margin-top:10px"><h5>LIST SCREEN COLUMNS</h5><div id="tx-cols" data-testid="tx-cols"></div></div>
+      </div>
+    </div>
+    <div class="pt-note" id="tx-note" data-testid="tx-note"></div>
+  </div>
+  <p>From the <a href="https://developer.wordpress.org/reference/functions/register_taxonomy/" target="_blank">register_taxonomy() reference</a>: <code class="inline">show_admin_column</code> adds a column for the taxonomy on the list screens, <code class="inline">show_in_rest</code> makes it available to the block editor, and the name must be 32 characters or fewer. The docs also warn against names that collide with reserved query terms such as <code class="inline">category</code>, <code class="inline">tag</code> and <code class="inline">post_type</code>. Helper functions you will meet in templates include <code class="inline">the_terms()</code> and <code class="inline">wp_tag_cloud()</code>.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Where does each piece live?</h2>
+  <p>A single case study is spread over three kinds of storage, and knowing which is which tells you how to query it later. Click a piece of the case study to see where WordPress keeps it.</p>
+  <div class="stage" data-testid="pt-store">
+    <div class="pt-fields" id="st-fields"></div>
+    <div class="pt-lanes">
+      <div class="pt-lane" id="st-post" data-testid="st-lane-post"><b>THE POST ITSELF</b>title, body, status, dates</div>
+      <div class="pt-lane" id="st-term" data-testid="st-lane-term"><b>TAXONOMY TERMS</b>shared labels, many posts can point at one term</div>
+      <div class="pt-lane" id="st-meta" data-testid="st-lane-meta"><b>POST META</b>key and value pairs belonging to this one post</div>
+    </div>
+    <div class="pt-note" id="st-note" data-testid="st-note"></div>
+  </div>
+  <p class="small">The three-way split (post, term, meta) is the WordPress data model as the handbook describes it for custom fields and taxonomies. Exactly how ACF stores its values is background knowledge that this lesson did not confirm.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Post meta, hands on</h2>
+  <p>Post meta is data attached to one post as a key and a value. Four functions cover it: <code class="inline">add_post_meta( $post_id, $key, $value, $unique )</code>, <code class="inline">update_post_meta()</code> (which creates the key if it is missing), <code class="inline">delete_post_meta()</code> and <code class="inline">get_post_meta()</code>. The detail that surprises people is that a key can hold <b>several values</b> unless you pass the unique flag, and that the third argument of <code class="inline">get_post_meta()</code> decides whether you get one value or a list. Try a sequence on the key <code class="inline">client</code>.</p>
+  <div class="stage" data-testid="pt-meta">
+    <div class="row">
+      <button class="btn" id="mt-add" data-testid="mt-add">add_post_meta( 'Acme' )</button>
+      <button class="btn" id="mt-addu" data-testid="mt-add-unique">add_post_meta( 'Acme', true )</button>
+      <button class="btn" id="mt-upd" data-testid="mt-update">update_post_meta( 'Beta Ltd' )</button>
+      <button class="btn sec" id="mt-del" data-testid="mt-delete">delete_post_meta( 'client' )</button>
+      <button class="btn sec" id="mt-reset" data-testid="mt-reset">Reset</button>
+    </div>
+    <div class="pt-two">
+      <div class="pt-box"><h5>STORED UNDER KEY 'client'</h5><div id="mt-store" data-testid="mt-store"></div></div>
+      <div class="pt-box"><h5>WHAT get_post_meta() RETURNS</h5><div id="mt-get" data-testid="mt-get"></div></div>
+    </div>
+    <div class="pt-note" id="mt-note" data-testid="mt-note"></div>
+  </div>
+  <p>More rules from the handbook: a key that starts with an underscore is hidden from the edit screen's custom fields list; an array value is serialised for you; and stored values pass through <code class="inline">stripslashes</code>, so JSON should be wrapped in <code class="inline">wp_slash()</code> when saved. The security habit from lesson 2.1 carries over: <b>sanitise on save, escape on output</b>. The demo above is my own model of the behaviour, not WordPress itself.</p>
+
+  <h2 id="sec6"><span class="num">6</span> ACF and flexible content</h2>
+  <p>Native meta works, but the editor sees only a plain key and value box unless you build your own meta box. A field plugin supplies the interface. <b>Advanced Custom Fields (ACF)</b> is the common one: you define fields in its settings, editors get proper inputs (image pickers, selects, repeaters), and in a template you read a value with <code class="inline">get_field( 'name' )</code>. By default it reads from the current post; a second argument can target another post, and prefixes such as <code class="inline">user_2</code> or <code class="inline">category_3</code> target other objects. With formatting on, some fields return processed data, such as an image array instead of an ID. The ACF docs say you still escape what you print, for example with <code class="inline">wp_kses_post()</code> (lesson 2.1).</p>
+  <p>The field type worth understanding is <b>Flexible Content</b>, listed in ACF's docs as a PRO feature. Editors stack <b>layouts</b> (a hero, a text block, an image, a quote) in any order, and your template loops over them with <code class="inline">have_rows()</code> and <code class="inline">the_row()</code>, branching on <code class="inline">get_row_layout()</code> and reading values with <code class="inline">get_sub_field()</code>. Build a page below and select a row to see which branch of the template renders it.</p>
+  <div class="stage" data-testid="pt-flex">
+    <div class="row"><span class="small">Add a layout:</span><button class="btn sec" data-l="hero" data-testid="fx-add-hero">hero</button><button class="btn sec" data-l="text" data-testid="fx-add-text">text</button><button class="btn sec" data-l="image" data-testid="fx-add-image">image</button><button class="btn sec" data-l="quote" data-testid="fx-add-quote">quote</button></div>
+    <div class="pt-two">
+      <div><div class="pt-box"><h5>EDITOR'S LAYOUT STACK (click a row)</h5><div class="pt-rows" id="fx-rows" data-testid="fx-rows"></div></div>
+      <div class="pt-box" style="margin-top:10px"><h5>RENDERED PAGE, IN ORDER</h5><div class="pt-page" id="fx-page" data-testid="fx-page"></div></div></div>
+      <div class="pt-src" id="fx-code" data-testid="fx-code"></div>
+    </div>
+    <div class="pt-note" id="fx-note" data-testid="fx-note"></div>
+  </div>
+  <p class="small">The template shape follows ACF's Flexible Content page. The docs for it do not say where values are saved; field data is saved for the post. If you have read that ACF keeps values in post meta, that is background knowledge here, not confirmed by the sources used. Flexible Content is an editor-facing page builder: use it where editors really do need to vary the layout, because every layout is another template branch you maintain.</p>
+
+  <h2 id="sec7"><span class="num">7</span> Templates for your model</h2>
+  <p>Registering the type creates the URLs; templates decide how they look. Lesson 1.2 covered the template hierarchy, and a custom type slots into it with its own filenames. Pick a URL from the case study model and the most specific file your theme has; see which file WordPress uses. It tries names from the top and stops at the first that exists, with <code class="inline">index.php</code> as the last resort.</p>
+  <div class="stage" data-testid="pt-hier">
+    <div class="row"><label class="ctl">visitor requests<select id="hr-sel" data-testid="hr-url"><option value="single">/work/acme-rebrand/ (one case study)</option><option value="archive">/work/ (case study archive)</option><option value="tax">/industry/finance/ (a term archive)</option></select></label><label class="ctl">most specific file the theme has<select id="hr-have" data-testid="hr-have"></select></label></div>
+    <div class="pt-chain" id="hr-chain" data-testid="hr-chain"></div>
+    <div class="pt-note" id="hr-note" data-testid="hr-note"></div>
+  </div>
+  <p class="small">File orders are from the <a href="https://developer.wordpress.org/themes/basics/template-hierarchy/" target="_blank">template hierarchy</a> page. The demo uses the identifier <code class="inline">kc_case_study</code> and a taxonomy called <code class="inline">industry</code>; the identifier takes the place of <code class="inline">{post-type}</code> in the filenames.</p>
+
+  <h2 id="sec8"><span class="num">8</span> Choosing, and changing your mind</h2>
+  <p>For each piece of data, which tool fits? A rough rule, <b>my own synthesis rather than an official one</b>: if people will browse or filter by a shared value, it is a taxonomy; if it is a one-off detail of a single post, it is a field, native meta when a developer manages it and a field plugin when editors need a good interface or reorderable layouts.</p>
+  <div class="stage" data-testid="pt-picker">
+    <div class="scn" id="pk-scn"></div>
+    <div class="scn-nav"><button class="btn" id="pk-next" data-testid="pk-next" disabled>Next &rarr;</button><span class="small" id="pk-score" data-testid="pk-score"></span></div>
+  </div>
+  <p>Changing the model later is where the cost shows up. Renaming a post type identifier, or moving a value from a field to a taxonomy, means existing rows must be migrated, usually with a script, and URLs may change so redirects are needed. None of that is hard, but it is much cheaper to think about before 400 entries exist. This is why the plan says good content modelling saves more time than any theme trick. If you have met Shopify metaobjects, the idea is the same: a defined structure for content that does not fit a product or a page.</p>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Model first:</b> a post type for the thing, taxonomies for shared grouping, fields for per-post details.</li>
+    <li><b>Register on <code class="inline">init</code>, in a plugin</b> so content survives a theme change; prefix identifiers, keep them to 20 characters, avoid <code class="inline">wp_</code>.</li>
+    <li><b>Most arguments default to off:</b> set <code class="inline">public</code>, <code class="inline">has_archive</code> and <code class="inline">show_in_rest</code> deliberately, and flush rewrite rules after changing URLs.</li>
+    <li><b>Taxonomies:</b> <code class="inline">hierarchical</code> gives category-style trees; otherwise tag-style lists.</li>
+    <li><b>Post meta:</b> one key can hold many values; <code class="inline">get_post_meta()</code> with true returns a single value; sanitise on save, escape on output.</li>
+    <li><b>ACF</b> gives editors a real interface; <code class="inline">get_field()</code> reads values and Flexible Content (PRO) is a loop with one template branch per layout.</li>
+  </ul>
+  <p class="src"><b>Primary.</b> <a href="https://developer.wordpress.org/reference/functions/register_post_type/" target="_blank">register_post_type()</a> &middot; <a href="https://developer.wordpress.org/reference/functions/register_taxonomy/" target="_blank">register_taxonomy()</a> &middot; <a href="https://developer.wordpress.org/themes/basics/template-hierarchy/" target="_blank">Template hierarchy</a> &middot; <a href="https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/" target="_blank">Registering custom post types (Plugin Handbook)</a> &middot; <a href="https://developer.wordpress.org/plugins/taxonomies/working-with-custom-taxonomies/" target="_blank">Working with custom taxonomies</a> &middot; <a href="https://developer.wordpress.org/plugins/metadata/managing-post-metadata/" target="_blank">Managing post metadata</a> &middot; <a href="https://www.advancedcustomfields.com/resources/get_field/" target="_blank">ACF: get_field()</a> &middot; <a href="https://www.advancedcustomfields.com/resources/flexible-content/" target="_blank">ACF: Flexible Content</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> I read the register_post_type reference, the register_taxonomy reference, the template hierarchy page and ACF's Flexible Content page directly. The plugin-versus-theme advice, identifier rules, post meta function behaviour, underscore keys, wp_slash advice and get_field() details come from notes gathered earlier from the handbook and ACF docs, not re-read here. Background knowledge, not confirmed by those sources: the manual permalinks-save fix, where ACF stores values, rows surviving in the database when the registration code is gone, the migration advice, and the demos' simulated outcomes. The 40 case studies, term names and everything in the quiz are illustrative.</p>
+
+  <footer>Custom Post Types, Taxonomies and Fields &middot; WordPress for Front-End &amp; UI Developers &middot; part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id => document.getElementById(id);
+const esc=s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const code=(el,lines,on) => { el.innerHTML=lines.map((l,i) => '<span class="ln'+(on&&on.indexOf(i)>-1?' on':'')+'">'+esc(l)+'</span>').join(''); };
+const seg=(root,fn) => { root.querySelectorAll('button').forEach(b => b.addEventListener('click',() => { root.querySelectorAll('button').forEach(x => x.classList.toggle('on',x===b)); fn(b.dataset.v); })); };
+
+/* ---------- 1 plugin vs theme ---------- */
+(function(){
+  let reg='theme', cur='a';
+  function draw(){
+    const alive = reg==='plugin' || cur==='a';
+    $('pt-where-menu').innerHTML='<div class="pt-mi">Posts</div><div class="pt-mi">Media</div><div class="pt-mi">Pages</div>'+(alive?'<div class="pt-mi new">Case studies</div>':'<div class="pt-mi gone">(Case studies is gone)</div>');
+    $('pt-where-out').innerHTML = alive ? '<span class="pt-ok">Editable and visible.</span> The type is registered, so the screen and /work/ URLs exist.' : '<span class="pt-bad">Orphaned.</span> The rows are still stored, but no code registers the type, so editors cannot reach them and the URLs stop working.';
+    $('pt-where-note').textContent = reg==='plugin' ? 'The plugin keeps running whichever theme is in use, so the content model survives a redesign. This is the handbook recommendation.' : (cur==='a' ? 'It works today, but the model is now tied to Theme A. Switch the theme in use to see the risk.' : 'The registration lived in Theme A. Registering it in a plugin would have avoided this.');
+  }
+  const segs=document.querySelectorAll('.pt-seg');
+  seg(segs[0],v => {reg=v;draw();});
+  seg(segs[1],v => {cur=v;draw();});
+  draw();
+})();
+
+/* ---------- 2 builder ---------- */
+(function(){
+  const ids='pb-id pb-slug pb-icon pb-public pb-archive pb-rest pb-thumb pb-excerpt'.split(' ');
+  function draw(){
+    const id=$('pb-id').value.trim(), slug=$('pb-slug').value.trim()||id, icon=$('pb-icon').value;
+    const pub=$('pb-public').checked, arch=$('pb-archive').checked, rest=$('pb-rest').checked;
+    const sup=['title','editor']; if($('pb-thumb').checked) sup.push('thumbnail'); if($('pb-excerpt').checked) sup.push('excerpt');
+    const fn='kc_register_case_study';
+    const L=["add_action( 'init', '"+fn+"' );","function "+fn+"() {","  register_post_type( '"+id+"', array(","    'label'        => 'Case studies',","    'public'       => "+pub+",","    'has_archive'  => "+arch+",","    'show_in_rest' => "+rest+",","    'supports'     => array( '"+sup.join("', '")+"' ),","    'rewrite'      => array( 'slug' => '"+slug+"' ),"].concat(icon?["    'menu_icon'    => '"+icon+"',"]:[]).concat(["  ) );","}"]);
+    code($('pb-code'),L);
+    const okId=/^[a-z0-9_-]+$/.test(id) && id.length<=20 && id.length>0 && id.indexOf('wp_')!==0;
+    let notes=[];
+    if(!okId){ const why = id.length===0?'it is empty':id.length>20?'it is '+id.length+' characters (the limit is 20)':id.indexOf('wp_')===0?'wp_ is reserved by core':'only lowercase letters, numbers, dashes and underscores are allowed'; notes.push('<span class="pt-bad">Identifier problem: '+why+'.</span> register_post_type() would fail or misbehave.'); }
+    else notes.push('<span class="pt-ok">Identifier is valid</span> ('+id.length+' of 20 characters, prefixed).');
+    $('pb-menu').innerHTML='<div class="pt-mi">Posts</div><div class="pt-mi">Pages</div>'+(pub&&okId?'<div class="pt-mi new">Case studies'+(icon?' ('+icon.replace('dashicons-','')+' icon)':'')+'</div>':'<div class="pt-mi gone">(no admin screen)</div>');
+    const base='/'+slug+'/';
+    $('pb-urls').innerHTML='<div class="pt-url'+(pub&&okId?'':' no')+'">'+esc(base+'acme-rebrand/')+'  (single)</div><div class="pt-url'+(pub&&arch&&okId?'':' no')+'">'+esc(base)+'  (archive)</div>';
+    if(!pub) notes.push('public is false (the default), so there is no menu entry and no front-end URL: this is how you would register an internal-only type.');
+    if(pub&&!arch) notes.push('There is a single URL per entry but no archive page: has_archive is off by default.');
+    if(pub&&!rest) notes.push('Without show_in_rest the block editor is not available for this type, and the REST API does not expose it.');
+    $('pb-note').innerHTML=notes.join('<br>');
+  }
+  ids.forEach(i => { $(i).addEventListener('input',draw); $(i).addEventListener('change',draw); }); draw();
+})();
+
+/* ---------- 3 taxonomy ---------- */
+(function(){
+  function draw(){
+    const h=$('tx-h').checked, col=$('tx-col').checked, rest=$('tx-rest').checked;
+    code($('tx-code'),["add_action( 'init', 'kc_register_industry' );","function kc_register_industry() {","  register_taxonomy( 'industry', array( 'kc_case_study' ), array(","    'label'             => 'Industries',","    'hierarchical'      => "+h+",","    'show_admin_column' => "+col+",","    'show_in_rest'      => "+rest+",","    'rewrite'           => array( 'slug' => 'industry' ),","  ) );","}"]);
+    $('tx-ui').innerHTML = h ? '<div class="pt-tree"><div><b>Industries</b></div><div><label><input type="checkbox" checked> Finance</label></div><div class="l1"><label><input type="checkbox" checked> Banking</label></div><div class="l1"><label><input type="checkbox"> Insurance</label></div><div><label><input type="checkbox"> Health</label></div><div class="l1"><label><input type="checkbox"> Clinics</label></div></div>' : '<div class="pt-tree"><div><b>Industries</b></div><div><input type="text" value="finance, banking" style="width:100%;max-width:240px;border:2px solid var(--line-strong);border-radius:6px;padding:4px 6px;background:var(--surface);color:var(--ink);font:.78rem var(--font-mono)"></div><div class="small">comma-separated, free text, like tags</div></div>';
+    $('tx-cols').innerHTML = '<span class="pt-chip">Title</span>'+(col?'<span class="pt-chip" style="border-color:var(--forest);background:var(--forest-soft)">Industries</span>':'')+'<span class="pt-chip">Date</span>';
+    $('tx-note').innerHTML = (h?'Hierarchical: Banking is a child of Finance, so you can pick a parent, a child or both. ':'Flat: every term stands alone, which suits tags and keywords. ')+'WordPress builds a page per term, such as /industry/finance/. '+(rest?'':'<span class="pt-bad">show_in_rest is off, so the block editor will not show this taxonomy.</span>');
+  }
+  'tx-h tx-col tx-rest'.split(' ').forEach(i => $(i).addEventListener('change',draw)); draw();
+})();
+
+/* ---------- 4 storage ---------- */
+(function(){
+  const F=[['Title','post','The title is part of the post record itself.'],['Body text','post','The editor content is part of the post record.'],['Industry: Finance','term','A taxonomy term. Many case studies can point at the same term, and WordPress builds the /industry/finance/ archive from it.'],['Client name','meta','A one-off detail of this case study: a native meta key, or an ACF field saved for the post.'],['Result figure (e.g. "+30% leads")','meta','Per-post detail, so a field. Illustrative value.'],['Flexible content layouts','meta','Field plugin data saved for the post. (Background knowledge: ACF keeps it in post meta; the ACF page read for this lesson does not say.)'],['Published date','post','Dates and status are part of the post record.'],['Service tags','term','Shared labels you want to filter by: a second taxonomy.']];
+  const box=$('st-fields'); let cur=-1;
+  F.forEach((f,i) => { const b=document.createElement('button'); b.type='button'; b.className='pt-f'; b.textContent=f[0]; b.setAttribute('data-testid','st-field-'+i); b.addEventListener('click',() => { cur=i; draw(); }); box.appendChild(b); });
+  function draw(){ Array.from(box.children).forEach((b,i) => b.classList.toggle('on',i===cur)); 'post term meta'.split(' ').forEach(k => $('st-'+k).classList.toggle('hit',cur>-1&&F[cur][1]===k)); $('st-note').textContent = cur>-1?F[cur][2]:'Click a piece of the case study.'; }
+  draw();
+})();
+
+/* ---------- 5 meta ---------- */
+(function(){
+  let vals=[];
+  function draw(msg){
+    $('mt-store').innerHTML = vals.length? vals.map(v => '<span class="pt-chip">'+esc(v)+'</span>').join('') : '<span class="small">(no key stored)</span>';
+    $('mt-get').innerHTML = '<div class="pt-url">get_post_meta( $id, \'client\', true ) &rarr; '+(vals.length?'"'+esc(vals[0])+'"':'"" (empty string)')+'</div><div class="pt-url">get_post_meta( $id, \'client\', false ) &rarr; array( '+vals.map(v => '"'+esc(v)+'"').join(', ')+' )</div>';
+    $('mt-note').textContent = msg||'Add the same key twice and compare the two returns.';
+  }
+  $('mt-add').onclick=() => { vals.push('Acme'); draw('Without the unique flag, add_post_meta() appends: the key now holds '+vals.length+' value(s). With true as the third get argument you only see the first.'); };
+  $('mt-addu').onclick=() => { if(vals.length) draw('The unique flag is true and the key already exists, so nothing was added (the function returns false).'); else { vals.push('Acme'); draw('Added as the only value for this key.'); } };
+  $('mt-upd').onclick=() => { const multi=vals.length>1; vals = multi ? ['Beta Ltd'].concat(vals.slice(1)) : ['Beta Ltd']; draw(multi?'With several values under the key, update_post_meta() without a previous value is ambiguous; this demo changes the first only (my simplification, not WordPress behaviour).':'update_post_meta() created the key if it was missing, or replaced the value if it existed.'); };
+  $('mt-del').onclick=() => { vals=[]; draw('delete_post_meta() with no value removes every value under that key.'); };
+  $('mt-reset').onclick=() => { vals=[]; draw(); };
+  draw();
+})();
+
+/* ---------- 6 flexible content ---------- */
+(function(){
+  const PAGE={hero:'Large heading and intro',text:'Paragraph of body text',image:'Full-width image with caption',quote:'Pull quote from the client'};
+  const SRC=["<?php if ( have_rows( 'content' ) ) : ?>","  <?php while ( have_rows( 'content' ) ) : the_row(); ?>","    <?php if ( get_row_layout() == 'hero' ) : ?>","      <?php /* get_sub_field( 'heading' ) */ ?>","    <?php elseif ( get_row_layout() == 'text' ) : ?>","      <?php /* get_sub_field( 'text' ) */ ?>","    <?php elseif ( get_row_layout() == 'image' ) : ?>","      <?php /* get_sub_field( 'image' ) */ ?>","    <?php elseif ( get_row_layout() == 'quote' ) : ?>","      <?php /* get_sub_field( 'quote' ) */ ?>","    <?php endif; ?>","  <?php endwhile; ?>","<?php else : ?>","  <?php /* nothing stacked yet */ ?>","<?php endif; ?>"];
+  const LINE={hero:[2,3],text:[4,5],image:[6,7],quote:[8,9]};
+  let rows=['hero','text','quote'], sel=0;
+  function draw(){
+    const r=$('fx-rows'); r.innerHTML='';
+    rows.forEach((k,i) => { const d=document.createElement('div'); d.className='pt-r'+(i===sel?' on':''); const s=document.createElement('span'); s.textContent=(i+1)+'. '+k; s.setAttribute('data-testid','fx-row-'+i); s.onclick=() => {sel=i;draw();}; d.appendChild(s);
+      [['up','↑'],['down','↓'],['del','×']].forEach(a => { const b=document.createElement('button'); b.type='button'; b.textContent=a[1]; b.setAttribute('data-testid','fx-'+a[0]+'-'+i); b.onclick=() => { if(a[0]==='del'){ rows.splice(i,1); sel=Math.min(sel,rows.length-1); } else { const j=a[0]==='up'?i-1:i+1; if(j<0||j>=rows.length) return; const t=rows[i]; rows[i]=rows[j]; rows[j]=t; sel=j; } draw(); }; d.appendChild(b); });
+      r.appendChild(d); });
+    if(!rows.length) r.innerHTML='<span class="small">Empty: the else branch runs.</span>';
+    $('fx-page').innerHTML = rows.length? rows.map((k,i) => '<div class="'+(i===sel?'on':'')+'">'+esc(PAGE[k])+'</div>').join('') : '<div>(nothing rendered)</div>';
+    const on = rows.length&&sel>-1? [0,1].concat(LINE[rows[sel]]).concat([10,11,14]) : [0,12,13,14];
+    code($('fx-code'),SRC,on);
+    $('fx-note').textContent = rows.length? 'Row '+(sel+1)+' has the layout "'+rows[sel]+'", so on that pass of the while loop get_row_layout() matches the highlighted branch and the other branches are skipped.' : 'have_rows() is false with no rows, so the else branch runs.';
+  }
+  Array.from(document.querySelectorAll('.btn.sec')).filter(b => b.dataset.l).forEach(b => b.addEventListener('click',() => { rows.push(b.dataset.l); sel=rows.length-1; draw(); }));
+  draw();
+})();
+
+/* ---------- 7 hierarchy ---------- */
+(function(){
+  const CH={single:['single-kc_case_study-acme-rebrand.php','single-kc_case_study.php','single.php','singular.php','index.php'],archive:['archive-kc_case_study.php','archive.php','index.php'],tax:['taxonomy-industry-finance.php','taxonomy-industry.php','taxonomy.php','archive.php','index.php']};
+  const sel=$('hr-sel'), have=$('hr-have');
+  function fill(){ have.innerHTML=''; CH[sel.value].forEach((f,i) => { const o=document.createElement('option'); o.value=i; o.textContent=f; have.appendChild(o); }); have.value=CH[sel.value].length-1; draw(); }
+  function draw(){ const list=CH[sel.value], w=+have.value;
+    $('hr-chain').innerHTML=list.map((f,i) => '<div class="'+(i===w?'first':(i<w?'skip':''))+'">'+(i+1)+'. '+esc(f)+(i===w?'  ← used':'')+(i<w?'  (not in theme)':'')+'</div>').join('');
+    $('hr-note').textContent = w===list.length-1 ? 'Only the last resort exists, so this URL falls through to index.php. Adding one file higher up changes just this case.' : 'WordPress tried the names above it, found none in the theme, and stopped at this one.'; }
+  sel.addEventListener('change',fill); have.addEventListener('change',draw); fill();
+})();
+
+/* ---------- 8 picker quiz ---------- */
+(function(){
+  const O=['Taxonomy','Native post meta','Field plugin (ACF)'];
+  const Q=[['Visitors should be able to see all case studies for "Finance" on one page.',0,'A value shared by many posts that people browse by is a taxonomy. You get term archives for free.'],['A single "client website URL" per case study, filled in by a developer from a script.',1,'One simple value on one post, written by code: native meta is enough, with escaping on output.'],['Editors want to stack hero, text and image blocks in their own order on each case study.',2,'Reorderable layouts need an editor interface. Flexible Content (ACF PRO) is built for this.'],['A "result figure" that non-technical editors type in, with a label and a hint.',2,'Editors need a clear input with instructions. You could hand-build a meta box, but a field plugin is quicker to maintain.'],['A list of services (design, build, support) used to group and filter the work.',0,'Grouping and filtering by a shared label is what taxonomies are for; avoid stuffing it into a text field.']];
+  let i=0,score=0,done=false; const box=$('pk-scn'), nx=$('pk-next');
+  function next(){ i++; show(); }
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="tg">DONE</div><div class="say" style="border-left-color:var(--forest)">You matched '+score+' of '+Q.length+'.</div><p class="small">These are rules of thumb (my synthesis). A real project also weighs who edits, who maintains the code and how long the site lives.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=() => { i=0; score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; $('pk-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tg">DATA '+(i+1)+' / '+Q.length+'</div><div class="say">'+esc(q[0])+'</div><div class="opts">'+O.map((o,k) => '<button type="button" class="opt" data-k="'+k+'" data-testid="pk-option-'+k+'">'+esc(o)+'</button>').join('')+'</div><div class="why" id="pk-why"></div>';
+    box.querySelectorAll('.opt').forEach(b => b.onclick=() => { if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); $('pk-why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+esc(q[2]); nx.disabled=false; $('pk-score').textContent=score+' of '+(i+1)+' matched'; });
+  }
+  nx.onclick=next; show();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

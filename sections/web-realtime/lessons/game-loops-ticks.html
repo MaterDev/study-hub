@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Loops, Ticks & Fixed Timestep</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--ochre); --accent-soft:var(--ochre-soft); --accent-text:#8a5d00; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .loopviz{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; font-family:var(--font-ui);}
+  .lbox{border:1.5px solid var(--line-strong); border-radius:10px; padding:10px 14px; font-size:.82rem; text-align:center; background:var(--paper-2); min-width:96px; transition:all .12s;}
+  .lbox.hot{border-color:var(--ochre); background:var(--ochre-soft); box-shadow:2px 2px 0 var(--ochre-soft);}
+  .lbox b{display:block; color:var(--ink); font-size:.9rem;}
+  .lbox span{color:var(--ink-mute); font-size:.72rem;}
+  .arrow{color:var(--ink-faint); font-size:1.2rem;}
+  .btn{background:var(--accent); color:#2a3150; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:600; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink);}
+  .controls{display:flex; gap:10px; margin-top:14px; align-items:center; flex-wrap:wrap; font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute);}
+  .fps-read{font-family:var(--font-mono); color:var(--ink);}
+  /* fixed vs variable demo */
+  .track{position:relative; height:64px; background:var(--paper-2); border:1px solid var(--line); border-radius:10px; margin:8px 0; overflow:hidden;}
+  .ball{position:absolute; top:22px; width:20px; height:20px; border-radius:50%;}
+  .ball.v{background:var(--vermil);} .ball.f{background:var(--forest);}
+  .track-label{position:absolute; left:8px; top:6px; font-family:var(--font-ui); font-size:.7rem; color:var(--ink-mute); text-transform:uppercase; letter-spacing:.05em;}
+  table td .mono{font-family:var(--font-mono); font-size:.85rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Game Loops, Ticks &amp; Fixed Timestep</h1>
+  <p class="subtitle">Before any networking makes sense, you need the heartbeat every game runs on.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Why this comes first</a></li>
+      <li><a href="#sec2">The loop: input → update → render</a></li>
+      <li><a href="#sec3">Ticks vs. frames</a></li>
+      <li><a href="#sec4">Variable vs. fixed timestep</a></li>
+      <li><a href="#sec5">Sim vs. render (the split that enables netcode)</a></li>
+      <li><a href="#sec6">How your spike's game is built</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Why this comes first</h2>
+  <p class="lead">Your spike is a networking experiment, but networking a game means synchronizing two copies of a <em>simulation</em> that is constantly stepping forward in time. If you don't have a crisp picture of how that simulation advances &mdash; the "game loop" &mdash; none of the netcode vocabulary (tick, snapshot, rollback, fixed timestep) will land.</p>
+  <div class="analogy">
+    <span class="emoji">🎬</span><strong>Analogy:</strong> A game is a flipbook that draws itself. Every fraction of a second it asks "what buttons are held? what should move? now draw it." A single-player game only has to flip its own book. Multiplayer means two people are flipping <em>the same book</em> and it has to stay on the same page.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> The loop: input → update → render</h2>
+  <p>At its heart, every real-time game runs one loop, forever, many times per second. Each pass through it is one <strong>frame</strong>:</p>
+  <div class="stage">
+    <div class="loopviz" id="loopviz">
+      <div class="lbox" data-step="0"><b>Input</b><span>read buttons</span></div>
+      <div class="arrow">→</div>
+      <div class="lbox" data-step="1"><b>Update</b><span>advance the sim</span></div>
+      <div class="arrow">→</div>
+      <div class="lbox" data-step="2"><b>Render</b><span>draw the frame</span></div>
+      <div class="arrow">↺</div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="loop-run">▶ Run the loop</button>
+      <button class="btn sec" id="loop-stop">Stop</button>
+      <span>frames drawn: <span class="fps-read" id="frame-count">0</span></span>
+    </div>
+  </div>
+  <p><strong>Input</strong> reads the current state of the controls. <strong>Update</strong> (also called the <em>simulation</em> or "sim") applies the rules of the game: move fighters, apply gravity, resolve hits, tick down timers. <strong>Render</strong> draws the resulting world to the screen. Then it loops. In the browser this loop is driven by <code class="inline">requestAnimationFrame</code>, which fires once per display refresh &mdash; usually 60 times a second (<code class="inline">60Hz</code>), sometimes 120.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Ticks vs. frames</h2>
+  <p>These two words get used loosely, but the distinction is the whole game:</p>
+  <table>
+    <tr><th>Term</th><th>What it counts</th><th>Tied to</th></tr>
+    <tr><td><b>Frame</b></td><td>One <em>render</em> to the screen</td><td>The monitor's refresh rate (60/120 Hz)</td></tr>
+    <tr><td><b>Tick</b></td><td>One <em>update</em> of the simulation</td><td>The game's chosen sim rate</td></tr>
+  </table>
+  <p>They're often the same number (one sim update per drawn frame), but they don't have to be. A game can render at 120fps while simulating at a steady 60 ticks per second, or the reverse. Networking cares almost entirely about <strong>ticks</strong>, because a tick is the unit of game state you might send across the wire. When your spike's snapshot carries a <code class="inline">tick</code> field, it's stamping "this is what the world looked like at simulation step N."</p>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">under the hood</div>
+    <h4>Why decouple them at all?</h4>
+    <p>If your simulation math is bolted to the render rate, then a player on a 144Hz monitor experiences different physics than one on 60Hz &mdash; gravity is applied more often, so they fall faster. Decoupling the sim to a fixed rate makes the game behave identically regardless of the screen. This is exactly the property multiplayer needs: two machines must agree on what happened, and they can't if the answer depends on each player's monitor.</p>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Variable vs. fixed timestep</h2>
+  <p>How much time should one <code class="inline">update</code> advance the world? Two philosophies:</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">⏱️ Variable timestep</h3>
+      <p style="font-size:.92rem;">Each update advances by however much real time has passed since the last one (the "delta", often written <code class="inline">dt</code>). Simple, always smooth &mdash; but every run is slightly different, because <code class="inline">dt</code> is never exactly the same twice.</p>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">🔒 Fixed timestep</h3>
+      <p style="font-size:.92rem;">Each update advances by a constant slice (e.g. exactly <code class="inline">1/60s</code>), accumulating leftover time and running as many fixed steps as fit. Every run with the same inputs produces the <em>identical</em> result.</p>
+    </div>
+  </div>
+  <p>Press play and watch two balls cross the same distance. Both look fine &mdash; but only one is <em>reproducible</em>.</p>
+  <div class="stage">
+    <div class="track"><span class="track-label">Variable timestep (dt-driven)</span><div class="ball v" id="ball-v" style="left:8px;"></div></div>
+    <div class="track"><span class="track-label">Fixed timestep (1/60s steps)</span><div class="ball f" id="ball-f" style="left:8px;"></div></div>
+    <div class="controls">
+      <button class="btn" id="ts-run">▶ Cross the screen</button>
+      <span>Both arrive together &mdash; but only the fixed one lands on the same pixel every single time.</span>
+    </div>
+  </div>
+  <div class="flag">
+    <strong>Why you care for netcode:</strong> the advanced models (lockstep, rollback) require that replaying the same inputs gives a bit-for-bit identical result on both machines. That is <em>only</em> possible with a fixed timestep. A variable-timestep game is fundamentally non-reproducible, so those models are off the table until you convert it &mdash; which is precisely the "determinism cost" your spike measures.
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Sim vs. render: the split that enables netcode</h2>
+  <p>The most important structural idea for everything that follows: separate <strong>what is true</strong> (the simulation state &mdash; positions, health, timers) from <strong>how it's drawn</strong> (sprites, animations, particle effects). The sim is the authoritative data; render is a view of it.</p>
+  <div class="analogy">
+    Think of a chess game: the <em>state</em> is "white knight on f3" &mdash; a tiny fact you could text to a friend. The <em>render</em> is the carved wooden piece, the lighting, the little bounce animation when it lands. To sync a game across the network you only need to send the <strong>state</strong>; each machine can draw it however it likes.
+  </div>
+  <p>This is the entire premise of "host-authoritative" netcode (Lesson 4): one machine runs the real sim, captures the state as a <strong>snapshot</strong> (Lesson 5), and ships just that small state to the other machine, which draws it. It only works cleanly if state and render are actually separable.</p>
+
+  <h2 id="sec6"><span class="num">6</span> How your spike's game is built</h2>
+  <p>Your fighting game runs on <strong>Phaser</strong> (a popular 2D web game framework). The spike's research notes verified some things about it that matter for everything ahead:</p>
+  <div class="pitfall"><div class="icon">🔀</div><div><b>It uses a variable timestep.</b> "All timers keyed on real <code class="inline">delta</code>, no tick counter." So the sim is <em>not</em> reproducible yet &mdash; rollback/lockstep would require introducing a fixed step first. (This is why the determinism experiment scores low.)</div></div>
+  <div class="pitfall"><div class="icon">🎭</div><div><b>State and render are tangled.</b> The notes found that "sim mutations trigger rendering as a side effect" (taking damage directly plays a hit animation), and pose/animation live in fire-and-forget Phaser <em>tweens</em> with no snapshottable state. So a second machine can capture the <em>logical</em> state (position, health) but can't perfectly reproduce the <em>pose</em> from state alone &mdash; the spike documents this as a real finding.</div></div>
+  <div class="pitfall"><div class="icon">🧍</div><div><b>Position lives in a physics body.</b> Canonical position/velocity live in a Phaser <code class="inline">Arcade.Body</code>; the countdown lives in a Phaser <code class="inline">TimerEvent</code>. These are the fields the snapshot has to read out each tick.</div></div>
+  <p>Hold these three facts. Every later lesson &mdash; and every verdict the spike reports &mdash; traces back to them.</p>
+
+  <h2 id="sec-takeaway"><span class="num">✦</span> Takeaways</h2>
+  <ul>
+    <li>A game is a loop: <b>input → update (sim) → render</b>, running ~60&times;/second.</li>
+    <li>A <b>frame</b> is one draw; a <b>tick</b> is one sim update. Netcode is about ticks.</li>
+    <li><b>Fixed timestep</b> makes runs reproducible; <b>variable timestep</b> does not. Reproducibility is the gate for rollback/lockstep.</li>
+    <li>Separating <b>sim state</b> from <b>render</b> is what makes it possible to ship a tiny snapshot across the network.</li>
+    <li>Your spike's game is <b>variable-timestep with tangled state/render</b> &mdash; the root cause of its determinism cost and its snapshot fidelity gap.</li>
+  </ul>
+
+  <p class="src" style="margin-top:var(--sp-6)"><b>Primary sources.</b> Gaffer on Games — <a href="https://gafferongames.com/post/fix_your_timestep/" target="_blank">Fix Your Timestep!</a> (the canonical fixed-timestep loop) · MDN — <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank">requestAnimationFrame</a></p>
+  <p class="src">Your spike — <code class="inline">research.md §A</code> (the real sim audit), <code class="inline">src/game</code> (Phaser <code class="inline">FightScene</code>)</p>
+
+  <footer>Game Loops · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+/* loop animation */
+let loopTimer=null, frame=0, step=0;
+const boxes=[...document.querySelectorAll('#loopviz .lbox')];
+function tick(){
+  boxes.forEach(b=>b.classList.remove('hot'));
+  boxes[step].classList.add('hot');
+  if(step===2){ frame++; document.getElementById('frame-count').textContent=frame; }
+  step=(step+1)%3;
+}
+document.getElementById('loop-run').addEventListener('click',()=>{ if(loopTimer)return; loopTimer=setInterval(tick,260); });
+document.getElementById('loop-stop').addEventListener('click',()=>{ clearInterval(loopTimer); loopTimer=null; boxes.forEach(b=>b.classList.remove('hot')); });
+
+/* fixed vs variable ball */
+document.getElementById('ts-run').addEventListener('click',()=>{
+  const v=document.getElementById('ball-v'), f=document.getElementById('ball-f');
+  v.style.transition='none'; f.style.transition='none'; v.style.left='8px'; f.style.left='8px';
+  const end='calc(100% - 28px)';
+  requestAnimationFrame(()=>{
+    // variable: jittered easing (visually fine, but "irregular" under the hood)
+    v.style.transition='left 1.6s cubic-bezier(.36,.1,.7,1.2)';
+    f.style.transition='left 1.6s steps(96)'; // discrete fixed steps
+    v.style.left=end; f.style.left=end;
+  });
+});
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

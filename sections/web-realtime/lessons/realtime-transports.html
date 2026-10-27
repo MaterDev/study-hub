@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Realtime Transports</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:600; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink);}
+  .controls{display:flex; gap:10px; margin-top:14px; align-items:center; flex-wrap:wrap; font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute);}
+  /* pipe visual */
+  .pipe-wrap{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:700px){.pipe-wrap{grid-template-columns:1fr;}}
+  .pipe{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:14px; position:relative;}
+  .pipe h4{margin:0 0 4px; font-family:var(--font-ui); font-size:.9rem;}
+  .pipe .sub{font-family:var(--font-ui); font-size:.72rem; color:var(--ink-mute); margin-bottom:12px;}
+  .lane{position:relative; height:40px; background:var(--surface); border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:8px;}
+  .pkt{position:absolute; top:9px; width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:.72rem; font-weight:600; color:#fff;}
+  .pkt.ws{background:var(--cobalt);} .pkt.rtc{background:var(--forest);} .pkt.lost{background:var(--vermil); opacity:.5;}
+  .status{font-family:var(--font-ui); font-size:.78rem; color:var(--ink-mute); margin-top:10px; min-height:1.2em;}
+  .result-row{display:flex; gap:20px; margin-top:8px; font-family:var(--font-mono); font-size:.9rem;}
+  .result-row b{color:var(--ink);}
+  .metric-tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0;}
+  @media(max-width:600px){.metric-tiles{grid-template-columns:1fr;}}
+  .mt{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; box-shadow:var(--shadow-sm);}
+  .mt .lab{font-family:var(--font-ui); font-size:.62rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-mute);}
+  .mt .val{font-family:var(--font-mono); font-size:1.4rem; color:var(--ink); line-height:1.2;}
+  .mt.bad .val{color:var(--bad);} .mt.good .val{color:var(--good);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Realtime Transports</h1>
+  <p class="subtitle">TCP, UDP, WebSocket, WebRTC — and the single lost packet that decides between them.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The two internet delivery models</a></li>
+      <li><a href="#sec2">What the browser actually gives you</a></li>
+      <li><a href="#sec3">TCP head-of-line blocking (the whole story)</a></li>
+      <li><a href="#sec4">Why the p99 tail decides it, not the median</a></li>
+      <li><a href="#sec5">link-loss vs. payload-drop</a></li>
+      <li><a href="#sec6">What your spike measures</a></li>
+    </ol>
+  </div>
+
+  <p style="font-family:var(--font-ui); font-size:.9rem; color:var(--ink-mute);">Prerequisite: the <a href="websockets-for-dummies.html">WebSockets</a> lesson. This one assumes you know what a WebSocket is and builds on it.</p>
+
+  <h2 id="sec1"><span class="num">1</span> The two internet delivery models</h2>
+  <p class="lead">Underneath every web connection is one of two "transport" protocols. They make opposite promises, and for a fast-twitch game the difference is everything.</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">📦 TCP — reliable &amp; ordered</h3>
+      <p style="font-size:.92rem;">Guarantees every byte arrives, exactly once, <em>in order</em>. If a packet is lost, TCP re-sends it and <strong>holds back everything after it</strong> until the gap is filled. You never lose data &mdash; but you can be forced to wait.</p>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">✉️ UDP — fast &amp; unordered</h3>
+      <p style="font-size:.92rem;">Fires each packet and forgets it. No re-sends, no ordering, no waiting. Packets can arrive late, out of order, or never. But a lost packet <em>never delays the next one</em>.</p>
+    </div>
+  </div>
+  <div class="analogy">
+    <span class="emoji">📚</span><strong>Analogy:</strong> TCP is a numbered book series you must read in order &mdash; if volume 3 is lost in the mail, you sit and wait for the reprint before touching volumes 4, 5, 6 (which are already on your shelf). UDP is a stack of daily newspapers: miss Tuesday's and you just read Wednesday's. For a game, yesterday's position is useless anyway &mdash; you want the newest, now.
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> What the browser actually gives you</h2>
+  <p>Browsers don't let you open a raw UDP socket. You get two realistic options, and your spike pits them against each other:</p>
+  <table>
+    <tr><th>Transport</th><th>Runs on</th><th>Delivery</th><th>Path</th></tr>
+    <tr><td><b>WebSocket</b></td><td>TCP</td><td>reliable, ordered (always)</td><td>browser → server → browser</td></tr>
+    <tr><td><b>WebRTC DataChannel</b></td><td>UDP (via SCTP/DTLS)</td><td><em>configurable</em> — can be unreliable/unordered</td><td>peer-to-peer (browser ↔ browser)</td></tr>
+  </table>
+  <p>A WebRTC DataChannel configured with <code class="inline">{ordered:false, maxRetransmits:0}</code> behaves like UDP: fire-and-forget. That's the config your spike labels <code class="inline">webrtc-unreliable</code>. WebRTC can <em>also</em> run a reliable-ordered channel (like TCP) &mdash; the spike uses a separate reliable channel just for match setup messages, and the unreliable one for the fast per-tick data.</p>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">note</div>
+    <h4>Why WebSocket goes through a server but WebRTC is peer-to-peer</h4>
+    <p>A WebSocket always connects a browser to a <em>server</em> &mdash; two browsers can't WebSocket to each other directly. So a WebSocket game relays every message through a middle server (an extra hop, extra latency). WebRTC's whole point is a <em>direct</em> browser-to-browser link with no relay in the middle &mdash; but setting that up is surprisingly involved, which is the entire next lesson (signaling).</p>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> TCP head-of-line blocking (the whole story)</h2>
+  <p>This is the single most important idea in transport choice, and it has a name: <strong>head-of-line (HOL) blocking</strong>. Because TCP must deliver in order, one lost packet stalls <em>every</em> packet queued behind it until the lost one is re-sent &mdash; at least one full round-trip later. In a 60Hz stream of fighter positions, that's a visible freeze.</p>
+  <p>Press "Send 6 packets" and drop one in transit. Watch what each transport does.</p>
+  <div class="stage">
+    <div class="pipe-wrap">
+      <div class="pipe">
+        <h4 style="color:var(--cobalt)">WebSocket / TCP</h4>
+        <div class="sub">must deliver in order</div>
+        <div class="lane" id="lane-ws"></div>
+        <div class="status" id="status-ws">idle</div>
+      </div>
+      <div class="pipe">
+        <h4 style="color:var(--forest)">WebRTC / UDP-like</h4>
+        <div class="sub">newest wins, drops move on</div>
+        <div class="lane" id="lane-rtc"></div>
+        <div class="status" id="status-rtc">idle</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="send-btn">Send 6 packets, drop #3</button>
+      <span>Packet #3 is lost in transit on both. Watch who waits.</span>
+    </div>
+  </div>
+  <p>TCP receives 1 and 2, then <em>stalls</em> — it's holding 4, 5, 6 hostage because it can't deliver them "out of order," waiting a full round-trip for #3 to be re-sent. UDP delivers 1, 2, 4, 5, 6 immediately and simply never shows 3. For a fighting game, arriving-late-but-complete is worse than arriving-now-with-a-gap: the game only ever wants the <em>freshest</em> state.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Why the p99 tail decides it, not the median</h2>
+  <p>Here's the trap your spike's research explicitly warns against. On a <em>clean</em> connection, WebSocket and WebRTC have nearly identical latency. If you benchmark them by average (mean) round-trip time, they look the same and you conclude "WebSocket is fine." That benchmark <strong>proves the wrong thing</strong>.</p>
+  <p>The cost of TCP only appears <em>under packet loss</em>, and only in the <strong>tail</strong> &mdash; the rare-but-brutal slow messages. That's why the spike reports percentiles, never means:</p>
+  <div class="metric-tiles">
+    <div class="mt"><div class="lab">p50 (median)</div><div class="val">the middle msg</div></div>
+    <div class="mt"><div class="lab">p95</div><div class="val">95% faster than</div></div>
+    <div class="mt bad"><div class="lab">p99 (the tail)</div><div class="val">the worst 1%</div></div>
+  </div>
+  <p><code class="inline">p99</code> means "99% of messages were at least this fast; 1% were worse." In a game running 60 messages a second, the worst 1% happens <em>constantly</em> &mdash; several times a second &mdash; and each one is a visible hitch. Your spike measured this directly: under <code class="inline">15%</code> link-loss, WebSocket's tail blew out to <strong>p50 ~800ms / p99 ~1038ms</strong> &mdash; real TCP head-of-line blocking on the WS leg. (Unreliable WebRTC on a <em>clean</em> link sat near <code class="inline">0.56ms</code>, but that is <em>not</em> an apples-to-apples comparison &mdash; see the fairness caveat in §6.) The median hid the WS catastrophe; the tail exposed it.</p>
+  <div class="flag"><strong>But a percentile is only as good as its sample count.</strong> A p99 computed over 10 messages is noise &mdash; one outlier <em>is</em> the 99th percentile. Rule of thumb: you want roughly <code class="inline">100+</code> samples before a p99 means anything, and thousands for a stable p99.9 (a heuristic from the percentile math, not a spec). The refactor flagged exactly this: the transport experiment sampled only <code class="inline">~10</code> per cell &mdash; enough for a p50, far too few for the p99 the verdict leans on. Print <code class="inline">n=</code> and suppress the tail when n is small.</div>
+  <div class="flag"><strong>The methodology rule:</strong> "A mean-RTT benchmark proves the wrong thing." Also: measure round-trip on <em>one clock</em> (<code class="inline">RTT = now() − t0</code> on the sender) so you never have to sync two machines' clocks, and inject loss deliberately &mdash; on a clean LAN, loss ≈ 0 and you measure nothing.</div>
+
+  <h2 id="sec5"><span class="num">5</span> link-loss vs. payload-drop</h2>
+  <p>Your spike is careful about <em>where</em> it drops packets, because only one kind actually tests HOL blocking:</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0; color:var(--vermil);">link-loss</h3>
+      <p style="font-size:.92rem;">Drops bytes <em>below</em> the TCP layer, in a proxy in front of the server. TCP sees a real gap and does its re-send-and-stall dance. <strong>This is the only mode that produces genuine head-of-line blocking</strong> &mdash; so only <code class="inline">link-loss</code> backs the WS-vs-WebRTC verdict.</p>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0; color:var(--ink-mute);">payload-drop</h3>
+      <p style="font-size:.92rem;">Drops messages at the <em>application</em> layer (the client just ignores some). No HOL blocking &mdash; TCP never knows. Useful for testing how the game copes with missing snapshots, but it does <strong>not</strong> prove anything about transport choice.</p>
+    </div>
+  </div>
+  <p>Your spike's loss proxy (<code class="inline">server/lossProxy.ts</code>) sits on the public port and delays bytes per TCP connection &mdash; "real head-of-line blocking at the byte level, below WS frame parsing." Its self-check showed 20 round-trips averaging <code class="inline">0.2ms</code> with loss off, jumping to <code class="inline">321.6ms</code> (several trips &gt;800ms) with 40% loss on &mdash; queued behind earlier delayed chunks, i.e. real HOL, not independent jitter.</p>
+
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">field note · from the refactor</div>
+    <h4>"open" doesn't mean anyone's there</h4>
+    <p>A real bug caught in this spike's refactor: the guest tab saw its transport go <code class="inline">open</code> and charged ahead &mdash; but no host had actually joined. Why? A WebSocket's <code class="inline">open</code> event fires when the socket reaches the <em>relay server</em>, which happily seats a single lone peer. Per MDN, <code class="inline">readyState === OPEN</code> describes only the client&harr;server transport &mdash; it says <strong>nothing</strong> about an application-level peer being present. The lesson: <em>transport-connected ≠ session-ready.</em> You need an explicit app-level "peer joined" signal; a 15-second "did the peer arrive?" guard that keys off <code class="inline">open</code> will never fire, and the run stalls until it times out.</p>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> What your spike measures</h2>
+  <p>The <b>Transport</b> experiment (the <code class="inline">/transport</code> page) exists to answer sub-question 1: <em>does WebSocket-over-TCP deliver acceptable RTT/jitter/loss, or does WebRTC measurably beat it &mdash; on real cross-machine data?</em></p>
+  <ul>
+    <li>Both a <code class="inline">WebSocketTransport</code> and a <code class="inline">WebRTCTransport</code> are built against one shared <code class="inline">Transport</code> interface (Lesson 9 covers this "swappable port" idea), so the same experiment runs on either.</li>
+    <li>It sweeps loss settings (<code class="inline">0/0.5/1/2/5%</code>…) and reports <code class="inline">p50/p95/p99</code>, jitter, and throughput &mdash; never means.</li>
+    <li>The verdict rests entirely on the loss-conditioned <code class="inline">p99</code> tail. The research's honest going-in position: "WebSocket is probably fine for same-region; the WebRTC case rests entirely on loss-conditioned p99 &mdash; measure it, don't assume it."</li>
+  </ul>
+  <div class="flag">
+    <strong>Field note · from the refactor:</strong> a later review found the spike's WS-vs-WebRTC comparison is <em>structurally</em> unfair as built. The in-app loss proxy only fronts the <em>server</em> port (<code class="inline">:8080</code>), so the peer-to-peer WebRTC channel never passes through it &mdash; a "completed" run therefore compares <em>WS-with-loss</em> against <em>WebRTC-with-no-loss</em>. A fair head-of-line test needs an <strong>OS-level network conditioner on both legs</strong> (e.g. <code class="inline">tc netem</code> / Network Link Conditioner), not an app-layer proxy that one transport bypasses. Only the isolated loss-resilience sub-score is apples-to-apples today.
+  </div>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">one more detail</div>
+    <h4>TCP_NODELAY and Nagle's algorithm</h4>
+    <p>TCP has a bandwidth-saving feature (Nagle's algorithm) that <em>coalesces</em> small, frequent messages into bigger ones before sending &mdash; great for file transfer, poison for a 60Hz game because it adds delay. Your server sets <code class="inline">TCP_NODELAY</code> to switch it off, so the WebSocket baseline isn't unfairly slowed vs. WebRTC's unbuffered channel. Fair benchmarks require killing this kind of hidden buffering.</p>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li>TCP = reliable + ordered (can stall); UDP = fast + unordered (never stalls). The browser gives you WebSocket (TCP) and WebRTC DataChannel (UDP-like, configurable).</li>
+    <li><b>Head-of-line blocking</b> is TCP's real cost: one lost packet freezes everything behind it for ≥1 round-trip.</li>
+    <li>It only shows up <b>under loss, in the p99 tail</b> — so benchmark percentiles, never means, and inject <code class="inline">link-loss</code> (below TCP), not <code class="inline">payload-drop</code>.</li>
+  </ul>
+  <p class="src"><b>Primary sources.</b> MDN — <a href="https://developer.mozilla.org/en-US/docs/Glossary/Head_of_line_blocking" target="_blank">Head-of-line blocking</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState" target="_blank">WebSocket.readyState</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/open_event" target="_blank">open event</a></p>
+  <p class="src">IETF — <a href="https://www.rfc-editor.org/rfc/rfc6455.html" target="_blank">RFC 6455 (WebSocket protocol)</a> · <a href="https://www.rfc-editor.org/rfc/rfc896.html" target="_blank">RFC 896 (Nagle)</a> · Node — <a href="https://nodejs.org/api/net.html#socketsetnodelaynodelay" target="_blank">socket.setNoDelay (TCP_NODELAY)</a></p>
+  <p class="src">Percentiles — <a href="https://aerospike.com/blog/what-is-p99-latency/" target="_blank">What is p99 latency</a> · <a href="https://thenewstack.io/if-p99-latency-is-bs-whats-the-alternative/" target="_blank">Gil Tene / HdrHistogram on tail latency</a></p>
+  <p class="src">Games — Gaffer on Games — <a href="https://gafferongames.com/post/why_cant_i_send_udp_packets_from_a_browser/" target="_blank">Why can't I send UDP from a browser</a> · web.dev — <a href="https://web.dev/articles/webrtc-datachannels" target="_blank">WebRTC DataChannels</a></p>
+  <p class="src">Your spike — <code class="inline">server/PROTOCOL.md</code>, <code class="inline">server/lossProxy.ts</code>, <code class="inline">ws.ts</code>, <code class="inline">research.md §B</code></p>
+
+  <footer>Realtime Transports · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+const laneWs=document.getElementById('lane-ws'), laneRtc=document.getElementById('lane-rtc');
+const statusWs=document.getElementById('status-ws'), statusRtc=document.getElementById('status-rtc');
+function pkt(cls,label){ const d=document.createElement('div'); d.className='pkt '+cls; d.textContent=label; return d; }
+document.getElementById('send-btn').addEventListener('click',()=>{
+  laneWs.innerHTML=''; laneRtc.innerHTML='';
+  statusWs.textContent='sending…'; statusRtc.textContent='sending…';
+  const n=6, dropped=3;
+  for(let i=1;i<=n;i++){
+    // WS lane
+    const w=pkt('ws',i); w.style.left='2px'; laneWs.appendChild(w);
+    // RTC lane
+    const r=pkt('rtc',i); r.style.left='2px'; laneRtc.appendChild(r);
+    const delay=i*160;
+    if(i<dropped){
+      // arrive normally on both
+      animate(w, delay); animate(r, delay);
+    } else if(i===dropped){
+      // lost on both
+      w.classList.add('lost'); r.classList.add('lost');
+      setTimeout(()=>{ w.style.transition='left .4s, opacity .4s'; w.style.left='46%'; w.style.opacity='0'; }, delay);
+      setTimeout(()=>{ r.style.transition='left .4s, opacity .4s'; r.style.left='46%'; r.style.opacity='0'; }, delay);
+    } else {
+      // RTC: arrives immediately (newest wins). WS: waits behind the gap (HOL).
+      animate(r, delay);
+      // WS held at the front until a "retransmit" completes ~1 RTT after the drop
+      setTimeout(()=>{ w.style.transition='left .5s'; w.style.left='40%'; }, delay); // stalls mid-lane
+    }
+  }
+  // resolve WS after a round-trip: retransmit #3, then flush the rest
+  setTimeout(()=>{
+    statusRtc.textContent='delivered 1,2,4,5,6 · never waited (dropped 3)';
+  }, n*160+500);
+  setTimeout(()=>{
+    // flush held WS packets in order
+    [...laneWs.querySelectorAll('.pkt')].forEach(p=>{ if(!p.classList.contains('lost')){ p.style.transition='left .5s'; p.style.left='calc(100% - 26px)'; }});
+    statusWs.textContent='STALLED ~1 RTT waiting to resend #3, then flushed 4,5,6 in order';
+  }, n*160+900);
+  setTimeout(()=>{
+    [...laneRtc.querySelectorAll('.pkt')].forEach(p=>{ if(!p.classList.contains('lost')){ p.style.transition='left .4s'; p.style.left='calc(100% - 26px)'; }});
+  }, 400);
+});
+function animate(el, delay){
+  setTimeout(()=>{ el.style.transition='left .5s'; el.style.left='calc(100% - 26px)'; }, delay);
+}
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

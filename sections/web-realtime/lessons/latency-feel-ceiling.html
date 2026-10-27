@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Latency, Jitter &amp; the Feel Ceiling</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:600; font-size:.85rem; cursor:pointer;}
+  .controls{display:flex; gap:12px; margin-top:14px; align-items:center; flex-wrap:wrap; font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute);}
+  .controls label{display:flex; flex-direction:column; gap:3px; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
+  input[type=range]{accent-color:var(--cobalt);}
+  /* frame ruler */
+  .ruler{position:relative; height:80px; margin:18px 0;}
+  .ruler-bar{position:absolute; top:34px; left:0; right:0; height:14px; border-radius:7px;
+    background:linear-gradient(90deg, var(--good) 0%, var(--good) 20%, var(--warn) 20%, var(--warn) 42%, var(--bad) 42%, var(--bad) 100%);}
+  .ruler-tick{position:absolute; top:24px; width:2px; height:34px; background:var(--ink); opacity:.5;}
+  .ruler-lbl{position:absolute; top:0; transform:translateX(-50%); font-family:var(--font-mono); font-size:.72rem; color:var(--ink-mute);}
+  .ruler-zone{position:absolute; top:52px; transform:translateX(-50%); font-family:var(--font-ui); font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  .marker{position:absolute; top:14px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:12px solid var(--ink); transform:translateX(-50%); transition:left .3s;}
+  .marker-lbl{position:absolute; top:-6px; transform:translateX(-50%); font-family:var(--font-mono); font-size:.8rem; font-weight:600; color:var(--ink); white-space:nowrap;}
+  /* budget breakdown */
+  .budget{display:flex; height:40px; border-radius:8px; overflow:hidden; border:1px solid var(--line); margin:10px 0; font-family:var(--font-ui); font-size:.7rem; color:#fff;}
+  .bseg{display:flex; align-items:center; justify-content:center; text-align:center; padding:0 4px; overflow:hidden; white-space:nowrap;}
+  .mt-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0;}
+  @media(max-width:600px){.mt-grid{grid-template-columns:1fr;}}
+  .mt{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px; box-shadow:var(--shadow-sm); text-align:center;}
+  .mt .lab{font-family:var(--font-ui); font-size:.62rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute);}
+  .mt .val{font-family:var(--font-mono); font-size:1.5rem;} .mt.bad .val{color:var(--bad);}
+  .big-read{font-family:var(--font-mono); font-size:2rem; color:var(--ink); text-align:center;}
+  .band-word{font-family:var(--font-ui); font-weight:700; text-transform:uppercase; letter-spacing:.05em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Latency, Jitter &amp; the Feel Ceiling</h1>
+  <p class="subtitle">The one number that decides your spike's verdict — measured in frames, not milliseconds.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Everything is frames</a></li>
+      <li><a href="#sec2">The feel ceiling (interactive ruler)</a></li>
+      <li><a href="#sec3">RTT is not felt lag</a></li>
+      <li><a href="#sec4">Why jitter hurts more than lag</a></li>
+      <li><a href="#sec5">The input-delay buffer &amp; symmetric delay</a></li>
+      <li><a href="#sec6">What your spike measured</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Everything is frames</h2>
+  <p class="lead">A fighting game runs at 60 frames per second, so one frame is <code class="inline">16.67ms</code>. That's the natural unit for lag: divide any millisecond figure by ~16 and you get "how many frames behind" the player is. This single conversion is how pros and researchers actually reason about netcode feel.</p>
+  <div class="analogy">
+    <span class="emoji">🎞️</span><strong>Why frames, not milliseconds:</strong> "120 milliseconds" sounds abstract. "7 frames" is concrete &mdash; it's 7 chances to react that you've been pushed back. A move that's active for 3 frames and you're 7 frames behind? You literally cannot see it start in time to respond. Fighting games are decided in single-digit frames, so single-digit frames of lag is the whole ballgame.
+  </div>
+  <p>Your spike bakes this in: <em>"frames @60fps = 16.67ms/frame; ping ÷ 16 ≈ frames the netcode must hide."</em></p>
+
+  <h2 id="sec2"><span class="num">2</span> The feel ceiling</h2>
+  <p>Decades of fighting-game experience produced surprisingly sharp thresholds for how much input lag stays playable. Drag the slider to place a game on the ruler:</p>
+  <div class="stage">
+    <div class="ruler" id="ruler">
+      <div class="marker" id="rmarker" style="left:20%;"></div>
+      <div class="marker-lbl" id="rmarker-lbl" style="left:20%;">48ms · 3f</div>
+      <div class="ruler-bar"></div>
+      <div class="ruler-tick" style="left:6.6%;"></div><div class="ruler-lbl" style="left:6.6%;">1f</div>
+      <div class="ruler-tick" style="left:20%;"></div><div class="ruler-lbl" style="left:20%;">3f</div>
+      <div class="ruler-tick" style="left:40%;"></div><div class="ruler-lbl" style="left:40%;">6f</div>
+      <div class="ruler-tick" style="left:66%;"></div><div class="ruler-lbl" style="left:66%;">10f</div>
+      <div class="ruler-zone" style="left:12%; color:var(--good);">imperceptible</div>
+      <div class="ruler-zone" style="left:31%; color:var(--warn);">the ceiling</div>
+      <div class="ruler-zone" style="left:70%; color:var(--bad);">rubber-banding</div>
+    </div>
+    <div class="controls">
+      <label>felt input lag (ms)
+        <input type="range" id="lag-slider" min="8" max="180" value="48" step="4">
+      </label>
+      <div class="big-read"><span id="lag-ms">48</span>ms &nbsp;·&nbsp; <span id="lag-frames">3</span>f &nbsp; <span class="band-word" id="lag-band" style="color:var(--warn)">ceiling</span></div>
+    </div>
+  </div>
+  <ul>
+    <li><strong>≤1 frame (~16ms):</strong> imperceptible. Feels offline.</li>
+    <li><strong>~3 frames (~48ms):</strong> <strong>the "feels offline" ceiling.</strong> Killer Instinct ships a fixed 3-frame buffer &mdash; this is the accepted edge of "still feels like a local match."</li>
+    <li><strong>≥6 frames (~100ms):</strong> uncomfortable rubber-banding. Reads stop landing; the game feels like it's fighting you.</li>
+  </ul>
+  <p>Academic surveys agree: a design goal of <code class="inline">&lt;75ms</code>, with performance dropping sharply past 75&ndash;100ms; ~60ms is a better target for fast games than the classic 100ms figure. The <strong>~3-frame ceiling is the line your spike's verdict is measured against.</strong></p>
+
+  <h2 id="sec3"><span class="num">3</span> RTT is not felt lag</h2>
+  <p>A crucial distinction people constantly get wrong. <strong>RTT</strong> (round-trip time / ping) is just the network portion &mdash; how long a message takes to go and come back. <strong>Felt input lag</strong> (button-to-photon) is the whole chain from your finger to a visible change, and the network is only one link in it:</p>
+  <div class="stage">
+    <div class="budget">
+      <div class="bseg" style="background:var(--ochre); width:14%;">input poll</div>
+      <div class="bseg" style="background:var(--cobalt); width:30%;">network RTT</div>
+      <div class="bseg" style="background:var(--plum); width:22%;">interp buffer</div>
+      <div class="bseg" style="background:var(--forest); width:16%;">sim + render</div>
+      <div class="bseg" style="background:var(--vermil); width:18%;">VSync + display</div>
+    </div>
+    <p style="font-family:var(--font-ui); font-size:.85rem; color:var(--ink-mute); margin:0;">Felt lag = input poll + <b>network RTT</b> + interpolation buffer + sim/render + VSync/display. RTT is one slice; the interp buffer (Lesson 5) and display pipeline add real time on top.</p>
+  </div>
+  <div class="flag">
+    <strong>The honest caveat your spike states:</strong> a browser can't measure true glass-to-glass lag (that needs a photodiode on the screen, like an LDAT). What it <em>can</em> measure is <em>simulated network + app-processing latency</em> &mdash; comparative, not absolute. It captures the input's <code class="inline">event.timeStamp</code> → the committed change in the next <code class="inline">requestAnimationFrame</code>, and reports the whole distribution with that caveat attached. It never pretends a browser number is a hardware number.
+  </div>
+  <div class="tangent-block">
+    <div class="tangent-eyebrow">field note · from the refactor</div>
+    <h4>Backgrounded tabs lie about time</h4>
+    <p>A paired run once reported <code class="inline">466ms</code> felt lag from a <em>single</em> sample against a <code class="inline">1ms</code> RTT. Cause: when a tab loses focus, browsers heavily throttle <code class="inline">requestAnimationFrame</code> (down to ~1Hz, or pause it) to save power &mdash; so the render loop that samples felt lag nearly stops, and the few readings it takes are wildly inflated. Any in-browser latency measurement needs a <code class="inline">visibilitychange</code> guard that refuses to trust numbers gathered while the tab was hidden. Combined with the per-tab clock-origin issue (Lesson 5), browser timing has real footguns &mdash; always report the sample count <em>and</em> the visibility state.</p>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Why jitter hurts more than lag</h2>
+  <p><strong>Jitter</strong> is the <em>variance</em> in latency &mdash; not "how slow" but "how <em>inconsistent</em>." And it's more damaging than steady lag, because humans adapt to a constant delay but can't adapt to a random one.</p>
+  <div class="mt-grid">
+    <div class="mt"><div class="lab">Steady 80ms</div><div class="val" style="color:var(--warn)">adaptable</div></div>
+    <div class="mt"><div class="lab">40ms ± 40ms</div><div class="val bad">unplayable</div></div>
+    <div class="mt"><div class="lab">why</div><div class="val" style="font-size:1rem; color:var(--ink-mute)">timing you can't learn</div></div>
+  </div>
+  <p>A steady 80ms delay: you learn to press slightly early and it feels fine. But 40ms that randomly spikes to 80ms means your timing is <em>never</em> right &mdash; the same input lands differently each time. This is why your spike's research says to <strong>weight jitter heavily</strong> in scoring, and why TCP head-of-line blocking (Lesson 2) is so toxic: it doesn't raise your average latency much, it adds brutal <em>spikes</em>. The bands your spike scores against:</p>
+  <table>
+    <tr><th>Metric</th><th class="good">Good</th><th class="mid">Acceptable</th><th class="bad">Bad</th></tr>
+    <tr><td>Latency (RTT)</td><td>&lt;20&ndash;30ms</td><td>&lt;50&ndash;60ms</td><td>&gt;100&ndash;150ms</td></tr>
+    <tr><td>Jitter</td><td>&lt;5ms</td><td>&lt;10&ndash;30ms</td><td>&gt;30ms</td></tr>
+    <tr><td>Packet loss</td><td>0%</td><td>&lt;1%</td><td>&gt;1%</td></tr>
+  </table>
+
+  <h2 id="sec5"><span class="num">5</span> The input-delay buffer &amp; symmetric delay</h2>
+  <p>Two techniques that manage &mdash; not eliminate &mdash; lag, both present in your spike:</p>
+  <div class="grid2">
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">🎛️ Input-delay buffer</h3>
+      <p style="font-size:.92rem;">Deliberately delay applying an input by a few frames, giving the network time to deliver the matching remote input so both stay in sync. A knob: more buffer = smoother under jitter, but adds directly to felt lag. Your spike exposes this as a tunable slider so you can see the tradeoff live.</p>
+    </div>
+    <div class="card" style="margin:0;">
+      <h3 style="margin-top:0;">⚖️ Symmetric input delay</h3>
+      <p style="font-size:.92rem;">If only the guest is delayed, the match is <em>unfair</em>. The fix: delay the host's input by the same amount, so <em>both</em> players feel the identical delay. It converts an unfair asymmetry into a fair, even constant &mdash; a config change, not an architecture change.</p>
+    </div>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> What your spike measured</h2>
+  <p>This is the decisive experiment &mdash; the <code class="inline">/e2e-remote-input</code> page. It runs a real fight where the guest's input travels through a <code class="inline">RemoteInput</code> provider (slotting into the game's real input seam with zero changes to the combat code) and measures the guest's felt lag button-to-visible-response.</p>
+  <div class="mt-grid">
+    <div class="mt bad"><div class="lab">guest felt lag p50</div><div class="val">107ms</div></div>
+    <div class="mt bad"><div class="lab">p95 / p99</div><div class="val">120ms</div></div>
+    <div class="mt bad"><div class="lab">in frames</div><div class="val">~7f</div></div>
+  </div>
+  <p>Read at face value that's <strong>~6.4&ndash;7.2 frames &mdash; band BAD</strong>, well past the ~3-frame ceiling, decomposing exactly as this lesson predicts: RTT + interp buffer + stale-opponent. That was the spike's original headline &mdash; <em>"guest input lag is the wall."</em> <strong>But two later reviews showed that headline is not decision-grade.</strong> It's faithful to the numbers on screen and wrong as a verdict, for three reasons:</p>
+  <div class="pitfall"><div class="icon">🎚️</div><div><b>It's a config artifact.</b> The default injects <code class="inline">80ms</code> RTT &mdash; <em>2&times; the project's own 20&ndash;60ms target</em> &mdash; plus the 50ms buffer. Since felt ≈ RTT + interp + ~10ms app, that default is practically engineered to land in the BAD band.</div></div>
+  <div class="pitfall"><div class="icon">🔬</div><div><b>It's statistically hollow.</b> Each run attributed only <code class="inline">4&ndash;5</code> samples, so <code class="inline">p95 = p99 = max-of-5</code> &mdash; a tail over five points is noise (Lesson 2's sample-size rule).</div></div>
+  <div class="pitfall"><div class="icon">🥊</div><div><b>It measures the wrong event.</b> The E2E only ever sends a bare <code class="inline">light:true</code> edge with fighters ~320px apart vs a ~70px reach &mdash; so <em>no hit ever lands</em>. It's timing a button <em>acknowledgement</em> round-trip, not a real input&rarr;gameplay response.</div></div>
+  <p>Sweeping the config (from the independent review) shows the real shape &mdash; the band tracks the network you dial in, not the model:</p>
+  <table>
+    <tr><th>Config</th><th>RTT</th><th>interp</th><th>felt p50</th><th>frames</th><th>band</th></tr>
+    <tr><td>spike default</td><td>80ms</td><td>50ms</td><td>107ms</td><td>6.4</td><td class="bad">bad</td></tr>
+    <tr><td>project target</td><td>30ms</td><td>33ms</td><td>58ms</td><td>3.5</td><td class="mid">borderline</td></tr>
+    <tr><td>LAN-ish</td><td>20ms</td><td>16ms</td><td>34ms</td><td>2.0</td><td class="good">acceptable</td></tr>
+    <tr><td>zero net</td><td>0</td><td>0</td><td>9.5ms</td><td>0.6</td><td class="good">good</td></tr>
+  </table>
+  <div class="flag">
+    <strong>The reconciled finding.</strong> Host-authoritative is being <em>kept</em> &mdash; nothing here reopens rollback. The felt-lag concern is real in principle (guest = RTT + interp + stale-opponent), but <em>"the fear is largely an artifact"</em>: at the project's real target the (still simulated) number is ~2&ndash;3.5 frames &mdash; borderline-acceptable, more likely to pass on real hardware than the red dashboard implied. It changes the <em>outlook</em>, not the action &mdash; because the number simply isn't trustworthy yet. The one step every review converges on: fix the measurement instrument (presence barrier + stall timeout + clock offset + a <code class="inline">visibilitychange</code> guard + a sample-count floor + hundreds of samples + realistic inputs), <em>then</em> take one honest reading on two real machines at 20&ndash;60ms RTT.
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li>Reason in <b>frames</b>: <code class="inline">16.67ms</code> each; ping ÷ 16 ≈ frames behind.</li>
+    <li>The fighting-game <b>feel ceiling is ~3 frames (~48ms)</b>. Past ~6 frames it rubber-bands.</li>
+    <li><b>RTT ≠ felt lag</b> — felt lag adds input poll, interp buffer, render, and display on top. Browsers measure it comparatively, not absolutely.</li>
+    <li><b>Jitter</b> (variance) hurts more than steady lag — weight it heavily.</li>
+    <li>The spike's <b>~7-frame "wall"</b> turned out to be a config artifact (80ms RTT = 2× target) + a 5-sample measurement of a button-ack; at the 20–60ms target it's ~2–3.5 frames. Host-authoritative stands — but the number isn't decision-grade until the instrument is fixed.</li>
+  </ul>
+  <p class="src"><b>Primary sources.</b> MDN — <a href="https://developer.mozilla.org/en-US/docs/Web/API/Performance/now" target="_blank">performance.now (time origin + reduced precision)</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame" target="_blank">requestAnimationFrame (background throttling)</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp" target="_blank">DOMHighResTimeStamp</a></p>
+  <p class="src">Thresholds — Infil — <a href="https://words.infil.net/w02-netcode-p6.html" target="_blank">input lag &amp; the feel ceiling</a> · Raaen — <a href="https://www.ntnu.no/ojs/index.php/nikt/article/view/5252" target="_blank">latency thresholds survey</a> · <a href="https://www.ibm.com/support/pages/why-p99-latency-metrics-are-unreliable-low-traffic-workloads" target="_blank">IBM: small-n p99 is unreliable</a></p>
+  <p class="src">Your spike — <code class="inline">feltLagTracker.ts</code>, <code class="inline">e2eExperience.ts</code>, <code class="inline">research.md §D</code>, plus the Fable &amp; Opus review passes</p>
+
+  <footer>Latency &amp; the Feel Ceiling · Realtime &amp; Multiplayer Netcode · your Study Hub</footer>
+</div>
+
+<script>
+const slider=document.getElementById('lag-slider');
+const marker=document.getElementById('rmarker'), mlbl=document.getElementById('rmarker-lbl');
+const msEl=document.getElementById('lag-ms'), fEl=document.getElementById('lag-frames'), bandEl=document.getElementById('lag-band');
+function frameToPct(f){ return Math.min(98, (f/15)*100); } // ruler spans ~15 frames
+function update(){
+  const ms=+slider.value; const frames=+(ms/16.67).toFixed(1);
+  const pct=frameToPct(frames);
+  marker.style.left=pct+'%'; mlbl.style.left=pct+'%'; mlbl.textContent=ms+'ms · '+frames+'f';
+  msEl.textContent=ms; fEl.textContent=frames;
+  let band,color;
+  if(frames<=3){ band='playable'; color='var(--good)'; }
+  else if(frames<=4){ band='ceiling'; color='var(--warn)'; }
+  else { band='bad'; color='var(--bad)'; }
+  if(frames<=1.2){ band='imperceptible'; color='var(--good)'; }
+  bandEl.textContent=band; bandEl.style.color=color;
+}
+slider.addEventListener('input',update); update();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

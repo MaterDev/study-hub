@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Web Animations API</title>
+<link rel="stylesheet" href="../../../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--plum); --accent-soft:var(--plum-soft); --accent-text:#4a3b84; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .code{font-family:var(--font-mono); font-size:.76rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 14px; overflow-x:auto; white-space:pre; line-height:1.55;}
+  .code .k{color:#8fb8ff;} .code .s{color:#c3d98a;} .code .n{color:#e0a3d6;} .code .c{color:#8b96d0;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ctl select,.ctl input[type=number]{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:5px 8px; font:600 .8rem var(--font-ui); text-transform:none; letter-spacing:0;}
+  .ctl input[type=range]{accent-color:var(--plum); width:150px;}
+  .ctl .v{font-family:var(--font-mono); text-transform:none; letter-spacing:0; color:var(--ink);}
+
+  .track{position:relative; height:54px; border:2px solid var(--outline); border-radius:10px; background:var(--paper-2); overflow:hidden; margin:8px 0;}
+  .ball{position:absolute; left:6px; top:9px; width:34px; height:34px; border-radius:8px; background:var(--plum); border:3px solid var(--outline);}
+  .ball.b{background:var(--cobalt);} .ball.o{background:var(--ochre);} .ball.g{background:var(--forest);} .ball.r{background:var(--vermil);}
+  .tlab{position:absolute; right:8px; top:6px; font-family:var(--font-mono); font-size:.68rem; color:var(--ink-mute);}
+  .read{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:10px 0; font-family:var(--font-mono); font-size:.76rem;}
+  .read div{border:2px solid var(--line-strong); border-radius:8px; padding:6px 10px; background:var(--paper);} .read b{display:block; font-family:var(--font-ui); font-size:.62rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
+  input.scrub{width:100%; accent-color:var(--plum);}
+
+  .cards3{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:12px 0;}
+  .way{border:3px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--paper); cursor:pointer; text-align:left; font-family:var(--font-ui); font-size:.84rem; color:var(--ink); box-shadow:0 3px 0 var(--outline);}
+  .way b{display:block; font-size:.98rem; margin-bottom:2px;} .way .tg{font-size:.68rem; font-weight:800; color:var(--ink-mute); text-transform:uppercase; letter-spacing:.05em;}
+  .way.on{background:var(--plum-soft); outline:3px solid var(--plum);}
+  .wdoc{border:2px solid var(--plum); border-radius:12px; padding:12px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; min-height:90px; margin-top:8px;}
+  .pairs{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; margin:12px 0;}
+  .pair{border:2px solid var(--line-strong); border-radius:10px; padding:8px 12px; background:var(--surface); cursor:pointer; text-align:left; font-family:var(--font-mono); font-size:.76rem; color:var(--ink);}
+  .pair .w{display:none; color:var(--accent-text); font-weight:700;} .pair.on .w{display:block;} .pair.on .c{display:none;}
+
+  .tl{display:flex; height:34px; border:2px solid var(--outline); border-radius:8px; overflow:hidden; margin:10px 0; font-family:var(--font-ui); font-size:.68rem; font-weight:800;}
+  .tl span{display:flex; align-items:center; justify-content:center; color:var(--ink); border-right:2px solid var(--outline); white-space:nowrap; overflow:hidden;}
+  .tl .d{background:var(--paper-2); color:var(--ink-mute);} .tl .a{background:var(--plum-soft);} .tl .e{background:var(--ochre-soft);}
+  .fills{display:grid; gap:6px;} .fills .track{height:42px; margin:0;} .fills .ball{top:3px; width:30px; height:30px;}
+  .ghost{position:absolute; top:3px; width:30px; height:30px; border:2px dashed var(--ink-faint); border-radius:8px; pointer-events:none;}
+
+  .log{font-family:var(--font-mono); font-size:.76rem; background:var(--paper-2); border:2px solid var(--outline); border-radius:10px; padding:10px 12px; min-height:90px; max-height:170px; overflow:auto; white-space:pre-wrap; color:var(--ink);}
+  .stack{position:relative; height:90px; border:2px solid var(--outline); border-radius:10px; background:var(--paper-2); overflow:hidden; margin:8px 0;} .stack .ball{left:calc(50% - 60px); top:28px; width:34px; height:34px; border-radius:6px;}
+
+  .scr{height:130px; overflow:auto; border:2px solid var(--outline); border-radius:10px; background:var(--paper-2);} .scr .in{height:520px; padding:14px; position:relative;} .scr .tgt{width:70%; height:50px; border-radius:10px; background:var(--plum); border:3px solid var(--outline); position:sticky; top:40px;}
+
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tag{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--paper); color:var(--ink); font:700 .84rem var(--font-ui); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--plum);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em;} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The Web Animations API</h1>
+  <p class="subtitle">Animation you can drive from JavaScript: keyframes and timing described in code, with a playhead you can pause, scrub, reverse and re-time, and the same off-main-thread speed as CSS for the right properties.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Where WAAPI fits</a></li>
+      <li><a href="#sec2">Your first animate() (interactive)</a></li>
+      <li><a href="#sec3">The Animation object: a playhead you control (interactive)</a></li>
+      <li><a href="#sec4">Timing and fill (interactive)</a></li>
+      <li><a href="#sec5">Sequencing with promises (interactive)</a></li>
+      <li><a href="#sec6">Composite modes: layering animations (interactive)</a></li>
+      <li><a href="#sec7">Keeping the end state (interactive)</a></li>
+      <li><a href="#sec8">Off the main thread (interactive)</a></li>
+      <li><a href="#sec9">Beyond time: scroll timelines and global control</a></li>
+      <li><a href="#sec10">Choosing the right tool (interactive)</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Where WAAPI fits</h2>
+  <p class="lead">You have met CSS animations and transitions (declarative, but you can't reach in once they run) and <code class="inline">requestAnimationFrame</code> (total control, but you compute every frame yourself). The <strong>Web Animations API</strong> sits between them: the <em>same</em> keyframe-and-timing model CSS uses, available from JavaScript, returning an object you can control. MDN notes it also underlies CSS Animations and Transitions, so the two share one engine.</p>
+  <div class="stage" data-testid="where-it-fits">
+    <div class="cards3" id="ways"></div>
+    <div class="wdoc" id="wdoc" data-testid="ways-doc"></div>
+  </div>
+  <p>If you know the CSS vocabulary you already know most of the options. Tap a CSS term to see its WAAPI twin.</p>
+  <div class="pairs" id="pairs" data-testid="css-waapi-pairs"></div>
+
+  <h2 id="sec2"><span class="num">2</span> Your first animate()</h2>
+  <p><code class="inline">element.animate(keyframes, options)</code> creates an animation, starts it immediately and returns an <code class="inline">Animation</code>. Keyframes are an array of objects (or one object whose properties are arrays), and the second argument is either a duration in milliseconds or an options object. Change the controls: the box really animates, and the code underneath is exactly what runs.</p>
+  <div class="stage" data-testid="first-animate">
+    <div class="row">
+      <label class="ctl">Keyframes<select id="p-kf" data-testid="p-keyframes"><option value="slide">Slide</option><option value="spin">Spin + scale</option><option value="fade">Fade in</option><option value="bounce">Bounce (3 keyframes)</option></select></label>
+      <label class="ctl">Duration <span class="v" id="p-dur-v"></span><input type="range" id="p-dur" min="200" max="3000" step="100" value="1200" data-testid="p-duration"></label>
+      <label class="ctl">Easing<select id="p-ease" data-testid="p-easing"><option>linear</option><option>ease</option><option>ease-in-out</option><option value="cubic-bezier(0.2, 0.8, 0.2, 1)">cubic-bezier(0.2, 0.8, 0.2, 1)</option><option>steps(5)</option></select></label>
+      <label class="ctl">Iterations<select id="p-iter" data-testid="p-iterations"><option value="1">1</option><option value="3">3</option><option value="Infinity">Infinity</option></select></label>
+      <label class="ctl">Direction<select id="p-dir" data-testid="p-direction"><option>normal</option><option>reverse</option><option>alternate</option></select></label>
+      <label class="ctl">Fill<select id="p-fill" data-testid="p-fill"><option>none</option><option>forwards</option><option>both</option></select></label>
+    </div>
+    <div class="track"><div class="ball" id="p-ball"></div></div>
+    <div class="code" id="p-code" data-testid="p-code"></div>
+    <p class="small" style="margin:8px 0 0">The default easing is <code class="inline">linear</code> in WAAPI (CSS defaults to <code class="inline">ease</code>), a common first surprise. Pass at least two keyframes: a single one can throw in some browsers.</p>
+  </div>
+
+  <h2 id="sec3"><span class="num">3</span> The Animation object: a playhead you control</h2>
+  <p>What CSS can't give you is the return value. The <code class="inline">Animation</code> has a playhead (<code class="inline">currentTime</code>, in milliseconds), a speed (<code class="inline">playbackRate</code>) and transport methods: <code class="inline">play()</code>, <code class="inline">pause()</code>, <code class="inline">reverse()</code>, <code class="inline">finish()</code> and <code class="inline">cancel()</code>. Drag the scrubber, change the speed, and watch the live readouts. The readout loop only <em>reads</em> the animation; it isn't driving it.</p>
+  <div class="stage" data-testid="transport">
+    <div class="track"><div class="ball" id="t-ball"></div><span class="tlab" id="t-lab"></span></div>
+    <input type="range" class="scrub" id="t-scrub" min="0" max="1000" value="0" data-testid="t-scrub" aria-label="Playhead">
+    <div class="row">
+      <button class="btn" id="t-play" data-testid="t-play">play()</button><button class="btn sec" id="t-pause" data-testid="t-pause">pause()</button><button class="btn sec" id="t-rev" data-testid="t-reverse">reverse()</button><button class="btn sec" id="t-fin" data-testid="t-finish">finish()</button><button class="btn sec" id="t-can" data-testid="t-cancel">cancel()</button><button class="btn sec" id="t-new" data-testid="t-restart">new animate()</button>
+      <label class="ctl">playbackRate <span class="v" id="t-rate-v"></span><input type="range" id="t-rate" min="25" max="300" value="100" data-testid="t-rate"></label>
+    </div>
+    <div class="read"><div><b>playState</b><span id="r-state"></span></div><div><b>currentTime (ms)</b><span id="r-time"></span></div><div><b>playbackRate</b><span id="r-rate"></span></div><div><b>pending</b><span id="r-pend"></span></div></div>
+    <p class="small" style="margin:0">Prefer <code class="inline">updatePlaybackRate()</code> to assigning <code class="inline">playbackRate</code> directly: it syncs the playhead first, so the speed change is smooth. <code class="inline">reverse()</code> flips the sign of the rate; after <code class="inline">cancel()</code> the animation is idle and you create a new one.</p>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Timing and fill</h2>
+  <p>Timing options shape the <em>active</em> part of the animation and what happens around it. <code class="inline">delay</code> waits before it starts, <code class="inline">endDelay</code> waits after it ends, <code class="inline">iterations</code> repeats it, <code class="inline">direction</code> can flip each pass, and <code class="inline">iterationStart</code> begins part-way in. The part people trip over is <strong>fill</strong>: what the element looks like <em>outside</em> the active period.</p>
+  <div class="stage" data-testid="timing-fill">
+    <div class="row">
+      <label class="ctl">delay <span class="v" id="f-del-v"></span><input type="range" id="f-del" min="0" max="1500" step="100" value="800" data-testid="f-delay"></label>
+      <label class="ctl">iterations<select id="f-it" data-testid="f-iterations"><option>1</option><option>2</option><option>3</option></select></label>
+      <label class="ctl">direction<select id="f-dir" data-testid="f-direction"><option>normal</option><option>alternate</option></select></label>
+      <label class="ctl">endDelay <span class="v" id="f-end-v"></span><input type="range" id="f-end" min="0" max="1000" step="100" value="500" data-testid="f-enddelay"></label>
+      <button class="btn" id="f-run" data-testid="f-run">▶ Run all four</button>
+    </div>
+    <div class="tl" id="f-tl" data-testid="f-timeline"></div>
+    <div class="fills" id="fills"></div>
+    <p class="small" style="margin:8px 0 0">Each box animates from <b>100px</b> to <b>200px</b> and naturally sits at <b>0px</b>. The dashed outline marks the first keyframe's position. Watch where each box sits during the delay (<code class="inline">backwards</code>) and after the end (<code class="inline">forwards</code>).</p>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Sequencing with promises</h2>
+  <p>Every animation has a <code class="inline">finished</code> promise that resolves when it completes and <strong>rejects if it is cancelled</strong>. That turns choreography into ordinary async code. There are also <code class="inline">onfinish</code> and <code class="inline">oncancel</code> callbacks, and a <code class="inline">ready</code> promise for when playback has actually started.</p>
+  <div class="stage" data-testid="sequencing">
+    <div class="track"><div class="ball" id="s-a"></div></div>
+    <div class="track"><div class="ball b" id="s-b"></div></div>
+    <div class="track"><div class="ball o" id="s-c"></div></div>
+    <div class="row"><button class="btn" id="s-run" data-testid="s-run">Run in sequence</button><button class="btn sec" id="s-cancel" data-testid="s-cancel">Run, then cancel the middle one</button></div>
+    <div class="code" id="s-code"><span class="k">async function</span> run() {
+  <span class="k">await</span> a.animate(kf, <span class="n">600</span>).finished;
+  <span class="k">await</span> b.animate(kf, <span class="n">600</span>).finished;   <span class="c">// rejects if cancelled</span>
+  <span class="k">await</span> c.animate(kf, <span class="n">600</span>).finished;
+}</div>
+    <div class="log" id="s-log" data-testid="s-log" style="margin-top:8px"></div>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> Composite modes: layering animations</h2>
+  <p>An element can carry several animations at once (<code class="inline">el.getAnimations()</code> lists them). By default the <code class="inline">composite</code> mode is <b>replace</b>: when two animations touch the same property, the later one simply overwrites the earlier one. With <b>add</b>, each builds on the last, so a translate and a rotate on <code class="inline">transform</code> combine. (<b>accumulate</b> is like add but merges values where it can: <code class="inline">blur(2)</code> and <code class="inline">blur(5)</code> become <code class="inline">blur(7)</code>.) Here a slide and a spin both animate <code class="inline">transform</code>; flip the second animation's mode.</p>
+  <div class="stage" data-testid="composite">
+    <div class="row"><label class="ctl">Spin's composite<select id="c-mode" data-testid="c-mode"><option>replace</option><option>add</option></select></label><span class="small" id="c-note"></span></div>
+    <div class="stack"><div class="ball" id="c-ball"></div></div>
+    <div class="code" id="c-code" data-testid="c-code"></div>
+  </div>
+
+  <h2 id="sec7"><span class="num">7</span> Keeping the end state</h2>
+  <p>When an animation ends, the element normally snaps back. <code class="inline">fill: "forwards"</code> holds the last frame, but it leaves a finished animation attached to the element, still consuming resources and outranking your normal CSS. MDN recommends against leaning on it. The clean way is to <strong>commit the final style, then cancel</strong>: <code class="inline">commitStyles()</code> writes the computed result into the element's <code class="inline">style</code> attribute. (<code class="inline">persist()</code> exists to stop the browser automatically removing a finished, replaced animation; <code class="inline">replaceState</code> reports <code class="inline">active</code>, <code class="inline">persisted</code> or <code class="inline">removed</code>.)</p>
+  <div class="stage" data-testid="end-state">
+    <div class="track"><div class="ball g" id="e-a"></div></div>
+    <div class="track"><div class="ball r" id="e-b"></div></div>
+    <div class="row"><button class="btn" id="e-fwd" data-testid="e-forwards">A: fill: "forwards"</button><button class="btn" id="e-commit" data-testid="e-commit">B: commitStyles() then cancel()</button><button class="btn sec" id="e-reset" data-testid="e-reset">Reset</button></div>
+    <div class="log" id="e-log" data-testid="e-log"></div>
+  </div>
+
+  <h2 id="sec8"><span class="num">8</span> Off the main thread</h2>
+  <p>The performance story has one rule: <strong>animations of properties the browser can composite, mainly <code class="inline">transform</code> and <code class="inline">opacity</code>, can run on the compositor thread, separate from the main thread that runs JavaScript, style, layout and paint.</strong> CSS animations and natively supported Web Animations typically get this treatment; a <code class="inline">requestAnimationFrame</code> loop never does, because it is JavaScript on the main thread. Anything that triggers layout or paint forces main-thread work. Try it: block the main thread for a moment and see who keeps moving.</p>
+  <div class="stage" data-testid="main-thread">
+    <div class="track"><div class="ball" id="m-a"></div><span class="tlab">WAAPI · transform</span></div>
+    <div class="track"><div class="ball b" id="m-b"></div><span class="tlab">WAAPI · left (layout)</span></div>
+    <div class="track"><div class="ball o" id="m-c"></div><span class="tlab">requestAnimationFrame · transform</span></div>
+    <div class="row"><button class="btn" id="m-block" data-testid="m-block">Block the main thread for 1.5 s</button><span class="small" id="m-msg"></span></div>
+    <p class="small" style="margin:6px 0 0">What you see depends on the browser and the properties; this is the behavior the web.dev guidance describes, not a guarantee. Layout properties like <code class="inline">left</code> are the main-thread case, shown here for contrast.</p>
+  </div>
+
+  <h2 id="sec9"><span class="num">9</span> Beyond time: scroll timelines and global control</h2>
+  <p>Two last ideas. First, an animation's <code class="inline">timeline</code> doesn't have to be the document clock: pass a <code class="inline">ScrollTimeline</code> (or <code class="inline">ViewTimeline</code>) and scroll position becomes the playhead, with <code class="inline">rangeStart</code> and <code class="inline">rangeEnd</code> choosing where it applies. It is the JavaScript twin of CSS scroll-driven animation, and newer than the rest, so feature-detect it. Second, because every animation is an object, you can reach all of them: <code class="inline">document.getAnimations()</code> is a one-line way to honor a reduced-motion preference.</p>
+  <div class="stage" data-testid="timelines">
+    <div class="row"><b class="small">Scroll the box →</b><span class="small" id="sc-msg"></span></div>
+    <div class="scr" id="scr"><div class="in"><div class="tgt" id="sc-t"></div></div></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="rm-slow" data-testid="rm-slow">Halve every animation's speed</button><button class="btn sec" id="rm-back" data-testid="rm-restore">Restore</button><span class="small" id="rm-msg"></span></div>
+    <div class="code"><span class="k">document</span>.getAnimations().forEach(a =&gt; a.updatePlaybackRate(a.playbackRate / <span class="n">2</span>));
+<span class="c">// and the preference itself:</span>
+<span class="k">window</span>.matchMedia(<span class="s">'(prefers-reduced-motion: reduce)'</span>).matches</div>
+  </div>
+
+  <h2 id="sec10"><span class="num">10</span> Choosing the right tool</h2>
+  <p>Pick the tool for each job. <em>The answers are my synthesis of the guidance above.</em></p>
+  <div class="stage" data-testid="choose-tool">
+    <div class="scn" id="scn"></div>
+    <div class="scn-nav"><button class="btn" id="scn-next" data-testid="choose-next" disabled>Next →</button><span class="small" id="scn-score" data-testid="choose-score"></span></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>WAAPI is CSS's keyframe-and-timing model in JavaScript,</b> with an <code class="inline">Animation</code> object you can control. Defaults differ: easing is <code class="inline">linear</code>, durations are milliseconds.</li>
+    <li><b>Control is the point:</b> <code class="inline">currentTime</code>, <code class="inline">updatePlaybackRate()</code>, <code class="inline">pause()</code>, <code class="inline">reverse()</code>, <code class="inline">finish()</code>, <code class="inline">cancel()</code>.</li>
+    <li><b>Fill and end states need care:</b> prefer <code class="inline">commitStyles()</code> then <code class="inline">cancel()</code> over leaving <code class="inline">fill: "forwards"</code> attached.</li>
+    <li><b><code class="inline">finished</code> is a promise</b> that rejects on cancel, so sequences are plain <code class="inline">await</code> code.</li>
+    <li><b>Composite modes layer animations:</b> <code class="inline">replace</code> overwrites, <code class="inline">add</code> and <code class="inline">accumulate</code> combine.</li>
+    <li><b>Compositor-friendly properties (transform, opacity) can animate off the main thread;</b> a requestAnimationFrame loop never does.</li>
+    <li><b>Use CSS for simple state changes, WAAPI when you need runtime control, rAF for per-frame logic.</b></li>
+  </ul>
+  <p class="src"><b>Primary (MDN).</b> <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API/Using_the_Web_Animations_API" target="_blank">Using the Web Animations API</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/animate" target="_blank">Element.animate()</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/Animation" target="_blank">Animation</a> · <a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect" target="_blank">KeyframeEffect() options and composite</a></p>
+  <p class="src"><b>Performance.</b> <a href="https://web.dev/articles/animations-and-performance" target="_blank">web.dev: Animations and performance</a> (compositor thread; transform and opacity).</p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> Scroll timelines are newer than the rest of the API; check current browser support before depending on them. The demos, the choosing quiz and the framing in section 1 are my own.</p>
+
+  <footer>The Web Animations API · Web Animation &amp; Motion Graphics · part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const KF={slide:[{transform:'translateX(0)'},{transform:'translateX(260px)'}],spin:[{transform:'rotate(0) scale(1)'},{transform:'rotate(360deg) scale(0.4)'}],fade:[{opacity:0},{opacity:1}],bounce:[{transform:'translateY(0)'},{transform:'translateY(-18px)',offset:0.3},{transform:'translateX(260px) translateY(0)'}]};
+const KFS={slide:"[{ transform: 'translateX(0)' }, { transform: 'translateX(260px)' }]",spin:"[{ transform: 'rotate(0) scale(1)' }, { transform: 'rotate(360deg) scale(0.4)' }]",fade:"[{ opacity: 0 }, { opacity: 1 }]",bounce:"[{ transform: 'translateY(0)' }, { transform: 'translateY(-18px)', offset: 0.3 }, { transform: 'translateX(260px) translateY(0)' }]"};
+
+/* ---------- where it fits ---------- */
+(function(){
+  const W=[
+    ['CSS animations & transitions','declarative','Describe states in a stylesheet and let the browser animate. Best for simple state changes: hover, open/close, enter/leave.','Limited runtime control: you steer it by toggling classes. No handle to pause, scrub or await.'],
+    ['Web Animations API','declarative + programmable','The same keyframe and timing model, in JavaScript, returning an Animation you can pause, scrub, reverse, re-time and await. Good for component animation and anything computed at runtime.','You manage the objects and their lifecycle. Scroll timelines are newer: feature-detect them.'],
+    ['requestAnimationFrame','imperative','You compute and apply every frame. Total freedom: physics, canvas drawing, custom easing, game loops.','Always runs on the main thread, so it can jank if the thread is busy. You also own frame-rate independence and cleanup.']
+  ];
+  const box=$('ways'), doc=$('wdoc');
+  W.forEach((w,i)=>{ const b=document.createElement('button'); b.type='button'; b.className='way'; b.setAttribute('data-testid','way-'+i); b.innerHTML='<div class="tg">'+w[1]+'</div><b>'+w[0]+'</b>'; b.onclick=()=>{ box.querySelectorAll('.way').forEach(x=>x.classList.remove('on')); b.classList.add('on'); doc.innerHTML='<b>Use it when</b><br>'+w[2]+'<br><br><b>Watch out</b><br>'+w[3]; }; box.appendChild(b); });
+  box.children[1].click();
+  const P=[['duration: 3s','duration: 3000 (milliseconds)'],['animation-iteration-count: infinite','iterations: Infinity'],['animation-timing-function (default ease)','easing (default linear)'],['@keyframes { … }','an array of keyframe objects'],['animation-fill-mode','fill'],['animation-direction','direction'],['animation-delay','delay (and endDelay)'],['class toggling to control it','the Animation object: play(), pause(), reverse()…']];
+  const pb=$('pairs'); P.forEach(([c,w],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='pair'; b.setAttribute('data-testid','pair-'+i); b.innerHTML='<span class="c">'+c+'</span><span class="w">→ '+w+'</span>'; b.onclick=()=>b.classList.toggle('on'); pb.appendChild(b); });
+})();
+
+/* ---------- first animate ---------- */
+(function(){
+  const ball=$('p-ball'); let a=null;
+  function opts(){ return {duration:+$('p-dur').value,easing:$('p-ease').value,iterations:$('p-iter').value==='Infinity'?Infinity:+$('p-iter').value,direction:$('p-dir').value,fill:$('p-fill').value}; }
+  function code(){ const o=opts(); $('p-code').innerHTML='<span class="k">const</span> anim = ball.<span class="k">animate</span>(\n  '+KFS[$('p-kf').value].replace(/</g,'&lt;')+',\n  { duration: <span class="n">'+o.duration+'</span>, easing: <span class="s">\''+o.easing+'\'</span>, iterations: <span class="n">'+$('p-iter').value+'</span>, direction: <span class="s">\''+o.direction+'\'</span>, fill: <span class="s">\''+o.fill+'\'</span> }\n);'; }
+  function run(){ if(a) a.cancel(); ball.getAnimations().forEach(x=>x.cancel()); a=ball.animate(KF[$('p-kf').value],opts()); code(); }
+  $('p-dur-v').textContent=$('p-dur').value+' ms';
+  ['p-kf','p-dur','p-ease','p-iter','p-dir','p-fill'].forEach(id=>$(id).addEventListener('input',()=>{ $('p-dur-v').textContent=$('p-dur').value+' ms'; run(); }));
+  run();
+})();
+
+/* ---------- transport ---------- */
+(function(){
+  const ball=$('t-ball'), D=4000; let a=null, drag=false;
+  function make(){ if(a) a.cancel(); a=ball.animate([{transform:'translateX(0)'},{transform:'translateX(520px)'}],{duration:D,easing:'ease-in-out',fill:'both'}); a.pause(); a.currentTime=0; applyRate(); }
+  function applyRate(){ $('t-rate-v').textContent=($('t-rate').value/100).toFixed(2)+'×'; a.updatePlaybackRate(Math.sign(a.playbackRate||1)*$('t-rate').value/100); }
+  $('t-play').onclick=()=>a.play(); $('t-pause').onclick=()=>a.pause(); $('t-rev').onclick=()=>a.reverse(); $('t-fin').onclick=()=>a.finish(); $('t-can').onclick=()=>a.cancel(); $('t-new').onclick=make;
+  $('t-rate').oninput=applyRate;
+  const sc=$('t-scrub'); sc.addEventListener('pointerdown',()=>{ drag=true; a.pause(); }); sc.addEventListener('pointerup',()=>{ drag=false; });
+  sc.addEventListener('input',()=>{ a.pause(); a.currentTime=sc.value/1000*D; });
+  make();
+  (function tick(){ const t=a.currentTime; $('r-state').textContent=a.playState; $('r-time').textContent=t==null?'null':Math.round(t); $('r-rate').textContent=a.playbackRate.toFixed(2); $('r-pend').textContent=a.pending; if(!drag&&t!=null) sc.value=Math.max(0,Math.min(1000,t/D*1000)); requestAnimationFrame(tick); })();
+})();
+
+/* ---------- timing & fill ---------- */
+(function(){
+  const FILLS=['none','backwards','forwards','both']; const box=$('fills'); const balls={};
+  FILLS.forEach(f=>{ const t=document.createElement('div'); t.className='track'; t.innerHTML='<div class="ghost" style="left:106px"></div><div class="ball '+['','b','g','o'][FILLS.indexOf(f)]+'" style="top:3px;width:30px;height:30px" data-f="'+f+'"></div><span class="tlab">fill: '+f+'</span>'; box.appendChild(t); balls[f]=t.querySelector('.ball'); });
+  function tl(){ const del=+$('f-del').value, it=+$('f-it').value, end=+$('f-end').value; $('f-del-v').textContent=del+' ms'; $('f-end-v').textContent=end+' ms'; const total=del+it*1000+end;
+    const seg=(w,c,l)=>w>0?'<span class="'+c+'" style="flex:0 0 '+(w/total*100)+'%">'+l+'</span>':'';
+    $('f-tl').innerHTML=seg(del,'d','delay')+Array.from({length:it},(_,i)=>'<span class="a" style="flex:0 0 '+(1000/total*100)+'%">pass '+(i+1)+(($('f-dir').value==='alternate'&&i%2)?' ←':' →')+'</span>').join('')+seg(end,'e','endDelay'); }
+  function run(){ tl(); FILLS.forEach(f=>{ balls[f].getAnimations().forEach(x=>x.cancel()); balls[f].animate([{transform:'translateX(100px)'},{transform:'translateX(200px)'}],{duration:1000,delay:+$('f-del').value,endDelay:+$('f-end').value,iterations:+$('f-it').value,direction:$('f-dir').value,fill:f,easing:'linear'}); }); }
+  ['f-del','f-it','f-dir','f-end'].forEach(id=>$(id).addEventListener('input',tl)); $('f-run').onclick=run; tl();
+})();
+
+/* ---------- sequencing ---------- */
+(function(){
+  const kf=[{transform:'translateX(0)'},{transform:'translateX(300px)'}]; const els=[$('s-a'),$('s-b'),$('s-c')]; const log=$('s-log');
+  const say=t=>{ log.textContent+=t+'\n'; log.scrollTop=log.scrollHeight; };
+  async function run(cancelMiddle){ log.textContent=''; $('s-run').disabled=$('s-cancel').disabled=true; els.forEach(e=>e.getAnimations().forEach(a=>a.cancel()));
+    try{ for(let i=0;i<3;i++){ const a=els[i].animate(kf,{duration:600,fill:'forwards'}); say('animation '+(i+1)+' started'); if(cancelMiddle&&i===1) setTimeout(()=>a.cancel(),250); await a.finished; say('animation '+(i+1)+' finished'); }
+      say('sequence complete'); }
+    catch(e){ say('finished promise rejected: '+e.name+' → the sequence stops here'); }
+    finally{ $('s-run').disabled=$('s-cancel').disabled=false; } }
+  $('s-run').onclick=()=>run(false); $('s-cancel').onclick=()=>run(true);
+})();
+
+/* ---------- composite ---------- */
+(function(){
+  const ball=$('c-ball'); function go(){ ball.getAnimations().forEach(a=>a.cancel()); const mode=$('c-mode').value;
+    ball.animate([{transform:'translateX(-110px)'},{transform:'translateX(110px)'}],{duration:2200,direction:'alternate',iterations:Infinity,easing:'ease-in-out'});
+    ball.animate([{transform:'rotate(0deg)'},{transform:'rotate(360deg)'}],{duration:1400,iterations:Infinity,composite:mode});
+    $('c-note').textContent=mode==='replace'?'Replace: the spin overwrites the slide, so the ball only spins in place.':'Add: the spin builds on the slide, so the ball travels and spins.';
+    $('c-code').innerHTML='ball.<span class="k">animate</span>([{ transform: <span class="s">\'translateX(-110px)\'</span> }, { transform: <span class="s">\'translateX(110px)\'</span> }], { duration: <span class="n">2200</span>, direction: <span class="s">\'alternate\'</span>, iterations: <span class="n">Infinity</span> });\nball.<span class="k">animate</span>([{ transform: <span class="s">\'rotate(0deg)\'</span> }, { transform: <span class="s">\'rotate(360deg)\'</span> }], { duration: <span class="n">1400</span>, iterations: <span class="n">Infinity</span>, composite: <span class="s">\''+mode+'\'</span> });'; }
+  $('c-mode').onchange=go; go();
+})();
+
+/* ---------- end state ---------- */
+(function(){
+  const a=$('e-a'), b=$('e-b'), log=$('e-log'); const kf=[{transform:'translateX(0)'},{transform:'translateX(300px)'}];
+  const say=t=>{ log.textContent+=t+'\n'; log.scrollTop=log.scrollHeight; };
+  function reset(){ [a,b].forEach(e=>{ e.getAnimations().forEach(x=>x.cancel()); e.removeAttribute('style'); }); log.textContent='Run A or B, then compare the logs.\n'; }
+  $('e-fwd').onclick=async()=>{ const an=a.animate(kf,{duration:700,fill:'forwards'}); await an.finished; say('A finished. getAnimations().length = '+a.getAnimations().length+' (still attached), style attribute = "'+(a.getAttribute('style')||'')+'", replaceState = '+an.replaceState); };
+  $('e-commit').onclick=async()=>{ const an=b.animate(kf,{duration:700,fill:'forwards'}); await an.finished; an.commitStyles(); an.cancel(); say('B finished, then commitStyles() + cancel(). getAnimations().length = '+b.getAnimations().length+', style attribute = "'+(b.getAttribute('style')||'').trim()+'"'); };
+  $('e-reset').onclick=reset; reset();
+})();
+
+/* ---------- main thread ---------- */
+(function(){
+  const a=$('m-a'), b=$('m-b'), c=$('m-c'); const W=560;
+  a.animate([{transform:'translateX(0)'},{transform:'translateX('+W+'px)'}],{duration:1800,direction:'alternate',iterations:Infinity,easing:'ease-in-out'});
+  b.animate([{left:'6px'},{left:(6+W)+'px'}],{duration:1800,direction:'alternate',iterations:Infinity,easing:'ease-in-out'});
+  (function loop(t){ const p=(t%3600)/1800; const k=p<1?p:2-p; const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; c.style.transform='translateX('+(e*W)+'px)'; requestAnimationFrame(loop); })(0);
+  $('m-block').onclick=()=>{ $('m-msg').textContent='Blocking…'; setTimeout(()=>{ const t=performance.now(); while(performance.now()-t<1500){} $('m-msg').textContent='Done. Did the first box keep moving while the others froze?'; },60); };
+})();
+
+/* ---------- scroll timeline + global control ---------- */
+(function(){
+  const t=$('sc-t'), msg=$('sc-msg');
+  try{ if(typeof ScrollTimeline==='undefined') throw new Error('nope'); const tl=new ScrollTimeline({source:$('scr'),axis:'block'}); t.animate({transform:['scaleX(0.2)','scaleX(1)'],opacity:[0.3,1]},{fill:'both',duration:1,timeline:tl}); msg.textContent='Driven by a ScrollTimeline: scroll position is the playhead.'; }
+  catch(e){ msg.textContent='ScrollTimeline is not available in this browser: feature-detect it and fall back.'; }
+  $('rm-slow').onclick=()=>{ const n=document.getAnimations().length; document.getAnimations().forEach(a=>a.updatePlaybackRate(a.playbackRate/2)); $('rm-msg').textContent='Halved the speed of '+n+' running animation(s). prefers-reduced-motion is '+(matchMedia('(prefers-reduced-motion: reduce)').matches?'ON':'off')+' for you.'; };
+  $('rm-back').onclick=()=>{ document.getAnimations().forEach(a=>a.updatePlaybackRate(a.playbackRate>0?Math.max(1,a.playbackRate*2):a.playbackRate*2)); $('rm-msg').textContent='Doubled them back (the transport demo above keeps its own rate slider).'; };
+})();
+
+/* ---------- choosing ---------- */
+(function(){
+  const O=['CSS','WAAPI','requestAnimationFrame'];
+  const Q=[
+    ['A button that lifts slightly on hover.',0,'A simple state change: CSS is declarative, cheap and exactly right. No handle needed.'],
+    ['A panel expands, but the user can interrupt it, reverse it mid-flight and you need to know when it has finished.',1,'You need runtime control and a finished promise. WAAPI gives both with the same keyframe model.'],
+    ['A particle system updating thousands of positions every frame from physics.',2,'Per-frame computation belongs in your own loop (often on canvas). It is main-thread work by nature.'],
+    ['Animate a list item in from wherever the user clicked, using measured pixel values.',1,'Values known only at runtime suit WAAPI: build the keyframes in JavaScript and let the browser animate them.'],
+    ['A decorative loading spinner.',0,'Declarative and endless with no control needed: a CSS animation on transform.'],
+    ['Slow all motion on the page for users who prefer reduced motion, without hunting for each animation.',1,'document.getAnimations() reaches every animation object. CSS alone can only change rules, not live animations.']
+  ];
+  let i=0, score=0, done=false; const box=$('scn'), nx=$('scn-next');
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="tag">DONE</div><div class="say" style="border-left-color:var(--forest)">You matched '+score+' of '+Q.length+'.</div><p class="small">Default to CSS, reach for WAAPI when you need control or runtime values, and write your own loop only when you must compute every frame.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{ i=0; score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; $('scn-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tag">JOB '+(i+1)+' / '+Q.length+'</div><div class="say">'+q[0]+'</div><div class="opts">'+O.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'" data-testid="choose-option-'+k+'">'+o+'</button>').join('')+'</div><div class="why" id="why"></div>';
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); $('why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+q[2]; nx.disabled=false; $('scn-score').textContent=score+' of '+(i+1)+' matched'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+})();
+</script>
+<script src="../../../../registry.js"></script>
+<script src="../../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

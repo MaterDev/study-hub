@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 2: CSS Transitions & Transforms</title>
+  <style>
+    :root {
+      --bg: #f4f8fd;
+      --surface: #ffffff;
+      --surface-2: #f3f6fc;
+      --border: #c3d3e6;
+      --text: #2a3150;
+      --text-muted: #525c83;
+      --accent: #4a6fa8;
+      --accent-dim: #e1e9f7;
+      --green: #3a7a52;
+      --green-dim: #e3f2e8;
+      --yellow: #b8902e;
+      --yellow-dim: #fbf0d2;
+      --red: #b35c5c;
+      --red-dim: #f8e2e2;
+      --purple: #7d68b3;
+      --purple-dim: #ece6f8;
+      --code-bg: #353d5e;
+      --radius: 8px;
+      --font-mono: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    /* ── Header ─────────────────────────── */
+    .lesson-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 40px 0 32px; }
+    .lesson-header-inner { max-width: 740px; margin: 0 auto; padding: 0 32px; }
+    .lesson-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .badge { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; }
+    .badge-lesson { background: var(--accent-dim); color: var(--accent); }
+    .badge-foundational { background: var(--green-dim); color: var(--green); }
+    .badge-time { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+    .lesson-header h1 { font-size: 32px; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .lesson-header .subtitle { color: var(--text-muted); font-size: 16px; max-width: 580px; }
+
+    /* ── Content ────────────────────────── */
+    .content { max-width: 740px; margin: 0 auto; padding: 56px 32px 80px; }
+    h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin: 56px 0 16px; padding-top: 8px; border-top: 1px solid var(--border); }
+    h3 { font-size: 17px; font-weight: 700; margin: 32px 0 10px; }
+    p { margin-bottom: 20px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { color: #fff; font-weight: 600; }
+    ul, ol { padding-left: 22px; margin-bottom: 20px; }
+    li { margin-bottom: 8px; }
+
+    /* ── Callouts ───────────────────────── */
+    .callout { border-radius: var(--radius); padding: 16px 20px; margin: 28px 0; border-left: 3px solid; font-size: 15.5px; }
+    .callout-label { font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .callout p { margin: 0; }
+    .callout-insight { background: var(--accent-dim); border-color: var(--accent); }
+    .callout-insight .callout-label { color: var(--accent); }
+    .callout-mistake { background: var(--red-dim); border-color: var(--red); }
+    .callout-mistake .callout-label { color: var(--red); }
+    .callout-connects { background: var(--purple-dim); border-color: var(--purple); }
+    .callout-connects .callout-label { color: var(--purple); }
+    .callout-devtools { background: var(--green-dim); border-color: var(--green); }
+    .callout-devtools .callout-label { color: var(--green); }
+
+    /* ── Code ───────────────────────────── */
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; overflow-x: auto; margin: 24px 0; font-family: var(--font-mono); font-size: 14px; line-height: 1.65; }
+    code { font-family: var(--font-mono); font-size: 0.88em; background: var(--code-bg); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; color: #2f4f86; }
+    pre code { background: none; border: none; padding: 0; font-size: inherit; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .num { color: #f78c6c; }
+    .cmt { color: #546e7a; font-style: italic; } .fn { color: #82aaff; }
+    .prop { color: #ffcb6b; } .tag { color: #f07178; } .val { color: #c3e88d; }
+
+    /* ── Demo shared ────────────────────── */
+    .demo-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin: 24px 0;
+      overflow: hidden;
+    }
+    .demo-header {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .demo-header .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .demo-body { padding: 20px; }
+    .demo-stage {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .demo-caption {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      line-height: 1.5;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .demo-caption strong { color: var(--text); }
+    .demo-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .demo-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Property grid ──────────────────── */
+    .prop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+    @media (max-width: 560px) { .prop-grid { grid-template-columns: 1fr; } }
+    .prop-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .prop-card-stage {
+      height: 90px;
+      background: var(--code-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .prop-card-ghost {
+      position: absolute;
+      width: 40px; height: 40px;
+      border: 1.5px dashed #c3d3e6;
+      border-radius: 5px;
+    }
+    .prop-card-box {
+      width: 40px; height: 40px;
+      border-radius: 5px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff;
+      position: absolute;
+    }
+    .prop-card-info { padding: 10px 12px; }
+    .prop-card-name { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
+    .prop-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+    /* ── Easing demo ────────────────────── */
+    .easing-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .easing-lane {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .easing-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      width: 160px;
+      flex-shrink: 0;
+    }
+    .easing-track {
+      flex: 1;
+      height: 28px;
+      background: var(--code-bg);
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .easing-ball {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* ── Transform origin grid ──────────── */
+    .origin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .origin-cell {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: visible;
+    }
+    .origin-cell-label {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      position: absolute;
+      bottom: 6px;
+      left: 0; right: 0;
+      text-align: center;
+    }
+    .origin-cell-box {
+      width: 42px; height: 42px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      position: absolute;
+    }
+    .origin-cell-dot {
+      position: absolute;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--yellow);
+      border: 1.5px solid #fff;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* ── 3D demo ────────────────────────── */
+    .persp-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .persp-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .persp-controls input { accent-color: var(--accent); }
+    .persp-stages {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .persp-stage {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .persp-card {
+      width: 70px; height: 46px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, var(--accent), #2f7fa8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+      transform-style: preserve-3d;
+    }
+    .persp-val {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ── Pipeline cost table ────────────── */
+    .cost-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    .cost-table th { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .cost-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .cost-table tr:last-child td { border-bottom: none; }
+    .cost-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; }
+    .cost-green { background: var(--green-dim); color: var(--green); }
+    .cost-yellow { background: var(--yellow-dim); color: var(--yellow); }
+    .cost-red { background: var(--red-dim); color: var(--red); }
+    .cost-bar-wrap { width: 100%; height: 6px; background: var(--surface-2); border-radius: 99px; margin-top: 4px; }
+    .cost-bar { height: 100%; border-radius: 99px; }
+
+    /* ── Order demo ─────────────────────── */
+    .order-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    @media (max-width: 560px) { .order-demo { grid-template-columns: 1fr; } }
+    .order-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .order-panel-label { padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .order-code { padding: 7px 14px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; color: #2f4f86; line-height: 1.6; }
+    .order-stage { height: 150px; display: flex; align-items: center; justify-content: center; position: relative; background: var(--code-bg); }
+    .order-ghost { position: absolute; width: 46px; height: 46px; border: 1.5px dashed var(--border); border-radius: 6px; }
+    .order-box { position: absolute; width: 46px; height: 46px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .order-axis-x { position: absolute; bottom: 18px; left: 12px; right: 12px; height: 1px; background: var(--border); }
+    .order-axis-y { position: absolute; top: 12px; bottom: 12px; left: 50%; width: 1px; background: var(--border); }
+    .order-arrow { position: absolute; font-size: 9px; color: var(--text-muted); }
+    .order-box-a { background: #4a6fa8; }
+    .order-box-b { background: #7d68b3; }
+    .order-caption { padding: 9px 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5; border-top: 1px solid var(--border); }
+    .order-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .order-controls label { font-size: 13px; color: var(--text-muted); }
+    .order-controls input[type=range] { accent-color: var(--accent); }
+
+    /* ── Example link ───────────────────── */
+    .example-link { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; font-weight: 600; font-size: 15px; padding: 10px 20px; border-radius: var(--radius); margin: 8px 0 24px; transition: opacity 0.15s; }
+    .example-link:hover { opacity: 0.85; text-decoration: none; }
+
+    /* ── Reading list ───────────────────── */
+    .reading-list { list-style: none; padding: 0; margin: 0; }
+    .reading-list li { padding: 14px 0; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+    .reading-list li:last-child { border-bottom: none; }
+    .reading-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; white-space: nowrap; margin-top: 3px; }
+    .tag-spec { background: var(--accent-dim); color: var(--accent); }
+    .tag-article { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+    .tag-deep { background: var(--purple-dim); color: var(--purple); }
+    .reading-list a { font-weight: 500; }
+    .reading-list p { margin: 2px 0 0; font-size: 14px; color: var(--text-muted); }
+
+    /* ── Practical anchor ───────────────── */
+    .practical-anchor { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; margin-top: 48px; }
+    .practical-anchor h2 { border: none; margin-top: 0; padding-top: 0; font-size: 18px; }
+    .practical-anchor ul { padding-left: 20px; margin-top: 12px; }
+    .practical-anchor ul li { margin-bottom: 8px; }
+
+    /* ── Nav ────────────────────────────── */
+    .lesson-nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; border-top: 1px solid var(--border); margin-top: 64px; font-size: 14px; color: var(--text-muted); }
+    .lesson-nav a { display: flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 500; }
+
+    /* ── Diagram ────────────────────────── */
+    .diagram { margin: 32px 0; overflow-x: auto; }
+    .diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+<header class="lesson-header">
+  <div class="lesson-header-inner">
+    <div class="lesson-meta">
+      <span class="badge badge-lesson">Lesson 02</span>
+      <span class="badge badge-foundational">Foundational</span>
+      <span class="badge badge-time">⏱ 15–18 min read</span>
+    </div>
+    <h1>CSS Transitions & Transforms</h1>
+    <p class="subtitle">The two CSS tools you'll reach for in almost every animation. Understanding them at a deep level — not just their syntax — is what separates polished motion from amateur work.</p>
+  </div>
+</header>
+
+<main class="content">
+
+  <!-- 1. HOOK -->
+  <h2 id="sec-1">Why this matters</h2>
+
+  <p>CSS transitions and transforms are deceptively simple on the surface. A few lines of code and things move. But if you've worked through Lesson 1, you know the browser has a cost model underneath — and transforms are at the foundation of that model for a specific reason. They're the one CSS concept that maps almost perfectly to how the GPU works.</p>
+
+  <p>Beyond performance, there's craft here. The difference between an animation that feels premium and one that feels cheap often comes down to how well you understand transform origins, coordinate spaces, and the subtle math of 3D. This lesson builds that foundation.</p>
+
+  <!-- 2. MENTAL MODEL -->
+  <h2 id="sec-2">The mental model</h2>
+
+  <h3>Transitions: reacting to state change</h3>
+
+  <p>A transition is <em>not</em> an animation you play. It's a rule that says: "whenever this property changes, interpolate smoothly between the old value and the new value instead of jumping." The browser handles the rest.</p>
+
+  <p>This is an important distinction. A transition is <strong>stateless</strong> — it has no concept of a sequence or a timeline. It just watches for changes and smooths them. You trigger it by changing state (via class toggle, hover, JS, etc.), and the browser does the interpolation.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 680 130" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+      <rect width="680" height="130" fill="#f4f8fd" rx="10"/>
+      <rect x="20" y="30" width="140" height="70" rx="8" fill="#e1e9f7" stroke="#4a6fa8" stroke-width="1.5"/>
+      <text x="90" y="62" text-anchor="middle" fill="#4a6fa8" font-size="12" font-weight="700">STATE A</text>
+      <text x="90" y="80" text-anchor="middle" fill="#525c83" font-size="11">translateX(0)</text>
+      <text x="90" y="95" text-anchor="middle" fill="#525c83" font-size="11">opacity: 1</text>
+      <path d="M162 65 L260 65" stroke="#c3d3e6" stroke-width="1.5" marker-end="url(#a2)"/>
+      <rect x="178" y="45" width="66" height="18" rx="4" fill="#fbf0d2"/>
+      <text x="211" y="57" text-anchor="middle" fill="#b8902e" font-size="10" font-weight="700">:hover / class</text>
+      <rect x="262" y="20" width="156" height="90" rx="8" fill="#353d5e" stroke="#c3d3e6" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="340" y="44" text-anchor="middle" fill="#525c83" font-size="10" font-weight="700" letter-spacing="0.06em">TRANSITION</text>
+      <text x="340" y="60" text-anchor="middle" fill="#525c83" font-size="10">interpolate over</text>
+      <text x="340" y="74" text-anchor="middle" fill="#4a6fa8" font-size="10">duration + easing</text>
+      <text x="340" y="98" text-anchor="middle" fill="#546e7a" font-size="9" font-style="italic">compositor thread</text>
+      <path d="M420 65 L518 65" stroke="#c3d3e6" stroke-width="1.5" marker-end="url(#a2)"/>
+      <rect x="520" y="30" width="140" height="70" rx="8" fill="#e3f2e8" stroke="#3a7a52" stroke-width="1.5"/>
+      <text x="590" y="62" text-anchor="middle" fill="#3a7a52" font-size="12" font-weight="700">STATE B</text>
+      <text x="590" y="80" text-anchor="middle" fill="#525c83" font-size="11">translateX(200px)</text>
+      <text x="590" y="95" text-anchor="middle" fill="#525c83" font-size="11">opacity: 0.5</text>
+      <defs>
+        <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#c3d3e6"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <h3>Transforms: changing visual representation, not layout</h3>
+
+  <p>A transform is an instruction to the GPU: take this element's already-painted bitmap and apply a mathematical operation to it before displaying it. Crucially, this happens <em>after</em> layout — the element still occupies the same space in the document flow. Its box model is unchanged. Neighboring elements don't move. The visual representation shifts, but the geometry doesn't.</p>
+
+  <!-- LAYOUT VS VISUAL DEMO -->
+  <style>
+    .layout-demo-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 20px;
+      background: var(--code-bg);
+      border-radius: 6px;
+      justify-content: center;
+      position: relative;
+      min-height: 100px;
+    }
+    .layout-box {
+      width: 72px; height: 52px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,.8);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .layout-ghost {
+      position: absolute;
+      inset: 0;
+      border: 1.5px dashed var(--border);
+      border-radius: 6px;
+      pointer-events: none;
+    }
+  </style>
+
+  <div class="demo-wrap">
+    <div class="demo-header"><span class="live-dot"></span> Live — transform moves the visual, not the layout box</div>
+    <div class="demo-body">
+      <div class="layout-demo-row">
+        <div class="layout-box" style="background:#c3d3e6;color:var(--text-muted);">before</div>
+        <div class="layout-box" id="layout-moving-box" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
+          <div class="layout-ghost" id="layout-ghost"></div>
+          transformed
+        </div>
+        <div class="layout-box" style="background:#c3d3e6;color:var(--text-muted);">after</div>
+      </div>
+      <div class="demo-caption">
+        The <strong>dashed outline</strong> is the layout box — it never moves. The "before" and "after" boxes never shift. Only the visual pixels relocate. This is why transforms don't cause reflow and can run entirely on the compositor thread.
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const box   = document.getElementById('layout-moving-box');
+    const ghost = document.getElementById('layout-ghost');
+    let start = null;
+    function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+    function tick(ts) {
+      if (!start) start = ts;
+      const loop = 2400;
+      const e = (ts - start) % (loop * 2);
+      const t = ease(e < loop ? e / loop : 1 - (e - loop) / loop);
+      const tx = t * 80 - 40;
+      const sc = 0.85 + t * 0.3;
+      box.style.transform = `translateX(${tx}px) scale(${sc})`;
+      // ghost stays put — shows where layout thinks the box is
+      ghost.style.transform = `translateX(${-tx}px) scale(${1/sc})`;
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+  </script>
+
+  <p>This is why transforms are compositor-safe. The browser has already done the layout and paint work. A transform just tells the GPU to reposition, rescale, or rotate the texture it already has.</p>
+
+  <!-- 3. HOW IT WORKS -->
+  <h2 id="sec-3">How it works</h2>
+
+  <h3>The transition properties</h3>
+
+  <pre><code><span class="tag">.element</span> {
+  <span class="cmt">/* Longhand — the four transition properties */</span>
+  <span class="prop">transition-property</span>:        <span class="val">transform, opacity</span>;
+  <span class="prop">transition-duration</span>:        <span class="val">0.3s</span>;
+  <span class="prop">transition-timing-function</span>: <span class="val">ease-out</span>;
+  <span class="prop">transition-delay</span>:          <span class="val">0s</span>;
+
+  <span class="cmt">/* Shorthand — property duration easing delay */</span>
+  <span class="prop">transition</span>: <span class="val">transform 0.3s ease-out, opacity 0.2s ease</span>;
+}</code></pre>
+
+  <!-- EASING DEMO -->
+  <h3>Timing functions — what easing really looks like</h3>
+
+  <p>The timing function controls the <em>pace</em> of change across the duration — it's a curve from 0% to 100% progress. <code>linear</code> moves at constant speed. <code>ease-out</code> starts fast and decelerates, which is why it feels natural for things appearing on screen. Watch them all race across the same distance:</p>
+
+  <div class="demo-wrap">
+    <div class="demo-header"><span class="live-dot"></span> Live — easing comparison</div>
+    <div class="demo-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <button class="demo-btn" id="easing-restart">↺ Restart</button>
+        <span style="font-size:12px;color:var(--text-muted);">All boxes travel the same distance in the same duration — only the pace differs</span>
+      </div>
+      <div class="easing-row" id="easing-row">
+        <!-- lanes injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-insight">
+    <span class="callout-label">💡 Key insight</span>
+    <p><code>ease-out</code> (fast start, slow end) feels most natural for UI motion because it mimics how objects decelerate in the physical world. <code>ease-in</code> (slow start, fast end) is jarring for entrances but good for exits — things leaving the screen should accelerate away. <code>ease-in-out</code> is smooth for continuous loops.</p>
+  </div>
+
+  <div class="callout callout-mistake">
+    <span class="callout-label">⚠️ Common mistake</span>
+    <p>Using <code>transition: all 0.3s ease</code>. It silently watches <em>every</em> CSS property for changes — including layout-triggering ones like <code>width</code> and <code>height</code>. It also prevents per-property timing. Always list properties explicitly: <code>transition: transform 0.3s ease, opacity 0.2s ease</code>.</p>
+  </div>
+
+  <h3>The transform functions</h3>
+
+  <p>Each transform function applies a different geometric operation. The ghost outline shows where the element <em>actually lives</em> in layout — transforms don't move that. Only the rendered pixels shift.</p>
+
+  <div class="prop-grid">
+    <div class="prop-card">
+      <div class="prop-card-stage">
+        <div class="prop-card-ghost"></div>
+        <div class="prop-card-box" id="tf-translate">tx</div>
+      </div>
+      <div class="prop-card-info">
+        <div class="prop-card-name">translate(x, y)</div>
+        <div class="prop-card-desc">Moves the element. No layout impact. The most common transform — pure compositor work.</div>
+      </div>
+    </div>
+    <div class="prop-card">
+      <div class="prop-card-stage">
+        <div class="prop-card-ghost"></div>
+        <div class="prop-card-box" id="tf-scale" style="background:var(--green);">sc</div>
+      </div>
+      <div class="prop-card-info">
+        <div class="prop-card-name">scale(x, y)</div>
+        <div class="prop-card-desc">Resizes around the transform origin. scale(1) = unchanged, scale(2) = double, scale(0) = invisible.</div>
+      </div>
+    </div>
+    <div class="prop-card">
+      <div class="prop-card-stage">
+        <div class="prop-card-ghost"></div>
+        <div class="prop-card-box" id="tf-rotate" style="background:var(--purple);">ro</div>
+      </div>
+      <div class="prop-card-info">
+        <div class="prop-card-name">rotate(angle)</div>
+        <div class="prop-card-desc">Rotates around the Z axis (2D). Use rotateX/Y for 3D. Angle in deg, rad, or turn.</div>
+      </div>
+    </div>
+    <div class="prop-card">
+      <div class="prop-card-stage">
+        <div class="prop-card-ghost"></div>
+        <div class="prop-card-box" id="tf-skew" style="background:var(--yellow);color:#1a1a1a;">sk</div>
+      </div>
+      <div class="prop-card-info">
+        <div class="prop-card-name">skew(x, y)</div>
+        <div class="prop-card-desc">Shears the element. No individual property equivalent. Use sparingly — distorts text.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Individual transform properties (modern CSS)</h3>
+
+  <p>Since 2022, all modern browsers support <code>translate</code>, <code>rotate</code>, and <code>scale</code> as standalone CSS properties — separate from the <code>transform</code> shorthand. This solves a long-standing problem: with the old <code>transform</code> property, adding a new transform function would overwrite any others set elsewhere (e.g. in a JS animation). Now you can compose them independently:</p>
+
+  <pre><code><span class="cmt">/* Old way — overwriting transforms fight each other */</span>
+<span class="tag">.card</span> { <span class="prop">transform</span>: <span class="val">translateY(-8px)</span>; } <span class="cmt">/* hover lift */</span>
+<span class="cmt">/* JS sets transform: rotate(5deg) → wipes out the translateY! */</span>
+
+<span class="cmt">/* Modern way — individual properties stack cleanly */</span>
+<span class="tag">.card</span> {
+  <span class="prop">translate</span>: <span class="val">0 -8px</span>;   <span class="cmt">/* CSS hover owns this */</span>
+  <span class="prop">rotate</span>: <span class="val">5deg</span>;        <span class="cmt">/* JS animation owns this — no conflict */</span>
+  <span class="prop">scale</span>: <span class="val">1.02</span>;
+}
+<span class="cmt">/* Browser applies in fixed order: translate → rotate → scale → transform */</span></code></pre>
+
+  <!-- INDIVIDUAL PROPS DEMO -->
+  <div class="demo-wrap">
+    <div class="demo-header"><span class="live-dot"></span> Live — individual properties vs shorthand conflict</div>
+    <div class="demo-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:12px;color:var(--red);font-weight:700;margin-bottom:8px;">❌ Old way — conflict</div>
+        <div class="demo-stage" style="height:100px;">
+          <div id="conflict-box" style="width:44px;height:44px;border-radius:6px;background:#4a6fa8;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;position:absolute;">old</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">CSS sets <code>translateY(-14px)</code> on hover<br>JS then sets <code>rotate()</code> — lift disappears</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:8px;">✓ Modern way — no conflict</div>
+        <div class="demo-stage" style="height:100px;">
+          <div id="modern-box" style="width:44px;height:44px;border-radius:6px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;position:absolute;">new</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;"><code>translate</code> and <code>rotate</code> are separate<br>both run simultaneously, no override</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIXED ORDER DIAGRAM -->
+  <div class="demo-wrap">
+    <div class="demo-header">Individual properties: the browser's locked application order</div>
+    <div class="demo-body">
+      <div style="display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin-bottom:14px;">
+        <div style="text-align:center;padding:10px 16px;background:var(--accent-dim);border:1px solid var(--accent);border-radius:6px 0 0 6px;">
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent);font-weight:700;">translate</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">moves position</div>
+        </div>
+        <div style="padding:0 2px;color:var(--text-muted);font-size:18px;background:var(--surface-2);height:54px;display:flex;align-items:center;">→</div>
+        <div style="text-align:center;padding:10px 16px;background:var(--purple-dim);border:1px solid var(--purple);border-top:1px solid var(--purple);border-bottom:1px solid var(--purple);">
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--purple);font-weight:700;">rotate</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">spins element</div>
+        </div>
+        <div style="padding:0 2px;color:var(--text-muted);font-size:18px;background:var(--surface-2);height:54px;display:flex;align-items:center;">→</div>
+        <div style="text-align:center;padding:10px 16px;background:var(--green-dim);border:1px solid var(--green);border-radius:0 6px 6px 0;">
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--green);font-weight:700;">scale</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">resizes element</div>
+        </div>
+        <div style="padding:0 2px;color:var(--text-muted);font-size:18px;background:var(--surface-2);height:54px;display:flex;align-items:center;">→</div>
+        <div style="text-align:center;padding:10px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;">
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);font-weight:700;">transform</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">shorthand, applied last</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;font-weight:700;letter-spacing:.05em;">Written like this:</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);line-height:1.8;">
+            <span style="color:var(--green);">scale</span>: 1.2;<br>
+            <span style="color:var(--purple);">rotate</span>: 45deg;<br>
+            <span style="color:var(--accent);">translate</span>: 40px 0;
+          </div>
+        </div>
+        <div style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;font-weight:700;letter-spacing:.05em;">Browser applies as:</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);line-height:1.8;">
+            1. <span style="color:var(--accent);">translate</span>: 40px 0; <span style="color:#546e7a;">← always first</span><br>
+            2. <span style="color:var(--purple);">rotate</span>: 45deg;<br>
+            3. <span style="color:var(--green);">scale</span>: 1.2; <span style="color:#546e7a;">← always last</span>
+          </div>
+        </div>
+      </div>
+      <div class="demo-caption" style="margin-top:10px;">Written order is <strong>ignored</strong>. The browser always applies translate → rotate → scale, regardless of how you write them. This makes the individual properties safe and predictable — but means you can't choose a different order with them.</div>
+    </div>
+  </div>
+
+  <h3>Transform order — the gotcha that trips everyone up</h3>
+
+  <p>Here is the core rule: <strong>each transform in the <code>transform</code> shorthand tilts the coordinate axes for every transform that follows it.</strong> So the same two functions, in a different order, operate on different axes and end up in completely different places.</p>
+
+  <p>The clearest way to see it is to step through each one:</p>
+
+  <!-- STEP BY STEP BREAKDOWN -->
+  <div class="demo-wrap">
+    <div class="demo-header">Step-by-step: what happens at each stage</div>
+    <div class="demo-body" style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-muted);width:18%;">Step</th>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:#4a6fa8;width:41%;">Option A: <code style="font-size:11px;">translateX(80px) rotate(45deg)</code></th>
+            <th style="text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:#7d68b3;width:41%;">Option B: <code style="font-size:11px;">rotate(45deg) translateX(80px)</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-muted);">Start</td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);">Element at origin. X axis points right. Y axis points down.</td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);">Element at origin. X axis points right. Y axis points down.</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-muted);">First transform</td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);"><code style="color:#4a6fa8;">translateX(80px)</code> — moves 80px along the current X axis (screen right). <strong style="color:var(--text);">X axis still points right.</strong></td>
+            <td style="padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);"><code style="color:#7d68b3;">rotate(45deg)</code> — rotates the element and its axes 45°. <strong style="color:var(--text);">X axis now points diagonally ↘.</strong></td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;color:var(--text-muted);">Second transform</td>
+            <td style="padding:10px 12px;color:var(--text-dim);"><code style="color:#4a6fa8;">rotate(45deg)</code> — rotates around the origin. X axis stays screen-aligned. <strong style="color:var(--text);">Spins in its new position.</strong></td>
+            <td style="padding:10px 12px;color:var(--text-dim);"><code style="color:#7d68b3;">translateX(80px)</code> — moves 80px along the <em>current</em> X axis, which is now diagonal. <strong style="color:var(--text);">Moves at 45° to the screen.</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p>Watch it animated. Both boxes use the same values — only the order differs:</p>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+    <button class="demo-btn" id="order-toggle">Pause</button>
+    <label style="font-size:13px;color:var(--text-muted);">Speed</label>
+    <input type="range" id="order-speed" min="0.5" max="3" step="0.5" value="1.5" style="width:100px;accent-color:var(--accent);">
+    <span id="order-speed-label" style="font-size:12px;color:var(--text-muted);">1.5s</span>
+  </div>
+
+  <div class="order-demo">
+    <div class="order-panel">
+      <div class="order-panel-label">Option A</div>
+      <div class="order-code">translateX(80px)<br>then rotate(45deg)</div>
+      <div class="order-stage">
+        <div class="order-axis-x"></div>
+        <div class="order-axis-y"></div>
+        <div class="order-ghost"></div>
+        <div class="order-box order-box-a" id="order-box-a">A</div>
+      </div>
+      <div class="order-caption">Moves right (X axis is still screen-right), then spins. Ends up to the right of origin, rotated.</div>
+    </div>
+    <div class="order-panel">
+      <div class="order-panel-label">Option B</div>
+      <div class="order-code">rotate(45deg)<br>then translateX(80px)</div>
+      <div class="order-stage">
+        <div class="order-axis-x"></div>
+        <div class="order-axis-y"></div>
+        <div class="order-ghost"></div>
+        <div class="order-box order-box-b" id="order-box-b">B</div>
+      </div>
+      <div class="order-caption">Rotates first (X axis tilts diagonally), then moves along that tilted axis. Ends up diagonally from origin.</div>
+    </div>
+  </div>
+
+  <h3>Two syntaxes, two different rules about order</h3>
+
+  <p>This is where a lot of confusion lives, so it's worth being precise about the difference:</p>
+
+  <!-- TWO SYNTAX COMPARISON -->
+  <div class="demo-wrap">
+    <div class="demo-header">transform shorthand vs individual properties — how order works</div>
+    <div class="demo-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">transform shorthand</div>
+        <pre style="margin:0;font-size:12px;"><code><span class="cmt">/* Order is YOUR choice */</span>
+<span class="tag">.a</span> { <span class="prop">transform</span>: <span class="val">translateX(80px) rotate(45deg)</span>; }
+<span class="tag">.b</span> { <span class="prop">transform</span>: <span class="val">rotate(45deg) translateX(80px)</span>; }
+<span class="cmt">/* .a and .b end up in completely different places */</span></code></pre>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-dim);line-height:1.6;">
+          ✓ You can choose any order<br>
+          ✓ Needed when order matters to your design<br>
+          ✗ Easy to accidentally get wrong<br>
+          ✗ JS and CSS can conflict (overwrite each other)
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">individual properties</div>
+        <pre style="margin:0;font-size:12px;"><code><span class="cmt">/* Order is LOCKED: translate → rotate → scale */</span>
+<span class="tag">.a</span> { <span class="prop">translate</span>: <span class="val">80px 0</span>; <span class="prop">rotate</span>: <span class="val">45deg</span>; }
+<span class="tag">.b</span> { <span class="prop">rotate</span>: <span class="val">45deg</span>; <span class="prop">translate</span>: <span class="val">80px 0</span>; }
+<span class="cmt">/* .a and .b are IDENTICAL — written order is ignored */</span></code></pre>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-dim);line-height:1.6;">
+          ✓ CSS and JS can each own a property<br>
+          ✓ No accidental overwrites<br>
+          ✓ Predictable — always translate → rotate → scale<br>
+          ✗ Can't choose rotate-before-translate
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--text-dim);">
+      <strong style="color:var(--text);">Rule of thumb:</strong> use individual properties (<code>translate</code>, <code>rotate</code>, <code>scale</code>) by default — they're safer and composable. Switch to the <code>transform</code> shorthand only when you need a specific non-default order (e.g. rotate-then-translate).
+    </div>
+  </div>
+
+  <h3>Transform origin</h3>
+
+  <p>Every transform has a <strong>pivot point</strong> — the one coordinate that stays nailed in place while everything else moves around it. By default it's <code>50% 50%</code> (the element's center). The orange dot shows the pivot. Watch the same 45° rotation with nine different origins:</p>
+
+  <!-- ORIGIN GRID DEMO -->
+  <div class="demo-wrap">
+    <div class="demo-header"><span class="live-dot"></span> Live — same rotation (45°), nine different origins</div>
+    <div class="demo-body">
+      <div class="origin-grid" id="origin-grid"></div>
+      <div class="demo-caption">The <strong>orange dot</strong> marks the pivot. Notice how <code>top left</code> feels like a door hinging, <code>bottom center</code> like a plant growing, and <code>center</code> is symmetrical.</div>
+    </div>
+  </div>
+
+  <pre><code><span class="tag">.card</span> {
+  <span class="prop">transform-origin</span>: <span class="val">center center</span>;   <span class="cmt">/* default */</span>
+  <span class="prop">transform-origin</span>: <span class="val">top left</span>;        <span class="cmt">/* door-hinge effect */</span>
+  <span class="prop">transform-origin</span>: <span class="val">bottom center</span>;   <span class="cmt">/* grow up from baseline */</span>
+  <span class="prop">transform-origin</span>: <span class="val">0 0 200px</span>;       <span class="cmt">/* 3D: X Y Z offset */</span>
+}</code></pre>
+
+  <h3>3D transforms and perspective</h3>
+
+  <p>CSS supports full 3D transforms. To make them look three-dimensional, you need <strong>perspective</strong> — a vanishing point that makes distant parts appear smaller. Without it, 3D rotations look completely flat.</p>
+
+  <!-- PERSPECTIVE DEMO -->
+  <div class="demo-wrap">
+    <div class="demo-header"><span class="live-dot"></span> Live — same rotateY(40deg), three perspective values</div>
+    <div class="demo-body">
+      <div class="persp-stages">
+        <div class="persp-stage">
+          <div style="perspective:150px;">
+            <div class="persp-card" style="transform:rotateY(40deg);">card</div>
+          </div>
+          <div class="persp-val">150px — extreme</div>
+        </div>
+        <div class="persp-stage">
+          <div style="perspective:600px;">
+            <div class="persp-card" style="transform:rotateY(40deg);">card</div>
+          </div>
+          <div class="persp-val">600px — natural</div>
+        </div>
+        <div class="persp-stage">
+          <div style="perspective:2000px;">
+            <div class="persp-card" style="transform:rotateY(40deg);">card</div>
+          </div>
+          <div class="persp-val">2000px — subtle</div>
+        </div>
+      </div>
+      <div class="demo-caption">Small perspective = dramatic distortion (very close camera). Large perspective = almost orthographic (very far camera). Most UI 3D lives in the <strong>400–1200px</strong> range.</div>
+    </div>
+  </div>
+
+  <!-- 3D CONCEPTS DEMO -->
+  <style>
+    .concept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+    @media (max-width: 600px) { .concept-grid { grid-template-columns: 1fr; } }
+    .concept-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .concept-cell-head {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .concept-cell-stage {
+      height: 130px;
+      background: var(--code-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .concept-mini-card {
+      width: 48px; height: 32px;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .concept-cell-note {
+      padding: 8px 12px;
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      border-top: 1px solid var(--border);
+    }
+    .concept-cell-note strong { color: var(--text); }
+    /* preserve-3d demo — parents styled inline, child positioned within bounds */
+    .concept-tag {
+      display: inline-block;
+      font-size: 9px; font-weight: 700;
+      padding: 2px 6px; border-radius: 3px;
+      margin-bottom: 4px;
+    }
+    .tag-good { background: var(--green-dim); color: var(--green); }
+    .tag-warn { background: var(--yellow-dim); color: var(--yellow); }
+    /* vanishing point dot */
+    .vp-dot {
+      position: absolute;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--yellow);
+      box-shadow: 0 0 6px var(--yellow);
+      pointer-events: none;
+    }
+  </style>
+
+  <div class="demo-wrap">
+    <div class="demo-header"><span class="live-dot"></span> Live — three 3D concepts animated</div>
+    <div class="demo-body">
+      <div class="concept-grid">
+
+        <!-- 1: per-element perspective -->
+        <div class="concept-cell">
+          <div class="concept-cell-head">perspective() on each element</div>
+          <div class="concept-cell-stage" id="persp-individual">
+            <!-- 3 cards, each with its own perspective -->
+            <div class="concept-mini-card" id="pi-a" style="background:#4a6fa8;">A</div>
+            <div class="concept-mini-card" id="pi-b" style="background:#4a6fa8;">B</div>
+            <div class="concept-mini-card" id="pi-c" style="background:#4a6fa8;">C</div>
+          </div>
+          <div class="concept-cell-note">
+            <span class="concept-tag tag-warn">per-element</span><br>
+            Each card has its <strong>own vanishing point</strong> at its own center. Notice the three cards tilt independently — they don't feel like they belong to the same scene.
+          </div>
+        </div>
+
+        <!-- 2: shared parent perspective -->
+        <div class="concept-cell">
+          <div class="concept-cell-head">perspective on the parent</div>
+          <div class="concept-cell-stage">
+            <div id="shared-scene" style="display:flex;gap:10px;align-items:center;position:relative;">
+              <div class="vp-dot" id="vp-dot" style="left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;"></div>
+              <div class="concept-mini-card" id="ps-a" style="background:#3a7a52;">A</div>
+              <div class="concept-mini-card" id="ps-b" style="background:#3a7a52;">B</div>
+              <div class="concept-mini-card" id="ps-c" style="background:#3a7a52;">C</div>
+            </div>
+          </div>
+          <div class="concept-cell-note">
+            <span class="concept-tag tag-good">shared</span><br>
+            All cards converge toward the <strong>same vanishing point</strong> (yellow dot). Cards further from center appear more angled — physically correct, like a real shelf.
+          </div>
+        </div>
+
+        <!-- 3: preserve-3d -->
+        <div class="concept-cell">
+          <div class="concept-cell-head">transform-style: preserve-3d</div>
+          <div class="concept-cell-stage" style="gap:24px;overflow:hidden;">
+            <!-- flat -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;">
+              <div style="font-size:9px;color:var(--red);font-weight:700;letter-spacing:.04em;">flat (default)</div>
+              <div style="perspective:260px;">
+                <div id="p3d-flat-parent" style="width:72px;height:48px;background:rgba(91,138,245,.15);border:1px dashed #4a6fa8;border-radius:5px;position:relative;display:flex;align-items:center;justify-content:center;font-size:8px;color:#4a6fa8;font-weight:700;transform-style:flat;">
+                  parent
+                  <!-- child stays glued to parent surface -->
+                  <div id="p3d-flat-child" style="position:absolute;bottom:-10px;right:-10px;width:32px;height:22px;border-radius:3px;background:linear-gradient(135deg,#7d68b3,#b35c5c);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;">child</div>
+                </div>
+              </div>
+            </div>
+            <!-- preserve-3d -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;">
+              <div style="font-size:9px;color:var(--green);font-weight:700;letter-spacing:.04em;">preserve-3d</div>
+              <div style="perspective:260px;">
+                <div id="p3d-real-parent" style="width:72px;height:48px;background:rgba(91,138,245,.15);border:1px dashed #4a6fa8;border-radius:5px;position:relative;display:flex;align-items:center;justify-content:center;font-size:8px;color:#4a6fa8;font-weight:700;transform-style:preserve-3d;">
+                  parent
+                  <!-- child floats in 3D space with translateZ -->
+                  <div id="p3d-real-child" style="position:absolute;bottom:-10px;right:-10px;width:32px;height:22px;border-radius:3px;background:linear-gradient(135deg,#7d68b3,#b35c5c);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;transform:translateZ(16px);">child</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="concept-cell-note">
+            <span class="concept-tag tag-good">preserve-3d</span><br>
+            Without it, the child is <strong>crushed flat</strong> against the parent's 2D surface — its own <code>translateZ</code> is ignored. With it, the child lives in true 3D space and casts its own depth as the parent rotates.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* ── 3D concept demos ────────────────────────────────────── */
+  (function () {
+    function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+    let startTime = null;
+    const DURATION = 2000;
+
+    // per-element perspective cards
+    const piA = document.getElementById('pi-a');
+    const piB = document.getElementById('pi-b');
+    const piC = document.getElementById('pi-c');
+
+    // shared-scene perspective cards
+    const sharedScene = document.getElementById('shared-scene');
+    const psA = document.getElementById('ps-a');
+    const psB = document.getElementById('ps-b');
+    const psC = document.getElementById('ps-c');
+
+    // preserve-3d parents
+    const flatParent = document.getElementById('p3d-flat-parent');
+    const realParent = document.getElementById('p3d-real-parent');
+    const flatChild  = document.getElementById('p3d-flat-child');
+    const realChild  = document.getElementById('p3d-real-child');
+
+    function tick(ts) {
+      if (!startTime) startTime = ts;
+      const loop = DURATION * 2;
+      const e = (ts - startTime) % loop;
+      const t = ease(e < DURATION ? e / DURATION : 1 - (e - DURATION) / DURATION);
+      const angle = t * 45 - 22.5; // oscillate -22.5 to +22.5 deg
+
+      // Per-element: each card has perspective() in its own transform
+      // All tilt the same amount, each around its own center
+      piA.style.transform = `perspective(200px) rotateY(${angle}deg)`;
+      piB.style.transform = `perspective(200px) rotateY(${angle}deg)`;
+      piC.style.transform = `perspective(200px) rotateY(${angle}deg)`;
+
+      // Shared parent: scene has perspective, cards just rotateY
+      // The key difference: cards further from center tilt more extremely
+      sharedScene.style.perspective = '400px';
+      psA.style.transform = `rotateY(${angle}deg)`;
+      psB.style.transform = `rotateY(${angle}deg)`;
+      psC.style.transform = `rotateY(${angle}deg)`;
+
+      // preserve-3d: parent rotates — flat child gets crushed to surface,
+      // preserve-3d child keeps its translateZ depth
+      const parentAngle = angle * 2.5;
+      flatParent.style.transform = `rotateY(${parentAngle}deg)`;
+      realParent.style.transform = `rotateY(${parentAngle}deg)`;
+      // flat child: no transform (stays glued to parent's 2D plane)
+      // real child: translateZ set in HTML, the browser honours it in 3D space
+
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+  </script>
+
+  <pre><code><span class="cmt">/* perspective() on the element — each element has its own vanishing point */</span>
+<span class="tag">.card</span> {
+  <span class="prop">transform</span>: <span class="val">perspective(600px) rotateY(30deg)</span>;
+}
+
+<span class="cmt">/* perspective on the parent — shared vanishing point (more natural for groups) */</span>
+<span class="tag">.scene</span> { <span class="prop">perspective</span>: <span class="val">600px</span>; }
+<span class="tag">.card</span>  { <span class="prop">transform</span>: <span class="val">rotateY(30deg)</span>; }
+
+<span class="cmt">/* preserve-3d lets children exist in the same 3D space */</span>
+<span class="tag">.scene</span> { <span class="prop">transform-style</span>: <span class="val">preserve-3d</span>; }</code></pre>
+
+  <h3>The card flip — built step by step</h3>
+
+  <p>The card flip is the canonical 3D CSS pattern. Rather than showing the finished result, let's build it one property at a time so you can see exactly what each line contributes — and what breaks without it.</p>
+
+  <style>
+    .flip-steps { display: flex; flex-direction: column; gap: 0; margin: 24px 0; }
+    .flip-step {
+      border: 1px solid var(--border);
+      border-radius: 0;
+      overflow: hidden;
+      margin-bottom: -1px;
+    }
+    .flip-step:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+    .flip-step:last-child  { border-radius: 0 0 var(--radius) var(--radius); margin-bottom: 0; }
+    .flip-step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .step-adding {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--green);
+      background: var(--green-dim);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .flip-step-body {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 0;
+    }
+    .flip-step-stage {
+      background: var(--code-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      min-height: 140px;
+    }
+    .flip-step-right { padding: 16px; }
+    .flip-step-explain {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .flip-step-explain strong { color: var(--text); }
+    .flip-step-explain .problem { color: var(--red); font-weight: 600; }
+    .flip-step-explain .solution { color: var(--green); font-weight: 600; }
+    .flip-step-code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .code-new { color: var(--green); }
+    .code-old { color: #546e7a; }
+    /* Mini card faces */
+    .mc { width: 100px; height: 66px; border-radius: 6px; position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
+    .mc-front { background: linear-gradient(135deg, #4a6fa8, #2f7fa8); }
+    .mc-back  { background: linear-gradient(135deg, #7d68b3, #b35c5c); }
+    .mc-label { font-size: 13px; font-weight: 800; color: #fff; }
+    .mc-sub   { font-size: 8px; color: rgba(255,255,255,.6); font-family: var(--font-mono); }
+    .mc-scene { position: relative; width: 100px; height: 66px; }
+  </style>
+
+  <div class="flip-steps">
+
+    <!-- STEP 1 -->
+    <div class="flip-step">
+      <div class="flip-step-header">
+        <div class="step-num">1</div>
+        <div class="step-title">Start: two faces, no 3D</div>
+        <div class="step-adding">problem state</div>
+      </div>
+      <div class="flip-step-body">
+        <div class="flip-step-stage">
+          <div class="mc-scene">
+            <!-- Both faces stacked flat, back on top -->
+            <div class="mc mc-front"><span class="mc-label">Front</span></div>
+            <div class="mc mc-back" style="opacity:.9;"><span class="mc-label">Back</span><span class="mc-sub">covering front</span></div>
+          </div>
+        </div>
+        <div class="flip-step-right">
+          <div class="flip-step-explain">
+            We have two <code>.face</code> elements, both <code>position: absolute</code> inside a <code>.card</code> wrapper. Right now they're just <span class="problem">stacked flat on top of each other</span> — the back covers the front. There's no depth, no 3D, and no way to flip between them. This is the problem we need to solve.
+          </div>
+          <div class="flip-step-code">
+<span class="code-old">.scene { }
+.card  { position: relative; width: 100px; height: 66px; }
+.front { position: absolute; inset: 0; }
+.back  { position: absolute; inset: 0; }</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="flip-step">
+      <div class="flip-step-header">
+        <div class="step-num">2</div>
+        <div class="step-title">Add perspective to the parent</div>
+        <div class="step-adding">+ perspective: 600px</div>
+      </div>
+      <div class="flip-step-body">
+        <div class="flip-step-stage">
+          <div style="perspective:600px;">
+            <div class="mc-scene" id="fs2-card" style="position:relative;width:100px;height:66px;">
+              <div class="mc mc-front"><span class="mc-label">Front</span></div>
+              <div class="mc mc-back" style="opacity:.85;"><span class="mc-label">Back</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-step-right">
+          <div class="flip-step-explain">
+            Setting <code>perspective</code> on the <strong>parent</strong> (.scene) establishes a vanishing point — a simulated camera distance. Now when child elements rotate in 3D, they will appear to recede and approach in a realistic way. <span class="solution">Without this, all 3D rotations look completely flat.</span> The cards still look the same for now — we haven't applied any rotation yet.
+          </div>
+          <div class="flip-step-code">
+<span class="code-new">.scene { perspective: 600px; }</span>
+<span class="code-old">.card  { position: relative; width: 100px; height: 66px; }
+.front { position: absolute; inset: 0; }
+.back  { position: absolute; inset: 0; }</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="flip-step">
+      <div class="flip-step-header">
+        <div class="step-num">3</div>
+        <div class="step-title">Add transform-style: preserve-3d to the card</div>
+        <div class="step-adding">+ transform-style</div>
+      </div>
+      <div class="flip-step-body">
+        <div class="flip-step-stage">
+          <div style="perspective:600px;">
+            <div id="fs3-card" style="position:relative;width:100px;height:66px;transform-style:preserve-3d;">
+              <div class="mc mc-front"><span class="mc-label">Front</span></div>
+              <div class="mc mc-back" style="opacity:.85;"><span class="mc-label">Back</span></div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);text-align:center;">oscillating rotateY</div>
+        </div>
+        <div class="flip-step-right">
+          <div class="flip-step-explain">
+            By default, child elements are flattened into the parent's 2D plane — they can't actually exist in 3D space together. <code>transform-style: preserve-3d</code> on the <strong>card</strong> tells the browser: <span class="solution">let my children inhabit the same 3D coordinate space as me.</span> Now when the card rotates, both faces rotate with it in true 3D. Watch the oscillating rotation — notice both faces are still visible because we haven't hidden anything yet.
+          </div>
+          <div class="flip-step-code">
+<span class="code-old">.scene { perspective: 600px; }</span>
+<span class="code-new">.card  { position: relative; width: 100px; height: 66px;
+         transform-style: preserve-3d; }</span>
+<span class="code-old">.front { position: absolute; inset: 0; }
+.back  { position: absolute; inset: 0; }</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="flip-step">
+      <div class="flip-step-header">
+        <div class="step-num">4</div>
+        <div class="step-title">Pre-rotate the back face 180°</div>
+        <div class="step-adding">+ rotateY(180deg) on back</div>
+      </div>
+      <div class="flip-step-body">
+        <div class="flip-step-stage">
+          <div style="perspective:600px;">
+            <div id="fs4-card" style="position:relative;width:100px;height:66px;transform-style:preserve-3d;">
+              <div class="mc mc-front"><span class="mc-label">Front</span></div>
+              <div class="mc mc-back" style="transform:rotateY(180deg);opacity:.85;"><span class="mc-label">Back</span></div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);text-align:center;">see the back disappear →</div>
+        </div>
+        <div class="flip-step-right">
+          <div class="flip-step-explain">
+            The back face needs to start <em>already rotated 180°</em>, facing away from the viewer. Think of it as placing the back face face-down against the front face. <span class="solution">When we later rotate the whole card 180°, the back face will spin around and now face the viewer — showing correctly.</span> Without this pre-rotation, both faces would show the same side during the flip. Watch the oscillation — you can now see the back face disappearing as it turns away (though it reappears because backface-visibility isn't set yet).
+          </div>
+          <div class="flip-step-code">
+<span class="code-old">.scene { perspective: 600px; }
+.card  { position: relative; width: 100px; height: 66px;
+         transform-style: preserve-3d; }
+.front { position: absolute; inset: 0; }</span>
+<span class="code-new">.back  { position: absolute; inset: 0;
+         transform: rotateY(180deg); }</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="flip-step">
+      <div class="flip-step-header">
+        <div class="step-num">5</div>
+        <div class="step-title">Hide each face when it points away</div>
+        <div class="step-adding">+ backface-visibility: hidden</div>
+      </div>
+      <div class="flip-step-body">
+        <div class="flip-step-stage">
+          <div style="perspective:600px;">
+            <div id="fs5-card" style="position:relative;width:100px;height:66px;transform-style:preserve-3d;">
+              <div class="mc mc-front" style="-webkit-backface-visibility:hidden;backface-visibility:hidden;"><span class="mc-label">Front</span></div>
+              <div class="mc mc-back" style="transform:rotateY(180deg);-webkit-backface-visibility:hidden;backface-visibility:hidden;"><span class="mc-label">Back</span></div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);text-align:center;">only one face visible</div>
+        </div>
+        <div class="flip-step-right">
+          <div class="flip-step-explain">
+            Without this, when the front face rotates past 90°, you'd see it mirrored from behind — the browser renders both sides of every element. <code>backface-visibility: hidden</code> tells each face: <span class="solution">if you're pointing away from the viewer (past 90°), become invisible.</span> Now watch the oscillation — exactly one face is always visible. The front shows until it passes 90°, then disappears, and the pre-rotated back rotates into view. This is the core of the illusion.
+          </div>
+          <div class="flip-step-code">
+<span class="code-old">.scene { perspective: 600px; }
+.card  { position: relative; width: 100px; height: 66px;
+         transform-style: preserve-3d; }</span>
+<span class="code-new">.front { position: absolute; inset: 0;
+         backface-visibility: hidden; }
+.back  { position: absolute; inset: 0;
+         transform: rotateY(180deg);
+         backface-visibility: hidden; }</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="flip-step">
+      <div class="flip-step-header">
+        <div class="step-num">6</div>
+        <div class="step-title">Add the flip transition</div>
+        <div class="step-adding">+ transition + .flipped class</div>
+      </div>
+      <div class="flip-step-body">
+        <div class="flip-step-stage">
+          <div style="perspective:600px;">
+            <div id="fs6-card" style="position:relative;width:100px;height:66px;transform-style:preserve-3d;transition:transform 0.6s ease-in-out;cursor:pointer;">
+              <div class="mc mc-front" style="-webkit-backface-visibility:hidden;backface-visibility:hidden;"><span class="mc-label">Front</span><span class="mc-sub">click card</span></div>
+              <div class="mc mc-back" style="transform:rotateY(180deg);-webkit-backface-visibility:hidden;backface-visibility:hidden;"><span class="mc-label">Back</span><span class="mc-sub">✓ working!</span></div>
+            </div>
+          </div>
+          <button class="demo-btn" id="flip-btn" style="font-size:11px;padding:4px 10px;">Flip</button>
+        </div>
+        <div class="flip-step-right">
+          <div class="flip-step-explain">
+            The final piece: a <code>transition</code> on the card's <code>transform</code>, and a <code>.flipped</code> class that sets <code>rotateY(180deg)</code>. When the class is toggled, the CSS transition smoothly interpolates from 0° to 180°. Because both faces already have <code>backface-visibility: hidden</code> and the back is pre-rotated, <span class="solution">the swap happens automatically at exactly the halfway point — no JavaScript needed for the visual effect.</span>
+          </div>
+          <div class="flip-step-code">
+<span class="code-old">.scene { perspective: 600px; }</span>
+<span class="code-new">.card  { position: relative; width: 100px; height: 66px;
+         transform-style: preserve-3d;
+         transition: transform 0.6s ease-in-out; }
+.card.flipped { transform: rotateY(180deg); }</span>
+<span class="code-old">.front { position: absolute; inset: 0;
+         backface-visibility: hidden; }
+.back  { position: absolute; inset: 0;
+         transform: rotateY(180deg);
+         backface-visibility: hidden; }</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .flip-steps -->
+
+  <script>
+  /* ── Card flip step-by-step demos ──────────────────────── */
+  (function () {
+    function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+    let startTime = null;
+    const PERIOD = 2800; // full oscillation
+
+    // Steps 3–5 get a slow oscillating rotateY so the user sees the effect
+    const oscillating = [
+      document.getElementById('fs3-card'),
+      document.getElementById('fs4-card'),
+      document.getElementById('fs5-card'),
+    ];
+
+    function tick(ts) {
+      if (!startTime) startTime = ts;
+      const loop = PERIOD * 2;
+      const e = (ts - startTime) % loop;
+      const t = ease(e < PERIOD ? e / PERIOD : 1 - (e - PERIOD) / PERIOD);
+      const angle = t * 200 - 100; // -100 to +100 deg — enough to show full rotation
+
+      oscillating.forEach(el => {
+        if (el) el.style.transform = `rotateY(${angle}deg)`;
+      });
+
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    // Step 6: click to flip
+    const card6  = document.getElementById('fs6-card');
+    const btn6   = document.getElementById('flip-btn');
+    let flipped6 = false;
+
+    function doFlip() {
+      flipped6 = !flipped6;
+      card6.style.transform = flipped6 ? 'rotateY(180deg)' : 'rotateY(0deg)';
+      btn6.textContent = flipped6 ? 'Flip back' : 'Flip';
+    }
+    btn6.addEventListener('click', doFlip);
+    card6.addEventListener('click', doFlip);
+  })();
+  </script>
+
+  <!-- 4. PERFORMANCE -->
+  <h2 id="sec-4">Performance & debugging</h2>
+
+  <h3>What transitions cost — the pipeline view</h3>
+
+  <p>The property you animate determines which pipeline stages run on every frame. This is the single most important performance decision in CSS animation:</p>
+
+  <!-- VISUAL PIPELINE COST DIAGRAM -->
+  <style>
+    .pipeline-rows { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+    .pipeline-row  { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; font-size: 12px; }
+    .pipeline-prop { width: 130px; flex-shrink: 0; padding: 10px 12px; background: var(--surface-2); font-family: var(--font-mono); font-size: 11px; color: var(--accent2); border-right: 1px solid var(--border); }
+    .pipeline-stages { display: flex; flex: 1; }
+    .pip-stage-cell { flex: 1; padding: 10px 8px; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .04em; border-right: 1px solid var(--border); }
+    .pip-stage-cell:last-child { border-right: none; }
+    .pip-active-layout    { background: rgba(248,113,113,.18); color: var(--red); }
+    .pip-active-paint     { background: rgba(250,204,21,.15);  color: var(--yellow); }
+    .pip-active-composite { background: rgba(74,222,128,.12);  color: var(--green); }
+    .pip-inactive         { background: var(--code-bg); color: #c3d3e6; }
+    .pip-thread { width: 90px; flex-shrink: 0; padding: 10px 8px; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .04em; border-left: 1px solid var(--border); }
+    .pip-thread-gpu  { background: rgba(74,222,128,.08);  color: var(--green); }
+    .pip-thread-main { background: rgba(248,113,113,.08);  color: var(--text-muted); }
+  </style>
+
+  <div class="demo-wrap">
+    <div class="demo-header">Which pipeline stages fire every animated frame?</div>
+    <div class="demo-body">
+      <div style="display:flex;align-items:center;gap:0;margin-bottom:6px;padding:0 0 6px;border-bottom:1px solid var(--border);">
+        <div style="width:130px;font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;">property</div>
+        <div style="flex:1;display:flex;">
+          <div style="flex:1;text-align:center;font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Layout</div>
+          <div style="flex:1;text-align:center;font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Paint</div>
+          <div style="flex:1;text-align:center;font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">Composite</div>
+        </div>
+        <div style="width:90px;text-align:center;font-size:10px;color:var(--text-muted);font-weight:700;text-transform:uppercase;">thread</div>
+      </div>
+      <div class="pipeline-rows">
+        <div class="pipeline-row">
+          <div class="pipeline-prop">transform</div>
+          <div class="pipeline-stages">
+            <div class="pip-stage-cell pip-inactive">—</div>
+            <div class="pip-stage-cell pip-inactive">—</div>
+            <div class="pip-stage-cell pip-active-composite">✓ runs</div>
+          </div>
+          <div class="pip-thread pip-thread-gpu">GPU only</div>
+        </div>
+        <div class="pipeline-row">
+          <div class="pipeline-prop">opacity</div>
+          <div class="pipeline-stages">
+            <div class="pip-stage-cell pip-inactive">—</div>
+            <div class="pip-stage-cell pip-inactive">—</div>
+            <div class="pip-stage-cell pip-active-composite">✓ runs</div>
+          </div>
+          <div class="pip-thread pip-thread-gpu">GPU only</div>
+        </div>
+        <div class="pipeline-row">
+          <div class="pipeline-prop">background-color</div>
+          <div class="pipeline-stages">
+            <div class="pip-stage-cell pip-inactive">—</div>
+            <div class="pip-stage-cell pip-active-paint">✓ repaints</div>
+            <div class="pip-stage-cell pip-active-composite">✓ runs</div>
+          </div>
+          <div class="pip-thread pip-thread-main">main thread</div>
+        </div>
+        <div class="pipeline-row">
+          <div class="pipeline-prop">box-shadow</div>
+          <div class="pipeline-stages">
+            <div class="pip-stage-cell pip-inactive">—</div>
+            <div class="pip-stage-cell pip-active-paint">✓ repaints</div>
+            <div class="pip-stage-cell pip-active-composite">✓ runs</div>
+          </div>
+          <div class="pip-thread pip-thread-main">main thread</div>
+        </div>
+        <div class="pipeline-row">
+          <div class="pipeline-prop">width / height</div>
+          <div class="pipeline-stages">
+            <div class="pip-stage-cell pip-active-layout">✓ reflows</div>
+            <div class="pip-stage-cell pip-active-paint">✓ repaints</div>
+            <div class="pip-stage-cell pip-active-composite">✓ runs</div>
+          </div>
+          <div class="pip-thread pip-thread-main">main thread</div>
+        </div>
+        <div class="pipeline-row">
+          <div class="pipeline-prop">top / left</div>
+          <div class="pipeline-stages">
+            <div class="pip-stage-cell pip-active-layout">✓ reflows</div>
+            <div class="pip-stage-cell pip-active-paint">✓ repaints</div>
+            <div class="pip-stage-cell pip-active-composite">✓ runs</div>
+          </div>
+          <div class="pip-thread pip-thread-main">main thread</div>
+        </div>
+      </div>
+      <div class="demo-caption">Every highlighted stage fires on <strong>every frame</strong> of the animation — at 60fps that's 60 times per second. A layout stage means the browser recalculates geometry for the whole document. A paint stage means it re-rasterises pixels. Composite-only (green) skips both — the GPU just repositions a texture it already has.</div>
+    </div>
+  </div>
+
+  <table class="cost-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Pipeline stages</th>
+        <th>Cost</th>
+        <th>Thread</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>transform</code></td>
+        <td>Composite only</td>
+        <td>
+          <span class="cost-pill cost-green">● free</span>
+          <div class="cost-bar-wrap"><div class="cost-bar" style="width:8%;background:var(--green);"></div></div>
+        </td>
+        <td style="color:var(--green);font-size:13px;">Compositor</td>
+      </tr>
+      <tr>
+        <td><code>opacity</code></td>
+        <td>Composite only</td>
+        <td>
+          <span class="cost-pill cost-green">● free</span>
+          <div class="cost-bar-wrap"><div class="cost-bar" style="width:8%;background:var(--green);"></div></div>
+        </td>
+        <td style="color:var(--green);font-size:13px;">Compositor</td>
+      </tr>
+      <tr>
+        <td><code>background-color</code></td>
+        <td>Paint → Composite</td>
+        <td>
+          <span class="cost-pill cost-yellow">● moderate</span>
+          <div class="cost-bar-wrap"><div class="cost-bar" style="width:50%;background:var(--yellow);"></div></div>
+        </td>
+        <td style="color:var(--yellow);font-size:13px;">Main thread</td>
+      </tr>
+      <tr>
+        <td><code>box-shadow</code></td>
+        <td>Paint → Composite</td>
+        <td>
+          <span class="cost-pill cost-yellow">● moderate</span>
+          <div class="cost-bar-wrap"><div class="cost-bar" style="width:55%;background:var(--yellow);"></div></div>
+        </td>
+        <td style="color:var(--yellow);font-size:13px;">Main thread</td>
+      </tr>
+      <tr>
+        <td><code>width</code> / <code>height</code></td>
+        <td>Layout → Paint → Composite</td>
+        <td>
+          <span class="cost-pill cost-red">● expensive</span>
+          <div class="cost-bar-wrap"><div class="cost-bar" style="width:95%;background:var(--red);"></div></div>
+        </td>
+        <td style="color:var(--red);font-size:13px;">Main thread</td>
+      </tr>
+      <tr>
+        <td><code>top</code> / <code>left</code></td>
+        <td>Layout → Paint → Composite</td>
+        <td>
+          <span class="cost-pill cost-red">● expensive</span>
+          <div class="cost-bar-wrap"><div class="cost-bar" style="width:95%;background:var(--red);"></div></div>
+        </td>
+        <td style="color:var(--red);font-size:13px;">Main thread</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-devtools">
+    <span class="callout-label">🛠 DevTools — Animations panel</span>
+    <p>DevTools → More tools → <strong>Animations</strong>. Trigger any transition and it appears as a visual timeline. You can scrub through it, slow it to 0.1×, and inspect each property's easing curve. This is the fastest way to debug timing issues without touching code.</p>
+  </div>
+
+  <div class="callout callout-devtools">
+    <span class="callout-label">🛠 DevTools — Paint flashing</span>
+    <p>DevTools → More tools → Rendering → enable <strong>Paint flashing</strong>. Trigger a <code>background-color</code> transition and watch green flashes pulse every frame. Switch to <code>transform</code> and the flash disappears entirely — you've just moved to the compositor thread.</p>
+  </div>
+
+  <h3>Forced layout during transitions</h3>
+
+  <p>A transition does not prevent JavaScript from reading layout properties mid-flight. If you read <code>offsetWidth</code> from a transitioning element, the browser still performs a synchronous layout calculation to return an accurate value. In animation loops this causes layout thrashing — avoid reading layout properties inside <code>requestAnimationFrame</code> callbacks on transitioning elements.</p>
+
+  <!-- 5. CONNECTIONS -->
+  <h2 id="sec-5">Connections</h2>
+
+  <div class="callout callout-connects">
+    <span class="callout-label">🔗 Connects to</span>
+    <p><strong>Lesson 1</strong> established why transforms are compositor-safe — this lesson is that knowledge applied directly. <strong>Lesson 3</strong> extends this with <code>@keyframes</code> for multi-step sequences transitions can't describe. <strong>Lesson 7</strong> (GSAP) abstracts transitions into timelines, but its performance is grounded in the same transform/opacity model. <strong>Lesson 13</strong> (WebGL) uses a full matrix transform system — the 3D coordinate concepts you just learned are the same ones, expressed in GLSL.</p>
+  </div>
+
+  <!-- 6. FURTHER READING -->
+  <h2 id="sec-6">Further reading</h2>
+
+  <ul class="reading-list">
+    <li>
+      <span class="reading-tag tag-spec">MDN</span>
+      <div>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transitions/Using" target="_blank">Using CSS transitions — MDN</a>
+        <p>Complete reference for all transition properties with browser support tables.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-spec">MDN</span>
+      <div>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms/Using" target="_blank">Using CSS transforms — MDN</a>
+        <p>Covers both 2D and 3D transforms with the full function reference.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-article">Article</span>
+      <div>
+        <a href="https://web.dev/learn/css/transitions/" target="_blank">Transitions — web.dev Learn CSS</a>
+        <p>Google's structured guide with interactive examples. Excellent for seeing easing functions in action.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-deep">Deep dive</span>
+      <div>
+        <a href="https://css-tricks.com/how-css-perspective-works/" target="_blank">How CSS Perspective Works — CSS-Tricks</a>
+        <p>The clearest visual explanation of CSS perspective and vanishing points available online.</p>
+      </div>
+    </li>
+    <li>
+      <span class="reading-tag tag-article">Spec</span>
+      <div>
+        <a href="https://www.w3.org/TR/css-transforms-2/" target="_blank">CSS Transforms Module Level 2 — W3C</a>
+        <p>The authoritative spec for individual transform properties and 3D transforms.</p>
+      </div>
+    </li>
+  </ul>
+
+  <!-- 7. PRACTICAL ANCHOR -->
+  <div class="practical-anchor">
+    <h2 id="sec-7">🔨 Practical anchor — Build it</h2>
+    <p>Open the example project below. Four interactive tabs covering every concept from this lesson:</p>
+    <ul>
+      <li><strong>Transition explorer</strong> — dial in every transition property and see pipeline cost in real time</li>
+      <li><strong>Transform order</strong> — drag the order of transform functions and watch the result change live</li>
+      <li><strong>Transform origin</strong> — click anywhere on the element to set the pivot, then animate it</li>
+      <li><strong>3D card flip</strong> — adjustable perspective, X/Y axis, annotated CSS output</li>
+    </ul>
+    <br/>
+    <a href="../examples/lesson-02-css-transitions-transforms/index.html" class="example-link" target="_blank">↗ Open example project</a>
+    <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Serve from project root: <code>npx serve . -p 9999</code></p>
+  </div>
+
+  <nav class="lesson-nav">
+    <a href="lesson-01-browser-rendering-pipeline.html">← Lesson 1: The Browser Rendering Pipeline</a>
+    <a href="lesson-03-css-keyframe-animations.html">Lesson 3: CSS Keyframe Animations →</a>
+  </nav>
+
+</main>
+
+<script>
+/* ── Easing comparison ─────────────────────────────────── */
+(function () {
+  const EASINGS = [
+    { label: 'linear',                    css: 'linear',                              color: '#525c83' },
+    { label: 'ease (default)',             css: 'ease',                                color: '#4a6fa8' },
+    { label: 'ease-in',                   css: 'ease-in',                             color: '#b35c5c' },
+    { label: 'ease-out',                  css: 'ease-out',                            color: '#3a7a52' },
+    { label: 'ease-in-out',              css: 'ease-in-out',                          color: '#b8902e' },
+    { label: 'cubic-bezier(.34,1.56,.64,1)', css: 'cubic-bezier(0.34,1.56,0.64,1)', color: '#7d68b3' },
+  ];
+
+  const container = document.getElementById('easing-row');
+  const balls = [];
+
+  EASINGS.forEach(e => {
+    const lane = document.createElement('div');
+    lane.className = 'easing-lane';
+    lane.innerHTML = `
+      <div class="easing-label">${e.label}</div>
+      <div class="easing-track">
+        <div class="easing-ball" style="background:${e.color};transition:left 1.6s ${e.css};"></div>
+      </div>`;
+    container.appendChild(lane);
+    balls.push(lane.querySelector('.easing-ball'));
+  });
+
+  let forward = false;
+  function run() {
+    forward = !forward;
+    balls.forEach(b => { b.style.left = forward ? 'calc(100% - 22px)' : '2px'; });
+  }
+
+  // initial trigger after paint
+  setTimeout(run, 100);
+  setInterval(run, 2000);
+
+  document.getElementById('easing-restart').addEventListener('click', () => {
+    balls.forEach(b => {
+      b.style.transition = 'none';
+      b.style.left = '2px';
+    });
+    forward = false;
+    setTimeout(() => {
+      balls.forEach(b => { b.style.transition = b.style.transition.replace('none', '') || `left 1.6s`; });
+      // restore transitions
+      EASINGS.forEach((e, i) => { balls[i].style.transition = `left 1.6s ${e.css}`; });
+      setTimeout(run, 50);
+    }, 50);
+  });
+})();
+
+/* ── Transform function cards ──────────────────────────── */
+(function () {
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+  let t = 0, dir = 1, raf;
+
+  function tick(ts) {
+    t += dir * 0.008;
+    if (t >= 1) { t = 1; dir = -1; }
+    if (t <= 0) { t = 0; dir = 1; }
+    const e = ease(t);
+
+    const tx = document.getElementById('tf-translate');
+    const sc = document.getElementById('tf-scale');
+    const ro = document.getElementById('tf-rotate');
+    const sk = document.getElementById('tf-skew');
+
+    if (tx) tx.style.transform = `translateX(${e * 28}px)`;
+    if (sc) sc.style.transform = `scale(${0.7 + e * 0.7})`;
+    if (ro) ro.style.transform = `rotate(${e * 180}deg)`;
+    if (sk) sk.style.transform = `skew(${e * 20}deg)`;
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ── Individual props conflict demo ────────────────────── */
+(function () {
+  const conflictBox = document.getElementById('conflict-box');
+  const modernBox = document.getElementById('modern-box');
+  let phase = 0;
+
+  function step() {
+    phase = (phase + 1) % 4;
+
+    if (phase === 0) {
+      // CSS hover sets translateY
+      conflictBox.style.transition = 'transform 0.4s ease';
+      conflictBox.style.transform = 'translateY(-14px)';
+      modernBox.style.transition = 'translate 0.4s ease, rotate 0.4s ease';
+      modernBox.style.translate = '0 -14px';
+      modernBox.style.rotate = '0deg';
+    } else if (phase === 1) {
+      // JS sets rotate — conflict box loses lift, modern keeps both
+      conflictBox.style.transform = 'rotate(15deg)'; // overwrites!
+      modernBox.style.rotate = '15deg'; // stacks cleanly
+    } else if (phase === 2) {
+      conflictBox.style.transform = 'translateY(-14px) rotate(15deg)';
+      modernBox.style.translate = '0 -20px';
+      modernBox.style.rotate = '20deg';
+    } else {
+      conflictBox.style.transform = '';
+      modernBox.style.translate = '0 0';
+      modernBox.style.rotate = '0deg';
+    }
+    setTimeout(step, 1200);
+  }
+  setTimeout(step, 800);
+})();
+
+/* ── Transform order animation ─────────────────────────── */
+(function () {
+  const boxA = document.getElementById('order-box-a');
+  const boxB = document.getElementById('order-box-b');
+  const speedInput = document.getElementById('order-speed');
+  const speedLabel = document.getElementById('order-speed-label');
+  const toggleBtn = document.getElementById('order-toggle');
+  let duration = 1500, paused = false, startTime = null;
+
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  function tick(ts) {
+    if (!startTime) startTime = ts;
+    if (!paused) {
+      const loop = duration * 2;
+      const e = (ts - startTime) % loop;
+      const t = ease(e < duration ? e / duration : 1 - (e - duration) / duration);
+      const tx = t * 72, rot = t * 45;
+      boxA.style.transform = `translateX(${tx}px) rotate(${rot}deg)`;
+      boxB.style.transform = `rotate(${rot}deg) translateX(${tx}px)`;
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  speedInput.addEventListener('input', () => {
+    duration = parseFloat(speedInput.value) * 1000;
+    speedLabel.textContent = speedInput.value + 's';
+    startTime = null;
+  });
+  toggleBtn.addEventListener('click', () => {
+    paused = !paused;
+    toggleBtn.textContent = paused ? 'Play' : 'Pause';
+    if (!paused) startTime = null;
+  });
+})();
+
+/* ── Transform origin grid ─────────────────────────────── */
+(function () {
+  const ORIGINS = [
+    { label: 'top left',     x: '0%',   y: '0%',   dx: 0,   dy: 0   },
+    { label: 'top center',   x: '50%',  y: '0%',   dx: 50,  dy: 0   },
+    { label: 'top right',    x: '100%', y: '0%',   dx: 100, dy: 0   },
+    { label: 'center left',  x: '0%',   y: '50%',  dx: 0,   dy: 50  },
+    { label: 'center',       x: '50%',  y: '50%',  dx: 50,  dy: 50  },
+    { label: 'center right', x: '100%', y: '50%',  dx: 100, dy: 50  },
+    { label: 'bottom left',  x: '0%',   y: '100%', dx: 0,   dy: 100 },
+    { label: 'bottom center',x: '50%',  y: '100%', dx: 50,  dy: 100 },
+    { label: 'bottom right', x: '100%', y: '100%', dx: 100, dy: 100 },
+  ];
+
+  const grid = document.getElementById('origin-grid');
+  const boxes = [];
+
+  ORIGINS.forEach(o => {
+    const cell = document.createElement('div');
+    cell.className = 'origin-cell';
+    const box = document.createElement('div');
+    box.className = 'origin-cell-box';
+    box.style.transformOrigin = `${o.x} ${o.y}`;
+    const dot = document.createElement('div');
+    dot.className = 'origin-cell-dot';
+    dot.style.left = o.dx + '%';
+    dot.style.top  = o.dy + '%';
+    const lbl = document.createElement('div');
+    lbl.className = 'origin-cell-label';
+    lbl.textContent = o.label;
+    cell.appendChild(box);
+    cell.appendChild(dot);
+    cell.appendChild(lbl);
+    grid.appendChild(cell);
+    boxes.push(box);
+  });
+
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+  let startTime = null;
+  const DURATION = 2000;
+
+  function tick(ts) {
+    if (!startTime) startTime = ts;
+    const loop = DURATION * 2;
+    const e = (ts - startTime) % loop;
+    const t = ease(e < DURATION ? e / DURATION : 1 - (e - DURATION) / DURATION);
+    const rot = t * 45;
+    boxes.forEach(b => { b.style.transform = `rotate(${rot}deg)`; });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ── Card flip demo ────────────────────────────────────── */
+(function () {
+  const card = document.getElementById('flip-card-demo');
+  const btn = document.getElementById('flip-btn');
+  let flipped = false;
+  function flip() {
+    flipped = !flipped;
+    card.style.transform = flipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+  }
+  btn.addEventListener('click', flip);
+  card.addEventListener('click', flip);
+})();
+</script>
+
+
+<link rel="stylesheet" href="../../skin-anim.css">
+<script src="../../../../registry.js"></script>
+<script src="../../../../../shared/lesson-meta.js"></script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Symbols, Perception and the Inner Eye</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .ce-btn{background:var(--cobalt); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .ce-btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .ce-btn:focus-visible,.ce-tab:focus-visible,.ce-opt:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .ce-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ce-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); min-width:0; flex:1 1 200px;}
+  .ce-ctl input[type=range]{width:100%; accent-color:var(--cobalt);}
+  .ce-chk{display:flex; gap:6px; align-items:center; font-family:var(--font-ui); font-size:.8rem; color:var(--ink);} .ce-chk input{accent-color:var(--cobalt);}
+  .ce-cv{display:block; width:100%; height:auto; border:2px solid var(--outline); border-radius:10px; background:var(--surface);}
+  .ce-two{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.ce-two{grid-template-columns:minmax(0,1fr);}}
+  .ce-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .ce-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .ce-note{font-family:var(--font-ui); font-size:.86rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .ce-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;}
+  .ce-tab{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:7px 11px; font:700 .76rem var(--font-ui); cursor:pointer;} .ce-tab.on{background:var(--cobalt); color:#fff;}
+  .ce-st{font-weight:800; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); display:inline-block;} .ce-st.ok{border-color:var(--forest); background:var(--forest-soft);} .ce-st.mix{border-color:var(--ochre); background:var(--ochre-soft);} .ce-st.no{border-color:var(--vermil); background:var(--vermil-soft);}
+  .ce-bar{height:14px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden; margin:4px 0 8px;} .ce-bar i{display:block; height:100%; width:0; transition:width .25s;}
+  .ce-scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .ce-tag{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .ce-say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .ce-opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px;}
+  .ce-opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .8rem var(--font-ui); cursor:pointer; text-align:left;}
+  .ce-opt:hover{border-color:var(--cobalt);} .ce-opt.good{border-color:var(--forest); background:var(--forest-soft);} .ce-opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .ce-why{font-size:.86rem; color:var(--ink-soft); margin-top:10px; min-height:3em;} .ce-why b{color:var(--ink);}
+  .ce-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+  .ce-legend{display:flex; gap:14px; flex-wrap:wrap; font-family:var(--font-ui); font-size:.78rem; color:var(--ink); margin:8px 0 0;}
+  .ce-dot{display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:5px; vertical-align:-1px; border:1px solid var(--outline);}
+  .ce-pair{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px;} @media(max-width:560px){.ce-pair{grid-template-columns:minmax(0,1fr);}}
+  .ce-layers{display:flex; flex-direction:column; gap:8px; margin:10px 0;}
+  .ce-lay{border:2px solid var(--line-strong); border-radius:10px; padding:9px 12px; background:var(--paper); color:var(--ink); font-family:var(--font-ui); font-size:.88rem; min-width:0; overflow-wrap:anywhere; transition:opacity .2s;}
+  .ce-lay.hid{opacity:.2;} .ce-lay.cur{border-color:var(--cobalt); background:var(--cobalt-soft); font-weight:700;}
+  .ce-lay small{display:block; font-weight:600; color:var(--ink-mute); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;}
+  .ce-flow5{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:10px 0;}
+  .ce-node{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:600 .8rem var(--font-ui); min-width:0; overflow-wrap:anywhere; text-align:center;}
+  .ce-node.lit{border-color:var(--ochre); background:var(--ochre-soft); font-weight:800;}
+  .ce-node.off{opacity:.3;}
+  .ce-light{display:inline-block; width:14px; height:14px; border-radius:50%; border:2px solid var(--outline); vertical-align:-2px; margin-right:6px;}
+  .ce-cells{display:grid; grid-template-columns:repeat(3,28px); gap:4px; justify-content:center; margin:6px 0;}
+  .ce-cell{width:28px; height:28px; border-radius:6px; border:2px solid var(--line-strong); background:var(--paper);} .ce-cell.on{background:var(--plum); border-color:var(--plum-deep);}
+  .ce-speak{font-size:1rem; color:var(--ink); border-left:5px solid var(--forest); padding:4px 0 4px 12px; margin:8px 0; min-height:2.6em;}
+  .ce-barrow{display:grid; grid-template-columns:minmax(0,9.5em) minmax(0,1fr) 3em; gap:8px; align-items:center; font:600 .8rem var(--font-ui); color:var(--ink); margin:4px 0;}
+  .ce-barrow.best{font-weight:800;} .ce-barrow.best .ce-bar{border-color:var(--forest);}
+  .ce-steps{margin:8px 0; padding-left:1.3em; font-family:var(--font-ui); font-size:.86rem; color:var(--ink);} .ce-steps li{margin:3px 0;} .ce-steps li.done{font-weight:800;} .ce-steps li.skip{opacity:.35;}
+</style></head>
+<body>
+<div class="wrap">
+  <h1>Symbols, Perception and the Inner Eye</h1>
+  <p class="subtitle">Hofstadter's careenium is a box of marbles that groups itself into larger patterns. This lesson gives it senses and a voice, and asks why it would say "I saw a green light out there" instead of describing its own insides. Then it adds a sense that points inward, so that one pattern can watch another.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">A box that registers the world</a></li>
+      <li><a href="#sec2">Peeling the layers off "I hear a train" (interactive)</a></li>
+      <li><a href="#sec3">Transducers, symbols and a mouth (interactive)</a></li>
+      <li><a href="#sec4">Having a state versus knowing you have it (interactive)</a></li>
+      <li><a href="#sec5">The inner eye and mindquakes (interactive)</a></li>
+      <li><a href="#sec6">Reflex versus reflection (interactive)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> A box that registers the world</h2>
+  <p class="lead">Start with the box in one paragraph. The <b>careenium</b> is an imaginary container of bouncing marbles. The marbles, being small and fast, are one level. Clumps of marbles called <b>symmballs</b> form, drift, and dissolve more slowly, and they are the second level. Watched at the right speed, the clumps seem to push each other around.</p>
+  <p>Nothing so far connects the box to the outside world. The Tortoise fixes that by mounting marble-launching stations on the walls. Each station is tied to a light outside the box: a red light nearby slows its firing, a green light speeds it up. A device that turns one kind of event (light) into another kind (marble firing) is a <b>transducer</b>, the same word an engineer uses for a microphone or a thermometer. Because the incoming marbles change how the clumps regroup, patterns of light outside leave traces in the patterns of symmballs inside.</p>
+  <p>That is what this lesson follows. The trace has a name in the dialogue: <b>representation</b>. The Stanford Encyclopedia of Philosophy describes a mental representation as an information-bearing structure in a mind or brain, something that has content, that is about something. A symmball configuration that regularly forms when the light is green, and persists after the light goes out, is a candidate. The dialogue says such configurations can store "images" of light patterns and so can be read as memory, knowledge, and ideas. Whether the box therefore <i>really</i> knows anything is Achilles' worry, and a later lesson takes it up. Here the question is narrower and has a surprising answer: what would the box say about what it perceives?</p>
+
+  <h2 id="sec2"><span class="num">2</span> Peeling the layers off "I hear a train"</h2>
+  <p>Achilles objects to the box with a mouth. If all it knows is its own internal state, why does it say "I saw a green light out there" and not "a new symmball just formed in me"? That would be the more accurate report.</p>
+  <p>The Tortoise's answer is that people do the same thing. You live near a railway and say "I hear a train", not "I hear the sound of a train". You do not say "I see light reflected off a train", still less "my retinal cells are firing". Every one of those descriptions is true, and each leaves out a layer of the chain between the event and your experience of it. The most convenient language skips the medium and the transducers and goes straight to the source. In the Tortoise's words in the paper, we are built to be unaware of the brain activity underlying perception, so we "map it outward".</p>
+  <p>Use the slider to peel the layers away, one at a time, from the sentence you would actually say down to the internal pattern. Pick a sense first; the dialogue uses all three of these.</p>
+  <div class="stage" data-testid="layer-peeler">
+    <div class="ce-row">
+      <div class="ce-seg" role="tablist" aria-label="Choose a sense" id="pl-tabs"></div>
+    </div>
+    <label class="ce-ctl" style="margin-top:8px">Layers shown: <span id="pl-val" data-testid="pl-val">1 of 5</span>
+      <input type="range" id="pl-range" min="1" max="5" value="1" step="1" data-testid="pl-range"></label>
+    <div class="ce-layers" id="pl-layers" data-testid="pl-layers"></div>
+    <div class="ce-note" id="pl-note" data-testid="pl-note" aria-live="polite"></div>
+  </div>
+  <p class="small">The chain of layers (event, medium, sensor, nerve signal, brain pattern) is standard physiology in outline, and the "I hear a train" examples come from the dialogue. The exact wording of each layer and the claim that the last one is a symbol pattern are my paraphrase.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Transducers, symbols and a mouth</h2>
+  <p>Now put the whole chain together in the box. Below is a schematic of the careenium with one light and a mouth. Choose what the light is doing. The page shows the marble-firing rate at the wall, a made-up symmball pattern that forms as a result, and what the mouth says. Then switch the voice between the two styles to see the difference the Tortoise is pointing at.</p>
+  <div class="stage" data-testid="careenium-pipeline">
+    <div class="ce-row"><span class="small">Outside light:</span>
+      <div class="ce-seg" role="tablist" aria-label="Choose the light" id="pp-light"></div></div>
+    <div class="ce-flow5">
+      <div class="ce-node" id="pp-n0" data-testid="pp-node-light"><span class="ce-light" id="pp-lamp"></span><span id="pp-lt">No light</span></div>
+      <div class="ce-node" id="pp-n1" data-testid="pp-node-transducer">Transducer<br><span class="small">marble firing rate</span><div class="ce-bar"><i id="pp-rate" style="background:var(--cobalt)"></i></div></div>
+      <div class="ce-node" id="pp-n2" data-testid="pp-node-pattern">Symmball pattern<div class="ce-cells" id="pp-cells"></div></div>
+      <div class="ce-node" id="pp-n3" data-testid="pp-node-mouth">Mouth and throat<br><span class="small">driven by the pattern</span></div>
+    </div>
+    <div class="ce-row"><span class="small">Voice style:</span>
+      <div class="ce-seg" role="tablist" aria-label="Choose the voice style" id="pp-voice"></div></div>
+    <div class="ce-speak" id="pp-say" data-testid="pp-say" aria-live="polite"></div>
+    <div class="ce-note" id="pp-note" data-testid="pp-note"></div>
+  </div>
+  <p class="small">The red-slows, green-speeds rule is the paper's. The pattern of lit cells and the rate bar are my illustration: the paper describes the idea, not any particular pattern.</p>
+  <p>A few things are worth saying plainly. First, the box's words come to refer to green lights the way a child's do. The Tortoise's account is that a toddler sees a rattle and hears the word "rattle" at about the same time, then mimics the sound, hears its own voice, and compares it with what it remembers; years of this build a vocabulary tied to inner states that were correlated with things in the world. Second, the box might be fooling itself: its words are a mirror of its internal state, and the Tortoise concedes there might be nothing out there. He sets that worry aside as ordinary doubt about whether the world exists, and answers the narrower question about how the right words get attached. Third, the same habit makes communication possible. If many careenia were near the same light, they could use the same noises, which are the shared, public form of their private states.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Having a state versus knowing you have it</h2>
+  <p>Next, Achilles asks the box for an inward-pointing sense, so that it can say "I'm annoyed" or "I forgot". He then catches the Tortoise in a slip. If a pattern is in some state, that is not the same as the system noticing that it is in that state. The word "Tortoise" in a text can bring the animal to mind without making you think about the <i>word</i>. Philosophers call this the difference between <b>use</b> and <b>mention</b>: in "The Tortoise arrived", the word is used for the animal; in "'Tortoise' has eight letters", it is mentioned, and the quotation marks show that the subject is the word.</p>
+  <p>The Tortoise agrees and gives another comparison: it is like using grammar correctly versus knowing the rules of grammar. You can speak well without being able to state a single rule. Two small sorting tasks follow, one for each idea.</p>
+  <div class="stage" data-testid="use-mention-quiz">
+    <div class="ce-scn" id="um-box" data-testid="um-box"></div>
+    <div class="ce-nav"><button type="button" class="ce-btn" id="um-next" data-testid="um-next" disabled>Next</button><span class="small" id="um-score" data-testid="um-score"></span></div>
+  </div>
+  <div class="stage" data-testid="having-aware-quiz">
+    <div class="ce-scn" id="ha-box" data-testid="ha-box"></div>
+    <div class="ce-nav"><button type="button" class="ce-btn" id="ha-next" data-testid="ha-next" disabled>Next</button><span class="small" id="ha-score" data-testid="ha-score"></span></div>
+  </div>
+  <p class="small">The use and mention definition and its quotation conventions are standard philosophy of language. The sentences and the having-or-aware examples are my own, built from the dialogue's grammar comparison.</p>
+
+  <h2 id="sec5"><span class="num">5</span> The inner eye and mindquakes</h2>
+  <p>How could one pattern watch another? The dialogue's answer is concrete. Imagine you could slow the film so far that you could reach in and remove an entire symmball. Where it was there is suddenly a vacuum, and when you speed up to the symmball time scale you see a wave of regrouping pass through the whole box. Achilles calls it a <b>mindquake</b>. Different events produce different quakes, each with a recognisable signature.</p>
+  <p>If an outside observer can learn to recognise a signature, so can the system. A special symmball can sit poised like a pencil on its end, set to topple when one type of quake arrives. Its toppling is more symmball activity, so it is itself a new, smaller quake, which another watcher might detect. The Tortoise says the whole thing is circular, one shudder triggering another, and then notes that this is what conscious systems are like: constantly thinking, partly about the world and partly about their own state. Choose how many layers of watching the box has, and step through what happens when the light turns green.</p>
+  <div class="stage" data-testid="inner-eye-loop">
+    <div class="ce-row"><span class="small">Layers of watching:</span>
+      <div class="ce-seg" role="tablist" aria-label="Layers of watching" id="ie-depth"></div></div>
+    <div class="ce-flow5">
+      <div class="ce-node" id="ie-n0" data-testid="ie-node-light">Green light outside</div>
+      <div class="ce-node" id="ie-n1" data-testid="ie-node-pattern">Pattern for green: a mindquake with a signature</div>
+      <div class="ce-node" id="ie-n2" data-testid="ie-node-monitor">Inner eye 1: watches for that signature</div>
+      <div class="ce-node" id="ie-n3" data-testid="ie-node-monitor2">Inner eye 2: watches inner eye 1</div>
+    </div>
+    <ol class="ce-steps" id="ie-steps" data-testid="ie-steps"></ol>
+    <div class="ce-row">
+      <button type="button" class="ce-btn" id="ie-step" data-testid="ie-step">Next step</button>
+      <button type="button" class="ce-btn sec" id="ie-reset" data-testid="ie-reset">Start again</button>
+    </div>
+    <div class="ce-speak" id="ie-say" data-testid="ie-say" aria-live="polite"></div>
+    <div class="ce-note" id="ie-note" data-testid="ie-note"></div>
+  </div>
+  <p class="small">The pencil-on-end image, the vacuum and the shudder are from the dialogue. The step list is my own compressed walk-through. Depth 2 is my extension of the paper's remark that the toppling itself can set off further reactions.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Reflex versus reflection</h2>
+  <p>Why would any of this be useful? The Tortoise starts with the simplest animal. Its main need is food. Its brain turns an empty stomach into a pattern, and the effect is a shudder that makes the animal move. That is a <b>reflex</b>: hunger in, limbs out. Such an animal uses little information about its surroundings and just flaps about hoping to meet food.</p>
+  <p>A more complex animal carries an elaborate inner picture of its world. When hunger arrives, the symbols for it must be weighed against symbols for danger, for other priorities, and for when and what to eat. The Tortoise calls that total interaction "consideration", "deliberation" or <b>reflection</b>, in contrast to reflexes. Set the hunger and the situation below and compare what each animal does. The weights are invented for this demonstration.</p>
+  <div class="stage" data-testid="reflex-reflection">
+    <div class="ce-row">
+      <label class="ce-ctl">Hunger: <span id="rr-hv" data-testid="rr-hunger-val">6</span> of 10
+        <input type="range" id="rr-hunger" min="0" max="10" value="6" step="1" data-testid="rr-hunger"></label>
+      <label class="ce-chk"><input type="checkbox" id="rr-pred" data-testid="rr-predator"> Predator nearby</label>
+      <label class="ce-chk"><input type="checkbox" id="rr-food" checked data-testid="rr-food"> A known food source</label>
+      <label class="ce-chk"><input type="checkbox" id="rr-other" data-testid="rr-other"> Another urgent need (guarding young)</label>
+    </div>
+    <div class="ce-pair">
+      <div class="ce-box"><h5>SIMPLE ANIMAL: REFLEX</h5><div id="rr-simple" data-testid="rr-simple"></div></div>
+      <div class="ce-box"><h5>COMPLEX ANIMAL: REFLECTION</h5><div id="rr-bars" data-testid="rr-bars"></div><div id="rr-complex" data-testid="rr-complex" style="margin-top:6px"></div></div>
+    </div>
+    <div class="ce-note" id="rr-note" data-testid="rr-note" aria-live="polite"></div>
+  </div>
+  <p class="small">The distinction, and the hunger example, are the Tortoise's. The scoring rule and its numbers are mine and only show the shape of deliberation: several internal pictures contribute to one outcome. A real animal's weighing is nothing like this simple sum.</p>
+  <p>The dialogue then asks whether this explains why such a box might have a "self", and Achilles is not persuaded: there may be thinking, he says, but nobody doing it. The next lessons take up that objection, through the idea of free will as a physical constraint, and then through the idea of a self as a pattern that watches itself.</p>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>A transducer turns an outside event into an inside event.</b> In the careenium, light near a wall changes the rate at which marbles are fired in.</li>
+    <li><b>Internal patterns can stand for things outside.</b> Symmball patterns that track light patterns, and persist, can be read as memory and ideas.</li>
+    <li><b>We describe what we perceive by skipping layers.</b> "I hear a train" leaves out sound, eardrum and nerve. The Tortoise says we are built to map the inner activity outward.</li>
+    <li><b>Having a state is not the same as noticing it,</b> just as using a word is not the same as mentioning it, and using grammar is not knowing its rules.</li>
+    <li><b>An inner eye is a pattern tuned to the signature of another pattern's activity,</b> and it can in turn be watched.</li>
+    <li><b>Reflex is stimulus in, action out. Reflection is a stimulus weighed against many other internal symbols.</b></li>
+  </ul>
+  <p class="src"><b>Primary.</b> Hofstadter, D. R. (1982). Who shoves whom around inside the careenium? or What is the meaning of the word "I"? <em>Synthese</em> 53, 189-218. The paper is attached to this module as a reading tab on the right edge. Quoted briefly: the Tortoise's phrase "map it outward"; everything else is paraphrased.</p>
+  <p class="src"><b>Background read.</b> <a href="https://plato.stanford.edu/entries/mental-representation/" target="_blank">Stanford Encyclopedia of Philosophy: Mental Representation</a> · <a href="https://en.wikipedia.org/wiki/Use%E2%80%93mention_distinction" target="_blank">Use-mention distinction (Wikipedia)</a> · <a href="https://en.wikipedia.org/wiki/Intentional_stance" target="_blank">Intentional stance (Wikipedia)</a> · <a href="https://en.wikipedia.org/wiki/The_Mind%27s_I" target="_blank">The Mind's I (Wikipedia)</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> Confirmed from those pages: the SEP's description of a mental representation as an information-bearing structure with content; the use-mention definition and its quoting convention; that Hofstadter and Dennett edited <em>The Mind's I</em> (1981), a collection of essays with commentary; and Dennett's intentional stance as treating a system as a rational agent with beliefs and desires. Confirmed from the paper: the transducer and mouth set-up, the train and light examples, the use-versus-mention exchange, the mindquake story, and the reflex-versus-reflection comparison. Not checked and treated as my own synthesis: the physiology chain in the first demo, the voice-style contrast, the scoring numbers in the animal demo, and the depth-2 extension in the inner-eye demo.</p>
+
+  <footer>Symbols, Perception and the Inner Eye &middot; The Careenium module &middot; part of your Study Hub</footer>
+</div>
+
+<script>
+const g=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function tabs(boxId,labels,prefix,get,set){
+  const box=g(boxId);
+  box.innerHTML=labels.map((l,k)=>'<button type="button" class="ce-tab" role="tab" data-k="'+k+'" data-testid="'+prefix+'-'+k+'">'+esc(l)+'</button>').join('');
+  const paint=()=>box.querySelectorAll('button').forEach((b,k)=>{ b.classList.toggle('on',k===get()); b.setAttribute('aria-selected',k===get()); });
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ set(+b.dataset.k); paint(); });
+  paint(); return paint;
+}
+
+/* ---------- peel the layers ---------- */
+(function(){
+  const S=[
+    {name:'Hear a train',L:['"I hear a train."','"I hear the sound of a train." (a pedantic extra step)','"Sound waves in the air are hitting my eardrum."','"Nerve cells in my ear are firing signals."','A pattern of symbols forms in my brain that stands for the train.'],
+     note:'The Tortoise says the most convenient language omits the medium and the transducers and goes straight to the source.'},
+    {name:'See a train',L:['"I see a train."','"I see the light from a train."','"Light is landing on my retina."','"Cells in my retina are firing."','A pattern of symbols forms in my brain that stands for the train.'],
+     note:'The paper asks: do you see a train, or light hitting your eyes? Ordinarily you say you see the train.'},
+    {name:'Touch a chair',L:['"I feel the chair."','"I feel my feeling of the chair." (the over-pedantic version)','"Pressure on my skin is deforming it."','"Nerve endings in my hand are firing."','A pattern of symbols forms in my brain that stands for the chair.'],
+     note:'The "feeling of the chair" layer is the one the paper says we would not ordinarily mention.'}
+  ];
+  const T=['Top layer: what you say','Wording that adds a layer','The physical medium or sensor','Nerve signals','The internal symbol pattern'];
+  let cur=0;
+  tabs('pl-tabs',S.map(s=>s.name),'pl-tab',()=>cur,k=>{cur=k;draw();});
+  function draw(){
+    const n=+g('pl-range').value; g('pl-val').textContent=n+' of 5';
+    g('pl-layers').innerHTML=S[cur].L.map((t,i)=>'<div class="ce-lay'+(i<n?'':' hid')+(i===n-1?' cur':'')+'" data-testid="pl-layer-'+i+'"><small>Layer '+(i+1)+': '+T[i]+'</small>'+esc(t)+'</div>').join('');
+    g('pl-note').textContent= n===1 ? S[cur].note : (n<5 ? 'Each layer is true, yet none of them is what you are aware of when you say the top sentence.' : 'Only the last layer is inside the box, and in everyday speech it is the one that is never mentioned.');
+  }
+  g('pl-range').oninput=draw; draw();
+})();
+
+/* ---------- pipeline ---------- */
+(function(){
+  const LI=[
+    {n:'No light',c:'transparent',rate:50,cells:[0,0,0,0,1,0,0,0,0],say:'(nothing in particular)',inside:'No new pattern; the box is at rest.'},
+    {n:'Green light',c:'var(--forest)',rate:90,cells:[1,0,1,0,1,0,1,0,1],say:'I saw a green light out there.',inside:'A new symmball pattern has formed and displaced an older one.'},
+    {n:'Red light',c:'var(--vermil)',rate:15,cells:[0,1,0,1,1,1,0,1,0],say:'I saw a red light out there.',inside:'A different symmball pattern has formed, with fewer marbles arriving.'}
+  ];
+  let li=0, vo=0;
+  tabs('pp-light',LI.map(l=>l.n),'pp-light',()=>li,k=>{li=k;draw();});
+  tabs('pp-voice',['Outward (how people talk)','Inward (describing the layers)'],'pp-voice',()=>vo,k=>{vo=k;draw();});
+  g('pp-cells').innerHTML=Array.from({length:9},(_,i)=>'<div class="ce-cell" id="pp-c'+i+'"></div>').join('');
+  function draw(){
+    const L=LI[li];
+    g('pp-lamp').style.background=L.c; g('pp-lt').textContent=L.n;
+    g('pp-rate').style.width=L.rate+'%';
+    L.cells.forEach((v,i)=>g('pp-c'+i).classList.toggle('on',!!v));
+    g('pp-say').textContent= vo===0 ? (li===0?L.say:'"'+L.say+'"') : (li===0?L.inside:'"'+L.inside+'"');
+    g('pp-note').textContent= vo===0 ? 'The mouth names the external source. The transducer step and the internal pattern are both left out of the sentence, though both did real work.' : 'This is accurate about the mechanism but nobody talks this way. The paper says leaving it out is useful, because it lets different careenia agree on the same outside thing.';
+    ['pp-n0','pp-n1','pp-n2','pp-n3'].forEach(id=>g(id).classList.toggle('lit',li!==0));
+  }
+  draw();
+})();
+
+/* ---------- generic quiz ---------- */
+function quiz(boxId,nextId,scoreId,pre,options,items,heading){
+  let i=0,score=0,done=false; const box=g(boxId), nx=g(nextId);
+  function show(){
+    if(i>=items.length){ box.innerHTML='<div class="ce-tag">DONE</div><div class="ce-say" style="border-left-color:var(--forest)">You sorted '+score+' of '+items.length+' correctly.</div>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{i=0;score=0;nx.textContent='Next';nx.onclick=next;show();}; g(scoreId).textContent=''; return; }
+    const q=items[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="ce-tag">'+esc(heading)+' '+(i+1)+' / '+items.length+'</div><div class="ce-say">'+esc(q[0])+'</div><div class="ce-opts">'+options.map((o,k)=>'<button type="button" class="ce-opt" data-k="'+k+'" data-testid="'+pre+'-option-'+k+'">'+esc(o)+'</button>').join('')+'</div><div class="ce-why" data-testid="'+pre+'-why" id="'+pre+'-why" aria-live="polite"></div>';
+    box.querySelectorAll('.ce-opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); g(pre+'-why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+esc(q[2]); nx.disabled=false; g(scoreId).textContent=score+' of '+(i+1)+' correct'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+}
+quiz('um-box','um-next','um-score','um',['The word is used','The word is mentioned'],[
+  ['The Tortoise arrived late.',0,'Used: the word "Tortoise" stands for the animal, and the sentence is about the animal.'],
+  ['"Tortoise" has eight letters.',1,'Mentioned: the quotation marks signal that the subject is the word itself, not the animal.'],
+  ['Cheese is made from milk.',0,'Used: it is about the food.'],
+  ['"Cheese" begins with a c.',1,'Mentioned: it is about the spelling of the word.'],
+  ['The careenium said "green light" when the lamp changed.',1,'The quoted words are mentioned as words the box produced. (The box itself, in saying them, used them to refer to a light.)']
+],'SENTENCE');
+quiz('ha-box','ha-next','ha-score','ha',['Having the state','Being aware of the state'],[
+  ['A symmball pattern settles into the arrangement that goes with a green light.',0,'Having: the pattern is simply there, with no one noticing it.'],
+  ['A watcher symmball topples because it recognised the signature of that quake.',1,'Aware: a second pattern has registered the first. This is the inner eye.'],
+  ['You speak English fluently, though you could not list its grammar rules.',0,"Having: you use the grammar. This is the paper's own comparison."],
+  ['You can explain, step by step, why a sentence is ungrammatical.',1,'Aware: you know the rule, not only how to follow it.'],
+  ['You pull your hand from a hot pan before the pain registers.',0,'Having: a state does its work with no awareness of it. (My example; the paper makes the point with grammar.)']
+],'STATEMENT');
+
+/* ---------- inner eye ---------- */
+(function(){
+  let depth=1, step=0;
+  const D=['0: no inner eye','1: one inner eye','2: eyes watching eyes'];
+  tabs('ie-depth',D,'ie-depth',()=>depth,k=>{depth=k;step=0;draw();});
+  /* each step: text, node index to light, layers of watching required */
+  const ST=[
+    ['The light turns green outside the box.',0,0],
+    ['Transducers raise the marble-firing rate near the wall.',0,0],
+    ['The symmballs regroup. This shudder across the box is the mindquake for "green light".',1,0],
+    ['A watcher symmball, poised like a pencil on end, topples when it feels that signature.',2,1],
+    ['The toppling is more symmball activity: a new, smaller quake. A second watcher can sense that in turn.',3,2]
+  ];
+  const SAY=[
+    '(nothing yet)',
+    '(the box has not yet reacted)',
+    '"I saw a green light out there."',
+    '"I saw a green light, and something in me shifted when I did." The inner eye lets the box report on its own state.',
+    'The box can have thoughts about its thoughts. The paper notes the whole thing is circular and does not stop.'
+  ];
+  function maxStep(){ return ST.filter(s=>s[2]<=depth).length; }
+  function draw(){
+    g('ie-steps').innerHTML=ST.map((s,i)=>{ const skip=s[2]>depth; return '<li class="'+(skip?'skip':(i<step?'done':''))+'">'+esc(s[0])+(skip?' (needs more layers of watching)':'')+'</li>'; }).join('');
+    const nodes=['ie-n0','ie-n1','ie-n2','ie-n3'];
+    const top= step>0 ? ST[step-1][1] : -1;
+    nodes.forEach((id,i)=>{ const el=g(id); el.classList.remove('lit','off'); if(i===top) el.classList.add('lit'); if(i>=2 && i-1>depth) el.classList.add('off'); });
+    g('ie-say').textContent= step===0 ? 'Press Next step to begin.' : SAY[step-1];
+    g('ie-note').textContent= depth===0 ? 'With no inner eye, the box can react to the world but has no pattern that registers its own reactions.' : (depth===1 ? 'One inner eye is enough to register a single reaction, but nothing watches the watcher.' : 'Each toppling is itself an event the next watcher can see. This is the circularity the Tortoise describes.');
+    g('ie-step').disabled= step>=maxStep();
+  }
+  g('ie-step').onclick=()=>{ if(step<maxStep()){ step++; } draw(); };
+  g('ie-reset').onclick=()=>{ step=0; draw(); };
+  draw();
+})();
+
+/* ---------- reflex vs reflection ---------- */
+(function(){
+  const ids=['rr-hunger','rr-pred','rr-food','rr-other'];
+  function draw(){
+    const h=+g('rr-hunger').value, pred=g('rr-pred').checked?1:0, food=g('rr-food').checked?1:0, oth=g('rr-other').checked?1:0;
+    g('rr-hv').textContent=h;
+    g('rr-simple').innerHTML= h<=1 ? 'Hunger signal is low: the animal stays quiet.' : 'Hunger signal is on: the animal moves about and hopes to meet food. It does this '+(pred?'<b>even with a predator close</b>':'whatever else is going on')+', because nothing else enters the loop.';
+    const A=[['Go to the known food',food?Math.max(0,h+4-7*pred):0,food?'':'(none known)'],['Search for food',Math.max(0,0.9*h+(food?0:3)-5*pred),''],['Flee or hide',7*pred,''],['Rest or tend young',Math.max(0,5*oth+1-0.2*h),'']];
+    let best=0; A.forEach((a,i)=>{ if(a[1]>A[best][1]) best=i; });
+    const mx=Math.max(12,...A.map(a=>a[1]));
+    g('rr-bars').innerHTML=A.map((a,i)=>'<div class="ce-barrow'+(i===best?' best':'')+'"><span>'+esc(a[0])+'</span><span class="ce-bar"><i style="width:'+Math.round(a[1]/mx*100)+'%;background:'+(i===best?'var(--forest)':'var(--cobalt)')+'"></i></span><span>'+a[1].toFixed(1)+'</span></div>').join('');
+    g('rr-complex').innerHTML='Outcome: <b>'+esc(A[best][0])+'</b>';
+    g('rr-note').textContent= pred? 'The reflex animal behaves the same with or without the predator. The reflective one lets the danger symbols outweigh hunger.' : (oth? 'Another priority can beat hunger, but only an animal that represents that priority can let it.' : 'With nothing else in play, both end up looking for food. The difference shows up when the situation becomes complicated.');
+  }
+  ids.forEach(id=>{ g(id).oninput=draw; g(id).onchange=draw; }); draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

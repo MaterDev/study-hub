@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How WordPress Fits Together</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); --accent-text:#2c4d82; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 16px; font-family:var(--font-ui); font-weight:700; font-size:.85rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .code{font-family:var(--font-mono); font-size:.78rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 14px; overflow-x:auto; white-space:pre;}
+  .code .k{color:#8fb8ff;} .code .s{color:#c3d98a;} .code .n{color:#e0a3d6;}
+
+  /* request cycle */
+  .cycle{display:grid; grid-template-columns:1fr 1.15fr; gap:16px; align-items:start;}
+  @media(max-width:760px){.cycle{grid-template-columns:1fr;}}
+  .phase{border:2px solid var(--line-strong); border-radius:12px; padding:10px 12px; margin-bottom:10px; background:var(--paper);}
+  .phase h4{margin:0 0 6px; font-family:var(--font-pixel); font-size:.46rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .pills{display:flex; flex-wrap:wrap; gap:6px;}
+  .hpill{font-family:var(--font-mono); font-size:.74rem; border:2px solid var(--line-strong); border-radius:999px; padding:4px 10px; background:var(--surface); color:var(--ink); cursor:pointer;}
+  .hpill.on{border-color:var(--cobalt); background:var(--cobalt-soft);} .hpill.run{border-color:var(--forest); background:var(--forest-soft);}
+  .phase.tpl{border-color:var(--plum);} .phase.boot{border-color:var(--ochre);}
+  .hdoc{border:2px solid var(--cobalt); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; min-height:230px;}
+  .hdoc h4{margin:0 0 6px; font-family:var(--font-mono); color:var(--accent-text);} .hdoc dl{margin:8px 0 0;} .hdoc dt{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); font-weight:800; margin-top:8px;} .hdoc dd{margin:2px 0 0;}
+  .runbar{display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap;}
+
+  /* actions vs filters */
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0;}
+  @media(max-width:760px){.two{grid-template-columns:1fr;}}
+  .lane{border-radius:12px; padding:14px 16px; font-family:var(--font-ui); font-size:.86rem; box-shadow:var(--shadow-sm);}
+  .lane h4{margin:0 0 6px;} .lane.act{border:2px solid var(--ochre); background:var(--ochre-soft);} .lane.fil{border:2px solid var(--plum); background:var(--plum-soft);}
+  .hflow{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:8px 0; font-family:var(--font-mono); font-size:.74rem;}
+  .hflow span{border:2px solid var(--outline); border-radius:6px; padding:3px 8px; background:var(--surface);} .hflow em{color:var(--ink-faint); font-style:normal;}
+
+  /* playground */
+  .pg{display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:16px; align-items:start;}
+  @media(max-width:760px){.pg{grid-template-columns:1fr;}}
+  .cbs{display:flex; flex-direction:column; gap:8px;}
+  .cb{display:grid; grid-template-columns:auto minmax(0,1fr) 64px; gap:10px; align-items:center; border:2px solid var(--line-strong); border-radius:10px; padding:8px 10px; background:var(--paper); font-family:var(--font-ui); font-size:.8rem;}
+  .cb code{font-family:var(--font-mono); font-size:.74rem; color:var(--ink); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block;}
+  .cb input[type=number]{width:60px; border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:3px 6px; font:700 .8rem var(--font-mono);}
+  .cb.off{opacity:.45;}
+  @media(max-width:600px){ .cb code{white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere;} }
+  .chain{overflow-wrap:anywhere; border:2px solid var(--cobalt); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-mono); font-size:.78rem;}
+  .chain .st{margin:3px 0; color:var(--ink-soft);} .chain .res{margin-top:8px; padding-top:8px; border-top:2px dashed var(--line-strong); font-family:var(--font-ui); font-size:.92rem; color:var(--ink);}
+  .pg label.t{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin-bottom:10px;}
+  .pg input[type=text]{border:2px solid var(--line-strong); border-radius:8px; background:var(--surface); color:var(--ink); padding:8px 10px; font:600 .9rem var(--font-ui); text-transform:none; letter-spacing:0;}
+  .rm{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:12px; font-family:var(--font-ui); font-size:.8rem;}
+  .rm select,.rm input{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:4px 8px; font:700 .78rem var(--font-mono);} .rm input{width:60px;}
+  .rmsg{font-family:var(--font-ui); font-size:.82rem; min-height:2.4em; margin-top:6px;}
+  .hd{font-family:var(--font-pixel); font-size:.46rem; letter-spacing:.05em; color:var(--ink-mute); margin:14px 0 8px;}
+
+  /* data */
+  .dgrid{display:grid; grid-template-columns:1fr 1.1fr; gap:16px; align-items:start;}
+  @media(max-width:760px){.dgrid{grid-template-columns:1fr;}}
+  .things{display:flex; flex-direction:column; gap:6px;}
+  .thing{border:2px solid var(--line-strong); border-radius:10px; padding:8px 12px; background:var(--paper); color:var(--ink); font:700 .82rem var(--font-ui); cursor:pointer; text-align:left;}
+  .thing.on{border-color:var(--forest); background:var(--forest-soft);}
+  .tables{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px;}
+  .tbl{overflow-wrap:anywhere; border:2px solid var(--line-strong); border-radius:8px; padding:8px 10px; background:var(--surface); font-family:var(--font-mono); font-size:.74rem; color:var(--ink); transition:background .15s steps(3);}
+  .tbl small{display:block; font-family:var(--font-ui); color:var(--ink-mute); font-size:.68rem; margin-top:2px;}
+  .tbl.hit{border-color:var(--forest); background:var(--forest-soft);}
+  .ddoc{border:2px solid var(--forest); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; margin-top:10px; min-height:70px;}
+
+  /* files */
+  .ftree{display:grid; grid-template-columns:minmax(220px,280px) 1fr; gap:14px;}
+  @media(max-width:760px){.ftree{grid-template-columns:1fr;}}
+  .files{font-family:var(--font-mono); font-size:.8rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:10px 6px; line-height:1.9;}
+  .files button{display:block; padding:0 10px; border-radius:6px; cursor:pointer; white-space:nowrap; border:0; background:none; color:inherit; font:inherit; text-align:left; width:100%;}
+  .files button:hover{background:rgba(255,255,255,.1);} .files button.on{background:var(--cobalt); color:#fff;} .files .ind{padding-left:22px;} .files .ind2{padding-left:40px;}
+  .fdoc{border:2px solid var(--cobalt); border-radius:12px; padding:14px 16px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; min-height:150px;}
+  .fdoc h4{margin:0 0 6px; font-family:var(--font-mono); color:var(--accent-text);} .tag{display:inline-block; font-size:.66rem; font-weight:800; padding:2px 7px; border:2px solid var(--outline); border-radius:3px; margin-bottom:6px;}
+  .tag.no{background:var(--vermil-soft);} .tag.yes{background:var(--forest-soft);} .tag.cfg{background:var(--ochre-soft);}
+
+  /* where code */
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tg{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--paper); color:var(--ink); font:700 .84rem var(--font-ui); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--forest);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em;} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+
+
+  /* content-type widget (ct-) */
+  .ct-ctl{display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-family:var(--font-ui); font-size:.8rem;}
+  .ct-ctl .lab{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin-bottom:3px;}
+  .ct-seg{display:flex; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .ct-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:7px 12px; font:700 .78rem var(--font-ui); cursor:pointer;} .ct-seg button:last-child{border-right:0;} .ct-seg button.on{background:var(--cobalt); color:#fff;}
+  .ct-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; align-items:start;}
+  @media(max-width:820px){.ct-grid{grid-template-columns:1fr;}}
+  .ct-col h5{margin:0 0 8px; font-family:var(--font-pixel); font-size:.46rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .ct-box{border:3px solid var(--line-strong); border-radius:10px; padding:8px 10px; margin-bottom:8px; background:var(--paper); font-family:var(--font-ui); font-size:.78rem; color:var(--ink);}
+  .ct-box b{display:block; font-size:.82rem;} .ct-box.act{border-color:var(--forest); background:var(--forest-soft);} .ct-box.off{opacity:.45; border-style:dashed;}
+  .ct-reg{display:block; margin-top:6px; font-family:var(--font-mono); font-size:.7rem; border-radius:6px; padding:3px 6px; background:var(--surface); border:2px solid var(--line-strong);}
+  .ct-reg.runs{border-color:var(--forest); background:var(--forest-soft);} .ct-reg.no{border-color:var(--vermil); background:var(--vermil-soft); text-decoration:line-through;}
+  .ct-db{border:3px solid var(--outline); border-radius:10px; overflow:hidden; font-family:var(--font-mono); font-size:.72rem; background:var(--paper);}
+  .ct-db .hd{display:grid; grid-template-columns:1fr 1.3fr; padding:5px 8px; background:var(--sunken); color:var(--ink-mute); font-weight:700;}
+  .ct-db .rw{display:grid; grid-template-columns:1fr 1.3fr; padding:5px 8px; border-top:1px solid var(--line); color:var(--ink);}
+  .ct-db .rw.cs.ok{background:var(--forest-soft);} .ct-db .rw.cs.orph{background:var(--vermil-soft); color:var(--ink-mute);}
+  .ct-ui{border:3px solid var(--outline); border-radius:10px; background:var(--paper); font-family:var(--font-ui); font-size:.78rem; color:var(--ink); overflow:hidden; margin-bottom:8px;}
+  .ct-ui .bar{padding:5px 10px; background:var(--sunken); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ct-ui .it{padding:6px 10px; border-top:1px solid var(--line);} .ct-ui .it.gone{color:var(--ink-faint); text-decoration:line-through;} .ct-ui .it.hit{background:var(--forest-soft); font-weight:700;}
+  .ct-verdict{margin-top:12px; border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; min-height:56px;}
+  .ct-what{border:2px dashed var(--cobalt); border-radius:12px; padding:12px 14px; background:var(--cobalt-soft); font-family:var(--font-ui); font-size:.86rem; margin:12px 0;}
+  /* tools */
+  .cmds{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px;}
+  .cmd{border:2px solid var(--line-strong); border-radius:10px; padding:10px 12px; background:var(--surface); text-align:left; cursor:pointer; color:var(--ink); font:600 .82rem var(--font-ui);}
+  .cmd code{display:block; font-family:var(--font-mono); font-size:.76rem; margin-bottom:4px;} .cmd .more{display:none; margin-top:6px; color:var(--ink-soft);} .cmd.open{border-color:var(--cobalt); background:var(--cobalt-soft);} .cmd.open .more{display:block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>How WordPress Fits Together</h1>
+  <p class="subtitle">The request cycle, hooks, the database and the file tree: the mental model that makes the rest of WordPress code make sense.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">One request, start to finish (interactive)</a></li>
+      <li><a href="#sec2">Hooks: actions and filters</a></li>
+      <li><a href="#sec3">Hook playground (interactive)</a></li>
+      <li><a href="#sec4">Where content lives: the database (interactive)</a></li>
+      <li><a href="#sec5">Where code lives: the file tree (interactive)</a></li>
+      <li><a href="#sec6">Where does my code go? (interactive)</a></li>
+      <li><a href="#sec7">Working locally: wp-env and WP-CLI</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> One request, start to finish</h2>
+  <p class="lead">WordPress is a PHP program that runs on <em>every</em> page request. It boots, loads your plugins and theme, works out which content was asked for, picks a template from your theme, and prints HTML. Along the way it fires <strong>hooks</strong>, named moments where other code (yours) can step in. Learning the order of those moments is most of what "knowing WordPress" means for a developer.</p>
+  <p>Press <b>Run a request</b> to watch the main hooks fire in order, or click any hook to see what it is for. <em>This is a simplified path through WordPress's action sequence; the Action Reference lists the full order and calls it approximate.</em></p>
+  <div class="stage" data-testid="request-cycle">
+    <div class="runbar"><button class="btn" id="run" data-testid="cycle-run">▶ Run a request</button><button class="btn sec" id="runreset" data-testid="cycle-reset">Reset</button><span class="small" id="runlabel"></span></div>
+    <div class="cycle">
+      <div id="phases"></div>
+      <div class="hdoc" id="hdoc" data-testid="hook-doc"></div>
+    </div>
+  </div>
+
+  <h2 id="sec2"><span class="num">2</span> Hooks: actions and filters</h2>
+  <p>Hooks let one piece of code extend or change another at predefined points. They are how plugins and themes plug into core, and core uses them heavily too. There are two kinds, and the difference is the single most useful thing to get straight:</p>
+  <div class="two">
+    <div class="lane act"><h4>Action: "do something now"</h4><p>Runs at a specific point to perform a task such as printing output or writing to the database. It returns nothing to the code that fired it.</p><div class="hflow"><span>core reaches <code>wp_footer</code></span><em>→</em><span>your callback runs</span><em>→</em><span>(nothing returned)</span></div></div>
+    <div class="lane fil"><h4>Filter: "change this value"</h4><p>Receives a value, modifies it and <b>must return it</b>. It should work in isolation, with no side effects such as printing or changing globals.</p><div class="hflow"><span>"Hello"</span><em>→</em><span>callback A</span><em>→</em><span>callback B</span><em>→</em><span>"HELLO ★"</span></div></div>
+  </div>
+  <div class="code" data-testid="hook-signature"><span class="k">add_action</span>( <span class="s">'wp_footer'</span>, <span class="s">'my_footer_note'</span>, <span class="n">10</span>, <span class="n">1</span> );
+<span class="k">add_filter</span>( <span class="s">'the_title'</span>, <span class="s">'my_title_tweak'</span>, <span class="n">10</span>, <span class="n">1</span> );
+<span class="s">//</span> signature: add_filter( string $hook_name, callable $callback, int $priority = 10, int $accepted_args = 1 )</div>
+  <p>Two details trip people up: <b>priority</b> (default 10; lower numbers run earlier, and equal priorities run in the order they were added) and the fact that <b>removing</b> a callback requires the exact same callback and priority you added it with, otherwise nothing is removed and you get no warning. Try both next.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Hook playground</h2>
+  <p>A tiny simulation of WordPress's hook system. Change priorities, switch callbacks off, and watch the order and the result change. It is a model of the behavior, not WordPress itself.</p>
+  <div class="stage" data-testid="hook-playground">
+    <div class="pg">
+      <div>
+        <label class="t">Title passed to the filter <input type="text" id="pg-in" value="hello world" data-testid="pg-title"></label>
+        <div class="hd">FILTER: the_title (callbacks you registered)</div>
+        <div class="cbs" id="pg-cbs"></div>
+        <div class="rm"><span>remove_filter(</span><select id="rm-which" data-testid="pg-remove-which"></select><span>, priority</span><input type="number" id="rm-prio" value="10" data-testid="pg-remove-prio"><button class="btn sec" id="rm-go" data-testid="pg-remove-go">remove</button><span>)</span></div>
+        <div class="rmsg" id="rm-msg" data-testid="pg-remove-msg"></div>
+      </div>
+      <div>
+        <div class="chain" id="pg-chain" data-testid="pg-chain"></div>
+        <div class="hd">ACTION: wp_footer (output order)</div>
+        <div class="cbs" id="pg-acts"></div>
+        <div class="chain" id="pg-out" style="margin-top:8px" data-testid="pg-footer-out"></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Where content lives: the database</h2>
+  <p>WordPress keeps its data in a small set of tables in a MySQL-compatible database (the standard core set is about a dozen tables, with a prefix that defaults to <code class="inline">wp_</code> and is set in <code class="inline">wp-config.php</code>). Pick a kind of content and see which tables hold it.</p>
+  <div class="stage" data-testid="data-model">
+    <div class="dgrid">
+      <div class="things" id="things"></div>
+      <div><div class="tables" id="tables"></div><div class="ddoc" id="ddoc" data-testid="data-doc"></div></div>
+    </div>
+  </div>
+  <p class="small">The surprise for newcomers is that <code class="inline">wp_posts</code> holds far more than blog posts: pages, navigation menu items and more are rows in it, distinguished by a type column. Custom post types (a later lesson) use the same table.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Where code lives: the file tree</h2>
+  <p>A WordPress install has a clear split between <b>core</b>, which you never edit, and <b>wp-content</b>, which is yours. Click through the standard layout.</p>
+  <div class="stage" data-testid="file-tree">
+    <div class="ftree"><div class="files" id="files"></div><div class="fdoc" id="fdoc" data-testid="file-doc"></div></div>
+  </div>
+
+  <h2 id="sec6"><span class="num">6</span> Where does my code go?</h2>
+  <p>One of the questions below uses a <b>"Case Study" content type</b>, so first, what is that? In WordPress a <em>content type</em> (technically a <b>custom post type</b>) is a kind of content with its own admin menu, fields and URLs, alongside the built-in "Posts" and "Pages". An agency site might want "Case Studies" (client, challenge, results) or a restaurant might want "Menu Items". Underneath, entries are still rows in <code class="inline">wp_posts</code>; a column called <code class="inline">post_type</code> says which kind each row is. The thing that makes WordPress <em>recognise</em> the kind is a line of code, <code class="inline">register_post_type()</code>, and where that line lives decides what happens when the theme changes. Try it:</p>
+  <div class="stage" data-testid="content-type-widget">
+    <div class="ct-ctl">
+      <div><div class="lab">Registration code lives in</div><div class="ct-seg" id="ct-where"><button type="button" data-v="plugin" class="on" data-testid="ct-where-plugin">a plugin</button><button type="button" data-v="theme" data-testid="ct-where-theme">Theme A's functions.php</button></div></div>
+      <div><div class="lab">Active theme</div><div class="ct-seg" id="ct-theme"><button type="button" data-v="A" class="on" data-testid="ct-theme-a">Theme A</button><button type="button" data-v="B" data-testid="ct-theme-b">Theme B (a redesign)</button></div></div>
+    </div>
+    <div class="ct-grid">
+      <div class="ct-col"><h5>1 · CODE</h5><div id="ct-code"></div></div>
+      <div class="ct-col"><h5>2 · DATABASE (wp_posts)</h5><div class="ct-db" id="ct-db"></div></div>
+      <div class="ct-col"><h5>3 · WHAT YOU CAN DO</h5><div id="ct-ui"></div></div>
+    </div>
+    <div class="ct-verdict" id="ct-verdict" data-testid="ct-verdict"></div>
+  </div>
+  <p>Now the quick quiz. <em>This is the conventional split (my synthesis); real projects bend it.</em></p>
+  <div class="stage" data-testid="code-quiz">
+    <div class="scn" id="scn"></div>
+    <div class="scn-nav"><button class="btn" id="scn-next" data-testid="code-next" disabled>Next →</button><span class="small" id="scn-score" data-testid="code-score"></span></div>
+  </div>
+
+  <h2 id="sec7"><span class="num">7</span> Working locally: wp-env and WP-CLI</h2>
+  <p>You rarely develop against a live site. Two tools cover most of what a developer needs to know first. <b>wp-env</b> (from the Gutenberg project) spins up a local WordPress for building and testing plugins and themes. It runs on Docker by default (plus Node.js and git), serves the site at <code class="inline">localhost:8888</code>, and includes a MariaDB database, WP-CLI, Composer and PHPUnit. <b>WP-CLI</b> is the command-line interface for almost anything you can do in the admin, which makes WordPress scriptable for deploys and automation. Tap a command.</p>
+  <div class="cmds" id="cmds" data-testid="wpcli-commands"></div>
+  <p class="small">Other local setups exist, such as Local and DDEV; they are common choices but not covered by the sources used here.</p>
+  <div class="flag"><b>Debugging starts in <code>wp-config.php</code>.</b> That file sits in the install root, holds the database connection details and other core settings, and is created during setup rather than shipped in the download. <code>WP_DEBUG</code> lives there too and controls whether WordPress reports errors and warnings. Turn it on locally, never leave it on for a live site.</div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>WordPress runs on every request:</b> boot, load plugins and theme, parse the request, run the main query, pick a template, print, shut down.</li>
+    <li><b>Hooks are the extension model.</b> Actions do something at a moment; filters pass a value through callbacks that must return it.</li>
+    <li><b>Priority and removal have rules:</b> default 10, lower runs earlier, ties run in the order added; removal needs the exact callback and priority.</li>
+    <li><b>The data is a small set of tables,</b> and <code class="inline">wp_posts</code> holds many kinds of content, not just posts.</li>
+    <li><b>Core is read-only in practice:</b> your work lives in <code class="inline">wp-content</code> (themes and plugins); settings live in <code class="inline">wp-config.php</code>.</li>
+    <li><b>Develop locally</b> with something like wp-env, and learn WP-CLI early.</li>
+  </ul>
+  <p class="src"><b>Primary (WordPress).</b> <a href="https://developer.wordpress.org/plugins/hooks/" target="_blank">Plugin Handbook: Hooks</a> · <a href="https://developer.wordpress.org/apis/hooks/action-reference/" target="_blank">Action Reference</a> (the typical-request sequence) · <a href="https://developer.wordpress.org/reference/functions/add_filter/" target="_blank">add_filter</a> · <a href="https://developer.wordpress.org/reference/functions/remove_filter/" target="_blank">remove_filter</a> · <a href="https://developer.wordpress.org/themes/basics/template-hierarchy/" target="_blank">Template hierarchy</a> · <a href="https://developer.wordpress.org/advanced-administration/wordpress/wp-config/" target="_blank">wp-config.php</a> · <a href="https://codex.wordpress.org/Database_Description" target="_blank">Database description (Codex)</a> · <a href="https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/" target="_blank">@wordpress/env</a> · <a href="https://wordpress.org/cli/" target="_blank">WP-CLI</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> The request-cycle view is simplified (the Action Reference says its list is approximate). The file-tree layout and the table list are the standard core structure; verify against the current docs before relying on version-specific details. The code-placement quiz, hook descriptions and playground are my own.</p>
+
+  <footer>How WordPress Fits Together · WordPress for Front-End &amp; UI Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- request cycle ---------- */
+(function(){
+  const P=[
+    {n:'1 · BOOT',c:'boot',h:[
+      ['muplugins_loaded','All must-use plugins have loaded.','Rarely needed. Code here runs before normal plugins, so it can set things up that plugins depend on.'],
+      ['plugins_loaded','All active plugins have loaded.','The place for plugin code that needs other plugins to exist, such as checking whether a dependency is active.'],
+      ['after_setup_theme','The active theme\'s functions file has loaded.','Register theme features here: menus, image sizes, theme supports.'],
+      ['init','WordPress core is loaded and the user is set.','The classic spot to register custom post types and taxonomies. Most "set up my site" code goes here.'],
+      ['wp_loaded','Everything is loaded; the request has not been parsed.','Late setup that needs the full environment.']]},
+    {n:'2 · THE QUERY',c:'',h:[
+      ['parse_request','WordPress has matched the URL to a request.','Inspect or adjust how the URL was understood (rewrite rules).'],
+      ['pre_get_posts','The main query is built but has not run.','Change what the main query fetches (for example posts per page on an archive). Check it is the main query so you do not alter other queries.'],
+      ['wp','The query has run; the environment is set up.','You now know what is being displayed: a post, an archive, a search.'],
+      ['template_redirect','WordPress is about to choose a template.','The right moment for redirects, because nothing has been sent to the browser yet.']]},
+    {n:'3 · THE TEMPLATE',c:'tpl',h:[
+      ['wp_enqueue_scripts','Time to register the page\'s styles and scripts.','Enqueue your CSS and JS here, not by hard-coding tags. It runs before wp_head prints them.'],
+      ['wp_head','The head of the page is being printed.','Output into the head. Enqueued styles and scripts are printed here.'],
+      ['wp_footer','The end of the page is being printed.','Output near the closing body tag, and where footer scripts print.']]},
+    {n:'4 · FINISH',c:'',h:[
+      ['shutdown','PHP is shutting down at the end of the request.','Cleanup or logging at the very end.']]}
+  ];
+  const ph=$('phases'), pills=[];
+  P.forEach(p=>{ const d=document.createElement('div'); d.className='phase '+p.c; d.innerHTML='<h4>'+p.n+'</h4><div class="pills"></div>'+(p.c==='tpl'?'<div class="small" style="margin-top:8px">The theme\'s template file is chosen by the <b>template hierarchy</b>: WordPress reads the query, then looks for the most specific matching file, falling back to <code class="inline">index.php</code>. Filters like <code class="inline">the_title</code> and <code class="inline">the_content</code> run while it prints.</div>':'');
+    const box=d.querySelector('.pills'); p.h.forEach(h=>{ const b=document.createElement('button'); b.type='button'; b.className='hpill'; b.textContent=h[0]; b.setAttribute('data-testid','hook-'+h[0]); b.onclick=()=>show(h[0]); box.appendChild(b); pills.push([h,b]); }); ph.appendChild(d); });
+  function show(name){ pills.forEach(([h,b])=>b.classList.toggle('on',h[0]===name)); const h=pills.find(x=>x[0][0]===name)[0];
+    $('hdoc').innerHTML='<h4>'+h[0]+'</h4><dl><dt>Type</dt><dd>Action</dd><dt>When</dt><dd>'+h[1]+'</dd><dt>What you typically do here</dt><dd>'+h[2]+'</dd></dl><p class="small" style="margin-top:10px">Register with <code class="inline">add_action( \''+h[0]+'\', \'your_callback\' );</code></p>'; }
+  show('init');
+  let timer=null;
+  function reset(){ clearInterval(timer); pills.forEach(([h,b])=>b.classList.remove('run')); $('runlabel').textContent=''; $('run').disabled=false; }
+  $('run').onclick=()=>{ reset(); $('run').disabled=true; let i=0; timer=setInterval(()=>{ pills.forEach(([h,b])=>b.classList.remove('run')); if(i>=pills.length){ clearInterval(timer); $('runlabel').textContent='Page sent. (Simplified: many more hooks fire in between.)'; $('run').disabled=false; return; }
+    pills[i][1].classList.add('run'); show(pills[i][0][0]); $('runlabel').textContent='Firing '+pills[i][0][0]+' ('+(i+1)+' of '+pills.length+')'; i++; },650); };
+  $('runreset').onclick=reset;
+})();
+
+/* ---------- hook playground ---------- */
+(function(){
+  const F=[
+    {id:'upper',label:"'strtoupper'",fn:s=>s.toUpperCase(),en:true,pr:10},
+    {id:'star',label:"'append_star'",fn:s=>s+' ★',en:true,pr:10},
+    {id:'prefix',label:"'prefix_new'",fn:s=>'New: '+s,en:true,pr:10},
+    {id:'em',label:"'wrap_em'",fn:s=>'<'+'em>'+s+'<'+'/em>',en:false,pr:10}
+  ];
+  const A=[{id:'ga',label:"'print_analytics'",out:'<script> analytics',en:true,pr:10},{id:'cookie',label:"'print_cookie_banner'",out:'<div> cookie banner',en:true,pr:10},{id:'dbg',label:"'print_debug_bar'",out:'<div> debug bar',en:true,pr:10}];
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  function order(list){ return list.map((c,i)=>({c,i})).filter(x=>x.c.en).sort((a,b)=>a.c.pr-b.c.pr||a.i-b.i).map(x=>x.c); }
+  function row(box,list,item,which){ const d=document.createElement('div'); d.className='cb'+(item.en?'':' off'); d.innerHTML='<input type="checkbox" '+(item.en?'checked':'')+' data-testid="pg-'+which+'-'+item.id+'-on"><code>add_'+(which==='f'?'filter':'action')+'( '+(which==='f'?"'the_title'":"'wp_footer'")+', '+item.label+', </code><input type="number" value="'+item.pr+'" data-testid="pg-'+which+'-'+item.id+'-prio">';
+    d.children[0].onchange=e=>{ item.en=e.target.checked; render(); }; d.children[2].oninput=e=>{ item.pr=+e.target.value||0; render(); }; box.appendChild(d); }
+  function render(){
+    const fb=$('pg-cbs'); fb.innerHTML=''; F.forEach(f=>row(fb,F,f,'f'));
+    const ab=$('pg-acts'); ab.innerHTML=''; A.forEach(a=>row(ab,A,a,'a'));
+    const sel=$('rm-which'); if(!sel.options.length) F.forEach(f=>sel.add(new Option(f.label,f.id)));
+    let v=$('pg-in').value, steps=['<div class="st">value in: '+esc(v)+'</div>'];
+    order(F).forEach(c=>{ v=c.fn(v); steps.push('<div class="st">priority '+c.pr+' · '+esc(c.label)+' → '+esc(v)+'</div>'); });
+    $('pg-chain').innerHTML=steps.join('')+'<div class="res"><b>apply_filters( \'the_title\', … ) returns:</b><br>'+esc(v)+'</div>';
+    $('pg-out').innerHTML=order(A).map((a,i)=>'<div class="st">'+(i+1)+'. (priority '+a.pr+') '+esc(a.out)+'</div>').join('')||'<div class="st">(nothing registered)</div>';
+  }
+  $('pg-in').oninput=render;
+  $('rm-go').onclick=()=>{ const f=F.find(x=>x.id===$('rm-which').value), p=+$('rm-prio').value; const m=$('rm-msg');
+    if(!f.en){ m.innerHTML='<b>Nothing to remove.</b> That callback is not currently registered.'; return; }
+    if(p===f.pr){ f.en=false; m.innerHTML='<b>Removed.</b> The callback and priority matched exactly.'; render(); }
+    else m.innerHTML='<b>Nothing removed, and no warning.</b> '+esc(f.label)+' is registered at priority '+f.pr+', but you asked for '+p+'. The callback <em>and</em> priority must match exactly.'; };
+  render();
+})();
+
+/* ---------- data model ---------- */
+(function(){
+  const T=[['wp_posts','posts, pages, menu items, attachments…'],['wp_postmeta','extra data per post'],['wp_options','site settings'],['wp_terms','category / tag names'],['wp_term_taxonomy','what kind of term'],['wp_term_relationships','which post has which term'],['wp_users','accounts'],['wp_usermeta','extra data per user'],['wp_comments','comments'],['wp_commentmeta','extra data per comment']];
+  const I=[
+    ['A blog post',['wp_posts'],'A row in wp_posts with the type "post". The title, body, status and dates are columns on that row.'],
+    ['A page',['wp_posts'],'Also a row in wp_posts, with the type "page". Same table as posts.'],
+    ['A navigation menu item',['wp_posts','wp_terms','wp_term_relationships'],'Menu items are rows in wp_posts; the menu they belong to is a term, linked through the relationships table.'],
+    ['An uploaded image',['wp_posts','wp_postmeta'],'The media item is a row in wp_posts (type "attachment"); details like its file path and sizes sit in wp_postmeta. The file itself is in the uploads folder.'],
+    ['A custom field value (for example an "event date")',['wp_postmeta'],'A key and value row in wp_postmeta attached to the post. This is what custom fields and field plugins store.'],
+    ['The site title and other settings',['wp_options'],'Settings from the admin Settings screens live as option rows in wp_options. Plugins often keep their settings here too.'],
+    ['A category or tag on a post',['wp_terms','wp_term_taxonomy','wp_term_relationships'],'The name is a term, its kind (category, tag…) is in the taxonomy table, and the link to the post is in the relationships table.'],
+    ['A user and their role',['wp_users','wp_usermeta'],'The account is a row in wp_users; things like the role and profile fields are rows in wp_usermeta.'],
+    ['A comment',['wp_comments','wp_commentmeta'],'A row in wp_comments, with any extra data in wp_commentmeta.']
+  ];
+  const th=$('things'), tb=$('tables'); const tel={};
+  T.forEach(([n,d])=>{ const e=document.createElement('div'); e.className='tbl'; e.innerHTML=n+'<small>'+d+'</small>'; e.setAttribute('data-testid','table-'+n); tb.appendChild(e); tel[n]=e; });
+  I.forEach(([t,hits,d],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='thing'; b.textContent=t; b.setAttribute('data-testid','thing-'+i);
+    b.onclick=()=>{ th.querySelectorAll('.thing').forEach(x=>x.classList.remove('on')); b.classList.add('on'); Object.values(tel).forEach(e=>e.classList.remove('hit')); hits.forEach(h=>tel[h].classList.add('hit')); $('ddoc').innerHTML='<b>'+t+'</b><br>'+d; }; th.appendChild(b); });
+  th.children[0].click();
+})();
+
+/* ---------- file tree ---------- */
+(function(){
+  const F=[
+    ['index.php','',"The front controller: requests start here and hand off to WordPress.",'no','Core. Don\'t edit.'],
+    ['wp-config.php','',"The site's core settings, including database connection details, the table prefix and WP_DEBUG. It lives in the install root and is created during setup, not shipped in the download.",'cfg','Configuration. Per-environment, usually kept out of public repositories.'],
+    ['wp-admin/','',"The admin interface code.",'no','Core. Don\'t edit.'],
+    ['wp-includes/','',"WordPress's core libraries and functions.",'no','Core. Don\'t edit.'],
+    ['wp-content/','',"Everything that is yours: themes, plugins, uploads. Updates to WordPress core leave it alone.",'yes','Yours.'],
+    ['themes/','ind',"Each theme is a folder here. The active theme's templates and functions file run on every request.",'yes','Yours.'],
+    ['plugins/','ind',"Each plugin is a folder (or a single file) here, written in PHP, optionally with CSS, JS and images. Active plugins load on every request.",'yes','Yours.'],
+    ['mu-plugins/','ind',"Must-use plugins: loaded automatically, in addition to normal plugins, and not switchable from the admin plugin screen. The muplugins_loaded hook fires once they have all loaded.",'yes','Yours.'],
+    ['uploads/','ind',"Media uploaded through the admin. The database tracks these as attachment records.",'yes','Content, not code. Usually not in git.']
+  ];
+  const box=$('files'), doc=$('fdoc');
+  F.forEach(([n,ind,d,tag,note],i)=>{ const b=document.createElement('button'); b.type='button'; b.className=ind; b.textContent=n; b.setAttribute('data-testid','file-'+n.replace(/[^a-z-]/g,'')); b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); doc.innerHTML='<span class="tag '+tag+'">'+(tag==='no'?'CORE':tag==='cfg'?'CONFIG':'YOURS')+'</span><h4>'+n+'</h4>'+d+'<p class="small" style="margin-top:8px">'+note+'</p>'; }; box.appendChild(b); });
+  box.children[4].click();
+})();
+
+/* ---------- content type widget ---------- */
+(function(){
+  const st={where:'plugin',theme:'A'};
+  function render(){
+    const reg=st.where==='plugin'||st.theme==='A';
+    const REG='<span class="ct-reg '+(reg?'runs':'no')+'">register_post_type( \'case_study\' )</span><span class="small" style="display:block;margin-top:3px">'+(reg?'runs on every request':'does not run')+'</span>';
+    $('ct-code').innerHTML=
+      '<div class="ct-box '+(st.theme==='A'?'act':'off')+'"><b>Theme A</b>'+(st.theme==='A'?'active':'inactive')+'<span class="small" style="display:block">templates: archive-case_study.php, single-case_study.php</span>'+(st.where==='theme'?'<span class="small" style="display:block;margin-top:4px">functions.php:</span>'+REG:'')+'</div>'+
+      '<div class="ct-box '+(st.theme==='B'?'act':'off')+'"><b>Theme B</b>'+(st.theme==='B'?'active':'inactive')+'<span class="small" style="display:block">templates: index.php only</span></div>'+
+      '<div class="ct-box act"><b>Plugin: "Case Studies"</b>always active'+(st.where==='plugin'?'<span class="small" style="display:block;margin-top:4px">main file:</span>'+REG:'<span class="small" style="display:block">(not used in this setup)</span>')+'</div>';
+    const rows=[['post','Hello world'],['page','About'],['case_study','Acme: 40% faster'],['case_study','Globex: new checkout'],['case_study','Initech: redesign']];
+    $('ct-db').innerHTML='<div class="hd"><span>post_type</span><span>title</span></div>'+rows.map(r=>'<div class="rw'+(r[0]==='case_study'?' cs '+(reg?'ok':'orph'):'')+'"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>').join('')+'<div class="rw" style="color:var(--ink-mute)"><span></span><span>'+(reg?'all five rows recognised':'3 rows stay, but unregistered')+'</span></div>';
+    const A=st.theme==='A';
+    $('ct-ui').innerHTML=
+      '<div class="ct-ui"><div class="bar">WordPress admin menu</div><div class="it">Posts</div><div class="it">Pages</div><div class="it '+(reg?'hit':'gone')+'">Case Studies'+(reg?'':' (missing)')+'</div></div>'+
+      '<div class="ct-ui"><div class="bar">Front end: /case-studies/</div><div class="it '+(reg?'hit':'gone')+'">'+(reg?(A?'Shown with Theme A\'s special archive template':'Shown, but with a generic template (the hierarchy falls back to archive.php / index.php)'):'Not reachable: WordPress no longer knows this type')+'</div></div>';
+    $('ct-verdict').innerHTML = st.where==='plugin' ? (A?'<b>Everything works.</b> The type is registered by the plugin, and Theme A has dedicated templates for it.':'<b>You switched to Theme B and nothing was lost.</b> The plugin still registers the type, so the admin menu and the content are intact. The new theme just displays it more plainly until someone writes case-study templates for it.')
+      : (A?'<b>Works, for now.</b> The registration code is in Theme A, which is active, so it runs. Switch to Theme B to see what happens.':'<b>The content is still in the database, but it has become invisible.</b> Theme B doesn\'t contain the registration code, so it doesn\'t run. The three entries stay as rows in wp_posts, yet the admin menu disappears and the pages can\'t be reached until something registers the type again. Switch back to Theme A, or move the code into a plugin, and they return.');
+  }
+  document.querySelectorAll('#ct-where button').forEach(b=>b.onclick=()=>{ st.where=b.dataset.v; document.querySelectorAll('#ct-where button').forEach(x=>x.classList.toggle('on',x===b)); render(); });
+  document.querySelectorAll('#ct-theme button').forEach(b=>b.onclick=()=>{ st.theme=b.dataset.v; document.querySelectorAll('#ct-theme button').forEach(x=>x.classList.toggle('on',x===b)); render(); });
+  render();
+})();
+
+/* ---------- where does my code go ---------- */
+(function(){
+  const O=['Theme','Plugin','Must-use plugin','wp-config.php','Not code (admin setting)'];
+  const Q=[
+    ['Change the markup of single post pages.',0,'Presentation belongs in the theme: its template files decide how each kind of page looks.'],
+    ['Register a "Case Study" content type the client should keep even if the theme changes.',1,'Registering a content type is code. If it lives in the theme, switching themes stops it running: the entries stay in the database but become unregistered, so they disappear from the admin and the site until it is registered again. In a plugin it keeps running whatever the theme is, so the content stays available.'],
+    ['Enqueue the site\'s CSS and JavaScript.',0,'Styles and scripts for the site\'s design are the theme\'s job, registered on wp_enqueue_scripts.'],
+    ['A behavior that must always be on and should not be switchable off from the plugin screen.',2,'Must-use plugins load automatically and do not appear as switchable in the normal plugin list.'],
+    ['Database connection details and turning on WP_DEBUG locally.',3,'Those are core settings, and they live in wp-config.php.'],
+    ['Change the site title.',4,'It is an option set in the admin Settings screens. Writing code for it would be building something WordPress already ships.']
+  ];
+  let i=0, score=0, done=false; const box=$('scn'), nx=$('scn-next');
+  function show(){
+    if(i>=Q.length){ box.innerHTML='<div class="tg">DONE</div><div class="say" style="border-left-color:var(--forest)">You placed '+score+' of '+Q.length+' the conventional way.</div><p class="small">Rule of thumb: design in the theme, durable features in a plugin, settings in the admin, and ask whether WordPress already does it.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{ i=0; score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; $('scn-score').textContent=''; return; }
+    const q=Q[i]; done=false; nx.disabled=true;
+    box.innerHTML='<div class="tg">QUESTION '+(i+1)+' / '+Q.length+'</div><div class="say">'+q[0]+'</div><div class="opts">'+O.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'" data-testid="code-option-'+k+'">'+o+'</button>').join('')+'</div><div class="why" id="why"></div>';
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); $('why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+q[2]; nx.disabled=false; $('scn-score').textContent=score+' of '+(i+1)+' placed the conventional way'; });
+  }
+  function next(){ i++; show(); } nx.onclick=next; show();
+})();
+
+/* ---------- WP-CLI commands ---------- */
+(function(){
+  const C=[['wp plugin install <slug> --activate','Install and activate a plugin from the command line. Themes work the same way with wp theme.'],['wp db export','Dump the database to a file, useful before risky changes or when moving a site.'],['wp search-replace \'old\' \'new\'','Search and replace across database tables, the usual step when moving a site between environments.'],['wp cache flush','Flush the object cache when something looks stale.'],['wp cron event list','See WordPress\'s scheduled events.'],['wp user create','Create users, set roles and reset passwords without the admin screen.']];
+  const box=$('cmds'); C.forEach(([c,d],i)=>{ const b=document.createElement('button'); b.type='button'; b.className='cmd'; b.setAttribute('data-testid','wpcli-'+i); b.innerHTML='<code>'+c.replace(/</g,'&lt;')+'</code>tap to expand<div class="more">'+d+'</div>'; b.onclick=()=>b.classList.toggle('open'); box.appendChild(b); });
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

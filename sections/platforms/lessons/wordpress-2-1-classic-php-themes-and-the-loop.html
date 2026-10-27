@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classic PHP Themes and the Loop</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); --accent-text:#2c4d82; }
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .btn{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .btn.sec{background:var(--surface); border:1px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  code.inline{white-space:normal;}
+  .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  .ctl input[type=text],.ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-mono); text-transform:none; letter-spacing:0;}
+  .chk{display:flex; gap:6px; align-items:center; font-family:var(--font-mono); font-size:.76rem; color:var(--ink);} .chk input{accent-color:var(--cobalt);}
+  .lp-src{font-family:var(--font-mono); font-size:.78rem; background:#353d5e; color:#e8ecff; border-radius:10px; padding:8px 0; overflow-x:auto; line-height:1.6;}
+  .lp-src .ln{display:block; padding:0 14px; white-space:pre; border-left:4px solid transparent;} .lp-src .ln.on{background:rgba(143,184,255,.22); border-left-color:#ffd23f;}
+  .lp-two{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:14px; align-items:start;} @media(max-width:760px){.lp-two{grid-template-columns:1fr;}}
+  .lp-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
+  .lp-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute);}
+  .lp-res{display:flex; flex-direction:column; gap:6px;}
+  .lp-post{border:2px solid var(--line-strong); border-radius:8px; padding:6px 10px; background:var(--paper); display:flex; justify-content:space-between; gap:8px;} .lp-post.cur{border-color:var(--forest); background:var(--forest-soft);} .lp-post.done{opacity:.5;}
+  .lp-out{font-family:var(--font-mono); font-size:.78rem; min-height:60px; white-space:pre-wrap; overflow-wrap:anywhere;}
+  .lp-note{font-family:var(--font-ui); font-size:.84rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .lp-tags{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0;} .lp-tg{font-family:var(--font-mono); font-size:.74rem; border:2px solid var(--line-strong); border-radius:6px; padding:4px 8px; background:var(--paper); color:var(--ink); cursor:pointer;} .lp-tg.on{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .lp-seg{display:flex; border:2px solid var(--outline); border-radius:8px; overflow:hidden;} .lp-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:6px 10px; font:700 .76rem var(--font-ui); cursor:pointer;} .lp-seg button:last-child{border-right:0;} .lp-seg button.on{background:var(--cobalt); color:#fff;}
+  .lp-global{border:2px dashed var(--ochre); border-radius:10px; padding:8px 12px; background:var(--ochre-soft); font-family:var(--font-mono); font-size:.78rem; color:var(--ink); margin-top:10px;}
+  .lp-q{display:grid; grid-template-columns:minmax(0,1.6fr) repeat(3,minmax(0,.6fr)) minmax(0,.8fr); gap:6px; align-items:center; font-family:var(--font-ui); font-size:.78rem; border-top:1px solid var(--line); padding:6px 0; color:var(--ink);} .lp-q.h{font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); border-top:0; font-weight:800;}
+  .lp-q .t{text-align:center;} .lp-q .res{font-weight:800; text-align:center; padding:2px 6px; border-radius:6px; border:2px solid var(--line-strong);} .lp-q .res.hit{border-color:var(--forest); background:var(--forest-soft);} .lp-q .res.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  @media(max-width:700px){.lp-q{grid-template-columns:1fr 1fr 1fr 1fr 1fr; font-size:.7rem;}}
+  .lp-html{font-family:var(--font-mono); font-size:.78rem; background:var(--paper-2); border:2px solid var(--outline); border-radius:10px; padding:10px 12px; overflow-wrap:anywhere; white-space:pre-wrap; color:var(--ink);}
+  .scn{border:2px solid var(--outline); border-radius:12px; padding:16px; background:var(--surface); font-family:var(--font-ui);}
+  .scn .tg{font-family:var(--font-pixel); font-size:.46rem; color:var(--ink-mute); margin-bottom:8px;}
+  .scn .say{font-size:1.02rem; color:var(--ink); border-left:5px solid var(--ochre); padding:4px 0 4px 12px; margin:6px 0 12px;}
+  .opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px;}
+  .opt{border:2px solid var(--line-strong); border-radius:10px; padding:9px 10px; background:var(--paper); color:var(--ink); font:700 .78rem var(--font-mono); cursor:pointer; text-align:left;}
+  .opt:hover{border-color:var(--cobalt);} .opt.good{border-color:var(--forest); background:var(--forest-soft);} .opt.bad{border-color:var(--vermil); background:var(--vermil-soft);}
+  .why{font-size:.84rem; color:var(--ink-soft); margin-top:10px; min-height:3em; font-family:var(--font-ui);} .why b{color:var(--ink);}
+  .scn-nav{display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Classic PHP Themes and the Loop</h1>
+  <p class="subtitle">How a classic theme template actually produces a page: the Loop that walks through posts, the template tags that print them, how to run your own queries safely, and the output-escaping and debugging habits that keep a theme secure and fixable.</p>
+
+  <div class="toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">A template is PHP wrapped around HTML</a></li>
+      <li><a href="#sec2">The Loop, step by step (interactive)</a></li>
+      <li><a href="#sec3">Template tags: print or return (interactive)</a></li>
+      <li><a href="#sec4">Your own query, and putting things back (interactive)</a></li>
+      <li><a href="#sec5">Changing the main query safely (interactive)</a></li>
+      <li><a href="#sec6">Escaping: protect the output (interactive)</a></li>
+      <li><a href="#sec7">Debugging: seeing what went wrong (interactive)</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> A template is PHP wrapped around HTML</h2>
+  <p class="lead">A classic theme template is an ordinary HTML file with PHP sprinkled in. The HTML is your markup. The PHP asks WordPress for the content and prints it. Lesson 1.2 showed which template file WordPress picks; this lesson is about what is <em>inside</em> that file.</p>
+  <p>The shape of almost every template is the same: load the header, loop over the posts that the main query found, print each one, load the footer. The loop is the part to understand properly, because every other template idea hangs off it.</p>
+
+  <h2 id="sec2"><span class="num">2</span> The Loop, step by step</h2>
+  <p>Before your template runs, WordPress has already worked out which posts the page needs and run the <b>main query</b>. The Loop is how you walk through those results. <code class="inline">have_posts()</code> asks "are there more posts to show?". <code class="inline">the_post()</code> moves to the next one and makes it the <b>current post</b>, so that template tags like <code class="inline">the_title()</code> know which post to talk about. Step through it, then try the case where the query finds nothing.</p>
+  <div class="stage" data-testid="loop-stepper">
+    <div class="row"><button class="btn" id="lp-step" data-testid="loop-step">Step ▶</button><button class="btn sec" id="lp-reset" data-testid="loop-reset">Reset</button><label class="chk"><input type="checkbox" id="lp-empty" data-testid="loop-empty"> the query finds no posts</label></div>
+    <div class="lp-two">
+      <div class="lp-src" id="lp-src" data-testid="loop-source"></div>
+      <div>
+        <div class="lp-box"><h5>MAIN QUERY RESULTS</h5><div class="lp-res" id="lp-res"></div></div>
+        <div class="lp-box" style="margin-top:10px"><h5>OUTPUT SO FAR</h5><div class="lp-out" id="lp-out"></div></div>
+      </div>
+    </div>
+    <div class="lp-note" id="lp-note" data-testid="loop-note"></div>
+  </div>
+  <p class="small">The no-results branch matters in real themes: an empty search or an empty category should say so, not show a blank page. Avoid <code class="inline">query_posts()</code> to change what the page shows; the handbook advises against it, and section 5 shows the safer route.</p>
+
+  <h2 id="sec3"><span class="num">3</span> Template tags: print or return</h2>
+  <p>Inside the Loop, <b>template tags</b> are the functions that print details of the current post: its title, its content, its excerpt, its featured image, its author and date. Most come in two flavours. The <code class="inline">the_</code> version <b>prints</b> the value straight onto the page. The <code class="inline">get_the_</code> version <b>returns</b> it so you can use it in your own PHP first (for example, to put it in an attribute). The pair idea is general WordPress convention; this lesson's sources list the printing tags. Pick a post and a tag.</p>
+  <div class="stage" data-testid="template-tags">
+    <div class="row"><label class="ctl">current post<select id="tt-post" data-testid="tt-post"></select></label><div class="lp-seg" id="tt-mode"><button type="button" class="on" data-m="print" data-testid="tt-print">the_ (prints)</button><button type="button" data-m="get" data-testid="tt-get">get_the_ (returns)</button></div></div>
+    <div class="lp-tags" id="tt-tags"></div>
+    <div class="lp-two">
+      <div class="lp-src" id="tt-code" data-testid="tt-code"></div>
+      <div class="lp-box"><h5>WHAT REACHES THE PAGE</h5><div class="lp-out" id="tt-out" data-testid="tt-out"></div></div>
+    </div>
+  </div>
+
+  <h2 id="sec4"><span class="num">4</span> Your own query, and putting things back</h2>
+  <p>Sometimes a template needs a second list, such as "three related posts" under an article. You create that with <code class="inline">new WP_Query()</code> and give it arguments (post type, how many, which category) and loop over it with its own <code class="inline">have_posts()</code> and <code class="inline">the_post()</code>. The catch is that <code class="inline">the_post()</code> also changes the global current post. After your loop, the page is still "looking at" the last related post. <code class="inline">wp_reset_postdata()</code> restores the global current post to the main query's. Toggle the reset and watch what the next <code class="inline">the_title()</code> prints.</p>
+  <div class="stage" data-testid="reset-demo">
+    <div class="row"><label class="chk"><input type="checkbox" id="rs-on" checked data-testid="rs-reset"> call wp_reset_postdata() after the loop</label></div>
+    <div class="lp-two">
+      <div class="lp-src" id="rs-src"></div>
+      <div>
+        <div class="lp-box"><h5>GLOBAL CURRENT POST</h5><div class="lp-out" id="rs-global" data-testid="rs-global"></div></div>
+        <div class="lp-note" id="rs-note"></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="sec5"><span class="num">5</span> Changing the main query safely</h2>
+  <p>To change what the <b>main</b> query fetches (say, 24 products per page on the products archive), do not run a second query and do not call <code class="inline">query_posts()</code>. Hook <code class="inline">pre_get_posts</code>. It runs after the query object exists but before it runs, and it passes the query in by reference, so what you change is what runs. The danger is that it fires for <em>every</em> query on the site, so you must check you are touching the right one: not an admin screen (<code class="inline">! is_admin()</code>), only the main query (<code class="inline">$query->is_main_query()</code>), and only the archive you mean (<code class="inline">$query->is_post_type_archive( 'product' )</code>). Switch the guards off one at a time and see who else gets changed. The yes and no values below are illustrative.</p>
+  <div class="stage" data-testid="pre-get-posts">
+    <div class="row"><label class="chk"><input type="checkbox" id="pg-a" checked data-testid="guard-admin"> ! is_admin()</label><label class="chk"><input type="checkbox" id="pg-b" checked data-testid="guard-main"> $query->is_main_query()</label><label class="chk"><input type="checkbox" id="pg-c" checked data-testid="guard-archive"> $query->is_post_type_archive( 'product' )</label></div>
+    <div id="pg-table"></div>
+    <div class="lp-note" id="pg-note" data-testid="guard-note"></div>
+  </div>
+  <p class="small">One more rule from the reference: because <code class="inline">pre_get_posts</code> runs before the query is fully set up, some conditional tags such as <code class="inline">is_front_page()</code> do not work inside it; use the query object's own methods instead.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Escaping: protect the output</h2>
+  <p>Anything that was typed by a person (a post title, a custom field, a search term) can contain markup. If you print it raw, a visitor's browser may run it. The rule is <b>escape late</b>: escape at the moment you output, using the function that fits where the value lands. <code class="inline">esc_html()</code> for text inside an element, <code class="inline">esc_attr()</code> for an attribute value, <code class="inline">esc_url()</code> for any URL, <code class="inline">esc_textarea()</code> inside a textarea, and <code class="inline">wp_kses_post()</code> when you want to keep the HTML allowed in post content. There are also combined translate-and-escape helpers such as <code class="inline">esc_html__()</code>. Type something nasty and compare.</p>
+  <div class="stage" data-testid="escaping-demo">
+    <div class="row"><label class="ctl" style="flex:1;min-width:220px">value from the database<input type="text" id="es-in" value="Bob's &lt;script&gt;alert(1)&lt;/script&gt; post" data-testid="es-input" style="width:100%"></label><label class="ctl">where it is printed<select id="es-ctx" data-testid="es-context"><option value="text">inside an element</option><option value="attr">inside an attribute</option><option value="url">as a link address</option></select></label><label class="chk"><input type="checkbox" id="es-on" checked data-testid="es-escape"> escape it</label></div>
+    <div class="lp-src" id="es-code" data-testid="es-code"></div>
+    <div class="lp-box" style="margin-top:10px"><h5>HTML THE BROWSER RECEIVES</h5><div class="lp-html" id="es-html" data-testid="es-html"></div></div>
+    <div class="lp-note" id="es-note" data-testid="es-note"></div>
+  </div>
+  <p>Now choose the function for each place:</p>
+  <div class="stage" data-testid="escape-quiz">
+    <div class="scn" id="scn"></div>
+    <div class="scn-nav"><button class="btn" id="scn-next" data-testid="escape-next" disabled>Next →</button><span class="small" id="scn-score" data-testid="escape-score"></span></div>
+  </div>
+
+  <h2 id="sec7"><span class="num">7</span> Debugging: seeing what went wrong</h2>
+  <p>When a template misbehaves, WordPress can tell you why, if you ask. Three constants in <code class="inline">wp-config.php</code>, placed above the "stop editing" comment, control it: <code class="inline">WP_DEBUG</code> turns debug mode on, <code class="inline">WP_DEBUG_LOG</code> writes errors to <code class="inline">wp-content/debug.log</code>, and <code class="inline">WP_DEBUG_DISPLAY</code> decides whether errors print into the page. The log and display switches only do anything when <code class="inline">WP_DEBUG</code> is on. Write the values as real true or false, not in quotes: a quoted false is a string, and a string counts as true.</p>
+  <div class="stage" data-testid="debug-demo">
+    <div class="row"><label class="chk"><input type="checkbox" id="db-a" data-testid="db-debug"> WP_DEBUG</label><label class="chk"><input type="checkbox" id="db-b" data-testid="db-log"> WP_DEBUG_LOG</label><label class="chk"><input type="checkbox" id="db-c" checked data-testid="db-display"> WP_DEBUG_DISPLAY</label></div>
+    <div class="lp-src" id="db-code" data-testid="db-code"></div>
+    <div class="lp-two" style="margin-top:10px"><div class="lp-box"><h5>VISITORS SEE ERRORS ON THE PAGE?</h5><div id="db-page" style="font-weight:800"></div></div><div class="lp-box"><h5>ERRORS SAVED TO debug.log?</h5><div id="db-file" style="font-weight:800"></div></div></div>
+    <div class="lp-note" id="db-note" data-testid="db-note"></div>
+  </div>
+  <div class="flag"><b>Keep debugging off on live sites.</b> These switches are meant for local and staging copies. A common safe setup elsewhere is debug on, display off and log on, which records errors without showing them to visitors. Back up or use a staging copy before changing anything.</div>
+
+  <h2 id="sec-src"><span class="num">✦</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>A classic template is PHP around HTML:</b> header, the Loop, footer.</li>
+    <li><b>The Loop:</b> <code class="inline">have_posts()</code> asks, <code class="inline">the_post()</code> advances and sets the current post, template tags print it, and an else branch handles "nothing found".</li>
+    <li><b>Template tags print or return:</b> the <code class="inline">the_</code> forms print; the <code class="inline">get_the_</code> forms return.</li>
+    <li><b>Secondary queries need a reset:</b> call <code class="inline">wp_reset_postdata()</code> after your own loop.</li>
+    <li><b>Change the main query with pre_get_posts,</b> guarded by admin, main-query and archive checks.</li>
+    <li><b>Escape late and match the function to the place:</b> html, attribute, url, textarea, or kses for allowed markup.</li>
+    <li><b>Debug in development only,</b> and keep error display off in production.</li>
+  </ul>
+  <p class="src"><b>Primary (WordPress developer resources).</b> <a href="https://developer.wordpress.org/themes/basics/the-loop/" target="_blank">The Loop</a> · <a href="https://developer.wordpress.org/reference/hooks/pre_get_posts/" target="_blank">pre_get_posts</a> · <a href="https://developer.wordpress.org/reference/functions/wp_reset_postdata/" target="_blank">wp_reset_postdata()</a> · <a href="https://developer.wordpress.org/apis/security/escaping/" target="_blank">Escaping output</a> · <a href="https://developer.wordpress.org/advanced-administration/debug/debug-wordpress/" target="_blank">Debugging in WordPress</a> · <a href="https://developer.wordpress.org/reference/classes/wp_query/" target="_blank">WP_Query</a></p>
+  <p class="src"><b>Checked 27 Oct 2026.</b> The handbook pages did not cover some details used here: the get_the_ return pairs and the WP_Query arguments are standard WordPress conventions from background knowledge (the WP_Query reference page could not be read in full). The demos, the guard table values and the escaping simulation are my own models, not WordPress itself.</p>
+
+  <footer>Classic PHP Themes and the Loop · WordPress for Front-End &amp; UI Developers · part of your Study Hub</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const POSTS=[{t:'Hello world',a:'Key',d:'Oct 21, 2026',e:'The first post on this site.',c:'Welcome. This is the full content of the first post.',img:'hello.jpg'},{t:'Spring launch',a:'Alex',d:'Oct 24, 2026',e:'What we shipped this spring.',c:'We launched three things this spring. Here is how.',img:'spring.jpg'},{t:'About our team',a:'Sam',d:'Oct 26, 2026',e:'Who we are.',c:'We are a small team that builds websites.',img:'team.jpg'}];
+
+/* ---------- loop stepper ---------- */
+(function(){
+  const SRC=['<?php if ( have_posts() ) : ?>','  <?php while ( have_posts() ) : the_post(); ?>','    <h2><?php the_title(); ?></h2>','  <?php endwhile; ?>','<?php else : ?>','  <p>No posts found.</p>','<?php endif; ?>'];
+  $('lp-src').innerHTML=SRC.map((l,i)=>'<span class="ln" data-l="'+(i+1)+'">'+esc(l)+'</span>').join('');
+  let steps=[], i=-1;
+  function build(){ steps=[]; const n=$('lp-empty').checked?0:POSTS.length;
+    if(n===0){ steps.push({l:1,cur:-1,out:'',note:'have_posts() is false: the query found nothing, so WordPress jumps to the else branch.'}); steps.push({l:6,cur:-1,out:'No posts found.\n',note:'The else branch prints a friendly message instead of a blank page.'}); steps.push({l:7,cur:-1,out:'No posts found.\n',note:'endif. The template carries on to the footer.'}); return; }
+    let out=''; steps.push({l:1,cur:-1,out:'',note:'have_posts() is true: the main query found '+n+' posts, so we enter the if branch.'});
+    for(let k=0;k<n;k++){ steps.push({l:2,cur:k,out:out,note:'have_posts() is still true, so the while loop runs. the_post() moves to post '+(k+1)+' and makes it the current post.'}); out+='<h2>'+POSTS[k].t+'</h2>\n'; steps.push({l:3,cur:k,out:out,note:'the_title() prints the title of the current post: "'+POSTS[k].t+'".'}); steps.push({l:4,cur:k,out:out,note:'endwhile sends us back to the top of the loop.'}); }
+    steps.push({l:2,cur:n,out:out,note:'have_posts() is now false: there are no more posts, so the loop ends.'}); steps.push({l:7,cur:n,out:out,note:'endif. Done. The template continues with the footer.'}); }
+  function draw(){ const s=steps[i]; document.querySelectorAll('#lp-src .ln').forEach(e=>e.classList.toggle('on',s&&+e.dataset.l===s.l));
+    const n=$('lp-empty').checked?0:POSTS.length; $('lp-res').innerHTML=n?POSTS.map((p,k)=>'<div class="lp-post '+(s&&s.cur===k?'cur':(s&&s.cur>k?'done':''))+'"><span>'+(k+1)+'. '+p.t+'</span><span class="small">'+(s&&s.cur===k?'current post':'')+'</span></div>').join(''):'<div class="small">0 posts found</div>';
+    $('lp-out').textContent=s?s.out:''; $('lp-note').textContent=s?s.note:'Press Step to run the template one line at a time.'; $('lp-step').disabled=i>=steps.length-1; }
+  $('lp-step').onclick=()=>{ if(i<steps.length-1){ i++; draw(); } }; $('lp-reset').onclick=()=>{ build(); i=-1; draw(); }; $('lp-empty').onchange=()=>{ build(); i=-1; draw(); };
+  build(); draw();
+})();
+
+/* ---------- template tags ---------- */
+(function(){
+  const TAGS=[['the_ID','id','ID'],['the_title','title','title'],['the_author','author','author'],['the_time','time','date'],['the_excerpt','excerpt','excerpt'],['the_post_thumbnail','thumb','thumbnail'],['the_content','content','content']];
+  const sel=$('tt-post'); POSTS.forEach((p,k)=>sel.add(new Option(p.t,k)));
+  let tag=1, mode='print'; const box=$('tt-tags');
+  TAGS.forEach(([n],k)=>{ const b=document.createElement('button'); b.type='button'; b.className='lp-tg'+(k===tag?' on':''); b.textContent=n+'()'; b.setAttribute('data-testid','tt-tag-'+n); b.onclick=()=>{ tag=k; box.querySelectorAll('.lp-tg').forEach(x=>x.classList.toggle('on',x===b)); draw(); }; box.appendChild(b); });
+  function val(k,p,idx){ return [String(idx+1),p.t,p.a,p.d,p.e,'<img src="'+p.img+'" alt="">',p.c][k]; }
+  function draw(){ const idx=+sel.value, p=POSTS[idx], name=TAGS[tag][0], v=val(tag,p,idx);
+    if(mode==='print'){ $('tt-code').innerHTML='<span class="ln">'+esc('<p><?php '+name+'(); ?></p>')+'</span>'; $('tt-out').textContent='<p>'+v+'</p>'; }
+    else { const g=name.replace(/^the_/,'get_the_'); $('tt-code').innerHTML='<span class="ln">'+esc('<?php $value = '+g+'(); ?>')+'</span><span class="ln">'+esc('<p><?php echo esc_html( $value ); ?></p>')+'</span>'; $('tt-out').textContent='<p>'+esc(v)+'</p>\n(returned first, then you decide how to print it)'; } }
+  sel.onchange=draw; document.querySelectorAll('#tt-mode button').forEach(b=>b.onclick=()=>{ mode=b.dataset.m; document.querySelectorAll('#tt-mode button').forEach(x=>x.classList.toggle('on',x===b)); draw(); }); draw();
+})();
+
+/* ---------- reset demo ---------- */
+(function(){
+  function draw(){ const reset=$('rs-on').checked;
+    $('rs-src').innerHTML=['<?php // the page is showing the article "Main article" ?>','$related = new WP_Query( array(','  \'posts_per_page\' => 3,','  \'category_name\'  => \'news\',','));','while ( $related->have_posts() ) :','  $related->the_post();','  the_title();      // related post titles','endwhile;',reset?'wp_reset_postdata();   // put the global post back':'// (no reset)','','the_title();        // what prints here?'].map(l=>'<span class="ln">'+esc(l||' ')+'</span>').join('');
+    $('rs-global').innerHTML=reset?'$post = "Main article"<br>the_title() prints: <b>Main article</b>':'$post = "Third related post"<br>the_title() prints: <b>Third related post</b>';
+    $('rs-note').innerHTML=reset?'<b>Correct.</b> After the custom loop, wp_reset_postdata() restored the global current post to the main query\'s, so the rest of the template talks about the right post.':'<b>The bug.</b> the_post() inside your loop changed the global current post, and nothing changed it back. The rest of the template now prints details of the last related post on the main article\'s page.'; }
+  $('rs-on').onchange=draw; draw();
+})();
+
+/* ---------- pre_get_posts guards ---------- */
+(function(){
+  const Q=[['Front end: product archive (main query)',0,1,1,true],['A sidebar widget listing recent products',0,0,0,false],['Admin: the Products list screen',1,1,0,false],['Front end: blog archive (main query)',0,1,0,false]];
+  function draw(){ const on=[$('pg-a').checked,$('pg-b').checked,$('pg-c').checked];
+    let h='<div class="lp-q h"><span>Query on the site</span><span class="t">admin?</span><span class="t">main?</span><span class="t">product archive?</span><span class="t">gets changed?</span></div>'; let bad=[];
+    Q.forEach(([n,adm,main,arch,intended])=>{ const ok=(!on[0]||adm===0)&&(!on[1]||main===1)&&(!on[2]||arch===1); const cls=ok?(intended?'hit':'bad'):''; if(ok&&!intended) bad.push(n); h+='<div class="lp-q"><span>'+n+'</span><span class="t">'+(adm?'yes':'no')+'</span><span class="t">'+(main?'yes':'no')+'</span><span class="t">'+(arch?'yes':'no')+'</span><span class="res '+cls+'">'+(ok?(intended?'changed (intended)':'changed (unintended)'):'untouched')+'</span></div>'; });
+    $('pg-table').innerHTML=h; $('pg-note').innerHTML=bad.length?'<b>Unintended changes:</b> '+bad.join('; ')+'. Without the right guards, your hook rewrites queries you never meant to touch, which is how a products tweak breaks the blog or the admin.':'<b>Only the product archive changes.</b> Each guard is a separate safety net: if one condition turned out not to hold, the others would still keep the change away from admin screens, secondary queries and other archives. Try switching two guards off at once.'; }
+  ['pg-a','pg-b','pg-c'].forEach(id=>$(id).onchange=draw); draw();
+})();
+
+/* ---------- escaping demo ---------- */
+(function(){
+  function eh(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+  function eu(s){ const t=String(s).trim(); return /^(https?:|mailto:|\/|#)/i.test(t)?eh(t):''; }
+  function draw(){ const v=$('es-in').value, ctx=$('es-ctx').value, on=$('es-on').checked; let html, src, danger;
+    if(ctx==='text'){ html='<h2>'+(on?eh(v):v)+'</h2>'; src='<h2><?php echo '+(on?'esc_html( $title )':'$title')+'; ?></h2>'; danger=!on&&/<\s*script|on\w+\s*=/i.test(v); }
+    else if(ctx==='attr'){ html='<input value="'+(on?eh(v):v)+'">'; src='<input value="<?php echo '+(on?'esc_attr( $title )':'$title')+'; ?>">'; danger=!on&&/"/.test(v); }
+    else { html='<a href="'+(on?eu(v):v)+'">Read more</a>'; src='<a href="<?php echo '+(on?'esc_url( $link )':'$link')+'; ?>">Read more</a>'; danger=!on&&/^\s*javascript:/i.test(v); }
+    $('es-code').innerHTML='<span class="ln">'+esc(src)+'</span>'; $('es-html').textContent=html;
+    $('es-note').innerHTML = on ? '<b>Safe.</b> The value was escaped for this place, so special characters arrive as harmless text'+(ctx==='url'&&!eu(v)?' (esc_url emptied an address with a disallowed scheme)':'')+'.' : (danger?'<b>Dangerous.</b> The raw value turned into live markup: a visitor\'s browser would run or act on it. This is how cross-site scripting happens.':'<b>Unescaped.</b> This particular value happens to be harmless, but the code is still unsafe: the next value may not be.'); }
+  ['es-in','es-ctx','es-on'].forEach(id=>$(id).addEventListener('input',draw)); $('es-on').addEventListener('change',draw); draw();
+  const O=['esc_html()','esc_attr()','esc_url()','esc_textarea()','wp_kses_post()'];
+  const Qz=[['Print a post title inside an h2.',0,'Text inside an element is esc_html().'],['Put a value in a data attribute: data-label="…".',1,'A value inside an HTML attribute is esc_attr().'],['Print the address of a link in an href or an image src.',2,'Any URL, including href and src, is esc_url().'],['Fill a textarea with saved text.',3,'Text inside a textarea element is esc_textarea().'],['Print the body of a post and keep the allowed formatting (bold, links, lists).',4,'wp_kses_post() strips everything except the HTML permitted in post content, so formatting survives.']];
+  let i=0, score=0, done=false; const box=$('scn'), nx=$('scn-next');
+  function show(){ if(i>=Qz.length){ box.innerHTML='<div class="tg">DONE</div><div class="say" style="border-left-color:var(--forest)">You matched '+score+' of '+Qz.length+'.</div><p class="small">Escape late, at the point of output, with the function that fits where the value lands.</p>'; nx.textContent='Again'; nx.disabled=false; nx.onclick=()=>{ i=0; score=0; nx.textContent='Next →'; nx.onclick=next; show(); }; $('scn-score').textContent=''; return; }
+    const q=Qz[i]; done=false; nx.disabled=true; box.innerHTML='<div class="tg">OUTPUT '+(i+1)+' / '+Qz.length+'</div><div class="say">'+q[0]+'</div><div class="opts">'+O.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'" data-testid="escape-option-'+k+'">'+o+'</button>').join('')+'</div><div class="why" id="why"></div>';
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(done) return; done=true; const k=+b.dataset.k, ok=k===q[1]; if(ok) score++; b.classList.add(ok?'good':'bad'); box.querySelector('[data-k="'+q[1]+'"]').classList.add('good'); $('why').innerHTML='<b>'+(ok?'Right. ':'Not quite. ')+'</b>'+q[2]; nx.disabled=false; $('scn-score').textContent=score+' of '+(i+1)+' matched'; }); }
+  function next(){ i++; show(); } nx.onclick=next; show();
+})();
+
+/* ---------- debug demo ---------- */
+(function(){
+  function draw(){ const a=$('db-a').checked, b=$('db-b').checked, c=$('db-c').checked;
+    $('db-code').innerHTML=['define( \'WP_DEBUG\', '+a+' );','define( \'WP_DEBUG_LOG\', '+b+' );','define( \'WP_DEBUG_DISPLAY\', '+c+' );'].map(l=>'<span class="ln">'+esc(l)+'</span>').join('');
+    const page=a&&c, file=a&&b; $('db-page').textContent=page?'Yes: warnings print into the page':'No'; $('db-page').style.color=page?'var(--bad)':'var(--good)'; $('db-file').textContent=file?'Yes: wp-content/debug.log':'No'; $('db-file').style.color=file?'var(--good)':'var(--ink-mute)';
+    $('db-note').innerHTML = !a ? '<b>Debug mode is off.</b> The log and display switches do nothing without WP_DEBUG. Notices and warnings are not reported (serious errors still can be).' : (c&&!b ? '<b>Visible errors, no record.</b> Fine on your own machine, but visitors would see raw warnings on a live site.' : (c&&b ? '<b>Both.</b> Handy locally: you see errors immediately and keep a log. Not for production.' : (b ? '<b>The recommended quiet setup:</b> errors are recorded for you and hidden from visitors.' : '<b>Debug on, but nothing shown or saved.</b> Turn on logging to capture errors without displaying them.'))); }
+  ['db-a','db-b','db-c'].forEach(id=>$(id).onchange=draw); draw();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

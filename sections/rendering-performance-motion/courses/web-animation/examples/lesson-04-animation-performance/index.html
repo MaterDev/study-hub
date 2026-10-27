@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Animation Performance — Lesson 04</title>
+  <style>
+/* ── Reset & tokens ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #f4f8fd;
+  --surface:  #ffffff;
+  --surface2: #353d5e;
+  --surface3: #f3f6fc;
+  --border:   #c3d3e6;
+  --text:     #2a3150;
+  --dim:      #525c83;
+  --faint:    #a9c1da;
+  --accent:   #6a55a3;
+  --cyan:     #2f7fa8;
+  --green:    #3a7a52;
+  --yellow:   #b8902e;
+  --orange:   #b8692e;
+  --red:      #b35c5c;
+  --radius:   8px;
+  --mono:     'JetBrains Mono','Fira Code',monospace;
+}
+html { font-size: 16px; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+/* ── Header ──────────────────────────────────────────────── */
+.app-header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.header-inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px 0; }
+.header-top { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.lesson-badge { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); background: rgba(124,110,255,.15); border: 1px solid rgba(124,110,255,.3); padding: 2px 8px; border-radius: 4px; }
+h1 { font-size: 1.1rem; font-weight: 700; }
+.subtitle { font-size: .78rem; color: var(--dim); font-family: var(--mono); }
+.tab-nav { display: flex; gap: 2px; }
+.tab { background: none; border: none; color: var(--dim); font-size: .82rem; font-weight: 600; padding: 8px 16px; cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; white-space: nowrap; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.app-main { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Shared controls ─────────────────────────────────────── */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.panel-label { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); display: block; margin-bottom: 8px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.stage-wrap { position: relative; }
+
+/* ── Stage ───────────────────────────────────────────────── */
+.stage {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; position: relative;
+}
+.stage-label {
+  position: absolute; top: 10px; left: 12px;
+  font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px; z-index: 2;
+}
+.stage-label.bad  { background: rgba(248,113,113,.2); color: var(--red); border: 1px solid rgba(248,113,113,.3); }
+.stage-label.good { background: rgba(74,222,128,.15); color: var(--green); border: 1px solid rgba(74,222,128,.25); }
+
+/* ── Tab 1: Comparison ───────────────────────────────────── */
+.compare-layout { display: flex; flex-direction: column; gap: 16px; }
+.compare-desc { font-size: .88rem; color: var(--dim); margin-bottom: 4px; }
+
+.track-stage { height: 70px; }
+.track { position: relative; height: 100%; }
+.ball {
+  width: 44px; height: 44px; border-radius: 50%;
+  position: absolute; top: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.ball-bad {
+  background: radial-gradient(circle at 35% 35%, #b35c5c, #f8e2e2);
+  box-shadow: 0 4px 16px rgba(248,113,113,.4);
+  animation: bad-left 2s linear infinite alternate;
+}
+.ball-good {
+  background: radial-gradient(circle at 35% 35%, #3a7a52, #e3f2e8);
+  box-shadow: 0 4px 16px rgba(74,222,128,.4);
+  left: 0;
+  animation: good-transform 2s linear infinite alternate;
+}
+@keyframes bad-left {
+  from { left: 4px; }
+  to   { left: calc(100% - 48px); }
+}
+@keyframes good-transform {
+  from { transform: translateX(4px); }
+  to   { transform: translateX(calc(var(--tw) - 48px)); }
+}
+
+.metrics-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;
+}
+.metric-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+}
+.metric-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--dim); margin-bottom: 6px; }
+.metric-val   { font-size: 1.4rem; font-weight: 800; font-family: var(--mono); }
+.metric-val.bad  { color: var(--red); }
+.metric-val.good { color: var(--green); }
+.metric-note  { font-size: .72rem; color: var(--faint); margin-top: 3px; }
+
+.pipeline-viz {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+}
+.pipe-pill {
+  font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 20px;
+}
+.pipe-pill.hit    { background: rgba(248,113,113,.2); color: var(--red); border: 1px solid rgba(248,113,113,.3); }
+.pipe-pill.skip   { background: rgba(61,70,112,.4); color: var(--faint); border: 1px solid var(--border); text-decoration: line-through; }
+.pipe-pill.gpu    { background: rgba(124,110,255,.15); color: var(--accent); border: 1px solid rgba(124,110,255,.3); }
+
+/* ── Sparkline ───────────────────────────────────────────── */
+.sparkline-wrap { margin-top: 12px; }
+.sparkline-label { font-size: .75rem; color: var(--dim); margin-bottom: 6px; }
+.sparkline { display: flex; gap: 2px; align-items: flex-end; height: 40px; }
+.spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height .1s; }
+
+/* ── Tab 2: will-change explorer ──────────────────────────── */
+.wc-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.wc-label { font-size: .82rem; color: var(--dim); }
+.wc-grid { display: grid; gap: 8px; margin-bottom: 14px; }
+.wc-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: .75rem; color: var(--dim); position: relative;
+  min-height: 60px; transition: transform .3s ease, opacity .3s ease;
+}
+.wc-card.promoted { border-color: var(--accent); }
+.wc-card.animating { animation: wc-float 1.5s ease-in-out infinite alternate; }
+@keyframes wc-float { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+.wc-badge {
+  position: absolute; top: 4px; right: 4px;
+  font-size: .65rem; font-weight: 700; padding: 1px 5px;
+  border-radius: 3px; background: rgba(124,110,255,.2); color: var(--accent);
+  border: 1px solid rgba(124,110,255,.3);
+}
+
+.mem-bar-wrap { margin-top: 12px; }
+.mem-bar-label { font-size: .78rem; color: var(--dim); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.mem-bar-track { height: 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+.mem-bar-fill { height: 100%; border-radius: 5px; transition: width .4s ease, background .3s; }
+
+.wc-info {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; font-size: .85rem;
+  line-height: 1.6; color: var(--dim);
+}
+.wc-info strong { color: var(--text); }
+
+/* ── Tab 3: Paint flash visualizer ───────────────────────── */
+.paint-layout { display: flex; gap: 20px; align-items: start; }
+.paint-controls { width: 220px; flex-shrink: 0; }
+.paint-stage { flex: 1; min-width: 0; }
+.paint-grid { display: grid; gap: 8px; }
+.paint-el {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 14px; font-size: .8rem;
+  color: var(--dim); transition: all .15s; position: relative;
+  overflow: hidden;
+}
+.paint-el::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(74,222,128,.35);
+  opacity: 0;
+  transition: opacity .08s;
+  pointer-events: none;
+  border-radius: 6px;
+}
+.paint-el.flashing::after { opacity: 1; }
+.paint-el.animated-transform { animation: pt-transform 1s ease-in-out infinite alternate; }
+.paint-el.animated-bg { animation: pt-bg 1s ease-in-out infinite alternate; }
+.paint-el.animated-size { animation: pt-size 1s ease-in-out infinite alternate; }
+@keyframes pt-transform { from { transform: scale(1); } to { transform: scale(1.05); } }
+@keyframes pt-bg { from { background: var(--surface); } to { background: #ece6f8; } }
+@keyframes pt-size { from { padding: 14px; } to { padding: 24px; } }
+
+.paint-count { position: absolute; top: 4px; right: 6px; font-size: .65rem; font-family: var(--mono); color: var(--faint); }
+
+.seg-ctrl { display: flex; gap: 3px; flex-wrap: wrap; }
+.seg {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--dim); font-size: .75rem; font-weight: 600;
+  padding: 5px 4px; cursor: pointer; text-align: center; transition: all .12s;
+}
+.seg.active { background: rgba(124,110,255,.15); border-color: var(--accent); color: var(--accent); }
+
+/* ── Tab 4: Layout thrashing demo ────────────────────────── */
+.thrash-layout { display: flex; gap: 20px; }
+.thrash-controls { width: 220px; flex-shrink: 0; }
+.thrash-stage { flex: 1; }
+.thrash-boxes { display: flex; gap: 3px; align-items: flex-end; height: 120px; margin-bottom: 12px; }
+.thrash-box {
+  flex: 1; background: var(--accent); border-radius: 3px 3px 0 0;
+  min-height: 20px; transition: height .05s;
+}
+.btn-primary {
+  width: 100%; background: var(--accent); border: none; border-radius: 6px;
+  color: #fff; font-size: .82rem; font-weight: 700; padding: 9px; cursor: pointer; margin-top: 8px;
+}
+.btn-primary:hover { opacity: .85; }
+.btn-secondary {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: .82rem; font-weight: 600;
+  padding: 9px; cursor: pointer; margin-top: 6px;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.perf-readout {
+  background: #eaf2fb; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px;
+  font-family: var(--mono); font-size: .8rem; line-height: 1.8;
+  margin-top: 10px; min-height: 80px;
+}
+.log-good { color: var(--green); }
+.log-bad  { color: var(--red); }
+.log-info { color: var(--dim); }
+
+/* ── Shared ──────────────────────────────────────────────── */
+.ctrl-section { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.ctrl-section:last-child { border-bottom: none; }
+.ctrl-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ctrl-val { font-family: var(--mono); font-size: 11px; color: var(--cyan); }
+input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+input[type=number] { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: var(--mono); font-size: .82rem; padding: 5px 8px; width: 70px; }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <span class="lesson-badge">Lesson 04</span>
+      <h1>CSS Animation Performance</h1>
+      <p class="subtitle">layout · paint · composite · will-change · thrashing · contain</p>
+    </div>
+    <nav class="tab-nav">
+      <button class="tab active" data-tab="compare">⚡ left vs transform</button>
+      <button class="tab" data-tab="willchange">◈ will-change</button>
+      <button class="tab" data-tab="paint">🎨 Paint Flash</button>
+      <button class="tab" data-tab="thrash">💥 Layout Thrashing</button>
+    </nav>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <!-- TAB 1: COMPARISON -->
+  <div class="tab-pane active" id="tab-compare">
+    <p class="compare-desc">Both balls move the same distance at the same speed. One triggers layout + paint every frame. The other runs entirely on the GPU compositor.</p>
+
+    <div class="two-col" style="margin-top:16px">
+
+      <div>
+        <div class="stage track-stage" style="margin-bottom:8px">
+          <div class="stage-label bad">❌ left</div>
+          <div class="track" id="track-bad">
+            <div class="ball ball-bad" id="ball-bad"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pipeline-viz">
+            <span class="pipe-pill hit">Style</span>
+            <span class="pipe-pill hit">Layout</span>
+            <span class="pipe-pill hit">Paint</span>
+            <span class="pipe-pill hit">Composite</span>
+          </div>
+          <div class="metrics-row">
+            <div class="metric-card">
+              <div class="metric-label">Pipeline stages hit</div>
+              <div class="metric-val bad">4 / 4</div>
+              <div class="metric-note">every frame</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Thread</div>
+              <div class="metric-val bad" style="font-size:1rem">Main thread</div>
+              <div class="metric-note">blocks JS</div>
+            </div>
+          </div>
+          <div class="sparkline-wrap">
+            <div class="sparkline-label">Simulated frame cost (ms) — bad</div>
+            <div class="sparkline" id="spark-bad"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="stage track-stage" style="margin-bottom:8px">
+          <div class="stage-label good">✓ transform</div>
+          <div class="track" id="track-good">
+            <div class="ball ball-good" id="ball-good"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pipeline-viz">
+            <span class="pipe-pill skip">Style</span>
+            <span class="pipe-pill skip">Layout</span>
+            <span class="pipe-pill skip">Paint</span>
+            <span class="pipe-pill gpu">Composite ✓</span>
+          </div>
+          <div class="metrics-row">
+            <div class="metric-card">
+              <div class="metric-label">Pipeline stages hit</div>
+              <div class="metric-val good">1 / 4</div>
+              <div class="metric-note">composite only</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Thread</div>
+              <div class="metric-val good" style="font-size:1rem">Compositor</div>
+              <div class="metric-note">never blocks JS</div>
+            </div>
+          </div>
+          <div class="sparkline-wrap">
+            <div class="sparkline-label">Simulated frame cost (ms) — good</div>
+            <div class="sparkline" id="spark-good"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <span class="panel-label">DevTools instruction</span>
+      <p style="font-size:.85rem; color:var(--dim); line-height:1.65; max-width:none">
+        1. Open DevTools → ⋮ → More tools → <strong style="color:var(--text)">Rendering</strong>. Enable <strong style="color:var(--text)">Paint flashing</strong>.<br>
+        2. Watch this page — the red ball's track will flash green. The green ball's track won't flash at all.<br>
+        3. Open <strong style="color:var(--text)">More tools → Layers</strong>. The green ball's element has its own compositor layer. Click it to see "Is an animated CSS transform target" as the promotion reason.
+      </p>
+    </div>
+  </div>
+
+  <!-- TAB 2: WILL-CHANGE -->
+  <div class="tab-pane" id="tab-willchange">
+    <div class="two-col">
+      <div>
+        <div class="panel" style="margin-bottom:16px">
+          <span class="panel-label">Layer count</span>
+          <div class="ctrl-section">
+            <div class="ctrl-row">
+              <span style="font-size:.82rem">Promoted elements</span>
+              <span class="ctrl-val" id="wc-count-val">0</span>
+            </div>
+            <input type="range" id="wc-count" min="0" max="50" value="0">
+          </div>
+          <div class="ctrl-section">
+            <div class="ctrl-row"><span style="font-size:.82rem">Animate them</span></div>
+            <div class="seg-ctrl">
+              <button class="seg active" data-wc-anim="off">Off</button>
+              <button class="seg" data-wc-anim="on">On</button>
+            </div>
+          </div>
+          <div class="mem-bar-wrap">
+            <div class="mem-bar-label">
+              <span>Estimated GPU memory</span>
+              <span id="wc-mem-val" style="color:var(--cyan)">0 MB</span>
+            </div>
+            <div class="mem-bar-track"><div class="mem-bar-fill" id="wc-mem-bar" style="width:0%;background:var(--green)"></div></div>
+          </div>
+        </div>
+        <div class="wc-info" id="wc-info">
+          <strong>0 layers promoted.</strong> No extra GPU memory used. Baseline state — compositor handles just the page root layer.
+        </div>
+      </div>
+      <div>
+        <div class="wc-grid" id="wc-grid" style="grid-template-columns: repeat(5, 1fr)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: PAINT FLASH -->
+  <div class="tab-pane" id="tab-paint">
+    <div class="paint-layout">
+      <div class="paint-controls panel">
+        <span class="panel-label">What to animate</span>
+        <div class="ctrl-section">
+          <div style="font-size:.78rem;color:var(--dim);margin-bottom:8px">Each card animates a different property. The flash overlay shows when the browser repaints that element.</div>
+          <div class="seg-ctrl" id="paint-mode" style="flex-direction:column;gap:4px">
+            <button class="seg active" data-pm="transform">transform only</button>
+            <button class="seg" data-pm="background">background-color</button>
+            <button class="seg" data-pm="size">padding / size</button>
+            <button class="seg" data-pm="all">all three</button>
+          </div>
+        </div>
+        <div class="ctrl-section">
+          <div style="font-size:.78rem;color:var(--dim);line-height:1.6">
+            <strong style="color:var(--text)">Green flash</strong> = browser repainted this element.<br><br>
+            <code style="font-size:.75rem;color:var(--cyan)">transform</code> never triggers paint — no flash.<br>
+            <code style="font-size:.75rem;color:var(--red)">background-color</code> and <code style="font-size:.75rem;color:var(--red)">padding</code> always trigger paint.
+          </div>
+        </div>
+        <div class="ctrl-section">
+          <div class="panel-label">Paint count</div>
+          <div id="total-paint-count" style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--yellow)">0</div>
+          <div style="font-size:.72rem;color:var(--faint);margin-top:2px">repaints since last switch</div>
+        </div>
+      </div>
+      <div class="paint-stage">
+        <div class="paint-grid" id="paint-grid" style="grid-template-columns: repeat(3, 1fr)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: LAYOUT THRASHING -->
+  <div class="tab-pane" id="tab-thrash">
+    <div class="thrash-layout">
+      <div class="thrash-controls panel">
+        <span class="panel-label">Configuration</span>
+        <div class="ctrl-section">
+          <div class="ctrl-row">
+            <span style="font-size:.82rem">Box count</span>
+            <span class="ctrl-val" id="thrash-count-val">30</span>
+          </div>
+          <input type="range" id="thrash-count" min="10" max="200" step="10" value="30">
+        </div>
+        <div class="ctrl-section">
+          <div class="panel-label">Approach</div>
+          <div class="seg-ctrl" style="flex-direction:column;gap:4px" id="thrash-mode">
+            <button class="seg active" data-tm="thrash">💥 Thrashing (read/write interleaved)</button>
+            <button class="seg" data-tm="batched">✓ Batched (reads then writes)</button>
+          </div>
+        </div>
+        <button class="btn-primary" id="btn-thrash-run">▶ Run once</button>
+        <button class="btn-secondary" id="btn-thrash-clear">Clear log</button>
+      </div>
+      <div class="thrash-stage">
+        <div class="thrash-boxes" id="thrash-boxes"></div>
+        <div class="panel-label">Performance log</div>
+        <div class="perf-readout" id="thrash-log">
+          <span class="log-info">Press "Run once" to measure layout cost...</span>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <span class="panel-label">What's happening</span>
+          <div id="thrash-explain" style="font-size:.82rem;color:var(--dim);line-height:1.65">
+            Select an approach and run it to see the explanation.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+'use strict';
+
+// ── Tab switching ────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── TAB 1: left vs transform ─────────────────────────────
+// Fix transform animation width using CSS custom property
+function setTrackWidth() {
+  const track = document.getElementById('track-good');
+  if (track) {
+    document.querySelector('.ball-good').style.setProperty('--tw', track.clientWidth + 'px');
+  }
+}
+setTrackWidth();
+window.addEventListener('resize', setTrackWidth);
+
+// Simulated frame-cost sparklines
+function makeSpark(containerId, gen) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  const BARS = 40;
+  const bars = Array.from({ length: BARS }, () => {
+    const b = document.createElement('div');
+    b.className = 'spark-bar';
+    wrap.appendChild(b);
+    return b;
+  });
+  let data = Array.from({ length: BARS }, gen);
+  function update() {
+    data.shift();
+    data.push(gen());
+    const max = Math.max(...data);
+    bars.forEach((b, i) => {
+      const h = (data[i] / max) * 38;
+      b.style.height = h + 'px';
+      b.style.background = data[i] > 10 ? (data[i] > 20 ? 'var(--red)' : 'var(--yellow)') : 'var(--green)';
+    });
+  }
+  setInterval(update, 120);
+}
+
+// Bad: high variance, often >16ms
+makeSpark('spark-bad', () => 8 + Math.random() * 24 + (Math.random() > .7 ? 15 : 0));
+// Good: low, consistent ~1ms
+makeSpark('spark-good', () => 0.5 + Math.random() * 1.5);
+
+// ── TAB 2: will-change ───────────────────────────────────
+const WC_COUNT = 50;
+const wcGrid = document.getElementById('wc-grid');
+const wcCards = [];
+let wcAnimOn = false;
+
+// Build grid cards
+for (let i = 0; i < WC_COUNT; i++) {
+  const card = document.createElement('div');
+  card.className = 'wc-card';
+  card.textContent = i + 1;
+  wcGrid.appendChild(card);
+  wcCards.push(card);
+}
+
+function updateWC() {
+  const count = +document.getElementById('wc-count').value;
+  document.getElementById('wc-count-val').textContent = count;
+
+  wcCards.forEach((card, i) => {
+    const promoted = i < count;
+    card.style.willChange = promoted ? 'transform' : 'auto';
+    card.classList.toggle('promoted', promoted);
+    card.classList.toggle('animating', promoted && wcAnimOn);
+    // Remove/re-add badge
+    const badge = card.querySelector('.wc-badge');
+    if (badge) badge.remove();
+    if (promoted) {
+      const b = document.createElement('span');
+      b.className = 'wc-badge';
+      b.textContent = 'layer';
+      card.appendChild(b);
+    }
+  });
+
+  // Estimate GPU memory: ~2MB per 100x60 card at 2x DPR
+  const approxMB = (count * 0.048).toFixed(1);
+  const pct = Math.min((count / WC_COUNT) * 100, 100);
+  document.getElementById('wc-mem-val').textContent = approxMB + ' MB';
+  const bar = document.getElementById('wc-mem-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = count > 30 ? 'var(--red)' : count > 15 ? 'var(--yellow)' : 'var(--green)';
+
+  const info = document.getElementById('wc-info');
+  if (count === 0) {
+    info.innerHTML = '<strong>0 layers promoted.</strong> No extra GPU memory. Baseline.';
+  } else if (count <= 10) {
+    info.innerHTML = `<strong>${count} layers promoted.</strong> Reasonable. Each card gets its own GPU texture. The compositor can move them without repainting. This is the intended use case.`;
+  } else if (count <= 30) {
+    info.innerHTML = `<strong style="color:var(--yellow)">${count} layers promoted.</strong> Getting expensive. ~${approxMB} MB of GPU memory reserved. On mobile this starts to compete with the framebuffer and other system textures.`;
+  } else {
+    info.innerHTML = `<strong style="color:var(--red)">${count} layers promoted — too many.</strong> ~${approxMB} MB of GPU memory. This is the "will-change abuse" pattern — you've likely made performance <em>worse</em> on mid-range devices by exhausting GPU memory. The browser may fall back to software compositing.`;
+  }
+}
+
+document.getElementById('wc-count').addEventListener('input', updateWC);
+document.querySelectorAll('[data-wc-anim]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-wc-anim]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    wcAnimOn = btn.dataset.wcAnim === 'on';
+    updateWC();
+  });
+});
+updateWC();
+
+// ── TAB 3: Paint flash ───────────────────────────────────
+const PAINT_ITEMS = [
+  { label: 'Card A', sub: 'transform: scale()' },
+  { label: 'Card B', sub: 'transform: scale()' },
+  { label: 'Card C', sub: 'transform: scale()' },
+  { label: 'Card D', sub: 'transform: scale()' },
+  { label: 'Card E', sub: 'transform: scale()' },
+  { label: 'Card F', sub: 'transform: scale()' },
+];
+
+const paintGrid = document.getElementById('paint-grid');
+const paintEls = [];
+let paintMode = 'transform';
+let paintCount = 0;
+let paintCountEl = document.getElementById('total-paint-count');
+
+PAINT_ITEMS.forEach((item) => {
+  const el = document.createElement('div');
+  el.className = 'paint-el';
+  el.innerHTML = `<strong style="color:var(--text)">${item.label}</strong><div style="font-size:.72rem;color:var(--faint);margin-top:4px;font-family:var(--mono)">${item.sub}</div><span class="paint-count">0</span>`;
+  paintGrid.appendChild(el);
+  paintEls.push({ el, count: 0 });
+});
+
+function applyPaintMode(mode) {
+  paintMode = mode;
+  paintCount = 0;
+  paintCountEl.textContent = '0';
+
+  paintEls.forEach(({ el }, i) => {
+    el.classList.remove('animated-transform', 'animated-bg', 'animated-size');
+    el.querySelector('.paint-count').textContent = '0';
+    const sub = el.querySelector('[style*="faint"]');
+
+    if (mode === 'transform') {
+      el.classList.add('animated-transform');
+      if (sub) sub.textContent = 'transform: scale()';
+    } else if (mode === 'background') {
+      el.classList.add('animated-bg');
+      if (sub) sub.textContent = 'background-color';
+    } else if (mode === 'size') {
+      el.classList.add('animated-size');
+      if (sub) sub.textContent = 'padding (layout!)';
+    } else {
+      // all
+      if (i < 2)      { el.classList.add('animated-transform'); if (sub) sub.textContent = 'transform'; }
+      else if (i < 4) { el.classList.add('animated-bg');        if (sub) sub.textContent = 'background-color'; }
+      else            { el.classList.add('animated-size');       if (sub) sub.textContent = 'padding'; }
+    }
+  });
+}
+
+// Simulate paint flash for non-transform elements
+setInterval(() => {
+  paintEls.forEach(({ el }, i) => {
+    const doesPaint = el.classList.contains('animated-bg') || el.classList.contains('animated-size');
+    if (doesPaint) {
+      el.classList.add('flashing');
+      paintCount++;
+      paintEls[i].count++;
+      el.querySelector('.paint-count').textContent = paintEls[i].count;
+      setTimeout(() => el.classList.remove('flashing'), 80);
+    }
+  });
+  paintCountEl.textContent = paintCount;
+}, 250);
+
+document.querySelectorAll('[data-pm]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-pm]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyPaintMode(btn.dataset.pm);
+  });
+});
+applyPaintMode('transform');
+
+// ── TAB 4: Layout thrashing ──────────────────────────────
+const thrashBoxWrap = document.getElementById('thrash-boxes');
+const thrashLog     = document.getElementById('thrash-log');
+const thrashExplain = document.getElementById('thrash-explain');
+let thrashMode = 'thrash';
+let thrashBoxCount = 30;
+
+function buildThrashBoxes() {
+  thrashBoxWrap.innerHTML = '';
+  for (let i = 0; i < thrashBoxCount; i++) {
+    const b = document.createElement('div');
+    b.className = 'thrash-box';
+    b.style.height = (20 + Math.random() * 100) + 'px';
+    b.style.background = `hsl(${240 + i * 4}, 60%, 60%)`;
+    thrashBoxWrap.appendChild(b);
+  }
+}
+
+document.getElementById('thrash-count').addEventListener('input', e => {
+  thrashBoxCount = +e.target.value;
+  document.getElementById('thrash-count-val').textContent = thrashBoxCount;
+  buildThrashBoxes();
+});
+
+document.querySelectorAll('[data-tm]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-tm]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    thrashMode = btn.dataset.tm;
+  });
+});
+
+document.getElementById('btn-thrash-run').addEventListener('click', () => {
+  const boxes = [...thrashBoxWrap.querySelectorAll('.thrash-box')];
+  const n = boxes.length;
+  let ms;
+
+  if (thrashMode === 'thrash') {
+    // Interleaved reads and writes — forces layout each iteration
+    const t0 = performance.now();
+    boxes.forEach(box => {
+      const h = box.offsetHeight;    // READ → forces layout flush
+      box.style.height = (h + 1) + 'px'; // WRITE
+    });
+    ms = (performance.now() - t0).toFixed(2);
+
+    const line = document.createElement('div');
+    line.className = 'log-bad';
+    line.textContent = `[thrash]   ${n} boxes · ${n} forced reflows · ${ms}ms`;
+    thrashLog.appendChild(line);
+    thrashLog.scrollTop = thrashLog.scrollHeight;
+
+    thrashExplain.innerHTML = `<strong style="color:var(--red)">Thrashing pattern:</strong> Each <code style="color:var(--cyan)">offsetHeight</code> read forces the browser to flush all pending layout work before returning a value. With ${n} boxes that's ${n} synchronous layout recalculations in ${ms}ms. In the DevTools Performance timeline this shows up as ${n} purple <em>"Forced reflow"</em> bars stacked inside one frame.`;
+  } else {
+    // Batched: all reads, then all writes
+    const t0 = performance.now();
+    const heights = boxes.map(box => box.offsetHeight); // All reads — one flush
+    heights.forEach((h, i) => { boxes[i].style.height = (h + 1) + 'px'; }); // All writes
+    ms = (performance.now() - t0).toFixed(2);
+
+    const line = document.createElement('div');
+    line.className = 'log-good';
+    line.textContent = `[batched]  ${n} boxes · 1 layout flush  · ${ms}ms`;
+    thrashLog.appendChild(line);
+    thrashLog.scrollTop = thrashLog.scrollHeight;
+
+    thrashExplain.innerHTML = `<strong style="color:var(--green)">Batched pattern:</strong> All ${n} reads happen first (one layout flush), then all ${n} writes are batched. The browser processes the writes lazily at the end of the task. Total: 1 layout calculation instead of ${n}. Result: <strong style="color:var(--green)">${ms}ms</strong> vs the thrashing version above.`;
+  }
+
+  // Recolor boxes
+  boxes.forEach(b => { b.style.background = thrashMode === 'thrash' ? 'var(--red)' : 'var(--green)'; });
+  setTimeout(buildThrashBoxes, 600);
+});
+
+document.getElementById('btn-thrash-clear').addEventListener('click', () => {
+  thrashLog.innerHTML = '<span class="log-info">Log cleared.</span>';
+  thrashExplain.textContent = 'Select an approach and run it to see the explanation.';
+  buildThrashBoxes();
+});
+
+buildThrashBoxes();
+</script>
+
+<link rel="stylesheet" href="../../../skin-anim.css">
+</body>
+</html>
