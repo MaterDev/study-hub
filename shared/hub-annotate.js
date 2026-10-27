@@ -84,6 +84,8 @@
     out += 'mark.hub-hl:not([data-c="green"]):not([data-c="blue"]){background:color-mix(in srgb, var(--ochre) 42%, transparent);}' +
       "mark.hub-hl[data-note]{border-bottom:2px dotted var(--ink,#2a3150);} mark.hub-hl[data-note]::after{content:'\\270E'; font-size:.72em; vertical-align:super; margin-left:2px; color:var(--ink,#2a3150);}" +
       "mark.hub-hl.hub-flash{outline:3px solid var(--ink,#2a3150); outline-offset:1px;}";
+    /* card-style controls are buttons, whose text browsers will not let you drag-select; allow it so they can be highlighted */
+    out += "button:not([disabled]),[role=button],summary,label{-webkit-user-select:text; user-select:text;} button *{-webkit-user-select:text; user-select:text;}";
     st.textContent = out; (doc.head || doc.documentElement).appendChild(st);
   }
 
@@ -201,6 +203,25 @@
   }
   function attachDoc(doc){
     if(docsSeen.indexOf(doc) !== -1) return; docsSeen.push(doc);
+    /* browsers will not drag-select text inside a button (card-style controls), so do it by hand: drag across the text selects it, and the click that follows is swallowed so the card does not toggle */
+    if(doc !== document && doc.caretRangeFromPoint){
+      var drag = null, swallow = false;
+      doc.addEventListener("mousedown", function(ev){
+        drag = null; if(ev.button !== 0 || !ev.target.closest || !ev.target.closest("button,[role=button],summary")) return;
+        var r = doc.caretRangeFromPoint(ev.clientX, ev.clientY); if(r) drag = {r:r, x:ev.clientX, y:ev.clientY, moved:false};
+      });
+      doc.addEventListener("mousemove", function(ev){
+        if(!drag || !(ev.buttons & 1)) return;
+        if(!drag.moved && Math.abs(ev.clientX-drag.x) + Math.abs(ev.clientY-drag.y) < 5) return;
+        var e = doc.caretRangeFromPoint(ev.clientX, ev.clientY); if(!e) return; drag.moved = true;
+        var rg = doc.createRange();
+        if(drag.r.compareBoundaryPoints(Range.START_TO_START, e) > 0){ rg.setStart(e.startContainer, e.startOffset); rg.setEnd(drag.r.startContainer, drag.r.startOffset); }
+        else { rg.setStart(drag.r.startContainer, drag.r.startOffset); rg.setEnd(e.startContainer, e.startOffset); }
+        var sel = doc.getSelection(); sel.removeAllRanges(); sel.addRange(rg);
+      });
+      doc.addEventListener("mouseup", function(){ if(drag && drag.moved) swallow = true; drag = null; setTimeout(function(){ swallow = false; }, 0); });
+      doc.addEventListener("click", function(ev){ if(swallow){ ev.stopPropagation(); ev.preventDefault(); swallow = false; } }, true);
+    }
     doc.addEventListener("contextmenu", function(ev){ if(ev.shiftKey) return; if(openMenu(doc, ev)) ev.preventDefault(); });
     if(doc !== document){
       doc.addEventListener("mousedown", function(){ if(!pop.hidden) closePop(); closeMenu(); });
