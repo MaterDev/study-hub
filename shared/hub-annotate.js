@@ -55,6 +55,14 @@
       r.surroundContents(m);
     });
   }
+  var dirty = false, BLOCK = "p,li,div,button,summary,h1,h2,h3,h4,h5,h6,td,th,section,article,blockquote,pre,dd,dt,figcaption";
+  /* the saved quote joins text from neighbouring elements without a space; build a readable version for display */
+  function displayOf(root, id){
+    var ms = root.querySelectorAll('mark[data-hl="'+id+'"]'); if(!ms.length) return "";
+    var out = "", prev = null;
+    ms.forEach(function(m){ var b = m.closest(BLOCK); if(prev && b !== prev && out && !/\s$/.test(out) && !/^\s/.test(m.textContent)) out += " "; out += m.textContent; prev = b; });
+    return out.replace(/\s+/g, " ").trim();
+  }
   function applyTo(entry){
     var root = entry.root; if(!root.isConnected) return;
     ensureStyle(root.ownerDocument);
@@ -65,6 +73,8 @@
       full = fullText(root); var i = locate(full, a); if(i < 0) return;
       try{ wrap(root, i, i+a.quote.length, a); }catch(e){}
     });
+    if(entry.page == null) anns.forEach(function(a){ var d = displayOf(root, a.id); if(d && d !== (a.display || a.quote)){ a.display = d; dirty = true; } });
+    if(dirty){ dirty = false; mirror(); try{ fetch("/__hub/api/annotations", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({doc:entry.doc, items:store.items[entry.doc]||[]})}).catch(function(){}); }catch(e){} emit(); }
   }
   function unwrap(id){
     roots.forEach(function(e){ if(!e.root.isConnected) return;
@@ -271,7 +281,7 @@
   function askDelete(id, rect){ pinned = true; popId = id; popAnchor = rect; editing = false; confirming = true; renderPop(); }
   function renderPop(){
     var f = find(popId); if(!f){ pop.hidden = true; return; } var a = f.ann;
-    var q = a.quote.length>120 ? a.quote.slice(0,120)+"…" : a.quote;
+    var qt = a.display || a.quote, q = qt.length>120 ? qt.slice(0,120)+"…" : qt;
     var h = '<div class="hn-arrow"></div><p class="hn-quote" data-testid="note-quote">“'+q.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];})+'”</p>';
     if(confirming){
       h += '<p class="hn-note" data-testid="note-confirm-text">Delete this highlight'+(a.note?' and its note':'')+'?</p><div class="hn-row"><span class="grow"></span><button type="button" class="hn-btn" data-a="cancel" data-testid="note-delete-cancel">Cancel</button><button type="button" class="hn-btn warn" data-a="confirmdel" data-testid="note-delete-confirm">Delete</button></div>';

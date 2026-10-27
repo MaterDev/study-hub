@@ -168,7 +168,7 @@
       items.forEach(function(a){
         var col = ({yellow:"var(--ochre)",green:"var(--forest)",blue:"var(--cobalt)"}[a.color]||"var(--ochre)");
         html += '<div class="nt-item" data-id="'+a.id+'" data-doc="'+esc(g.doc)+'" data-kind="'+g.kind+'" data-page="'+(a.page||"")+'" data-rid="'+(g.id||"")+'" style="border-left-color:'+col+'" data-testid="notes-item-'+a.id+'">'+
-          '<div class="nt-q">“'+esc(a.quote.length>180?a.quote.slice(0,180)+"…":a.quote)+'”</div>';
+          '<div class="nt-q">“'+esc((a.display||a.quote).length>180?(a.display||a.quote).slice(0,180)+"…":(a.display||a.quote))+'”</div>';
         if(editNote===a.id){
           html += '<div class="hn-tools"><button type="button" class="hn-btn" data-cmd="bold" aria-label="Bold" data-testid="notes-bold"><b>B</b></button><button type="button" class="hn-btn" data-cmd="italic" aria-label="Italic" data-testid="notes-italic"><i>I</i></button><button type="button" class="hn-btn" data-cmd="insertUnorderedList" aria-label="Bulleted list" data-testid="notes-list-btn">&bull;&nbsp;List</button></div>'+
             '<div class="hn-ed nt-ed" contenteditable="true" data-ph="Write a note…" aria-label="Note" data-testid="notes-editor-'+a.id+'">'+(a.note||"")+'</div>'+
