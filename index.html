@@ -80,7 +80,8 @@
   .hs-section.active .hs-section-title{color:#fff;}
 
   /* ── Main ── */
-  .hub-main{flex:1; min-width:0; position:relative; overflow:hidden;}
+  .hub-main{flex:1; min-width:0; position:relative; overflow:hidden; box-sizing:border-box; padding:0 12px; background:var(--sky-2);}
+  @media (max-width:640px){ .hub-main{padding:0;} }
   iframe{position:relative; z-index:1; width:100%; height:100%; border:none; background:var(--sky-2); display:none;}
   .warp{position:absolute; inset:0; z-index:30; pointer-events:none; background:var(--outline); clip-path:circle(0% at 50% 50%);}
   .warp.go{animation:warp .6s steps(8) both;}
