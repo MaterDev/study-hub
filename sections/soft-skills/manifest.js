@@ -122,7 +122,17 @@
               "The book itself, to verify details before quoting"
             ]
           },
-          "standard": "v1"
+          "standard": "v1",
+          "readings": [
+            {
+              "id": "trusted-advisor-summary",
+              "kind": "pdf",
+              "tab": "The summary",
+              "title": "Soundview summary: The Trusted Advisor (March 2001)",
+              "file": "sections/soft-skills/readings/trusted-advisor-summary.pdf",
+              "credit": "Soundview Executive Book Summaries, vol. 23, no. 3, part 2 (March 2001), of Maister, Green and Galford, The Trusted Advisor. Copyright remains with the publisher."
+            }
+          ]
         }
       ]
     }
