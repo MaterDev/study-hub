@@ -137,7 +137,7 @@
     var r = readings.filter(function(x){ return x.id===id; })[0]; if(!r) return;
     if(r.kind==="notes") return openNotes(r);
     var switching = !current || current.id !== r.id;
-    body.style.background = ""; current = r; drawer.classList.add("open"); titleEl.textContent = r.title; creditEl.textContent = r.credit || ""; drawTabs();
+    body.style.background = ""; current = r; drawer.classList.add("open"); titleEl.textContent = r.title; creditEl.textContent = r.credit || ""; if(r.url){ creditEl.appendChild(document.createTextNode(" ")); var ca = document.createElement("a"); ca.href = r.url; ca.target = "_blank"; ca.rel = "noopener"; ca.textContent = "Original source"; ca.setAttribute("data-testid","reader-source-link"); creditEl.appendChild(ca); } drawTabs();
     if(!switching && pages.length){ placeTabs(); return; }
     var saved = load()[r.id] || {page:1, frac:0, zoom:1}; zoom = saved.zoom || 1;
     body.innerHTML = '<div class="rd-msg">Loading…</div>'; pages = []; posEl.textContent = "";
