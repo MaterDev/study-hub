@@ -130,7 +130,8 @@
               "tab": "The summary",
               "title": "Soundview summary: The Trusted Advisor (March 2001)",
               "file": "sections/soft-skills/readings/trusted-advisor-summary.pdf",
-              "credit": "Soundview Executive Book Summaries, vol. 23, no. 3, part 2 (March 2001), of Maister, Green and Galford, The Trusted Advisor. Copyright remains with the publisher."
+              "url": "https://static1.squarespace.com/static/5245a9c6e4b038b5cbe9a684/t/597e36a2ebbd1ad69448444d/1501443746421/The+Trusted+Advisor+Summary.pdf",
+              "credit": "Soundview Executive Book Summaries, vol. 23, no. 3, part 2 (March 2001), of Maister, Green and Galford, The Trusted Advisor. Copy obtained from the address linked here; copyright remains with the publisher."
             }
           ]
         }
