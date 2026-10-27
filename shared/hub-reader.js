@@ -41,6 +41,7 @@
       '<span class="rd-title" data-testid="reader-title"></span>'+
       '<span class="rd-pos" data-testid="reader-position"></span>'+
       '<button type="button" class="rd-btn" data-act="out" title="Zoom out" aria-label="Zoom out" data-testid="reader-zoom-out">&minus;</button>'+
+      '<button type="button" class="rd-btn" data-act="reset" title="Reset zoom to fit width" aria-label="Reset zoom" data-testid="reader-zoom-reset">Reset</button>'+
       '<button type="button" class="rd-btn" data-act="in" title="Zoom in" aria-label="Zoom in" data-testid="reader-zoom-in">+</button>'+
       '<button type="button" class="rd-btn" data-act="close" title="Close reading" aria-label="Close reading" data-testid="reader-close">&times;</button>'+
     '</div>'+
@@ -202,6 +203,7 @@
 
   drawer.addEventListener("click", function(e){ var b = e.target.closest("[data-act]"); if(!b) return; var a = b.dataset.act;
     if(a==="close") close();
+    else if(a==="reset"){ var k0 = pos(); zoom = 1; layout(k0); updatePos(); }
     else if(a==="in"||a==="out"){ var keep = pos(); zoom = Math.min(3, Math.max(.5, zoom + (a==="in"?.2:-.2))); layout(keep); updatePos(); } });
   var t; body.addEventListener("scroll", function(){ clearTimeout(t); t = setTimeout(updatePos, 120); posEl.textContent = pages.length ? "p. "+pos().page+" / "+pages.length : ""; });
   window.addEventListener("resize", function(){ clearTimeout(window.__rdR); window.__rdR = setTimeout(function(){ if(drawer.classList.contains("open") && pages.length) layout(); placeTabs(); }, 150); });
