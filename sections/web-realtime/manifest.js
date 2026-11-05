@@ -355,7 +355,27 @@
             ]
           }
         }
-      ]
+      ],
+      "kind": "module",
+      "label": "MODULE",
+      "home": "shared/outline.html?id=wr-foundations",
+      "dates": {
+        "created": "2026-07-21",
+        "updated": "2026-07-24",
+        "verified": "2026-07-24"
+      },
+      "history": [
+        {
+          "date": "2026-11-05",
+          "note": "Grouped as a module so every top-level item in the sidebar is one"
+        }
+      ],
+      "rebuild": {
+        "brief": "Module grouping of existing lessons; rebuild the lessons from their own briefs.",
+        "basis": [
+          "The lessons in this module"
+        ]
+      }
     },
     {
       "type": "group",
@@ -813,7 +833,27 @@
             ]
           }
         }
-      ]
+      ],
+      "kind": "module",
+      "label": "MODULE",
+      "home": "shared/outline.html?id=wr-spike",
+      "dates": {
+        "created": "2026-07-24",
+        "updated": "2026-07-24",
+        "verified": "2026-07-24"
+      },
+      "history": [
+        {
+          "date": "2026-11-05",
+          "note": "Grouped as a module so every top-level item in the sidebar is one"
+        }
+      ],
+      "rebuild": {
+        "brief": "Module grouping of existing lessons; rebuild the lessons from their own briefs.",
+        "basis": [
+          "The lessons in this module"
+        ]
+      }
     },
     {
       "type": "group",

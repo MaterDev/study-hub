@@ -135,7 +135,27 @@
             }
           ]
         }
-      ]
+      ],
+      "kind": "module",
+      "label": "MODULE",
+      "home": "shared/outline.html?id=ss-trust",
+      "dates": {
+        "created": "2026-10-26",
+        "updated": "2026-10-26",
+        "verified": "2026-10-26"
+      },
+      "history": [
+        {
+          "date": "2026-11-05",
+          "note": "Grouped as a module so every top-level item in the sidebar is one"
+        }
+      ],
+      "rebuild": {
+        "brief": "Module grouping of existing lessons; rebuild the lessons from their own briefs.",
+        "basis": [
+          "The lessons in this module"
+        ]
+      }
     }
   ]
 });

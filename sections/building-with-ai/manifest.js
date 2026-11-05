@@ -183,7 +183,27 @@
             ]
           }
         }
-      ]
+      ],
+      "kind": "module",
+      "label": "MODULE",
+      "home": "shared/outline.html?id=bai-orchestration",
+      "dates": {
+        "created": "2026-07-22",
+        "updated": "2026-08-26",
+        "verified": "2026-08-26"
+      },
+      "history": [
+        {
+          "date": "2026-11-05",
+          "note": "Grouped as a module so every top-level item in the sidebar is one"
+        }
+      ],
+      "rebuild": {
+        "brief": "Module grouping of existing lessons; rebuild the lessons from their own briefs.",
+        "basis": [
+          "The lessons in this module"
+        ]
+      }
     },
     {
       "type": "group",
@@ -277,7 +297,27 @@
           "standard": "v1"
         }
       ],
-      "standard": "v1"
+      "standard": "v1",
+      "kind": "module",
+      "label": "MODULE",
+      "home": "shared/outline.html?id=bai-context",
+      "dates": {
+        "created": "2026-10-23",
+        "updated": "2026-10-23",
+        "verified": "2026-10-23"
+      },
+      "history": [
+        {
+          "date": "2026-11-05",
+          "note": "Grouped as a module so every top-level item in the sidebar is one"
+        }
+      ],
+      "rebuild": {
+        "brief": "Module grouping of existing lessons; rebuild the lessons from their own briefs.",
+        "basis": [
+          "The lessons in this module"
+        ]
+      }
     },
     {
       "type": "group",
@@ -425,60 +465,117 @@
             ]
           }
         }
-      ]
+      ],
+      "kind": "module",
+      "label": "MODULE",
+      "home": "shared/outline.html?id=bai-models",
+      "dates": {
+        "created": "2026-07-22",
+        "updated": "2026-07-28",
+        "verified": "2026-07-28"
+      },
+      "history": [
+        {
+          "date": "2026-11-05",
+          "note": "Grouped as a module so every top-level item in the sidebar is one"
+        }
+      ],
+      "rebuild": {
+        "brief": "Module grouping of existing lessons; rebuild the lessons from their own briefs.",
+        "basis": [
+          "The lessons in this module"
+        ]
+      }
     },
     {
-      "type": "lesson",
-      "id": "devflows",
+      "type": "group",
+      "kind": "module",
+      "label": "MODULE",
+      "id": "ai-workflows",
       "title": "Individual AI Workflows",
-      "file": "sections/working-learning-with-ai/lessons/multi-agent-dev-workflows.html",
+      "summary": "Getting faster as one person without losing quality or a heavy process.",
       "pip": "#437a58",
-      "blurb": "Getting faster as one person without losing quality or a heavy process.",
-      "anchors": [
+      "home": "shared/outline.html?id=ai-workflows",
+      "children": [
         {
-          "id": "df-bottleneck",
-          "title": "Your real bottleneck",
-          "anchor": "sec1"
-        },
-        {
-          "id": "df-ladder",
-          "title": "The maturity ladder",
-          "anchor": "sec2"
-        },
-        {
-          "id": "df-tech",
-          "title": "Techniques by payoff",
-          "anchor": "sec3"
-        },
-        {
-          "id": "df-day",
-          "title": "Day-in-the-life",
-          "anchor": "sec4"
-        },
-        {
-          "id": "df-plan",
-          "title": "Plan-then-execute",
-          "anchor": "sec5"
-        },
-        {
-          "id": "df-quality",
-          "title": "Keeping quality high",
-          "anchor": "sec6"
-        },
-        {
-          "id": "df-fail",
-          "title": "Anti-patterns",
-          "anchor": "sec7"
-        },
-        {
-          "id": "df-start",
-          "title": "Start next week",
-          "anchor": "sec8"
-        },
-        {
-          "id": "df-sources",
-          "title": "Sources",
-          "anchor": "sec9"
+          "type": "lesson",
+          "id": "devflows",
+          "title": "Individual AI Workflows",
+          "file": "sections/working-learning-with-ai/lessons/multi-agent-dev-workflows.html",
+          "pip": "#437a58",
+          "blurb": "Getting faster as one person without losing quality or a heavy process.",
+          "anchors": [
+            {
+              "id": "df-bottleneck",
+              "title": "Your real bottleneck",
+              "anchor": "sec1"
+            },
+            {
+              "id": "df-ladder",
+              "title": "The maturity ladder",
+              "anchor": "sec2"
+            },
+            {
+              "id": "df-tech",
+              "title": "Techniques by payoff",
+              "anchor": "sec3"
+            },
+            {
+              "id": "df-day",
+              "title": "Day-in-the-life",
+              "anchor": "sec4"
+            },
+            {
+              "id": "df-plan",
+              "title": "Plan-then-execute",
+              "anchor": "sec5"
+            },
+            {
+              "id": "df-quality",
+              "title": "Keeping quality high",
+              "anchor": "sec6"
+            },
+            {
+              "id": "df-fail",
+              "title": "Anti-patterns",
+              "anchor": "sec7"
+            },
+            {
+              "id": "df-start",
+              "title": "Start next week",
+              "anchor": "sec8"
+            },
+            {
+              "id": "df-sources",
+              "title": "Sources",
+              "anchor": "sec9"
+            }
+          ],
+          "dates": {
+            "created": "2026-07-22",
+            "updated": "2026-07-22",
+            "verified": "2026-07-22"
+          },
+          "history": [
+            {
+              "date": "2026-07-22",
+              "note": "Created, researched"
+            },
+            {
+              "date": "2026-10-23",
+              "note": "Restyled: SNES pastel theme (visual only)"
+            },
+            {
+              "date": "2026-10-23",
+              "note": "Moved to Working & Learning with AI"
+            }
+          ],
+          "rebuild": {
+            "brief": "How individual developers use multi-agent / AI workflows day to day.",
+            "basis": [
+              "Practitioner write-ups and vendor docs (as of creation)"
+            ]
+          }
         }
       ],
       "dates": {
@@ -488,22 +585,14 @@
       },
       "history": [
         {
-          "date": "2026-07-22",
-          "note": "Created, researched"
-        },
-        {
-          "date": "2026-10-23",
-          "note": "Restyled: SNES pastel theme (visual only)"
-        },
-        {
-          "date": "2026-10-23",
-          "note": "Moved to Working & Learning with AI"
+          "date": "2026-11-05",
+          "note": "Grouped as a module so every top-level item in the sidebar is one"
         }
       ],
       "rebuild": {
-        "brief": "How individual developers use multi-agent / AI workflows day to day.",
+        "brief": "Module grouping of existing lessons; rebuild the lessons from their own briefs.",
         "basis": [
-          "Practitioner write-ups and vendor docs (as of creation)"
+          "The lessons in this module"
         ]
       }
     },
@@ -841,7 +930,8 @@
           "standard": "v1"
         }
       ],
-      "standard": "v1"
+      "standard": "v1",
+      "label": "MODULE"
     }
   ]
 });
