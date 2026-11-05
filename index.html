@@ -308,6 +308,9 @@
   .hs-read.is-read{background:var(--pc) !important; border-color:var(--outline) !important; box-shadow:0 0 0 2px #fff, 0 0 0 3px var(--forest);}
   .hs-read:focus-visible{outline:2px solid var(--plum); outline-offset:3px;}
   .hs-lesson:has(.hs-read.is-read) .hs-lesson-title{color:var(--ink-mute);}
+  .hs-group-label .gname{flex:1; min-width:0;}
+  .hs-group-label .hs-count{color:#e8eeff; font-size:.66rem;} .hs-group-label .hs-readcount{color:#b9f5d0;} .hs-group-label .hs-readcount.all{background:#1f6b45; color:#fff;}
+  .hub-sidebar.collapsed .hs-group-label .hs-count{display:none;}
   .hs-readcount{flex:none; font-family:var(--font-mono); font-size:.62rem; color:var(--forest); font-weight:700;}
   .hs-readcount.all{background:#cfe9d8; border-radius:3px; padding:0 3px;}
   .hub-sidebar.collapsed .hs-readcount{display:none;}
@@ -463,7 +466,7 @@ function buildGroup(g, depth){
   const wrap = el("div","hs-grp" + (mod?" module":"") + (isOpen(g.id)?" open":""));
   wrap.dataset.group = g.id; wrap.style.setProperty("--d", depth);
   const c = hubCount(g.children), total = c.built + c.stub;
-  const count = c.stub ? '<span class="hs-count" title="'+c.built+' built, '+c.stub+' stubs">'+c.built+'/'+total+'</span>' : '';
+  const count = '<span class="hs-count" title="'+c.built+' built of '+total+' lessons'+(c.stub?' ('+c.stub+' still stubs)':'')+'">'+c.built+'/'+total+'</span>';
   const date = mod && g.dates ? '<span class="hs-date" title="Created '+esc(g.dates.created)+' · last updated '+esc(g.dates.updated)+'">'+hubShortDate(g.dates.updated)+'</span>' : '';
   const btn = el("div","hs-grp-btn", CHEVRON + '<span class="hs-grp-title">'+esc(g.title.replace(/^(Module|Course):\s*/,""))+'</span>'+count+date+(mod?'<span class="hs-mod">'+esc(g.label==="COURSE"?"CRS":"MOD")+'</span>':''));
   btn.title = g.title + (g.summary ? " — " + g.summary : "");
@@ -486,7 +489,8 @@ function buildNav(){
   SECTIONS.forEach((s, si) => {
     const sec = el("div","hs-sec" + (isOpen("sec:"+s.id) || !ui.open.length && si===0 ? " open":""));
     sec.dataset.sectionId = s.id;
-    const head = el("div","hs-group-label", '<span class="world">W'+(si+1)+'</span><span class="gname">'+esc(s.title)+'</span>'+CHEVRON);
+    const sc = hubCount(s.children), stot = sc.built + sc.stub;
+    const head = el("div","hs-group-label", '<span class="world">W'+(si+1)+'</span><span class="gname">'+esc(s.title)+'</span><span class="hs-count hs-count-sec" data-testid="section-count-'+esc(s.id)+'" title="'+sc.built+' built of '+stot+' lessons in this section'+(sc.stub?' ('+sc.stub+' still stubs)':'')+'">'+sc.built+'/'+stot+'</span>'+CHEVRON);
     head.title = s.summary;
     head.addEventListener("click", () => {
       if(sidebar.classList.contains("collapsed")){ setCollapsed(false); }
@@ -693,6 +697,13 @@ function paintRead(){
     const e = INDEX[g.dataset.group]; if(!e) return; const ids = builtIds(e.node.children); if(!ids.length || !hubProgress.available) return;
     const btn = g.querySelector(":scope > .hs-grp-btn"); let tag = btn.querySelector(".hs-readcount");
     if(!tag){ tag = el("span","hs-readcount"); btn.insertBefore(tag, btn.querySelector(".hs-count, .hs-date, .hs-mod")); }
+    const r = hubProgress.readCount(ids); tag.textContent = "✓"+r+"/"+ids.length; tag.classList.toggle("all", r===ids.length);
+    tag.title = r+" of "+ids.length+" built lessons read";
+  });
+  document.querySelectorAll(".hs-sec").forEach(sec => {
+    const e = SECTIONS.find(x => x.id===sec.dataset.sectionId); if(!e || !hubProgress.available) return; const ids = builtIds(e.children); if(!ids.length) return;
+    const head = sec.querySelector(":scope > .hs-group-label"); let tag = head.querySelector(".hs-readcount");
+    if(!tag){ tag = el("span","hs-readcount"); head.insertBefore(tag, head.querySelector(".hs-count-sec")); }
     const r = hubProgress.readCount(ids); tag.textContent = "✓"+r+"/"+ids.length; tag.classList.toggle("all", r===ids.length);
     tag.title = r+" of "+ids.length+" built lessons read";
   });
