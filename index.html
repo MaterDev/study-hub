@@ -47,6 +47,9 @@
   .hs-done-n{background:#e4002b; color:#fff; border-radius:8px; padding:2px 5px; font-size:.42rem;} .hs-done-n:empty{display:none;}
   .hub-sidebar.collapsed .hs-done-toggle{display:none;}
   .hub-sidebar.hide-done .hs-grp.hs-done:not(.hs-keep){display:none;}
+  .hs-hidden-note{display:none; align-items:center; gap:8px; padding:6px 18px 6px 24px; font-family:var(--font-ui); font-size:.76rem; color:var(--ink); cursor:pointer;}
+  .hub-sidebar.hide-done .hs-hidden-note{display:flex;} .hs-hidden-note:hover{background:rgba(255,255,255,.1);} .hs-hn-t{flex:1; opacity:.85;}
+  .hs-hidden-note .hs-readcount{color:var(--good);} .hs-hidden-note .hs-count{color:var(--ink);}
   .hs-sec-note{display:none; padding:8px 18px 4px; font-family:var(--font-ui); font-size:.78rem; color:#e8eeff; opacity:.8;}
   .hub-sidebar.hide-done .hs-sec.all-done .hs-sec-note{display:block;}
   .hs-toggle{flex-shrink:0; width:30px; height:30px; border-radius:5px; border:3px solid var(--outline); background:var(--gold); color:var(--ink);
@@ -309,7 +312,7 @@
   .hs-read:focus-visible{outline:2px solid var(--plum); outline-offset:3px;}
   .hs-lesson:has(.hs-read.is-read) .hs-lesson-title{color:var(--ink-mute);}
   .hs-group-label .gname{flex:1; min-width:0;}
-  .hs-group-label .hs-count{color:#e8eeff; font-size:.66rem;} .hs-group-label .hs-readcount{color:#b9f5d0;} .hs-group-label .hs-readcount.all{background:#1f6b45; color:#fff;}
+  .hs-group-label .hs-count{color:var(--ink); font-size:.66rem;} .hs-group-label .hs-readcount{color:var(--good);} .hs-group-label .hs-readcount.all{background:var(--good-soft);}
   .hub-sidebar.collapsed .hs-group-label .hs-count{display:none;}
   .hs-readcount{flex:none; font-family:var(--font-mono); font-size:.62rem; color:var(--forest); font-weight:700;}
   .hs-readcount.all{background:#cfe9d8; border-radius:3px; padding:0 3px;}
@@ -730,10 +733,26 @@ function applyDone(){
   document.querySelectorAll(".hs-sec").forEach(sec => {
     const body = sec.querySelector(":scope > .hs-sec-body"); if(!body) return;
     const kids = [...body.children].filter(c => c.classList.contains("hs-grp") || c.classList.contains("hs-lesson"));
-    const all = kids.length>0 && kids.every(c => c.classList.contains("hs-done") && !c.classList.contains("hs-keep"));
-    sec.classList.toggle("all-done", all);
-    if(!body.querySelector(":scope > .hs-sec-note")) body.appendChild(el("div","hs-sec-note","All modules here are complete."));
+    sec.classList.toggle("all-done", kids.length>0 && kids.every(c => c.classList.contains("hs-done") && !c.classList.contains("hs-keep")));
+    const old = body.querySelector(":scope > .hs-sec-note"); if(old) old.remove();
   });
+  /* hidden modules still count: a note row carries their numbers so the rows you can see always add up to the parent's totals */
+  document.querySelectorAll(".hs-hidden-note").forEach(n => n.remove());
+  if(ui.hideDone){
+    document.querySelectorAll(".hs-sec-body, .hs-grp-body").forEach(body => {
+      const hid = [...body.children].filter(c => c.classList.contains("hs-grp") && c.classList.contains("hs-done") && !c.classList.contains("hs-keep"));
+      if(!hid.length) return;
+      let built=0, total=0, read=0;
+      hid.forEach(g => { const e = INDEX[g.dataset.group]; if(!e) return; const c = hubCount(e.node.children), ids = builtIds(e.node.children);
+        built += c.built; total += c.built + c.stub; read += hubProgress.readCount(ids); });
+      const note = el("div","hs-hidden-note", '<span class="hs-hn-t">+ '+hid.length+' completed hidden</span><span class="hs-readcount all">✓'+read+'/'+built+'</span><span class="hs-count">'+built+'/'+total+'</span>');
+      note.setAttribute("role","button"); note.tabIndex = 0; note.dataset.testid = "hidden-completed-note"; note.setAttribute("data-testid","hidden-completed-note");
+      note.title = hid.length+" completed module"+(hid.length>1?"s are":" is")+" hidden: "+read+" of "+built+" built lessons read, "+built+" of "+total+" lessons built. Click to show them.";
+      const reveal = () => { ui.hideDone = false; saveUI(); applyDone(); };
+      note.addEventListener("click", reveal); note.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); reveal(); } });
+      body.appendChild(note);
+    });
+  }
   const t = document.getElementById("done-toggle"); if(!t) return;
   t.setAttribute("aria-pressed", String(!ui.hideDone));
   t.title = ui.hideDone ? "Completed modules are hidden. Click to show them." : "Completed modules are shown. Click to hide them.";
