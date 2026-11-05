@@ -40,6 +40,15 @@
   .hs-head{flex-shrink:0; height:54px; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:0 12px 0 18px; border-bottom:3px solid rgba(255,255,255,.3);}
   .hs-title{font-family:var(--font-pixel); font-size:.6rem; letter-spacing:.05em; color:#fff1bf; white-space:nowrap;}
   .hub-sidebar.collapsed .hs-title{display:none;}
+  .hs-done-toggle{margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-family:var(--font-pixel); font-size:.42rem; letter-spacing:.04em; color:#fff1bf; background:#232a4a; border:2px solid #fff1bf; border-radius:4px; padding:6px 8px; cursor:pointer; white-space:nowrap; box-shadow:0 2px 0 rgba(0,0,0,.45);}
+  .hs-done-toggle:hover{background:#34407a;} .hs-done-toggle:active{transform:translateY(2px); box-shadow:none;}
+  .hs-done-toggle[aria-pressed="true"]{background:#fff1bf; color:#232a4a; border-color:#232a4a;}
+  .hs-done-toggle[aria-pressed="true"]:hover{background:#ffe48a;}
+  .hs-done-n{background:#e4002b; color:#fff; border-radius:8px; padding:2px 5px; font-size:.42rem;} .hs-done-n:empty{display:none;}
+  .hub-sidebar.collapsed .hs-done-toggle{display:none;}
+  .hub-sidebar.hide-done .hs-grp.hs-done:not(.hs-keep){display:none;}
+  .hs-sec-note{display:none; padding:8px 18px 4px; font-family:var(--font-ui); font-size:.78rem; color:#e8eeff; opacity:.8;}
+  .hub-sidebar.hide-done .hs-sec.all-done .hs-sec-note{display:block;}
   .hs-toggle{flex-shrink:0; width:30px; height:30px; border-radius:5px; border:3px solid var(--outline); background:var(--gold); color:var(--ink);
     display:flex; align-items:center; justify-content:center; box-shadow:0 3px 0 var(--outline); cursor:pointer;}
   .hs-toggle:active{transform:translateY(3px); box-shadow:none;}
@@ -328,6 +337,7 @@
     <aside class="hub-sidebar" id="sidebar">
       <div class="hs-head">
         <span class="hs-title">STAGE SELECT</span>
+        <button type="button" class="hs-done-toggle" id="done-toggle" data-testid="toggle-completed" aria-pressed="false" title="Show completed modules"><span id="done-label">SHOW DONE</span><span class="hs-done-n" id="done-n" data-testid="completed-count"></span></button>
         <button class="hs-toggle" id="collapse-toggle" title="Collapse sidebar" aria-label="Collapse sidebar">
           <svg class="hs-toggle-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>
@@ -377,7 +387,7 @@
    Node types: group {children, kind?:"module", home?} · lesson {file, anchors}
    ============================================================ */
 const UI_KEY = "learnhub-ui-v2";
-let ui = {collapsed:false, open:[]};
+let ui = {collapsed:false, open:[], hideDone:true};
 try{ ui = Object.assign(ui, JSON.parse(localStorage.getItem(UI_KEY)) || {}); }catch(e){}
 function saveUI(){ try{ localStorage.setItem(UI_KEY, JSON.stringify(ui)); }catch(e){} }
 function isOpen(k){ return ui.open.includes(k); }
@@ -580,6 +590,7 @@ function markActive(lessonId, anchorId, groupId, sectionId){
   document.querySelectorAll(".hs-section").forEach(r => r.classList.toggle("active", !!anchorId && r.dataset.section===anchorId));
   document.querySelectorAll(".hs-grp").forEach(g => g.classList.toggle("active", g.dataset.group===groupId));
   document.querySelectorAll(".hs-sec").forEach(s => s.classList.toggle("active", s.dataset.sectionId===sectionId && !lessonId && !groupId));
+  applyDone();
 }
 function revealPath(entry){
   const sec = document.querySelector('.hs-sec[data-section-id="'+entry.section.id+'"]');
@@ -685,7 +696,40 @@ function paintRead(){
     const r = hubProgress.readCount(ids); tag.textContent = "✓"+r+"/"+ids.length; tag.classList.toggle("all", r===ids.length);
     tag.title = r+" of "+ids.length+" built lessons read";
   });
+  applyDone();
 }
+
+/* ---------- completed modules: hidden by default, shown with the toggle ----------
+   A module counts as complete when it has no stubs and every built lesson in it is marked read.
+   The module you are currently in stays visible so you never lose your place. */
+function moduleComplete(node){
+  if(!hubProgress.available) return false;
+  const c = hubCount(node.children), ids = builtIds(node.children);
+  return c.stub===0 && ids.length>0 && hubProgress.readCount(ids)===ids.length;
+}
+function applyDone(){
+  sidebar.classList.toggle("hide-done", !!ui.hideDone);
+  let hidden = 0;
+  document.querySelectorAll(".hs-grp.module").forEach(g => {
+    const e = INDEX[g.dataset.group]; const done = !!e && moduleComplete(e.node);
+    g.classList.toggle("hs-done", done);
+    g.classList.toggle("hs-keep", done && !!g.querySelector(".hs-lesson.active, .hs-grp.active, :scope.active"));
+    if(done && !g.classList.contains("hs-keep")) hidden++;
+  });
+  document.querySelectorAll(".hs-sec").forEach(sec => {
+    const body = sec.querySelector(":scope > .hs-sec-body"); if(!body) return;
+    const kids = [...body.children].filter(c => c.classList.contains("hs-grp") || c.classList.contains("hs-lesson"));
+    const all = kids.length>0 && kids.every(c => c.classList.contains("hs-done") && !c.classList.contains("hs-keep"));
+    sec.classList.toggle("all-done", all);
+    if(!body.querySelector(":scope > .hs-sec-note")) body.appendChild(el("div","hs-sec-note","All modules here are complete."));
+  });
+  const t = document.getElementById("done-toggle"); if(!t) return;
+  t.setAttribute("aria-pressed", String(!ui.hideDone));
+  t.title = ui.hideDone ? "Completed modules are hidden. Click to show them." : "Completed modules are shown. Click to hide them.";
+  document.getElementById("done-label").textContent = ui.hideDone ? "SHOW DONE" : "HIDE DONE";
+  document.getElementById("done-n").textContent = ui.hideDone && hidden ? String(hidden) : "";
+}
+document.getElementById("done-toggle").addEventListener("click", () => { ui.hideDone = !ui.hideDone; saveUI(); applyDone(); });
 
 /* ---------- boot ---------- */
 hubLoadSections("sections/", secs => {

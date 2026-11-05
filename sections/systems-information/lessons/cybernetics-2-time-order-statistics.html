@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. Time, order and statistics</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<style>
+  :root{ --accent:var(--cobalt); --accent-soft:var(--cobalt-soft); }
+  .cy2-stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm);}
+  .cy2-btn{background:var(--cobalt); color:#fff; border:2px solid var(--cobalt); border-radius:8px; padding:8px 14px; font-family:var(--font-ui); font-weight:700; font-size:.82rem; cursor:pointer;}
+  .cy2-btn.alt{background:var(--surface); border:2px solid var(--line-strong); color:var(--ink); font-weight:600;}
+  .cy2-btn[aria-pressed=true]{background:var(--cobalt); border-color:var(--cobalt); color:#fff;}
+  .cy2-btn:focus-visible, .cy2-seg button:focus-visible, .cy2-ctl input:focus-visible, .cy2-ctl select:focus-visible{outline:3px solid var(--ochre); outline-offset:2px;}
+  .cy2-small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .cy2-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0;}
+  .cy2-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); min-width:0; flex:1 1 200px;}
+  .cy2-ctl input[type=range]{width:100%; accent-color:var(--cobalt);}
+  .cy2-ctl select{border:2px solid var(--line-strong); border-radius:6px; background:var(--surface); color:var(--ink); padding:6px 8px; font:600 .8rem var(--font-ui); text-transform:none; letter-spacing:0; max-width:100%;}
+  .cy2-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start;}
+  @media(max-width:700px){.cy2-two{grid-template-columns:minmax(0,1fr);}}
+  .cy2-box{border:2px solid var(--outline); border-radius:12px; padding:10px 12px; background:var(--surface); font-family:var(--font-ui); font-size:.86rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .cy2-box h5{margin:0 0 6px; font-family:var(--font-pixel); font-size:.44rem; letter-spacing:.05em; color:var(--ink-mute); line-height:1.6;}
+  .cy2-note{font-family:var(--font-ui); font-size:.88rem; color:var(--ink); min-height:2.6em; margin-top:8px;}
+  .cy2-seg{display:flex; flex-wrap:wrap; border:2px solid var(--outline); border-radius:8px; overflow:hidden;}
+  .cy2-seg button{border:0; border-right:2px solid var(--outline); background:var(--paper); color:var(--ink); padding:8px 12px; font:700 .78rem var(--font-ui); cursor:pointer; flex:1 1 auto;}
+  .cy2-seg button[aria-pressed=true]{background:var(--cobalt); color:#fff;}
+  .cy2-big{font:800 1.3rem var(--font-ui); color:var(--ink);}
+  .cy2-cv{display:block; width:100%; height:auto; border:2px solid var(--outline); border-radius:8px; background:var(--paper);}
+  .cy2-cv.sq{max-width:420px; aspect-ratio:1/1;}
+  .cy2-lab{display:inline-block; font:800 .62rem var(--font-ui); letter-spacing:.06em; text-transform:uppercase; padding:1px 7px; border-radius:6px; border:2px solid var(--line-strong); vertical-align:1px; color:var(--ink); white-space:nowrap;}
+  .cy2-lab.w{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .cy2-lab.l{border-color:var(--ochre); background:var(--ochre-soft);}
+  .cy2-lab.m{border-color:var(--plum); background:var(--plum-soft);}
+  .cy2-cmp{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin:14px 0;}
+  @media(max-width:620px){.cy2-cmp{grid-template-columns:minmax(0,1fr);}}
+  .cy2-side{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); color:var(--ink); font-family:var(--font-ui); font-size:.88rem; min-width:0;}
+  .cy2-side h4{margin:0 0 6px; font:800 .95rem var(--font-ui); color:var(--ink);}
+  .cy2-side ul{margin:6px 0 0; padding-left:18px;} .cy2-side li{margin:3px 0;}
+  .cy2-side.a{border-left:8px solid var(--cobalt);} .cy2-side.b{border-left:8px solid var(--ochre);}
+  .cy2-srow{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:8px 12px; align-items:center; padding:10px 0; border-top:1px solid var(--line); font-family:var(--font-ui); font-size:.88rem; color:var(--ink);}
+  .cy2-srow:first-child{border-top:0;}
+  .cy2-sbtns{display:flex; gap:6px; flex-wrap:wrap;}
+  .cy2-sfb{grid-column:1 / -1; font-size:.84rem; color:var(--ink); min-height:0;}
+  .cy2-sfb.ok{border-left:5px solid var(--forest); padding-left:10px;} .cy2-sfb.no{border-left:5px solid var(--vermil); padding-left:10px;}
+  @media(max-width:620px){.cy2-srow{grid-template-columns:minmax(0,1fr);}}
+  .cy2-list{margin:6px 0 0; padding-left:18px; font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
+  .cy2-bars{display:grid; gap:6px; margin-top:8px;}
+  .cy2-bar{display:grid; grid-template-columns:96px minmax(0,1fr) 40px; gap:8px; align-items:center; font:700 .76rem var(--font-ui); color:var(--ink);}
+  .cy2-bar i{display:block; height:14px; border-radius:4px; background:var(--cobalt); border:1px solid var(--outline);}
+  .cy2-acc{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0;}
+  @media(max-width:560px){.cy2-acc{grid-template-columns:minmax(0,1fr);}}
+  .cy2-chip{border:2px solid var(--line-strong); border-radius:10px; padding:8px 10px; background:var(--paper); font-family:var(--font-ui); text-align:center; min-width:0;}
+  .cy2-chip b{display:block; font-size:1.05rem; color:var(--ink);} .cy2-chip span{font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute);}
+  dl.cy2-dl{margin:0;} dl.cy2-dl dt{font:800 .68rem var(--font-ui); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute); margin-top:8px;} dl.cy2-dl dd{margin:2px 0 0; font-family:var(--font-ui); font-size:.88rem; color:var(--ink);}
+  .cy2-svg{display:block; width:100%; max-width:300px; height:auto; border:2px solid var(--outline); border-radius:8px; background:var(--paper);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Time, Order and Statistics</h1>
+  <p class="subtitle">Why Wiener opens his book by arguing that the physics of the living world, and of messages, is a physics of probability distributions in one-way time, and what the average over many cases does and does not tell you about one case.</p>
+
+  <div class="toc" data-testid="cy2-toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Two skies: astronomy and meteorology</a></li>
+      <li><a href="#sec2">Which kind of time? (exercise)</a></li>
+      <li><a href="#sec3">A gas in a box: one path and a whole ensemble (interactive)</a></li>
+      <li><a href="#sec4">Gibbs, averages and the ergodic idea (interactive)</a></li>
+      <li><a href="#sec5">Groups and invariance: what a shift in time leaves alone (interactive)</a></li>
+      <li><a href="#sec6">Entropy, Maxwell's demon, and the road to information (interactive)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <p class="cy2-small" data-testid="cy2-legend">Three labels mark who is speaking. <span class="cy2-lab w">Wiener</span> is a claim from the book, paraphrased, with printed page numbers (the reading tab on the right edge of the hub shows the book). <span class="cy2-lab l">Later</span> is a development after 1948 or 1961, or a modern statement from a source I fetched. <span class="cy2-lab m">Mine</span> is my own synthesis or an illustration. This lesson stands on its own.</p>
+
+  <h2 id="sec1"><span class="num">1</span> Two skies: astronomy and meteorology</h2>
+  <p class="lead"><span class="cy2-lab w">Wiener</span> Chapter I begins with a children's song about counting stars and clouds. His point is that the two sciences of the sky are opposites. A star is a definite object you can list in a catalogue. A cloud is not: the meteorologist has no use for a cloud as a thing with a lasting identity, and reports instead a statistical statement such as the percentage of the sky overcast, with the cloud type (p. 44).</p>
+  <p><span class="cy2-lab w">Wiener</span> He then draws the deeper contrast. Planetary astronomy was the pattern for classical physics, and in it the future, after a fashion, repeats the past: the laws are unchanged if time t is replaced by minus t, so a film of the planets run backward is still a possible film of planets. A film of turbulence in a thunderhead run backward looks plainly wrong (pp. 45-46).</p>
+  <div class="cy2-cmp" data-testid="cy2-compare">
+    <div class="cy2-side a" data-testid="cy2-compare-astro">
+      <h4>Solar system</h4>
+      <ul>
+        <li>Few bodies, very unequal in size, loosely coupled (p. 46).</li>
+        <li>Positions, velocities and masses very well known; computing past and future is easy and precise in principle (pp. 46-47).</li>
+        <li>Time can be run either way; the future repeats the past (p. 45).</li>
+      </ul>
+    </div>
+    <div class="cy2-side b" data-testid="cy2-compare-meteo">
+      <h4>Weather</h4>
+      <ul>
+        <li>An enormous number of nearly equal particles, many closely coupled (p. 46).</li>
+        <li>An exact record of the starting state is impossible. Words like cloud, temperature and turbulence describe a distribution of possible situations, of which one is actual (p. 47).</li>
+        <li>Time has a direction; all that can be predicted is a probability distribution, and even that fades with time (p. 47).</li>
+      </ul>
+    </div>
+  </div>
+  <p><span class="cy2-lab w">Wiener</span> The sharpest passage for this lesson is on pp. 47-48. Even in a Newtonian system where time is perfectly reversible, questions of probability and prediction give answers that differ between past and future, because the questions differ. You prepare a system in the past with some quantities fixed and others known only by a distribution, and then you look at the distribution of outcomes later. Running that backward would mean waiting for an extremely rare coincidence. His summary is that "we are directed in time" (p. 48).</p>
+  <p><span class="cy2-lab w">Wiener</span> From there he widens the claim. Even gravitational astronomy has frictional, running-down processes, as in tidal evolution (pp. 50-51). Biology is full of one-way processes: birth is not the reverse of death, and evolution runs from the simple to the complex (pp. 51-52). He ties this to Maxwell, Boltzmann and Gibbs, who reduced thermodynamics to statistical mechanics (p. 53), and to Bergson, whose irreversible time of evolution, where something new happens, he sets against the reversible time of Newtonian physics (p. 54). He concludes that machines that sense and act, such as thermostats and fire-control systems, live in the same Bergsonian time as organisms, and that the theory of such machines is statistical, belonging to Gibbs rather than Newton (p. 62).</p>
+  <p><span class="cy2-lab m">Mine</span> The word "Bergsonian" is Wiener's shorthand. I use it here only as a label for one-way, statistical time, not as an endorsement of Bergson's philosophy, which the chapter does not examine in detail.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Which kind of time?</h2>
+  <p>Eight processes, all taken from Chapter I. For each, decide whether a film of it run backward would look like a possible film (it "reads the same both ways") or whether the process "has a direction". Feedback cites the page.</p>
+  <div class="cy2-stage" data-testid="cy2-sort">
+    <div id="cy2-sort-rows" data-testid="cy2-sort-rows"></div>
+    <div class="cy2-row">
+      <span class="cy2-big" id="cy2-sort-score" data-testid="cy2-sort-score" aria-live="polite">0 of 8 answered</span>
+      <button type="button" class="cy2-btn alt" id="cy2-sort-reset" data-testid="cy2-sort-reset">Clear answers</button>
+    </div>
+  </div>
+  <p class="cy2-small"><span class="cy2-lab m">Mine</span> The grouping into two bins is my simplification of Wiener's contrast. He himself says most sciences lie between the extremes, though nearer meteorology than astronomy (p. 50), and that no science conforms precisely to the Newtonian pattern (p. 51).</p>
+
+  <h2 id="sec3"><span class="num">3</span> A gas in a box: one path and a whole ensemble</h2>
+  <p><span class="cy2-lab w">Wiener</span> Gibbs's key idea, in Wiener's telling, is to stop asking about one individual system with exactly known starting positions and momenta. Instead assume a distribution over the starting conditions that are not fully known. Newton's laws then carry that distribution forward and give a distribution for any later time, from which one can say what will happen with probability one or zero (p. 66).</p>
+  <p><span class="cy2-lab l">Later</span> A modern account puts the same tension this way: the underlying dynamics are time-reversal invariant, so every allowed process has an allowed reverse, yet the approach to equilibrium looks one-way. Loschmidt raised this reversibility objection in 1876 (Stanford Encyclopedia, section 4.3). Gibbs's ensemble, in that account, is a collection of copies of the whole system that differ in their state, with a distribution giving the probability of finding the system in each region (section 6.1).</p>
+  <p><span class="cy2-lab m">Mine</span> The widget below is a deliberately simplified illustration of both facts. Particles do not collide with one another, they only bounce off the walls, so every path is exactly reversible. The box and the numbers are illustrative.</p>
+  <ul>
+    <li><b>Single trajectory:</b> one particle with a drawn trail. Run it backward and it retraces its path exactly.</li>
+    <li><b>Ensemble:</b> 400 copies of the particle, all prepared at time 0 in a small blob with random velocities. The number shown is a coarse-grained spread, my stand-in for entropy: 0 when all copies sit in one cell of an 8 by 8 grid, near 1 when they fill the box evenly. (Wiener defines entropy as the logarithm of the probability measure of a region of phase space, p. 80. My measure is simpler.)</li>
+  </ul>
+  <div class="cy2-stage" data-testid="cy2-gas">
+    <div class="cy2-seg" role="group" aria-label="Choose a view">
+      <button type="button" data-mode="one" aria-pressed="true" data-testid="cy2-gas-mode-one">Single trajectory</button>
+      <button type="button" data-mode="ens" aria-pressed="false" data-testid="cy2-gas-mode-ens">Ensemble of 400</button>
+    </div>
+    <div class="cy2-two" style="margin-top:12px">
+      <canvas class="cy2-cv sq" id="cy2-gas-cv" width="360" height="360" data-testid="cy2-gas-canvas" role="img" aria-label="A square box containing a moving particle or a cloud of particles"></canvas>
+      <div>
+        <div class="cy2-row">
+          <button type="button" class="cy2-btn" id="cy2-gas-fwd" data-testid="cy2-gas-forward">Run forward</button>
+          <button type="button" class="cy2-btn" id="cy2-gas-back" data-testid="cy2-gas-backward">Run backward</button>
+          <button type="button" class="cy2-btn alt" id="cy2-gas-pause" data-testid="cy2-gas-pause">Pause</button>
+        </div>
+        <label class="cy2-ctl">Time t (prepared at 0): <span id="cy2-gas-tv" data-testid="cy2-gas-tv"></span>
+          <input type="range" id="cy2-gas-t" min="-8" max="8" step="0.05" value="0" data-testid="cy2-gas-time"></label>
+        <div class="cy2-row">
+          <button type="button" class="cy2-btn alt" id="cy2-gas-rev" data-testid="cy2-gas-reverse">Reverse all velocities here</button>
+          <button type="button" class="cy2-btn alt" id="cy2-gas-rev-err" data-testid="cy2-gas-reverse-error">Reverse, with a 5% error</button>
+          <button type="button" class="cy2-btn alt" id="cy2-gas-reset" data-testid="cy2-gas-reset">Reset</button>
+        </div>
+        <div class="cy2-box"><h5>READOUT</h5><div id="cy2-gas-read" data-testid="cy2-gas-readout" aria-live="polite"></div></div>
+      </div>
+    </div>
+    <div id="cy2-gas-curvebox" data-testid="cy2-gas-curvebox" hidden>
+      <div class="cy2-small" style="margin-top:12px">Spread of the cloud against time. The vertical line is the time shown above.</div>
+      <canvas class="cy2-cv" id="cy2-gas-curve" width="640" height="170" data-testid="cy2-gas-curve" role="img" aria-label="Graph of the cloud's spread against time"></canvas>
+    </div>
+    <div class="cy2-note" id="cy2-gas-note" data-testid="cy2-gas-note" aria-live="polite"></div>
+  </div>
+  <p><span class="cy2-lab m">Mine</span> What to try. In the ensemble view, run forward and then backward from time 0: the cloud spreads in both directions, because the cloud was prepared at 0 and the dynamics do not care which way you look. The one-way arrow comes from the question you ask, which is Wiener's point on pp. 47-48: you fix the past and ask about the future. Now run forward to about t = 5, press "Reverse all velocities here", and run forward again: the cloud contracts back into a blob, exactly as the single path retraces. Redo it with the 5% error and the blob does not come back as sharp. Real gases have collisions, which magnify such errors enormously. That magnification is background physics that I did not model or fetch a source for here.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Gibbs, averages and the ergodic idea</h2>
+  <p><span class="cy2-lab w">Wiener</span> Wiener's second chapter says that two men who never knew of each other made one piece of mathematics. Gibbs, in New Haven, built statistical mechanics. Lebesgue, in Paris, built a stronger theory of integration, and Wiener says it is Lebesgue's work that answers the questions Gibbs asked, by showing that the Gibbs theory contains no contradiction (pp. 65-67). The point he needs is about measure: an event can have probability zero and still occur, as when a point-sized bullet hits some specific spot. You can add up probabilities over a list that runs first, second, third and so on, but not over every conceivable case at once (pp. 66-67).</p>
+  <p><span class="cy2-lab w">Wiener</span> Here is the idea this lesson most wants you to hold. Gibbs's theory contains two kinds of average. A <b>phase average</b> (today usually called an ensemble average) is an average over all the possible states of the system, weighted by a measure that does not change as the system evolves. A <b>time average</b> follows one system for a long time and averages along the way (pp. 69-70). Gibbs saw that the two should be related, and he was, in Wiener's judgement, right about that, and entirely wrong, in Wiener's strong words, about how to show it (p. 70). Gibbs's own hypothesis was that almost every path passes through every state; he named it the ergodic hypothesis. Wiener says there is no significant case where it is true, and that the weaker "quasi-ergodic" version says nothing about how long a system spends near each point (p. 71).</p>
+  <p><span class="cy2-lab w">Wiener</span> What fixed this was the work of Koopman, von Neumann and Birkhoff around 1930 (pp. 70-71). Their ergodic theorems say that the long-run average along one trajectory converges. If the system is <b>ergodic</b>, which Wiener defines as leaving invariant no set of states with measure other than 0 or 1, then the limit is the same constant for almost every starting point, and it equals the ensemble average (pp. 78-79). He calls this an adequate justification for interchanging the two averages. If the system is not ergodic, it splits into ergodic pieces (p. 79). He gives a physical example: a mixture of distinct states where one or another exists at a given time, not both (p. 80).</p>
+  <p><span class="cy2-lab l">Later</span> The Stanford Encyclopedia states the same equivalence in modern words: ergodicity is equivalent to the infinite-time average of a function equalling its phase average for almost all initial states. It adds that ergodicity is a stringent condition that many systems, including solids and the ideal gas, fail to meet, so it cannot explain the approach to equilibrium across the board, and it presents typicality-based accounts as alternatives (sections 4.4 and 6.2). So Wiener's chapter gives a clean statement of the ergodic idea, but his optimism that it justifies Gibbs's method should not be read as the last word.</p>
+  <p><span class="cy2-lab m">Mine</span> In plain words: the ensemble average asks what many copies of the system look like at one moment. The time average asks what one copy looks like over a very long time. They agree when one copy, in the long run, visits all its possible states in the right proportions. They disagree when the copies are of different kinds that never turn into each other. The simulator below uses three simple processes of my own choosing. It is not from the book.</p>
+  <div class="cy2-stage" data-testid="cy2-ergodic">
+    <div class="cy2-seg" role="group" aria-label="Choose a process">
+      <button type="button" data-em="flip" aria-pressed="true" data-testid="cy2-e-mode-flip">A switch that flips now and then</button>
+      <button type="button" data-em="kinds" aria-pressed="false" data-testid="cy2-e-mode-kinds">Two kinds of system that never mix</button>
+      <button type="button" data-em="walk" aria-pressed="false" data-testid="cy2-e-mode-walk">A random walk</button>
+    </div>
+    <div class="cy2-row" style="margin-top:10px">
+      <label class="cy2-ctl">Steps in each path: <span id="cy2-e-nv" data-testid="cy2-e-nv"></span>
+        <input type="range" id="cy2-e-n" min="200" max="5000" step="100" value="2000" data-testid="cy2-e-steps"></label>
+      <button type="button" class="cy2-btn" id="cy2-e-new" data-testid="cy2-e-new">Draw new random paths</button>
+    </div>
+    <canvas class="cy2-cv" id="cy2-e-cv" width="640" height="280" data-testid="cy2-e-canvas" role="img" aria-label="Running time averages of six random paths, with the ensemble average as a dashed line"></canvas>
+    <div class="cy2-two" style="margin-top:10px">
+      <div class="cy2-box"><h5>WHAT IS PLOTTED</h5><div id="cy2-e-what" data-testid="cy2-e-what"></div></div>
+      <div class="cy2-box"><h5>TIME AVERAGE OF EACH PATH, AND THE ENSEMBLE AVERAGE</h5><div id="cy2-e-list" data-testid="cy2-e-list" aria-live="polite"></div></div>
+    </div>
+    <div class="cy2-note" id="cy2-e-note" data-testid="cy2-e-note" aria-live="polite"></div>
+  </div>
+  <p class="cy2-small"><span class="cy2-lab m">Mine</span> Six solid lines are the running average along six separate paths. The dashed line is the ensemble average, taken at the final step over 400 other paths of the same kind. All numbers come from a seeded pseudo-random generator and are illustrative. The flip chance (5% per step) and the two biases (0.2 and 0.8) are my own choices. The random walk is not stationary, so it is not an ergodic example at all; it is there to show that the swap of averages is not automatic. Brownian motion, which a random walk models, is not discussed in Chapters I and II, so I make no claim about Wiener on it here.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Groups and invariance: what a shift in time leaves alone</h2>
+  <p><span class="cy2-lab w">Wiener</span> Wiener argues that science needs regularity. In a world of random miracles, like the croquet game in Alice in Wonderland with its flamingo mallets and hedgehog balls, no law could be stated in advance (p. 72). An effective law applies to more than one case and states a property that stays the same under a change of circumstances. That leads to three notions (pp. 72-74). A <b>transformation</b> turns each element of a system into another, for example moving the origin, rotating the axes, or the step from time t1 to time t2. A <b>group</b> of transformations is a set closed under combining two of them and under undoing any of them. An <b>invariant</b> is a quantity that does not change under any transformation in the group. He notes that the order of two transformations can matter, and that translations form a group in which order never matters, while rotations and general motions of a rigid body in space do not (pp. 73-74).</p>
+  <p><span class="cy2-lab w">Wiener</span> Shifts in time are the case that matters for the later chapters. The ergodic theorems are stated for a system carried into itself by a measure-preserving transformation, or by a group of them that combine like shifts, so that a shift by lambda followed by a shift by mu equals a shift by lambda plus mu (p. 77). In the language of this lesson, the statistical regularity is the thing left unchanged when you move your starting time. He also builds a second kind of invariant, the "characters" of a group, which are the simple waves that a shift only rescales (pp. 74-76). I do not cover that part, since the book gives it as mathematics without a physical picture at this stage.</p>
+  <p><span class="cy2-lab m">Mine</span> Two small demonstrations. First, slide a window along a series. If the process is steady, the average over a window should not depend on where you start: the statistic is invariant under shifts. If the process drifts, it does depend, and the invariance is gone. Second, check whether order matters for a shift and a quarter turn.</p>
+  <div class="cy2-stage" data-testid="cy2-shift">
+    <div class="cy2-seg" role="group" aria-label="Choose a series">
+      <button type="button" data-sm="steady" aria-pressed="true" data-testid="cy2-s-mode-steady">Steady process</button>
+      <button type="button" data-sm="drift" aria-pressed="false" data-testid="cy2-s-mode-drift">Drifting process</button>
+    </div>
+    <div class="cy2-row" style="margin-top:10px">
+      <label class="cy2-ctl">Where the window starts: <span id="cy2-s-av" data-testid="cy2-s-av"></span>
+        <input type="range" id="cy2-s-a" min="0" max="800" step="10" value="0" data-testid="cy2-s-start"></label>
+      <button type="button" class="cy2-btn alt" id="cy2-s-new" data-testid="cy2-s-new">Draw a new series</button>
+    </div>
+    <canvas class="cy2-cv" id="cy2-s-cv" width="640" height="150" data-testid="cy2-s-canvas" role="img" aria-label="A series with a highlighted window"></canvas>
+    <div class="cy2-two" style="margin-top:10px">
+      <div class="cy2-box"><h5>THIS WINDOW (200 STEPS)</h5><div class="cy2-big" id="cy2-s-win" data-testid="cy2-s-window-avg" aria-live="polite"></div></div>
+      <div class="cy2-box"><h5>FIVE FIXED WINDOWS, SIDE BY SIDE</h5><div class="cy2-bars" id="cy2-s-bars" data-testid="cy2-s-bars"></div></div>
+    </div>
+    <div class="cy2-note" id="cy2-s-note" data-testid="cy2-s-note" aria-live="polite"></div>
+  </div>
+  <div class="cy2-stage" data-testid="cy2-order">
+    <div class="cy2-row">
+      <label class="cy2-ctl">First transformation
+        <select id="cy2-o-a" data-testid="cy2-o-first"><option value="r">Shift right by 2</option><option value="u">Shift up by 2</option><option value="q">Quarter turn about the origin</option></select></label>
+      <label class="cy2-ctl">Second transformation
+        <select id="cy2-o-b" data-testid="cy2-o-second"><option value="u">Shift up by 2</option><option value="r">Shift right by 2</option><option value="q" selected>Quarter turn about the origin</option></select></label>
+    </div>
+    <div class="cy2-two">
+      <svg class="cy2-svg" id="cy2-o-svg" data-testid="cy2-o-plot" viewBox="0 0 300 300" role="img" aria-label="A grid showing where a marked point ends up under both orders of two transformations"></svg>
+      <div class="cy2-box"><h5>WHERE THE POINT (1, 0) ENDS UP</h5><div id="cy2-o-out" data-testid="cy2-o-out" aria-live="polite"></div></div>
+    </div>
+  </div>
+  <p class="cy2-small"><span class="cy2-lab w">Wiener</span> Wiener's own example is a pair of rotations of the three axes that give different results in the two orders (p. 73). Mine mixes a shift with a quarter turn, which is a different pair showing the same fact. The quarter turn about the origin sends (x, y) to (minus y, x). Two shifts always give the same result in either order, and that is what "Abelian" means (p. 73).</p>
+
+  <h2 id="sec6"><span class="num">6</span> Entropy, Maxwell's demon, and the road to information</h2>
+  <p><span class="cy2-lab w">Wiener</span> Entropy, for Wiener, is primarily a property of regions in phase space: the logarithm of their probability measure. In his example of particles in a bottle divided into parts A and B, a given split (m in A, n minus m in B) is a region with a probability measure. The system spends most of its time near the most probable split, so a state that is not at maximum entropy will, almost always, move toward it (p. 80). He adds that for living tissue the ordinary picture of a heat engine does not fit, since thermometer temperatures are gross averages over a very fine texture, while Gibbsian statistical mechanics may be a fairly adequate model (p. 81).</p>
+  <p><span class="cy2-lab w">Wiener</span> Then comes the Maxwell demon, a gatekeeper between two compartments of gas who lets fast particles pass one way and slow ones the other and so seems to lower entropy and allow a perpetual-motion machine of the second kind (pp. 81-82). Wiener says it is easier to wave the question away than to answer it, but that this wastes a chance to learn about entropy (p. 82). His reply, in steps, is below. Pick each step, then compare the accounting.</p>
+  <div class="cy2-stage" data-testid="cy2-demon">
+    <div class="cy2-seg" role="group" aria-label="Choose a step">
+      <button type="button" data-dm="0" aria-pressed="true" data-testid="cy2-d-tab-setup">1. The puzzle</button>
+      <button type="button" data-dm="1" aria-pressed="false" data-testid="cy2-d-tab-reply">2. Wiener's reply</button>
+      <button type="button" data-dm="2" aria-pressed="false" data-testid="cy2-d-tab-later">3. Later view</button>
+    </div>
+    <dl class="cy2-dl" id="cy2-d-out" data-testid="cy2-d-out" aria-live="polite" style="margin-top:10px"></dl>
+    <div class="cy2-seg" role="group" aria-label="Choose what to count" style="margin-top:12px">
+      <button type="button" data-da="gas" aria-pressed="true" data-testid="cy2-d-acct-gas">Count the gas only</button>
+      <button type="button" data-da="both" aria-pressed="false" data-testid="cy2-d-acct-both">Count gas plus demon</button>
+    </div>
+    <div class="cy2-acc" aria-live="polite">
+      <div class="cy2-chip" data-testid="cy2-d-chip-gas"><b id="cy2-d-c1">-1</b><span>Gas entropy change</span></div>
+      <div class="cy2-chip" data-testid="cy2-d-chip-demon"><b id="cy2-d-c2">not counted</b><span>Demon and its information</span></div>
+      <div class="cy2-chip" data-testid="cy2-d-chip-total"><b id="cy2-d-c3"></b><span>Total</span></div>
+    </div>
+    <div class="cy2-note" id="cy2-d-note" data-testid="cy2-d-note"></div>
+  </div>
+  <p class="cy2-small"><span class="cy2-lab m">Mine</span> The numbers in the chips are illustrative units that show the shape of Wiener's bookkeeping argument. They are not measured quantities. The claim that information represents a negative entropy is Wiener's (p. 83), and he defers it to the next chapter of the book, which is outside this lesson.</p>
+  <p><span class="cy2-lab w">Wiener</span> The bridge to the rest of the book is in two places. First, he says that machines which sense and act are judged on a whole class of inputs, not on a single one, so their theory is Gibbsian rather than Newtonian, and that the bookkeeping that matters for them concerns message, noise and quantity of information more than energy (pp. 60, 62). Second, he ends Chapter II by saying the next chapter treats the statistical mechanics of time series, a field remote from heat engines and so well suited as a model of the living organism (p. 84).</p>
+  <p><span class="cy2-lab m">Mine</span> The link from Gibbs's ensembles to information, in plain words: a message source is a distribution over possible messages, and a receiver is built to work well on average over that distribution. That is my summary of where the book is heading; the book develops it later.</p>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>Astronomy is the exception, not the rule.</b> Few bodies, well known, loosely coupled: time can be run either way. Weather, life and machines that sense and act involve huge numbers of coupled parts and are described by distributions (Wiener, pp. 45-47, 62).</li>
+    <li><b>Reversible laws can still give one-way answers,</b> because we prepare in the past and ask about the future (pp. 47-48).</li>
+    <li><b>Gibbs replaces one exact system with an ensemble</b> and asks what is almost certainly true of it (p. 66).</li>
+    <li><b>Ensemble average equals time average only under conditions.</b> The ergodic theorems supply them (pp. 77-79); modern sources stress that many real systems are not ergodic.</li>
+    <li><b>A regularity is an invariant of a group of transformations,</b> and shifts in time are the case that carries the later chapters (pp. 72-77).</li>
+    <li><b>The demon is answered by counting the whole system,</b> including its information, in Wiener's account (pp. 82-83); later work places the cost in erasing the demon's memory.</li>
+  </ul>
+  <p class="src"><b>The book.</b> Wiener, N. <i>Cybernetics, or Control and Communication in the Animal and the Machine</i>. MIT Press; first edition 1948, second edition 1961, reissued 2019. Chapters I and II, printed pages 43-84. It is attached to this module as a reading tab on the right edge of the hub. Page numbers above are printed page numbers.</p>
+  <p class="src"><b>Other sources.</b> <a href="https://plato.stanford.edu/entries/statphys-statmech/" target="_blank" rel="noopener">Stanford Encyclopedia: Philosophy of Statistical Mechanics</a> (read: sections 4.3, 4.4, 6.1, 6.2) · <a href="https://plato.stanford.edu/entries/information-entropy/" target="_blank" rel="noopener">Stanford Encyclopedia: Information Processing and Thermodynamic Entropy</a> (read: the sections on Maxwell's demon, Szilard, Brillouin, Landauer and Bennett).</p>
+  <p class="src"><b>Checked 5 Nov 2026.</b> Confirmed from the book: every claim labelled Wiener, against the printed pages given. Confirmed from the two Stanford entries as summarised when fetched: time-reversal invariance and Loschmidt's objection; the definition of ergodicity and its limits; Gibbs ensembles; and the later view that the demon's cost lies in erasing its memory (Bennett), which the entry also says is still debated. Not confirmed from any source I read and stated as background or my own synthesis: how collisions magnify errors, the flip and bias numbers, the entropy stand-in, and the reading of the Gibbs-to-information link. I tried the Britannica page on Brownian motion, but it refused automated access, so nothing here relies on it. Wiener's own physical arguments, such as why the ergodic hypothesis fails, why we can see only stars whose time runs like ours (pp. 48-49), and enzymes as metastable demons (pp. 83-84), are mid-century arguments that I did not check against later sources.</p>
+
+  <footer>2. Time, order and statistics · Systems &amp; Information · part of your Study Hub</footer>
+</div>
+
+<script>
+(function(){
+  function g(id){ return document.getElementById(id); }
+  function css(n){ var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v||'#888'; }
+  function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function gauss(r){ var u=1-r(), v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function seg(sel, attr, fn){
+    var bs=document.querySelectorAll(sel);
+    bs.forEach(function(b){ b.onclick=function(){ bs.forEach(function(x){ x.setAttribute('aria-pressed', x===b?'true':'false'); }); fn(b.getAttribute(attr)); }; });
+  }
+  var need=true;
+  setInterval(function(){ need=true; },1000);
+
+  /* ---------- 2. sorting ---------- */
+  (function(){
+    var items=[
+      {t:'Planets circling the sun, filmed and run backward', a:'rev', why:'Newton\'s laws are unchanged when t becomes minus t, so the reversed film is a possible film (pp. 45-46).'},
+      {t:'Turbulence in a thunderhead, filmed and run backward', a:'irr', why:'Downdrafts would appear where updrafts belong and lightning would precede the cloud changes (pp. 45-46).'},
+      {t:'Tidal friction slowing the earth and dragging the moon', a:'irr', why:'Wiener calls these frictional, dissipative forces, like those of meteorology, and says they need a statistical treatment (pp. 50-51).'},
+      {t:'The hands of a watch, as the clockmaker intends them', a:'rev', why:'He calls a watch a pocket orrery, with friction treated as an effect to be overcome so the motion is as periodic as possible (p. 55).'},
+      {t:'Birth and death', a:'irr', why:'He says birth is not the exact reverse of death, and that the individual is an arrow pointed through time (p. 51).'},
+      {t:'Evolution by variation and survival', a:'irr', why:'Chance variation is carved into a more or less one-directional pattern; the record runs from simple to complex (pp. 51-52).'},
+      {t:'A steam engine\'s best possible efficiency, set by boiler and condenser temperatures', a:'irr', why:'This is the Carnot principle or second law, the degradation of energy; thermodynamics is a science in which time is eminently irreversible (p. 55).'},
+      {t:'A thermostat acting on a stream of temperature readings', a:'irr', why:'The input-output relation is consecutive in time with a definite past-future order, and the theory is statistical (p. 62).'}
+    ];
+    var host=g('cy2-sort-rows'), ans={};
+    host.innerHTML=items.map(function(it,i){
+      return '<div class="cy2-srow" data-testid="cy2-sort-item-'+i+'"><div>'+it.t+'</div><div class="cy2-sbtns">'
+        +'<button type="button" class="cy2-btn alt" data-i="'+i+'" data-c="rev" aria-pressed="false" data-testid="cy2-sort-'+i+'-rev">Reads the same both ways</button>'
+        +'<button type="button" class="cy2-btn alt" data-i="'+i+'" data-c="irr" aria-pressed="false" data-testid="cy2-sort-'+i+'-irr">Has a direction</button></div>'
+        +'<div class="cy2-sfb" id="cy2-sfb-'+i+'" data-testid="cy2-sort-feedback-'+i+'" aria-live="polite"></div></div>';
+    }).join('');
+    function score(){
+      var n=0,ok=0; items.forEach(function(it,i){ if(ans[i]){ n++; if(ans[i]===it.a) ok++; } });
+      g('cy2-sort-score').textContent=n+' of '+items.length+' answered, '+ok+' matching Wiener';
+    }
+    host.onclick=function(e){
+      var b=e.target.closest?e.target.closest('button[data-i]'):null; if(!b) return;
+      var i=+b.getAttribute('data-i'), c=b.getAttribute('data-c'); ans[i]=c;
+      host.querySelectorAll('button[data-i="'+i+'"]').forEach(function(x){ x.setAttribute('aria-pressed', x===b?'true':'false'); });
+      var fb=g('cy2-sfb-'+i), right=(c===items[i].a);
+      fb.className='cy2-sfb '+(right?'ok':'no');
+      fb.innerHTML='<b>'+(right?'Matches Wiener. ':'Not what Wiener says. ')+'</b>'+items[i].why;
+      score();
+    };
+    g('cy2-sort-reset').onclick=function(){
+      ans={};
+      host.querySelectorAll('button[data-i]').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+      items.forEach(function(it,i){ var f=g('cy2-sfb-'+i); f.className='cy2-sfb'; f.innerHTML=''; });
+      score();
+    };
+    score();
+  })();
+
+  /* ---------- 3. gas in a box ---------- */
+  (function(){
+    var cv=g('cy2-gas-cv'), cx=cv.getContext('2d'), cv2=g('cy2-gas-curve'), c2=cv2.getContext('2d');
+    var mode='one', t=0, dir=0, last=0, TMAX=8, M=400, NC=8, one, ens, curve=[];
+    function fold(u){ u=u%2; if(u<0) u+=2; return u>1?2-u:u; }
+    function ent(tt){
+      var cnt=[],i,k; for(i=0;i<NC*NC;i++) cnt.push(0);
+      for(i=0;i<ens.length;i++){ var p=ens[i], ix=Math.min(NC-1,Math.floor(fold(p.x+p.vx*tt)*NC)), iy=Math.min(NC-1,Math.floor(fold(p.y+p.vy*tt)*NC)); cnt[iy*NC+ix]++; }
+      var h=0; for(k=0;k<cnt.length;k++){ if(cnt[k]>0){ var q=cnt[k]/ens.length; h-=q*Math.log(q); } }
+      return h/Math.log(NC*NC);
+    }
+    function mkcurve(){ curve=[]; for(var k=0;k<=160;k++) curve.push(ent(-TMAX+0.1*k)); }
+    function setup(){
+      var r=mulberry(7), i; one={x:0.15,y:0.5,vx:0.31,vy:0.17}; ens=[];
+      for(i=0;i<M;i++) ens.push({x:0.15+0.012*gauss(r), y:0.5+0.012*gauss(r), vx:0.3*gauss(r), vy:0.3*gauss(r)});
+      t=0; dir=0; mkcurve(); g('cy2-gas-t').value=0; need=true;
+    }
+    function draw(){
+      var W=cv.width, H=cv.height, i;
+      cx.fillStyle=css('--paper'); cx.fillRect(0,0,W,H);
+      if(mode==='ens'){
+        cx.strokeStyle=css('--line'); cx.lineWidth=1;
+        for(i=1;i<NC;i++){ cx.beginPath(); cx.moveTo(i*W/NC,0); cx.lineTo(i*W/NC,H); cx.moveTo(0,i*H/NC); cx.lineTo(W,i*H/NC); cx.stroke(); }
+        cx.fillStyle=css('--cobalt');
+        for(i=0;i<ens.length;i++){ var p=ens[i]; cx.beginPath(); cx.arc(fold(p.x+p.vx*t)*W, fold(p.y+p.vy*t)*H, 3, 0, 6.2832); cx.fill(); }
+      } else {
+        cx.strokeStyle=css('--ochre'); cx.lineWidth=2; cx.beginPath();
+        for(i=0;i<=80;i++){ var tt=t-4+4*i/80, px=fold(one.x+one.vx*tt)*W, py=fold(one.y+one.vy*tt)*H; if(i===0) cx.moveTo(px,py); else cx.lineTo(px,py); }
+        cx.stroke();
+        cx.fillStyle=css('--vermil'); cx.beginPath(); cx.arc(fold(one.x+one.vx*t)*W, fold(one.y+one.vy*t)*H, 8, 0, 6.2832); cx.fill();
+      }
+      g('cy2-gas-tv').textContent=t.toFixed(2);
+      var rd=g('cy2-gas-read');
+      if(mode==='ens') rd.innerHTML='Spread of the cloud: <b>'+ent(t).toFixed(2)+'</b> (0 = all in one cell, about 1 = evenly spread)';
+      else rd.innerHTML='Particle at ('+fold(one.x+one.vx*t).toFixed(2)+', '+fold(one.y+one.vy*t).toFixed(2)+'). The orange trail shows where it was over the 4 time units before t.';
+      if(mode==='ens'){
+        var w=cv2.width, h=cv2.height, l=34, b=22, tp=8;
+        c2.fillStyle=css('--paper'); c2.fillRect(0,0,w,h);
+        c2.strokeStyle=css('--line-strong'); c2.lineWidth=1; c2.beginPath(); c2.moveTo(l,tp); c2.lineTo(l,h-b); c2.lineTo(w-6,h-b); c2.stroke();
+        c2.fillStyle=css('--ink-mute'); c2.font='11px sans-serif';
+        c2.fillText('1',14,tp+8); c2.fillText('0',14,h-b); c2.fillText('-8',l-4,h-6); c2.fillText('0',l+(w-6-l)/2-3,h-6); c2.fillText('8',w-18,h-6);
+        c2.strokeStyle=css('--cobalt'); c2.lineWidth=2; c2.beginPath();
+        for(i=0;i<curve.length;i++){ var x=l+(w-6-l)*i/(curve.length-1), y=(h-b)-(h-b-tp)*curve[i]; if(i===0) c2.moveTo(x,y); else c2.lineTo(x,y); }
+        c2.stroke();
+        var cxp=l+(w-6-l)*(t+TMAX)/(2*TMAX); c2.strokeStyle=css('--ink'); c2.lineWidth=1.5; c2.beginPath(); c2.moveTo(cxp,tp); c2.lineTo(cxp,h-b); c2.stroke();
+      }
+      g('cy2-gas-curvebox').hidden=(mode!=='ens');
+    }
+    function note(){
+      g('cy2-gas-note').textContent = mode==='ens'
+        ? 'Prepared at time 0, the cloud spreads whichever way time runs. After a reversal, the tight blob sits somewhere else in time.'
+        : 'One exactly reversible path: run backward and it retraces itself.';
+    }
+    function reverse(err){
+      var r=mulberry(Math.floor(Math.random()*1e9));
+      function re(p){ p.x=fold(p.x+p.vx*t); p.y=fold(p.y+p.vy*t); p.vx=-p.vx*(err?1+0.05*gauss(r):1); p.vy=-p.vy*(err?1+0.05*gauss(r):1); }
+      re(one); ens.forEach(re); t=0; dir=0; g('cy2-gas-t').value=0; mkcurve(); need=true;
+    }
+    function frame(ts){
+      if(dir!==0){ var dt=Math.min(0.1,(ts-last)/1000); t+=dir*dt*1.2; if(t>=TMAX){t=TMAX;dir=0;} if(t<=-TMAX){t=-TMAX;dir=0;} g('cy2-gas-t').value=t; need=true; }
+      last=ts;
+      if(need){ need=false; draw(); }
+      requestAnimationFrame(frame);
+    }
+    seg('[data-mode]','data-mode',function(m){ mode=m; note(); need=true; });
+    g('cy2-gas-fwd').onclick=function(){ dir=1; };
+    g('cy2-gas-back').onclick=function(){ dir=-1; };
+    g('cy2-gas-pause').onclick=function(){ dir=0; };
+    g('cy2-gas-t').oninput=function(){ t=+this.value; dir=0; need=true; };
+    g('cy2-gas-rev').onclick=function(){ reverse(false); };
+    g('cy2-gas-rev-err').onclick=function(){ reverse(true); };
+    g('cy2-gas-reset').onclick=function(){ setup(); };
+    setup(); note(); requestAnimationFrame(frame);
+  })();
+
+  /* ---------- 4. ergodic ---------- */
+  (function(){
+    var em='flip', seed=11;
+    function sim(mode,N,r,store){
+      var out=store?new Array(N):null, s=0, last=0, x=0, b=0, i, f;
+      if(mode==='flip') s=r()<0.5?1:0; else if(mode==='kinds') b=r()<0.5?0.2:0.8;
+      for(i=0;i<N;i++){
+        if(mode==='flip'){ if(r()<0.05) s=1-s; f=s; }
+        else if(mode==='kinds'){ f=r()<b?1:0; }
+        else { x+=r()<0.5?1:-1; f=x; }
+        if(store) out[i]=f; last=f;
+      }
+      return store?out:last;
+    }
+    var COLS=['--cobalt','--vermil','--forest','--ochre','--plum','--ink-soft'];
+    var WHAT={flip:'f = 1 when the switch is on, 0 when off. It flips with chance 5% at each step.', kinds:'f = 1 or 0. Each system is born as one of two kinds, a "mostly on" kind (on 80% of steps) or a "mostly off" kind (20%), and never changes kind.', walk:'f = position of a walker that steps one unit up or down at random each step.'};
+    var cache=null;
+    function draw(paths,ens,N){
+      var cv=g('cy2-e-cv'), c=cv.getContext('2d'), w=cv.width, h=cv.height, l=44, rt=10, tp=10, b=26, i, j, lo=0, hi=1;
+      if(em==='walk'){ var m=Math.abs(ens); for(i=0;i<paths.length;i++) for(j=0;j<N;j++) m=Math.max(m,Math.abs(paths[i][j])); m=Math.max(m,1); lo=-m; hi=m; }
+      c.fillStyle=css('--paper'); c.fillRect(0,0,w,h);
+      c.strokeStyle=css('--line'); c.lineWidth=1; c.fillStyle=css('--ink-mute'); c.font='11px sans-serif';
+      for(i=0;i<=2;i++){ var yv=lo+(hi-lo)*i/2, y=(h-b)-(h-b-tp)*i/2; c.beginPath(); c.moveTo(l,y); c.lineTo(w-rt,y); c.stroke(); c.fillText(yv.toFixed(1),4,y+4); }
+      c.fillText('step 1',l,h-8); c.fillText(String(N),w-rt-30,h-8);
+      function Y(v){ return (h-b)-(h-b-tp)*(v-lo)/(hi-lo); }
+      for(i=0;i<paths.length;i++){
+        c.strokeStyle=css(COLS[i]); c.lineWidth=1.8; c.beginPath();
+        for(j=0;j<N;j+=Math.max(1,Math.floor(N/320))){ var x=l+(w-l-rt)*j/(N-1); if(j===0) c.moveTo(x,Y(paths[i][j])); else c.lineTo(x,Y(paths[i][j])); }
+        c.stroke();
+      }
+      c.setLineDash([7,5]); c.strokeStyle=css('--ink'); c.lineWidth=2; c.beginPath(); c.moveTo(l,Y(ens)); c.lineTo(w-rt,Y(ens)); c.stroke(); c.setLineDash([]);
+    }
+    function run(){
+      var N=+g('cy2-e-n').value, r=mulberry(seed), K=6, M=400, paths=[], i, j;
+      g('cy2-e-nv').textContent=N;
+      for(i=0;i<K;i++){
+        var a=sim(em,N,r,true), cum=0, ra=new Array(N);
+        for(j=0;j<N;j++){ cum+=a[j]; ra[j]=cum/(j+1); }
+        paths.push(ra);
+      }
+      var es=0; for(i=0;i<M;i++) es+=sim(em,N,r,false);
+      var ens=es/M;
+      cache=[paths,ens,N];
+      draw(paths,ens,N);
+      var lst='<ol class="cy2-list">'; for(i=0;i<K;i++) lst+='<li>Path '+(i+1)+': '+paths[i][N-1].toFixed(2)+'</li>'; lst+='</ol><div style="margin-top:6px">Ensemble average at step '+N+' (400 paths): <b>'+ens.toFixed(2)+'</b></div>';
+      g('cy2-e-list').innerHTML=lst; g('cy2-e-what').textContent=WHAT[em];
+      var nt=g('cy2-e-note');
+      if(em==='flip') nt.innerHTML='<b>Time average matches ensemble average.</b> Each path, followed long enough, has spent about half its time on, which is also the share of switches that are on at one moment. Shorten the paths to see how long the settling takes.';
+      else if(em==='kinds') nt.innerHTML='<b>The paths settle, but not to the ensemble average.</b> Each lands near its own kind (0.2 or 0.8) while the ensemble average sits in between, matching neither kind. This is the pattern of a mixture of distinct states that never turn into one another, the non-ergodic case Wiener describes on p. 80.';
+      else nt.innerHTML='<b>No settling.</b> The ensemble average of position stays near zero, but the running averages along single paths wander away and keep wandering. A walker has no steady level to average toward, so the question is not the same as in the steady cases (my illustration, not in the chapters).';
+    }
+    seg('[data-em]','data-em',function(m){ em=m; run(); });
+    g('cy2-e-n').oninput=function(){ run(); };
+    g('cy2-e-new').onclick=function(){ seed=seed*7+13; run(); };
+    run();
+    setInterval(function(){ if(cache) draw(cache[0],cache[1],cache[2]); },1000);
+  })();
+
+  /* ---------- 5. shifts and order ---------- */
+  (function(){
+    var sm='steady', ss=5, ser=[];
+    function make(){
+      var r=mulberry(ss), s=r()<0.5?1:0, i; ser=[];
+      for(i=0;i<1000;i++){
+        if(sm==='steady'){ if(r()<0.08) s=1-s; ser.push(s); }
+        else ser.push(r()<0.1+0.8*i/999?1:0);
+      }
+    }
+    function avg(a,n){ var s=0,i; for(i=a;i<a+n&&i<ser.length;i++) s+=ser[i]; return s/n; }
+    function draw(){
+      var a=+g('cy2-s-a').value, cv=g('cy2-s-cv'), c=cv.getContext('2d'), w=cv.width, h=cv.height, i;
+      g('cy2-s-av').textContent=a;
+      c.fillStyle=css('--paper'); c.fillRect(0,0,w,h);
+      c.fillStyle=css('--cobalt-soft'); c.fillRect(w*a/1000,0,w*200/1000,h);
+      c.strokeStyle=css('--cobalt'); c.lineWidth=2; c.beginPath();
+      for(i=0;i<1000-25;i+=4){ var x=w*i/1000, y=h-8-(h-16)*avg(i,25); if(i===0) c.moveTo(x,y); else c.lineTo(x,y); }
+      c.stroke();
+      c.strokeStyle=css('--ochre'); c.lineWidth=3; c.beginPath(); c.moveTo(w*a/1000,2); c.lineTo(w*a/1000,h-2); c.moveTo(w*(a+200)/1000,2); c.lineTo(w*(a+200)/1000,h-2); c.stroke();
+      g('cy2-s-win').textContent=avg(a,200).toFixed(2);
+      var bars='', k; for(k=0;k<5;k++){ var v=avg(k*200,200); bars+='<div class="cy2-bar"><span>Steps '+(k*200)+'+</span><i style="width:'+Math.round(v*100)+'%"></i><span>'+v.toFixed(2)+'</span></div>'; }
+      g('cy2-s-bars').innerHTML=bars;
+      g('cy2-s-note').innerHTML = sm==='steady'
+        ? '<b>Steady:</b> the average hardly depends on where the window starts. Moving the starting time leaves the statistics alone, which is the sense in which they are invariant under shifts.'
+        : '<b>Drifting:</b> the average changes as the window moves, so the statistics are not invariant under shifts, and a long-run average along the series is not a single number.';
+    }
+    seg('[data-sm]','data-sm',function(m){ sm=m; make(); draw(); });
+    g('cy2-s-a').oninput=draw;
+    g('cy2-s-new').onclick=function(){ ss=ss*5+3; make(); draw(); };
+    make(); draw();
+    setInterval(draw,1000);
+    var OPS={r:function(p){return [p[0]+2,p[1]];}, u:function(p){return [p[0],p[1]+2];}, q:function(p){return [-p[1],p[0]];}};
+    var NAMES={r:'shift right 2',u:'shift up 2',q:'quarter turn'};
+    function ord(){
+      var A=g('cy2-o-a').value, B=g('cy2-o-b').value, p=[1,0];
+      var ab=OPS[B](OPS[A](p)), ba=OPS[A](OPS[B](p));
+      var svg='', i; for(i=0;i<=10;i++){ svg+='<line x1="'+(i*30)+'" y1="0" x2="'+(i*30)+'" y2="300" style="stroke:var(--line)"/><line x1="0" y1="'+(i*30)+'" x2="300" y2="'+(i*30)+'" style="stroke:var(--line)"/>'; }
+      svg+='<line x1="150" y1="0" x2="150" y2="300" style="stroke:var(--line-strong);stroke-width:2"/><line x1="0" y1="150" x2="300" y2="150" style="stroke:var(--line-strong);stroke-width:2"/>';
+      function dot(pt,fill,rad){ return '<circle cx="'+(150+pt[0]*30)+'" cy="'+(150-pt[1]*30)+'" r="'+rad+'" style="fill:var(--'+fill+')"/>'; }
+      svg+=dot(ba,'vermil',9)+dot(ab,'cobalt',6)+dot(p,'ink',5);
+      g('cy2-o-svg').innerHTML=svg;
+      var same=(ab[0]===ba[0]&&ab[1]===ba[1]);
+      g('cy2-o-out').innerHTML='Start: (1, 0), the black dot.<br>'+NAMES[A]+', then '+NAMES[B]+': <b style="color:var(--cobalt)">('+ab[0]+', '+ab[1]+')</b> (blue dot).<br>'+NAMES[B]+', then '+NAMES[A]+': <b style="color:var(--vermil)">('+ba[0]+', '+ba[1]+')</b> (red dot).<br><b>'+(same?'Same result in either order: these two commute.':'Different results: the order matters.')+'</b>';
+    }
+    g('cy2-o-a').onchange=ord; g('cy2-o-b').onchange=ord; ord();
+  })();
+
+  /* ---------- 6. demon ---------- */
+  (function(){
+    var T=[
+      ['A gate between two compartments of gas at one temperature. A gatekeeper, a tiny mechanism or an imagined demon, opens it for fast particles heading one way and slow ones heading the other. One side warms and the other cools, so entropy seems to fall, and a heat engine across the two would seem to run for free (pp. 81-82).','The puzzle is whether this can be made to work.','The gas entropy falls, which looks like a break in the second law.'],
+      ['The law of increasing entropy applies to a completely isolated system, not to part of one, so the entropy that counts is that of gas and demon together (pp. 82-83). The demon must receive information about each particle, so it is coupled to the gas, and that information is carried by some physical process. In his account information represents a negative entropy, and under quantum mechanics any coupling that gives position or momentum also affects the particle\'s energy (p. 83). Over time the demon is itself jostled by random motion at its environment\'s temperature and stops acting as a demon. He says its active phase may last long enough to be called metastable, and speculates that enzymes and living organisms are metastable demons (pp. 83-84).','Count the whole system.','Wiener\'s argument: the demon\'s side of the books has to be added to the gas.'],
+      ['Later work agrees that the gas alone is the wrong place to look, but locates the cost differently. The Stanford Encyclopedia entry reports that Szilard and Brillouin argued that acquiring knowledge must cost entropy, and that Landauer and Bennett later argued that measurement can in principle be done without dissipation, with the unavoidable cost falling on erasing the demon\'s memory. The entry describes the erasure view as rapidly accepted, while noting that debate continues. So read Wiener\'s version as an early, partly different resolution, not the one now usually emphasised.','Which term carries the cost is still discussed.','Later accounts: the cost can be assigned to resetting the demon\'s memory.']
+    ];
+    var tab=0, ac='gas';
+    function show(){
+      var d=T[tab];
+      g('cy2-d-out').innerHTML='<dt>'+['The puzzle (Wiener, pp. 81-82)','Wiener\'s reply (pp. 82-84)','Later development (Stanford Encyclopedia)'][tab]+'</dt><dd>'+d[0]+'</dd><dt>In a line</dt><dd>'+d[1]+'</dd>';
+      if(ac==='gas'){ g('cy2-d-c2').textContent='not counted'; g('cy2-d-c3').textContent='-1 (looks like a violation)'; g('cy2-d-note').textContent=d[2]; }
+      else { g('cy2-d-c2').textContent='+1 or more'; g('cy2-d-c3').textContent='0 or more (law holds)'; g('cy2-d-note').textContent='Gas plus demon: the total does not fall. Illustrative units; the point is the bookkeeping, not the values.'; }
+    }
+    seg('[data-dm]','data-dm',function(v){ tab=+v; show(); });
+    seg('[data-da]','data-da',function(v){ ac=v; show(); });
+    show();
+  })();
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>

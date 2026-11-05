@@ -98,57 +98,76 @@
               "id": "cy-1",
               "title": "1. The book and its central idea",
               "pip": "#2f7f86",
-              "blurb": "What Wiener set out to do, how a prediction problem became a science of control and communication, and how to read the book today.",
+              "blurb": "What Wiener's Cybernetics claims, who said what about it, and his Introduction read as one argument map.",
               "tags": [
                 "cybernetics",
                 "wiener",
                 "systems"
               ],
-              "plan": {
-                "goals": [
-                  "Say what cybernetics means in a sentence and where the word comes from",
-                  "Place the 1948 original, the 1961 additions and the 2019 reissue in time",
-                  "Follow the Introduction's argument in order and keep the forewords' commentary separate from Wiener's claims",
-                  "Explain why prediction, feedback and communication belong together"
-                ],
-                "concepts": [
-                  "Kybernetes: steersman; control and communication in animal and machine",
-                  "Forewords (Doug Hill, Sanjoy Mitter) and the Preface to the Second Edition",
-                  "The gun-director prediction problem",
-                  "Control through information about the system's own performance",
-                  "Why fields had stayed apart, and the case for an interdisciplinary programme",
-                  "A short history of automata and clockwork"
-                ],
-                "takeaways": [
-                  "Cybernetics is a way of describing any system that steers itself by information",
-                  "The same few ideas explain a thermostat, a gun director and a reflex"
-                ],
-                "connections": [
-                  "Start of the module; no prerequisites",
-                  "Sets up every later chapter"
-                ],
-                "build": "A timeline of the book plus a labelled argument map of the Introduction, a 'what is and is not cybernetics' sorting exercise and a simple predict-the-target simulator",
-                "notes": [
-                  "Forewords and preface, printed pp. ix-xxxvi; Introduction, printed pp. 3-42. Page numbers are the book's printed pages; in the attached PDF add 50."
-                ]
-              },
-              "status": "stub",
-              "file": "shared/outline.html?id=cy-1",
-              "anchors": [],
+              "file": "sections/systems-information/lessons/cybernetics-1-the-book.html",
+              "anchors": [
+                {
+                  "id": "cy1-1",
+                  "title": "The idea in one sentence, and the word",
+                  "anchor": "sec1"
+                },
+                {
+                  "id": "cy1-2",
+                  "title": "The book in time",
+                  "anchor": "sec2"
+                },
+                {
+                  "id": "cy1-3",
+                  "title": "Three voices before page one",
+                  "anchor": "sec3"
+                },
+                {
+                  "id": "cy1-4",
+                  "title": "The Introduction as an argument map",
+                  "anchor": "sec4"
+                },
+                {
+                  "id": "cy1-5",
+                  "title": "Aiming at a moving target",
+                  "anchor": "sec5"
+                },
+                {
+                  "id": "cy1-6",
+                  "title": "Machines through the ages, and what counts",
+                  "anchor": "sec6"
+                },
+                {
+                  "id": "cy1-7",
+                  "title": "How to read the book, and the road ahead",
+                  "anchor": "sec7"
+                },
+                {
+                  "id": "cy1-src",
+                  "title": "Takeaways & sources",
+                  "anchor": "sec-src"
+                }
+              ],
               "dates": {
-                "planned": "2026-11-05"
+                "created": "2026-11-05",
+                "updated": "2026-11-05",
+                "verified": "2026-11-05"
               },
               "history": [
                 {
                   "date": "2026-11-05",
                   "note": "Planned (stub)"
+                },
+                {
+                  "date": "2026-11-05",
+                  "note": "Built: the book's dates and layers on a timeline, Hill, Mitter and Wiener's 1961 Preface kept apart, the Introduction as a ten-node argument map, a moving-target prediction simulator, and a page guide with a ten-lesson road map."
                 }
               ],
               "rebuild": {
-                "brief": "Build from the plan: visual and interactive, introductory, aimed at a curious general reader. Read the chapter first and paraphrase it; separate Wiener's claims from later developments and from my own synthesis. Flag science that has been superseded.",
+                "brief": "Lesson 1 of the Wiener Cybernetics module, merging the old lessons 1 and 2. Cover the word and its origin (Introduction p. 18), a timeline of the 1948 original, 1961 supplement and 2019 reissue, the three front-matter voices kept separate (Hill, Mitter, Wiener's 1961 Preface), the whole Introduction (printed pp. 3-42) as a labelled argument map, a small predict-the-moving-target simulator, a what-counts-as-cybernetics sorter, the printed-to-PDF page offset (plus 50 in the main text) and a ten-lesson road map. Label Wiener, Foreword, My synthesis and Background throughout; quote at most one short phrase per source.",
                 "basis": [
-                  "Wiener, Cybernetics, 2nd ed. (MIT Press, 1961), the chapter named in the plan",
-                  "Outside sources named in the plan, checked at build time"
+                  "sections/systems-information/readings/cybernetics-wiener.pdf: Contents (printed vii-viii), Hill foreword ix-xx, Mitter foreword xxi-xxxiv, Preface to the Second Edition xxxv-xlvii, Introduction 3-42, Chapter I pp. 54-60",
+                  "Wikipedia pages on the book, on Cybernetics and on Norbert Wiener (publication history, Ampere 1834, Wiener's life dates)",
+                  "docs/LESSON-STANDARD.md and CLAUDE.md for the lesson structure"
                 ]
               },
               "standard": "v1"
@@ -158,56 +177,71 @@
               "id": "cy-2",
               "title": "2. Time, order and statistics",
               "pip": "#2f7f86",
-              "blurb": "Why clockwork time can run backwards and lived time cannot, and how ensembles and averages tame an irreversible world.",
+              "blurb": "Wiener on reversible and one-way time, Gibbs's ensembles, the ergodic idea, shift invariance and Maxwell's demon, with simulations.",
               "tags": [
                 "cybernetics",
                 "wiener",
                 "systems"
               ],
-              "plan": {
-                "goals": [
-                  "Contrast reversible and irreversible time",
-                  "Explain what an ensemble average is and when it equals a time average",
-                  "State the ergodic idea in plain words",
-                  "Connect Gibbs's statistical mechanics to the later chapters on information"
-                ],
-                "concepts": [
-                  "Newtonian (reversible) time and Bergsonian (irreversible) time",
-                  "Entropy and the direction of time",
-                  "Gibbs and the ensemble of possible systems",
-                  "Groups and invariance (shifts in time)",
-                  "Ergodic idea; Brownian motion as a random process",
-                  "Maxwell's demon as an early information puzzle"
-                ],
-                "takeaways": [
-                  "Order and disorder in time is the background problem for the whole theory of information",
-                  "Averaging over possibilities is what lets a stream of signals be treated as a lawful object"
-                ],
-                "connections": [
-                  "Builds on 1; feeds 3"
-                ],
-                "build": "An interactive gas-in-a-box that runs forward and backward, with a switch between single-path and ensemble views, plus a random-walk playground comparing one path's long-run average with an average over many",
-                "notes": [
-                  "Chapters I and II, printed pp. 43-84. Page numbers are the book's printed pages; in the attached PDF add 50."
-                ]
-              },
-              "status": "stub",
-              "file": "shared/outline.html?id=cy-2",
-              "anchors": [],
+              "file": "sections/systems-information/lessons/cybernetics-2-time-order-statistics.html",
+              "anchors": [
+                {
+                  "id": "cy2-1",
+                  "title": "Two skies: astronomy and meteorology",
+                  "anchor": "sec1"
+                },
+                {
+                  "id": "cy2-2",
+                  "title": "Which kind of time?",
+                  "anchor": "sec2"
+                },
+                {
+                  "id": "cy2-3",
+                  "title": "A gas in a box: one path and a whole ensemble",
+                  "anchor": "sec3"
+                },
+                {
+                  "id": "cy2-4",
+                  "title": "Gibbs, averages and the ergodic idea",
+                  "anchor": "sec4"
+                },
+                {
+                  "id": "cy2-5",
+                  "title": "Groups and invariance: what a shift in time leaves alone",
+                  "anchor": "sec5"
+                },
+                {
+                  "id": "cy2-6",
+                  "title": "Entropy, Maxwell's demon, and the road to information",
+                  "anchor": "sec6"
+                },
+                {
+                  "id": "cy2-src",
+                  "title": "Takeaways & sources",
+                  "anchor": "sec-src"
+                }
+              ],
               "dates": {
-                "planned": "2026-11-05"
+                "created": "2026-11-05",
+                "updated": "2026-11-05",
+                "verified": "2026-11-05"
               },
               "history": [
                 {
                   "date": "2026-11-05",
                   "note": "Planned (stub)"
+                },
+                {
+                  "date": "2026-11-05",
+                  "note": "Built from Wiener's Chapters I and II (printed pp. 43-84): sorting exercise, gas-in-a-box single path versus ensemble, ergodic playground, shift and order demos, Maxwell's demon accounting."
                 }
               ],
               "rebuild": {
-                "brief": "Build from the plan: visual and interactive, introductory, aimed at a curious general reader. Read the chapter first and paraphrase it; separate Wiener's claims from later developments and from my own synthesis. Flag science that has been superseded.",
+                "brief": "Lesson 2 of the Wiener Cybernetics module. Contrast reversible Newtonian and one-way Bergsonian time, why an irreversible world needs statistical description, ensemble versus time average and the ergodic idea, groups and shift invariance, entropy and Maxwell's demon. Widgets: which-kind-of-time sorting, gas in a box (single path / ensemble, forward and backward, reverse velocities), ergodic path playground, shift-window and order-of-transformations demos, demon accounting. Label Wiener, later and own synthesis; flag dated physics.",
                 "basis": [
-                  "Wiener, Cybernetics, 2nd ed. (MIT Press, 1961), the chapter named in the plan",
-                  "Outside sources named in the plan, checked at build time"
+                  "Wiener, Cybernetics (MIT Press 1948; 2nd ed. 1961), Chapters I and II, printed pp. 43-84 (PDF 93-134)",
+                  "Stanford Encyclopedia of Philosophy: Philosophy of Statistical Mechanics (sections 4.3, 4.4, 6.1, 6.2)",
+                  "Stanford Encyclopedia of Philosophy: Information Processing and Thermodynamic Entropy (Maxwell's demon sections)"
                 ]
               },
               "standard": "v1"
