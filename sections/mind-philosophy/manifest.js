@@ -5,7 +5,7 @@
   "created": "2026-10-27",
   "updated": "2026-10-27",
   "id": "mind-philosophy",
-  "order": 7,
+  "order": 5,
   "title": "Mind & Philosophy",
   "icon": "🧠",
   "summary": "Ideas about minds, selves and choice, explained on their own terms: thought experiments, the arguments around them and the sources they come from.",
@@ -17,7 +17,7 @@
       "Thought experiments and the commentary around them"
     ],
     "excludes": [
-      "Practical AI workflows (→ Working & Learning with AI)",
+      "Practical AI workflows (→ Building & Learning with AI)",
       "Neuroscience methods with no conceptual question attached"
     ],
     "admission": [

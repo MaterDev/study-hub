@@ -5,7 +5,7 @@
   "created": "2026-11-05",
   "updated": "2026-11-05",
   "id": "systems-information",
-  "order": 8,
+  "order": 6,
   "title": "Systems & Information",
   "icon": "🧭",
   "summary": "Feedback, control, information and self-organisation: foundational texts on how systems steer themselves, taught chapter by chapter.",

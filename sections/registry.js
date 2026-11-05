@@ -3,9 +3,7 @@
    Order on screen comes from each manifest's "order" field, not this list. */
 window.HUB_REGISTRY = [
   "web-realtime",
-  "rendering-performance-motion",
   "building-with-ai",
-  "working-learning-with-ai",
   "platforms",
   "soft-skills",
   "mind-philosophy",

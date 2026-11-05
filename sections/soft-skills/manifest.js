@@ -6,7 +6,7 @@
   "created": "2026-10-26",
   "updated": "2026-10-26",
   "id": "soft-skills",
-  "order": 6,
+  "order": 4,
   "title": "Soft Skills & Collaboration",
   "icon": "🤝",
   "summary": "The human skills behind good technical work: earning trust, listening, framing problems, setting expectations and working well with clients and colleagues.",
@@ -20,8 +20,8 @@
       "Book and framework studies on professional relationships"
     ],
     "excludes": [
-      "Platform-specific technical knowledge (→ Platforms & Client Work)",
-      "How AI changes skills and learning (→ Working & Learning with AI)",
+      "Platform-specific technical knowledge (→ Platforms)",
+      "How AI changes skills and learning (→ Building & Learning with AI)",
       "Management theory with no day-to-day application for a developer"
     ],
     "admission": [
@@ -33,7 +33,7 @@
   },
   "related": [
     "platforms",
-    "working-learning-with-ai"
+    "building-with-ai"
   ],
   "children": [
     {

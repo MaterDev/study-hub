@@ -6,8 +6,8 @@
   "created": "2026-10-23",
   "updated": "2026-10-27",
   "id": "platforms",
-  "order": 5,
-  "title": "Platforms & Client Work",
+  "order": 3,
+  "title": "Platforms",
   "icon": "🧩",
   "summary": "Introductory courses on the platforms developers meet in client work, plus the non-front-end knowledge that makes a project ship.",
   "scope": {
@@ -20,8 +20,8 @@
       "Scoping, estimating and collaborating with clients"
     ],
     "excludes": [
-      "Pure web-platform techniques with no platform angle (→ Rendering, Performance & Motion)",
-      "AI tooling and agent workflows (→ Building with AI)",
+      "Pure web-platform techniques with no platform angle (→ Web Realtime, Performance & Motion)",
+      "AI tooling and agent workflows (→ Building & Learning with AI)",
       "Client-confidential details of specific projects"
     ],
     "admission": [
@@ -32,7 +32,7 @@
     "depth": "Introductory and practical, sourced to official docs; patterns from past projects are generalised and never include client details."
   },
   "related": [
-    "rendering-performance-motion",
+    "web-realtime",
     "building-with-ai"
   ],
   "children": [

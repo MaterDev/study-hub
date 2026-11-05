@@ -124,14 +124,12 @@ Bring over only lessons + learning material (not the old project's tooling, memo
 
 | # | Section | Contains |
 |---|---|---|
-| 1 | Web Realtime & Netcode | Foundations (WebSockets, transports, WebRTC, game loops) + netcode-feasibility spike case study |
-| 2 | Rendering, Performance & Motion | Course: Web Animation & Motion Graphics (5/15 built) · Course: FE Web Performance Workshop (1/54 built) |
-| 3 | Building with AI | Agents & tools; context engineering; choosing models |
-| 4 | Working & Learning with AI | Individual AI workflows + the Lovett (2026) module |
-| 5 | Platforms & Client Work | Courses: Shopify for Developers · WordPress for Front-End & UI Developers (stubs only so far) |
-| 6 | Soft Skills & Collaboration | Trust and client relationships (The Trusted Advisor) |
-| 7 | Mind & Philosophy | Careenium module (Hofstadter 1982), 4 lessons |
-| 8 | Systems & Information | Wiener's Cybernetics module, 10 lessons planned |
+| 1 | Web Realtime, Performance & Motion | Foundations + netcode-feasibility spike case study · Course: Web Animation & Motion Graphics · Course: FE Web Performance Workshop |
+| 2 | Building & Learning with AI | Agents & tools; context engineering; choosing models · individual AI workflows + the Lovett (2026) module |
+| 3 | Platforms | Courses: Shopify for Developers · WordPress for Front-End & UI Developers |
+| 4 | Soft Skills & Collaboration | Trust and client relationships (The Trusted Advisor) |
+| 5 | Mind & Philosophy | Careenium module (Hofstadter 1982), 4 lessons |
+| 6 | Systems & Information | Wiener's Cybernetics module, 10 lessons planned |
 
 ## Notes
 
