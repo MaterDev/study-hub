@@ -251,52 +251,76 @@
               "id": "cy-3",
               "title": "3. Information and communication",
               "pip": "#2f7f86",
-              "blurb": "How to predict and filter a signal buried in noise, and how Wiener measured the amount of information in a message.",
+              "blurb": "How Wiener measures information, separates a signal from noise, and where Shannon's parallel work fits, with six hands-on tools.",
               "tags": [
                 "cybernetics",
                 "wiener",
                 "systems"
               ],
-              "plan": {
-                "goals": [
-                  "Describe prediction and filtering of a time series",
-                  "Explain information as a measure of how unexpected a message is",
-                  "Relate Wiener's measure to Shannon's, as the book does"
-                ],
-                "concepts": [
-                  "Time series as the object of communication engineering",
-                  "Filtering and prediction of noisy signals",
-                  "Amount of information and its link to entropy",
-                  "Coding and channel capacity (as treated in the chapter)"
-                ],
-                "takeaways": [
-                  "Information measures how much a message reduces uncertainty, and noise is what limits it"
-                ],
-                "connections": [
-                  "Builds on 2"
-                ],
-                "build": "A signal-in-noise lab with a slider for noise and a simple filter; plus a bits-of-surprise calculator for sample messages",
-                "notes": [
-                  "Chapter III, printed pp. 85-128. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
-                ]
-              },
-              "status": "stub",
-              "file": "shared/outline.html?id=cy-3",
-              "anchors": [],
+              "file": "sections/systems-information/lessons/cybernetics-3-information-communication.html",
+              "anchors": [
+                {
+                  "id": "cy3-1",
+                  "title": "A signal is a record in time",
+                  "anchor": "sec1"
+                },
+                {
+                  "id": "cy3-2",
+                  "title": "Signal in noise: filtering and prediction",
+                  "anchor": "sec2"
+                },
+                {
+                  "id": "cy3-3",
+                  "title": "Information as narrowing down",
+                  "anchor": "sec3"
+                },
+                {
+                  "id": "cy3-4",
+                  "title": "Bits of surprise and entropy",
+                  "anchor": "sec4"
+                },
+                {
+                  "id": "cy3-5",
+                  "title": "Which source is more informative?",
+                  "anchor": "sec5"
+                },
+                {
+                  "id": "cy3-6",
+                  "title": "Noise, coding and frequency limit communication",
+                  "anchor": "sec6"
+                },
+                {
+                  "id": "cy3-7",
+                  "title": "Information is not meaning",
+                  "anchor": "sec7"
+                },
+                {
+                  "id": "cy3-src",
+                  "title": "Takeaways & sources",
+                  "anchor": "sec-src"
+                }
+              ],
               "dates": {
-                "planned": "2026-11-05"
+                "created": "2026-11-05",
+                "updated": "2026-11-05",
+                "verified": "2026-11-05"
               },
               "history": [
                 {
                   "date": "2026-11-05",
                   "note": "Planned (stub)"
+                },
+                {
+                  "date": "2026-11-05",
+                  "note": "Built lesson 3 from Chapter III: a signal-in-noise filtering and prediction lab, interval narrowing, an entropy calculator, a source comparison, a noise and information curve, and an information-versus-meaning sort."
                 }
               ],
               "rebuild": {
-                "brief": "Build from the plan: visual and interactive, introductory, aimed at a curious general reader. Read the chapter first and paraphrase it; separate Wiener's claims from later developments and from my own synthesis. Flag science that has been superseded.",
+                "brief": "Rebuild lesson 3 of the Wiener Cybernetics module on Chapter III (printed pp. 85-128): time series as statistical objects, filtering and prediction of signal in noise, information as negative entropy (Eqs. 3.02-3.05, 3.091), Shannon's parallel work, coding and rate limits, and information versus meaning. Include a moving-average lab, a bits calculator, a source comparison, an SNR curve and a sorting exercise, with claims tagged Wiener, Later or Mine and printed page numbers.",
                 "basis": [
-                  "Wiener, Cybernetics, 2nd ed. (MIT Press, 1961), the chapter named in the plan",
-                  "Outside sources named in the plan, checked at build time"
+                  "Wiener, Cybernetics (MIT Press), Chapter III printed pp. 85-128 and Introduction p. 17; PDF at sections/systems-information/readings/cybernetics-wiener.pdf (printed page = PDF page minus 50)",
+                  "Stanford Encyclopedia of Philosophy, Information: https://plato.stanford.edu/entries/information/",
+                  "Wikipedia, A Mathematical Theory of Communication: https://en.wikipedia.org/wiki/A_Mathematical_Theory_of_Communication"
                 ]
               },
               "standard": "v1"
