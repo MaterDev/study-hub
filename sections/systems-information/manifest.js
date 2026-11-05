@@ -39,13 +39,13 @@
       "title": "Module: Wiener's Cybernetics",
       "home": "shared/outline.html?id=cybernetics",
       "pip": "#2f7f86",
-      "summary": "Norbert Wiener's Cybernetics (2nd edition, 1961) broken into twelve lessons that follow its chapters: feedback, information, time, computing machines, perception, language, learning and self-organisation.",
+      "summary": "Norbert Wiener's Cybernetics (2nd edition, 1961) broken into ten lessons that follow its chapters: feedback, information, time, computing machines, perception, language, learning and self-organisation.",
       "throughline": "One idea runs through the book: systems of every kind stay stable and purposeful by passing information about their own behaviour back into themselves.",
       "paths": [
-        "\"Where do I start?\" → 1 → 2 → 6",
-        "\"I want the information theory\" → 3 → 4 → 5",
-        "\"I care about brains and minds\" → 6 → 7 → 8 → 12",
-        "\"I care about society and AI\" → 10 → 11"
+        "\"Where do I start?\" → 1 → 4",
+        "\"I want the information theory\" → 2 → 3",
+        "\"I care about brains and minds\" → 4 → 5 → 6 → 10",
+        "\"I care about society and AI\" → 8 → 9"
       ],
       "source": {
         "title": "Cybernetics, or Control and Communication in the Animal and the Machine",
@@ -73,6 +73,10 @@
         {
           "date": "2026-11-05",
           "note": "Module planned (stubs only)"
+        },
+        {
+          "date": "2026-11-05",
+          "note": "Plan merged to ten lessons: Introduction joined to lesson 1, time and statistics joined into lesson 2"
         }
       ],
       "rebuild": {
@@ -86,15 +90,15 @@
         {
           "type": "group",
           "id": "cy-c1",
-          "title": "A. The idea and its origin",
-          "summary": "What the book is and how its central idea arose.",
+          "title": "A. The idea and the physics under it",
+          "summary": "What the book is, where its idea came from, and the background of time, order and information.",
           "children": [
             {
               "type": "lesson",
               "id": "cy-1",
-              "title": "1. The book, its author and why it still matters",
+              "title": "1. The book and its central idea",
               "pip": "#2f7f86",
-              "blurb": "What Wiener set out to do in 1948, what the 1961 edition added, and how two modern forewords read it now.",
+              "blurb": "What Wiener set out to do, how a prediction problem became a science of control and communication, and how to read the book today.",
               "tags": [
                 "cybernetics",
                 "wiener",
@@ -103,24 +107,29 @@
               "plan": {
                 "goals": [
                   "Say what cybernetics means in a sentence and where the word comes from",
-                  "Place Wiener, the book's two editions and the 2019 reissue in time",
-                  "Read the two forewords as commentary and keep them separate from Wiener's own claims"
+                  "Place the 1948 original, the 1961 additions and the 2019 reissue in time",
+                  "Follow the Introduction's argument in order and keep the forewords' commentary separate from Wiener's claims",
+                  "Explain why prediction, feedback and communication belong together"
                 ],
                 "concepts": [
                   "Kybernetes: steersman; control and communication in animal and machine",
-                  "The 1948 original and the 1961 supplementary chapters",
-                  "Foreword by Doug Hill (ix to xx) and by Sanjoy Mitter (xxi to xxxiv)",
-                  "Preface to the Second Edition (xxxv)"
+                  "Forewords (Doug Hill, Sanjoy Mitter) and the Preface to the Second Edition",
+                  "The gun-director prediction problem",
+                  "Control through information about the system's own performance",
+                  "Why fields had stayed apart, and the case for an interdisciplinary programme",
+                  "A short history of automata and clockwork"
                 ],
                 "takeaways": [
-                  "Cybernetics is a way of describing any system that steers itself by information"
+                  "Cybernetics is a way of describing any system that steers itself by information",
+                  "The same few ideas explain a thermostat, a gun director and a reflex"
                 ],
                 "connections": [
-                  "Start of the module; no prerequisites"
+                  "Start of the module; no prerequisites",
+                  "Sets up every later chapter"
                 ],
-                "build": "A timeline of the book (1948, 1961, 2019) with the main ideas placed on it, and a short 'what is and is not cybernetics' sorting exercise",
+                "build": "A timeline of the book plus a labelled argument map of the Introduction, a 'what is and is not cybernetics' sorting exercise and a simple predict-the-target simulator",
                 "notes": [
-                  "Forewords and preface, printed pp. ix-xxxvi. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
+                  "Forewords and preface, printed pp. ix-xxxvi; Introduction, printed pp. 3-42. Page numbers are the book's printed pages; in the attached PDF add 50."
                 ]
               },
               "status": "stub",
@@ -147,9 +156,9 @@
             {
               "type": "lesson",
               "id": "cy-2",
-              "title": "2. The Introduction: from a prediction problem to a science",
+              "title": "2. Time, order and statistics",
               "pip": "#2f7f86",
-              "blurb": "How a wartime problem, predicting where an aircraft will be, led Wiener to a single theory of control and communication.",
+              "blurb": "Why clockwork time can run backwards and lived time cannot, and how ensembles and averages tame an irreversible world.",
               "tags": [
                 "cybernetics",
                 "wiener",
@@ -157,29 +166,88 @@
               ],
               "plan": {
                 "goals": [
-                  "Follow the argument of the Introduction in order",
-                  "Explain why prediction, feedback and communication belong together",
-                  "Meet the people and fields Wiener names (including Rosenblueth, Leibniz, Gibbs)"
+                  "Contrast reversible and irreversible time",
+                  "Explain what an ensemble average is and when it equals a time average",
+                  "State the ergodic idea in plain words",
+                  "Connect Gibbs's statistical mechanics to the later chapters on information"
                 ],
                 "concepts": [
-                  "The gun-director prediction problem",
-                  "Control through information about the system's own performance",
-                  "Why fields had stayed apart, and the case for an interdisciplinary programme",
-                  "A short history of automata and clockwork"
+                  "Newtonian (reversible) time and Bergsonian (irreversible) time",
+                  "Entropy and the direction of time",
+                  "Gibbs and the ensemble of possible systems",
+                  "Groups and invariance (shifts in time)",
+                  "Ergodic idea; Brownian motion as a random process",
+                  "Maxwell's demon as an early information puzzle"
                 ],
                 "takeaways": [
-                  "The book's thesis is that the same few ideas explain a thermostat, a gun director and a reflex"
+                  "Order and disorder in time is the background problem for the whole theory of information",
+                  "Averaging over possibilities is what lets a stream of signals be treated as a lawful object"
                 ],
                 "connections": [
-                  "Builds on 1; sets up every later chapter"
+                  "Builds on 1; feeds 3"
                 ],
-                "build": "A guided walk through the Introduction as a labelled argument map, plus a simple predict-the-target simulator",
+                "build": "An interactive gas-in-a-box that runs forward and backward, with a switch between single-path and ensemble views, plus a random-walk playground comparing one path's long-run average with an average over many",
                 "notes": [
-                  "Introduction, printed pp. 3-42. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
+                  "Chapters I and II, printed pp. 43-84. Page numbers are the book's printed pages; in the attached PDF add 50."
                 ]
               },
               "status": "stub",
               "file": "shared/outline.html?id=cy-2",
+              "anchors": [],
+              "dates": {
+                "planned": "2026-11-05"
+              },
+              "history": [
+                {
+                  "date": "2026-11-05",
+                  "note": "Planned (stub)"
+                }
+              ],
+              "rebuild": {
+                "brief": "Build from the plan: visual and interactive, introductory, aimed at a curious general reader. Read the chapter first and paraphrase it; separate Wiener's claims from later developments and from my own synthesis. Flag science that has been superseded.",
+                "basis": [
+                  "Wiener, Cybernetics, 2nd ed. (MIT Press, 1961), the chapter named in the plan",
+                  "Outside sources named in the plan, checked at build time"
+                ]
+              },
+              "standard": "v1"
+            },
+            {
+              "type": "lesson",
+              "id": "cy-3",
+              "title": "3. Information and communication",
+              "pip": "#2f7f86",
+              "blurb": "How to predict and filter a signal buried in noise, and how Wiener measured the amount of information in a message.",
+              "tags": [
+                "cybernetics",
+                "wiener",
+                "systems"
+              ],
+              "plan": {
+                "goals": [
+                  "Describe prediction and filtering of a time series",
+                  "Explain information as a measure of how unexpected a message is",
+                  "Relate Wiener's measure to Shannon's, as the book does"
+                ],
+                "concepts": [
+                  "Time series as the object of communication engineering",
+                  "Filtering and prediction of noisy signals",
+                  "Amount of information and its link to entropy",
+                  "Coding and channel capacity (as treated in the chapter)"
+                ],
+                "takeaways": [
+                  "Information measures how much a message reduces uncertainty, and noise is what limits it"
+                ],
+                "connections": [
+                  "Builds on 2"
+                ],
+                "build": "A signal-in-noise lab with a slider for noise and a simple filter; plus a bits-of-surprise calculator for sample messages",
+                "notes": [
+                  "Chapter III, printed pp. 85-128. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
+                ]
+              },
+              "status": "stub",
+              "file": "shared/outline.html?id=cy-3",
               "anchors": [],
               "dates": {
                 "planned": "2026-11-05"
@@ -204,70 +272,15 @@
         {
           "type": "group",
           "id": "cy-c2",
-          "title": "B. Time, order and information",
-          "summary": "The physics and mathematics under the theory.",
+          "title": "B. Feedback, machines and minds",
+          "summary": "Control, computation and perception.",
           "children": [
             {
               "type": "lesson",
-              "id": "cy-3",
-              "title": "3. Two kinds of time",
-              "pip": "#2f7f86",
-              "blurb": "Why the clockwork time of Newton can run backwards and the lived time of Bergson cannot, and how statistics bridges them.",
-              "tags": [
-                "cybernetics",
-                "wiener",
-                "systems"
-              ],
-              "plan": {
-                "goals": [
-                  "Contrast reversible and irreversible time",
-                  "Explain why an irreversible world needs statistical description",
-                  "Connect Gibbs's statistical mechanics to Wiener's later chapters"
-                ],
-                "concepts": [
-                  "Newtonian (reversible) time and Bergsonian (irreversible) time",
-                  "Entropy and the direction of time",
-                  "Gibbs and the ensemble of possible systems",
-                  "Maxwell's demon as an early information puzzle"
-                ],
-                "takeaways": [
-                  "Order and disorder in time is the background problem for the whole theory of information"
-                ],
-                "connections": [
-                  "Builds on 2"
-                ],
-                "build": "An interactive gas-in-a-box that can be run forward and backward, with a switch between single-trajectory and ensemble views",
-                "notes": [
-                  "Chapter I, printed pp. 43-64. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
-                ]
-              },
-              "status": "stub",
-              "file": "shared/outline.html?id=cy-3",
-              "anchors": [],
-              "dates": {
-                "planned": "2026-11-05"
-              },
-              "history": [
-                {
-                  "date": "2026-11-05",
-                  "note": "Planned (stub)"
-                }
-              ],
-              "rebuild": {
-                "brief": "Build from the plan: visual and interactive, introductory, aimed at a curious general reader. Read the chapter first and paraphrase it; separate Wiener's claims from later developments and from my own synthesis. Flag science that has been superseded.",
-                "basis": [
-                  "Wiener, Cybernetics, 2nd ed. (MIT Press, 1961), the chapter named in the plan",
-                  "Outside sources named in the plan, checked at build time"
-                ]
-              },
-              "standard": "v1"
-            },
-            {
-              "type": "lesson",
               "id": "cy-4",
-              "title": "4. Groups, ensembles and statistical mechanics",
+              "title": "4. Feedback and oscillation",
               "pip": "#2f7f86",
-              "blurb": "How averages over many possible systems stand in for one system's long-run behaviour.",
+              "blurb": "How a system corrects itself from the effect of its own output, and what goes wrong when the correction overshoots.",
               "tags": [
                 "cybernetics",
                 "wiener",
@@ -275,25 +288,25 @@
               ],
               "plan": {
                 "goals": [
-                  "Explain what an ensemble average is and when it equals a time average",
-                  "State the ergodic idea in plain words",
-                  "See why invariance under shifts in time matters for communication"
+                  "Explain negative feedback with a worked example",
+                  "Tell stable behaviour from oscillation and hunting",
+                  "Read the physiological examples (voluntary movement, tremor) as feedback failures"
                 ],
                 "concepts": [
-                  "Groups and invariance (shifts in time, translations)",
-                  "Ensembles and the ergodic hypothesis",
-                  "Brownian motion as a random process",
-                  "Entropy as a measure of disorder"
+                  "Servomechanisms and negative feedback",
+                  "Delay, gain and oscillation",
+                  "Purpose tremor and ataxia as control problems",
+                  "Frequency-response thinking"
                 ],
                 "takeaways": [
-                  "Averaging over possibilities is what lets us treat a stream of signals as a lawful object"
+                  "More correction is not always better: delay and gain decide whether feedback steadies or shakes"
                 ],
                 "connections": [
-                  "Builds on 3; feeds 5"
+                  "Builds on 1 and 3"
                 ],
-                "build": "A random-walk playground that compares one path's long-run average with an average over many paths",
+                "build": "A thermostat-style loop simulator with gain and delay sliders showing steady, damped and runaway behaviour",
                 "notes": [
-                  "Chapter II, printed pp. 65-84. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
+                  "Chapter IV, printed pp. 129-158. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
                 ]
               },
               "status": "stub",
@@ -320,9 +333,9 @@
             {
               "type": "lesson",
               "id": "cy-5",
-              "title": "5. Time series, information and communication",
+              "title": "5. Computing machines and the nervous system",
               "pip": "#2f7f86",
-              "blurb": "How to predict and filter a signal buried in noise, and how Wiener measured the amount of information in a message.",
+              "blurb": "Why Wiener compared digital machines with neurons, what he proposed for computer design, and what the comparison gets right and wrong.",
               "tags": [
                 "cybernetics",
                 "wiener",
@@ -330,25 +343,26 @@
               ],
               "plan": {
                 "goals": [
-                  "Describe prediction and filtering of a time series",
-                  "Explain information as a measure of how unexpected a message is",
-                  "Relate Wiener's measure to Shannon's, as the book does"
+                  "Contrast digital and analogue machines",
+                  "Explain the all-or-nothing neuron as a switch",
+                  "Separate Wiener's 1948 proposals from what later computers did"
                 ],
                 "concepts": [
-                  "Time series as the object of communication engineering",
-                  "Filtering and prediction of noisy signals",
-                  "Amount of information and its link to entropy",
-                  "Coding and channel capacity (as treated in the chapter)"
+                  "Digital and analogue computation",
+                  "Binary logic, memory and the stored program idea (as treated in the chapter)",
+                  "The neuron as an on/off element and networks of them",
+                  "Limits of the analogy between brain and machine"
                 ],
                 "takeaways": [
-                  "Information measures how much a message reduces uncertainty, and noise is what limits it"
+                  "Machines and nervous systems can be described with the same logic, but the analogy has limits"
                 ],
                 "connections": [
-                  "Builds on 4"
+                  "Builds on 3 and 4"
                 ],
-                "build": "A signal-in-noise lab with a slider for noise and a simple filter; plus a bits-of-surprise calculator for sample messages",
+                "build": "A build-a-network widget with on/off units and logic gates, plus a digital-versus-analogue sorting exercise",
                 "notes": [
-                  "Chapter III, printed pp. 85-128. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
+                  "Chapter V, printed pp. 159-182. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93).",
+                  "Check later developments in neuroscience and computing at build time and label them as outside the book."
                 ]
               },
               "status": "stub",
@@ -371,21 +385,13 @@
                 ]
               },
               "standard": "v1"
-            }
-          ]
-        },
-        {
-          "type": "group",
-          "id": "cy-c3",
-          "title": "C. Feedback, machines and minds",
-          "summary": "Control, computation and perception.",
-          "children": [
+            },
             {
               "type": "lesson",
               "id": "cy-6",
-              "title": "6. Feedback and oscillation",
+              "title": "6. Pattern and perception: Gestalt and universals",
               "pip": "#2f7f86",
-              "blurb": "How a system corrects itself from the effect of its own output, and what goes wrong when the correction overshoots.",
+              "blurb": "How a system can recognise a shape as the same shape in different positions and sizes.",
               "tags": [
                 "cybernetics",
                 "wiener",
@@ -393,25 +399,26 @@
               ],
               "plan": {
                 "goals": [
-                  "Explain negative feedback with a worked example",
-                  "Tell stable behaviour from oscillation and hunting",
-                  "Read the physiological examples (voluntary movement, tremor) as feedback failures"
+                  "Explain recognition as invariance under changes of position or size",
+                  "Describe the scanning idea for visual perception",
+                  "Relate Gestalt ideas to the group notions of earlier chapters"
                 ],
                 "concepts": [
-                  "Servomechanisms and negative feedback",
-                  "Delay, gain and oscillation",
-                  "Purpose tremor and ataxia as control problems",
-                  "Frequency-response thinking"
+                  "Gestalt perception and universals",
+                  "Scanning and averaging as a way to normalise a pattern",
+                  "Rhythms in the brain as a possible scanning mechanism (as proposed in the chapter)",
+                  "Machines that read type"
                 ],
                 "takeaways": [
-                  "More correction is not always better: delay and gain decide whether feedback steadies or shakes"
+                  "Recognising 'the same thing' means ignoring the changes that should not matter"
                 ],
                 "connections": [
                   "Builds on 2 and 5"
                 ],
-                "build": "A thermostat-style loop simulator with gain and delay sliders showing steady, damped and runaway behaviour",
+                "build": "A shape-matching widget that normalises position and scale step by step, with a toggle that shows what the machine 'sees'",
                 "notes": [
-                  "Chapter IV, printed pp. 129-158. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
+                  "Chapter VI, printed pp. 183-198. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93).",
+                  "The brain-rhythm proposal is Wiener's hypothesis; check current evidence and label it."
                 ]
               },
               "status": "stub",
@@ -438,9 +445,9 @@
             {
               "type": "lesson",
               "id": "cy-7",
-              "title": "7. Computing machines and the nervous system",
+              "title": "7. When feedback goes wrong: cybernetics and psychopathology",
               "pip": "#2f7f86",
-              "blurb": "Why Wiener compared digital machines with neurons, what he proposed for computer design, and what the comparison gets right and wrong.",
+              "blurb": "Wiener's attempt to describe some mental disorders as failures of information handling, read with care for how far the science has moved.",
               "tags": [
                 "cybernetics",
                 "wiener",
@@ -448,26 +455,26 @@
               ],
               "plan": {
                 "goals": [
-                  "Contrast digital and analogue machines",
-                  "Explain the all-or-nothing neuron as a switch",
-                  "Separate Wiener's 1948 proposals from what later computers did"
+                  "State the circulating-memory and overload analogies and what they claim",
+                  "Read the chapter critically as a mid-century model",
+                  "Separate the book's claims from current understanding"
                 ],
                 "concepts": [
-                  "Digital and analogue computation",
-                  "Binary logic, memory and the stored program idea (as treated in the chapter)",
-                  "The neuron as an on/off element and networks of them",
-                  "Limits of the analogy between brain and machine"
+                  "Memory as a circulating pattern that can become overloaded",
+                  "Analogy between machine breakdowns and mental illness",
+                  "Treatments discussed in the book and the historical context",
+                  "Why a metaphor is not a mechanism"
                 ],
                 "takeaways": [
-                  "Machines and nervous systems can be described with the same logic, but the analogy has limits"
+                  "A useful metaphor can still be a wrong explanation, and this chapter is best read as history of ideas"
                 ],
                 "connections": [
-                  "Builds on 5 and 6"
+                  "Builds on 4 and 5"
                 ],
-                "build": "A build-a-network widget with on/off units and logic gates, plus a digital-versus-analogue sorting exercise",
+                "build": "A loop-overload simulator that shows the analogy, paired with an explicit panel on what current science says",
                 "notes": [
-                  "Chapter V, printed pp. 159-182. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93).",
-                  "Check later developments in neuroscience and computing at build time and label them as outside the book."
+                  "Chapter VII, printed pp. 199-214. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93).",
+                  "Handle sensitively; mark all medical claims as historical and do not present them as guidance."
                 ]
               },
               "status": "stub",
@@ -490,13 +497,21 @@
                 ]
               },
               "standard": "v1"
-            },
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "cy-c3",
+          "title": "C. Language, learning and self-organisation",
+          "summary": "From society to learning machines.",
+          "children": [
             {
               "type": "lesson",
               "id": "cy-8",
-              "title": "8. Pattern and perception: Gestalt and universals",
+              "title": "8. Information, language and society",
               "pip": "#2f7f86",
-              "blurb": "How a system can recognise a shape as the same shape in different positions and sizes.",
+              "blurb": "How Wiener extends communication ideas to language, organisations and society, and why he warned about automatic machines.",
               "tags": [
                 "cybernetics",
                 "wiener",
@@ -504,26 +519,25 @@
               ],
               "plan": {
                 "goals": [
-                  "Explain recognition as invariance under changes of position or size",
-                  "Describe the scanning idea for visual perception",
-                  "Relate Gestalt ideas to the group notions of earlier chapters"
+                  "Describe language as a communication system with redundancy",
+                  "Explain homeostasis in social groups as the book frames it",
+                  "Summarise Wiener's early warnings about automation"
                 ],
                 "concepts": [
-                  "Gestalt perception and universals",
-                  "Scanning and averaging as a way to normalise a pattern",
-                  "Rhythms in the brain as a possible scanning mechanism (as proposed in the chapter)",
-                  "Machines that read type"
+                  "Language, redundancy and the evolution of communication",
+                  "Organisations and societies as communicating systems",
+                  "Limits of applying statistical methods to society",
+                  "Early concerns about automatic machines and labour"
                 ],
                 "takeaways": [
-                  "Recognising 'the same thing' means ignoring the changes that should not matter"
+                  "Society depends on how information moves, and Wiener already saw both the promise and the danger of machines in it"
                 ],
                 "connections": [
-                  "Builds on 4 and 7"
+                  "Builds on 3; draws on the whole of Part I"
                 ],
-                "build": "A shape-matching widget that normalises position and scale step by step, with a toggle that shows what the machine 'sees'",
+                "build": "A message-passing network widget (rumour, delay, noise) and a redundancy test on text",
                 "notes": [
-                  "Chapter VI, printed pp. 183-198. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93).",
-                  "The brain-rhythm proposal is Wiener's hypothesis; check current evidence and label it."
+                  "Chapter VIII, printed pp. 215-230. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
                 ]
               },
               "status": "stub",
@@ -550,126 +564,7 @@
             {
               "type": "lesson",
               "id": "cy-9",
-              "title": "9. When feedback goes wrong: cybernetics and psychopathology",
-              "pip": "#2f7f86",
-              "blurb": "Wiener's attempt to describe some mental disorders as failures of information handling, read with care for how far the science has moved.",
-              "tags": [
-                "cybernetics",
-                "wiener",
-                "systems"
-              ],
-              "plan": {
-                "goals": [
-                  "State the circulating-memory and overload analogies and what they claim",
-                  "Read the chapter critically as a mid-century model",
-                  "Separate the book's claims from current understanding"
-                ],
-                "concepts": [
-                  "Memory as a circulating pattern that can become overloaded",
-                  "Analogy between machine breakdowns and mental illness",
-                  "Treatments discussed in the book and the historical context",
-                  "Why a metaphor is not a mechanism"
-                ],
-                "takeaways": [
-                  "A useful metaphor can still be a wrong explanation, and this chapter is best read as history of ideas"
-                ],
-                "connections": [
-                  "Builds on 6 and 7"
-                ],
-                "build": "A loop-overload simulator that shows the analogy, paired with an explicit panel on what current science says",
-                "notes": [
-                  "Chapter VII, printed pp. 199-214. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93).",
-                  "Handle sensitively; mark all medical claims as historical and do not present them as guidance."
-                ]
-              },
-              "status": "stub",
-              "file": "shared/outline.html?id=cy-9",
-              "anchors": [],
-              "dates": {
-                "planned": "2026-11-05"
-              },
-              "history": [
-                {
-                  "date": "2026-11-05",
-                  "note": "Planned (stub)"
-                }
-              ],
-              "rebuild": {
-                "brief": "Build from the plan: visual and interactive, introductory, aimed at a curious general reader. Read the chapter first and paraphrase it; separate Wiener's claims from later developments and from my own synthesis. Flag science that has been superseded.",
-                "basis": [
-                  "Wiener, Cybernetics, 2nd ed. (MIT Press, 1961), the chapter named in the plan",
-                  "Outside sources named in the plan, checked at build time"
-                ]
-              },
-              "standard": "v1"
-            }
-          ]
-        },
-        {
-          "type": "group",
-          "id": "cy-c4",
-          "title": "D. Language, learning and self-organisation",
-          "summary": "From society to learning machines.",
-          "children": [
-            {
-              "type": "lesson",
-              "id": "cy-10",
-              "title": "10. Information, language and society",
-              "pip": "#2f7f86",
-              "blurb": "How Wiener extends communication ideas to language, organisations and society, and why he warned about automatic machines.",
-              "tags": [
-                "cybernetics",
-                "wiener",
-                "systems"
-              ],
-              "plan": {
-                "goals": [
-                  "Describe language as a communication system with redundancy",
-                  "Explain homeostasis in social groups as the book frames it",
-                  "Summarise Wiener's early warnings about automation"
-                ],
-                "concepts": [
-                  "Language, redundancy and the evolution of communication",
-                  "Organisations and societies as communicating systems",
-                  "Limits of applying statistical methods to society",
-                  "Early concerns about automatic machines and labour"
-                ],
-                "takeaways": [
-                  "Society depends on how information moves, and Wiener already saw both the promise and the danger of machines in it"
-                ],
-                "connections": [
-                  "Builds on 5; draws on the whole of Part I"
-                ],
-                "build": "A message-passing network widget (rumour, delay, noise) and a redundancy test on text",
-                "notes": [
-                  "Chapter VIII, printed pp. 215-230. Page numbers are the book's printed pages; in the attached PDF add 50 (printed page 43 is PDF page 93)."
-                ]
-              },
-              "status": "stub",
-              "file": "shared/outline.html?id=cy-10",
-              "anchors": [],
-              "dates": {
-                "planned": "2026-11-05"
-              },
-              "history": [
-                {
-                  "date": "2026-11-05",
-                  "note": "Planned (stub)"
-                }
-              ],
-              "rebuild": {
-                "brief": "Build from the plan: visual and interactive, introductory, aimed at a curious general reader. Read the chapter first and paraphrase it; separate Wiener's claims from later developments and from my own synthesis. Flag science that has been superseded.",
-                "basis": [
-                  "Wiener, Cybernetics, 2nd ed. (MIT Press, 1961), the chapter named in the plan",
-                  "Outside sources named in the plan, checked at build time"
-                ]
-              },
-              "standard": "v1"
-            },
-            {
-              "type": "lesson",
-              "id": "cy-11",
-              "title": "11. Learning and self-reproducing machines",
+              "title": "9. Learning and self-reproducing machines",
               "pip": "#2f7f86",
               "blurb": "The 1961 additions: how a machine could improve with experience, and what it would mean for one to reproduce itself.",
               "tags": [
@@ -693,7 +588,7 @@
                   "Learning is feedback on feedback, and the 1961 chapters anticipate machine learning questions"
                 ],
                 "connections": [
-                  "Builds on 6 and 7"
+                  "Builds on 4 and 5"
                 ],
                 "build": "A tiny learning agent in a grid or game that adjusts its rule from outcomes, with a replay of its improvement",
                 "notes": [
@@ -702,7 +597,7 @@
                 ]
               },
               "status": "stub",
-              "file": "shared/outline.html?id=cy-11",
+              "file": "shared/outline.html?id=cy-9",
               "anchors": [],
               "dates": {
                 "planned": "2026-11-05"
@@ -724,8 +619,8 @@
             },
             {
               "type": "lesson",
-              "id": "cy-12",
-              "title": "12. Brain waves and self-organizing systems",
+              "id": "cy-10",
+              "title": "10. Brain waves and self-organizing systems",
               "pip": "#2f7f86",
               "blurb": "How oscillators can pull each other into step, and why Wiener thought brain rhythms show self-organisation.",
               "tags": [
@@ -749,7 +644,7 @@
                   "Order can appear without a conductor when many oscillators influence one another"
                 ],
                 "connections": [
-                  "Builds on 6 and 8; closes the module"
+                  "Builds on 4 and 6; closes the module"
                 ],
                 "build": "A set of coupled oscillators (metronomes) with a coupling slider that shows locking",
                 "notes": [
@@ -758,7 +653,7 @@
                 ]
               },
               "status": "stub",
-              "file": "shared/outline.html?id=cy-12",
+              "file": "shared/outline.html?id=cy-10",
               "anchors": [],
               "dates": {
                 "planned": "2026-11-05"
