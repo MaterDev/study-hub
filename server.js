@@ -108,6 +108,22 @@ function saveNotes() {
   fs.writeFileSync(tmp, JSON.stringify(notes, null, 2));
   fs.renameSync(tmp, NOTES_FILE);
 }
+function bundle() {
+  return { schema: "study-hub-data/1", exportedAt: new Date().toISOString(), progress: progress.items, annotations: notes.items };
+}
+function newer(a, b, keys) { const ts = o => keys.map(k => o && o[k]).filter(Boolean).sort().pop() || ""; return ts(b) > ts(a) ? b : a; }
+function importBundle(b, mode) {
+  const inP = (b.progress && typeof b.progress === "object") ? b.progress : {}, inN = (b.annotations && typeof b.annotations === "object") ? b.annotations : {};
+  let p = 0, n = 0;
+  if (mode === "replace") { progress.items = {}; notes.items = {}; }
+  for (const id of Object.keys(inP)) { if (!ID_OK.test(id)) continue; const cur = progress.items[id]; progress.items[id] = cur ? newer(cur, inP[id], ["lastOpened", "readAt"]) : inP[id]; p++; }
+  for (const doc of Object.keys(inN)) { if (!Array.isArray(inN[doc]) || doc.length > 300) continue;
+    const have = new Map((notes.items[doc] || []).map(a => [a.id, a]));
+    for (const a of inN[doc]) { if (!a || !a.id) continue; have.set(a.id, have.has(a.id) ? newer(have.get(a.id), a, ["updated", "created"]) : a); n++; }
+    notes.items[doc] = [...have.values()]; }
+  progress.updated = new Date().toISOString(); notes.updated = progress.updated; saveProgress(); saveNotes();
+  return { ok: true, progressItems: p, annotations: n, mode };
+}
 const ID_OK = /^[\w.\-]{1,120}$/;
 function readBody(req, cb) {
   let b = ""; req.on("data", c => { b += c; if (b.length > 2e6) req.destroy(); });
@@ -115,6 +131,23 @@ function readBody(req, cb) {
 }
 function api(req, res, url) {
   const json = (code, obj) => send(res, code, MIME[".json"], JSON.stringify(obj));
+  /* study data: everything personal (progress, highlights, notes) as one bundle, for backup, moving machines or keeping in the repo */
+  if (url.pathname === "/__hub/api/export" && req.method === "GET") return json(200, bundle());
+  if (url.pathname === "/__hub/api/export-to-repo" && req.method === "POST") {
+    const dir = path.join(ROOT, "study-data"); fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, "study-data.json"); const tmp = file + ".tmp";
+    fs.writeFileSync(tmp, JSON.stringify(bundle(), null, 2)); fs.renameSync(tmp, file);
+    return json(200, { ok: true, file: "study-data/study-data.json" });
+  }
+  if (url.pathname === "/__hub/api/reset" && req.method === "POST") {
+    progress.items = {}; notes.items = {}; progress.updated = notes.updated = new Date().toISOString(); saveProgress(); saveNotes();
+    return json(200, { ok: true });
+  }
+  if (url.pathname === "/__hub/api/import" && req.method === "POST") return readBody(req, (err, b) => {
+    if (err || !b || !b.bundle || typeof b.bundle !== "object") return json(400, { error: "bad body" });
+    const r = importBundle(b.bundle, b.mode === "replace" ? "replace" : "merge");
+    json(200, r);
+  });
   if (url.pathname === "/__hub/api/annotations") {
     if (req.method === "GET") return json(200, notes);
     if (req.method === "POST") return readBody(req, (err, b) => {

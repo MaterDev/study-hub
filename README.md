@@ -40,6 +40,12 @@ Then open <http://localhost:4777/>. On macOS you can also double-click **`Start 
 
 The dev server hot-reloads as files change, so you can watch a lesson take shape while the agent writes it. Your reading progress is saved locally in `.hub-data/` and is not committed.
 
+## Your progress, highlights and notes
+
+Select text on a lesson page or in an attached reading, right-click, and choose a highlight colour. Click a highlight to add a note. The hub remembers what you have read, too. That data is yours and stays out of git: with the server it lives in `.hub-data/`, and without the server it lives in your browser.
+
+To keep a copy in the repo, move to another computer, or start over, use the **DATA** button in the top bar (export to the repo, download a backup, import, reset) or run `npm run reset`. The full guide, including a warning about public repositories, is in [`study-data/README.md`](study-data/README.md).
+
 ## Adding to the shelf
 
 Lessons are created in conversation with an agent. [`docs/HUB-STRUCTURE.md`](docs/HUB-STRUCTURE.md) describes how sections, manifests, dating, stubs and read-tracking fit together, and it's the file to point an agent at before it adds or edits content.
