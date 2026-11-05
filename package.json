@@ -6,7 +6,8 @@
     "dev": "node server.js --open",
     "start": "node server.js",
     "check": "node scripts/check-structure.mjs",
-    "reset": "node scripts/reset-study-data.mjs"
+    "reset": "node scripts/reset-study-data.mjs",
+    "sync-data": "node scripts/sync-study-data.mjs"
   },
   "engines": {
     "node": ">=18"

@@ -1,0 +1,494 @@
+{
+  "schema": "study-hub-data/1",
+  "exportedAt": "2026-11-05T18:30:08.533Z",
+  "progress": {
+    "anim-02": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:54.919Z",
+      "firstOpened": "2026-10-23T18:17:38.507Z",
+      "lastOpened": "2026-10-23T18:18:01.232Z",
+      "opens": 3
+    },
+    "clivsmcp": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-23T18:25:38.044Z",
+      "lastOpened": "2026-10-27T15:31:55.268Z",
+      "opens": 17
+    },
+    "websockets": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:15.241Z",
+      "firstOpened": "2026-10-23T18:26:10.463Z",
+      "lastOpened": "2026-10-27T15:20:13.506Z",
+      "opens": 5
+    },
+    "transports": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:18.081Z",
+      "firstOpened": "2026-10-23T18:26:11.779Z",
+      "lastOpened": "2026-10-23T18:27:08.823Z",
+      "opens": 2
+    },
+    "webrtc": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:19.481Z",
+      "firstOpened": "2026-10-23T18:26:12.804Z",
+      "lastOpened": "2026-10-23T18:27:09.769Z",
+      "opens": 2
+    },
+    "gameloops": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:20.469Z",
+      "firstOpened": "2026-10-23T18:26:13.705Z",
+      "lastOpened": "2026-10-23T18:27:10.812Z",
+      "opens": 2
+    },
+    "netcodemodels": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:39.564Z",
+      "firstOpened": "2026-10-23T18:26:14.723Z",
+      "lastOpened": "2026-10-23T18:27:11.735Z",
+      "opens": 2
+    },
+    "snapshots": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:27.320Z",
+      "firstOpened": "2026-10-23T18:26:15.786Z",
+      "lastOpened": "2026-10-23T18:27:12.794Z",
+      "opens": 2
+    },
+    "latency": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:29.085Z",
+      "firstOpened": "2026-10-23T18:26:16.783Z",
+      "lastOpened": "2026-10-23T18:27:13.754Z",
+      "opens": 2
+    },
+    "determinism": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:30.764Z",
+      "firstOpened": "2026-10-23T18:26:17.762Z",
+      "lastOpened": "2026-10-23T18:27:14.788Z",
+      "opens": 2
+    },
+    "scoring": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:31.591Z",
+      "firstOpened": "2026-10-23T18:26:18.762Z",
+      "lastOpened": "2026-10-23T18:27:15.768Z",
+      "opens": 2
+    },
+    "usingspike": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:41.723Z",
+      "firstOpened": "2026-10-23T18:26:19.724Z",
+      "lastOpened": "2026-10-23T18:27:16.798Z",
+      "opens": 2
+    },
+    "subagents": {
+      "read": true,
+      "readAt": "2026-10-23T18:30:42.482Z",
+      "firstOpened": "2026-10-23T18:26:20.807Z",
+      "lastOpened": "2026-11-05T18:09:14.769Z",
+      "opens": 8
+    },
+    "modelstudio": {
+      "read": true,
+      "readAt": "2026-10-23T18:30:46.849Z",
+      "firstOpened": "2026-10-23T18:26:22.757Z",
+      "lastOpened": "2026-10-23T18:27:19.764Z",
+      "opens": 2
+    },
+    "fable": {
+      "read": true,
+      "readAt": "2026-10-23T18:30:47.407Z",
+      "firstOpened": "2026-10-23T18:26:23.740Z",
+      "lastOpened": "2026-10-23T18:27:20.820Z",
+      "opens": 2
+    },
+    "devflows": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:41.254Z",
+      "firstOpened": "2026-10-23T18:26:24.824Z",
+      "lastOpened": "2026-11-05T18:09:08.581Z",
+      "opens": 18
+    },
+    "aidiff-overview": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:42.853Z",
+      "firstOpened": "2026-10-23T18:26:25.726Z",
+      "lastOpened": "2026-10-23T18:32:05.406Z",
+      "opens": 16
+    },
+    "aidiff-1": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:43.482Z",
+      "firstOpened": "2026-10-23T18:26:26.779Z",
+      "lastOpened": "2026-10-23T18:30:56.058Z",
+      "opens": 3
+    },
+    "aidiff-2": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:49.037Z",
+      "firstOpened": "2026-10-23T18:26:27.728Z",
+      "lastOpened": "2026-10-23T18:27:24.783Z",
+      "opens": 2
+    },
+    "aidiff-3": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:50.311Z",
+      "firstOpened": "2026-10-23T18:26:28.780Z",
+      "lastOpened": "2026-10-27T15:20:13.897Z",
+      "opens": 5
+    },
+    "aidiff-4": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:50.786Z",
+      "firstOpened": "2026-10-23T18:26:29.760Z",
+      "lastOpened": "2026-10-23T18:27:26.811Z",
+      "opens": 2
+    },
+    "aidiff-5": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:52.389Z",
+      "firstOpened": "2026-10-23T18:26:30.785Z",
+      "lastOpened": "2026-10-23T18:27:49.535Z",
+      "opens": 3
+    },
+    "anim-01": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:53.016Z",
+      "firstOpened": null,
+      "lastOpened": null,
+      "opens": 0
+    },
+    "anim-03": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:56.203Z",
+      "firstOpened": null,
+      "lastOpened": null,
+      "opens": 0
+    },
+    "anim-04": {
+      "read": true,
+      "readAt": "2026-10-23T20:46:57.440Z",
+      "firstOpened": null,
+      "lastOpened": null,
+      "opens": 0
+    },
+    "fe-1.1": {
+      "read": true,
+      "readAt": "2026-10-23T20:47:20.398Z",
+      "firstOpened": null,
+      "lastOpened": null,
+      "opens": 0
+    },
+    "trusted-advisor": {
+      "read": true,
+      "readAt": "2026-10-27T21:28:28.497Z",
+      "firstOpened": "2026-10-26T14:59:54.906Z",
+      "lastOpened": "2026-10-27T22:15:44.462Z",
+      "opens": 78
+    },
+    "sh-1.1": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-27T14:28:58.137Z",
+      "lastOpened": "2026-10-27T15:20:11.521Z",
+      "opens": 6
+    },
+    "wp-1.1": {
+      "read": true,
+      "readAt": "2026-10-27T17:00:50.086Z",
+      "firstOpened": "2026-10-27T14:32:29.152Z",
+      "lastOpened": "2026-10-27T17:42:41.017Z",
+      "opens": 27
+    },
+    "anim-06": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-27T14:36:10.162Z",
+      "lastOpened": "2026-10-27T15:20:11.918Z",
+      "opens": 9
+    },
+    "wp-1.2": {
+      "read": true,
+      "readAt": "2026-10-27T17:42:34.126Z",
+      "firstOpened": "2026-10-27T14:40:38.136Z",
+      "lastOpened": "2026-10-27T17:42:42.187Z",
+      "opens": 17
+    },
+    "ctxeng": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-27T15:08:36.715Z",
+      "lastOpened": "2026-10-27T15:20:12.717Z",
+      "opens": 4
+    },
+    "wp-2.1": {
+      "read": true,
+      "readAt": "2026-11-05T18:13:38.290Z",
+      "firstOpened": "2026-10-27T17:49:38.116Z",
+      "lastOpened": "2026-10-27T17:50:49.672Z",
+      "opens": 5
+    },
+    "wp-2.2": {
+      "read": true,
+      "readAt": "2026-10-27T18:06:33.335Z",
+      "firstOpened": "2026-10-27T18:06:30.879Z",
+      "lastOpened": "2026-10-27T18:07:08.100Z",
+      "opens": 3
+    },
+    "wp-3.1": {
+      "read": true,
+      "readAt": "2026-10-27T18:06:36.677Z",
+      "firstOpened": "2026-10-27T18:06:34.200Z",
+      "lastOpened": "2026-10-27T18:07:10.396Z",
+      "opens": 3
+    },
+    "wp-3.2": {
+      "read": true,
+      "readAt": "2026-10-27T18:06:42.271Z",
+      "firstOpened": "2026-10-27T18:06:39.789Z",
+      "lastOpened": "2026-10-27T18:07:12.705Z",
+      "opens": 3
+    },
+    "wp-3.3": {
+      "read": true,
+      "readAt": "2026-10-27T18:06:45.426Z",
+      "firstOpened": "2026-10-27T18:06:42.946Z",
+      "lastOpened": "2026-10-27T18:07:20.033Z",
+      "opens": 2
+    },
+    "wp-3.4": {
+      "read": true,
+      "readAt": "2026-10-27T18:06:48.824Z",
+      "firstOpened": "2026-10-27T18:06:46.347Z",
+      "lastOpened": "2026-10-27T18:12:08.526Z",
+      "opens": 4
+    },
+    "wp-2.3": {
+      "read": true,
+      "readAt": "2026-10-27T18:12:21.785Z",
+      "firstOpened": "2026-10-27T18:12:19.410Z",
+      "lastOpened": "2026-10-27T18:12:19.410Z",
+      "opens": 1
+    },
+    "wp-2.4": {
+      "read": true,
+      "readAt": "2026-10-27T18:12:25.396Z",
+      "firstOpened": "2026-10-27T18:12:23.015Z",
+      "lastOpened": "2026-10-27T18:17:10.594Z",
+      "opens": 5
+    },
+    "ce-1": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-27T18:17:18.666Z",
+      "lastOpened": "2026-11-05T17:57:31.974Z",
+      "opens": 16
+    },
+    "ce-2": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-27T18:17:22.621Z",
+      "lastOpened": "2026-10-27T18:20:53.467Z",
+      "opens": 3
+    },
+    "ce-3": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-27T18:20:20.585Z",
+      "lastOpened": "2026-10-27T18:20:55.990Z",
+      "opens": 4
+    },
+    "ce-4": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-10-27T18:20:25.543Z",
+      "lastOpened": "2026-10-27T18:20:58.486Z",
+      "opens": 2
+    },
+    "cy-1": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-05T18:11:46.224Z",
+      "lastOpened": "2026-11-05T18:30:06.875Z",
+      "opens": 15
+    },
+    "cy-2": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-05T18:11:52.480Z",
+      "lastOpened": "2026-11-05T18:19:57.953Z",
+      "opens": 8
+    },
+    "cy-3": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-05T18:13:51.453Z",
+      "lastOpened": "2026-11-05T18:14:58.257Z",
+      "opens": 4
+    }
+  },
+  "annotations": {
+    "lesson:sections/soft-skills/lessons/the-trusted-advisor.html": [
+      {
+        "id": "nmvr53tfqhb2h",
+        "color": "yellow",
+        "note": "",
+        "quote": "trust rises with credibility (can we believe you?), reliability (do you do what you said?) and intimacy (do people feel safe being open with you?), and falls as self-orientation (is your focus on you, or on them and the shared goal?) rises",
+        "prefix": "s firm describes it in words: ",
+        "suffix": ". Written as a fraction, that ",
+        "created": "2026-10-27T20:30:25.478Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr5c06jwg0g",
+        "color": "yellow",
+        "note": "",
+        "quote": "One property of the model is worth noticing: because self-orientation is the divisor, lowering it when it is high changes the result far more than polishing a strength. Expertise (credibility) alone does not make you trusted; a brilliant, self-focused expert scores low",
+        "prefix": "ent\"); this is not that.\n  \n  ",
+        "suffix": ".\n\n  3 Five things that are tr",
+        "created": "2026-10-27T20:36:47.467Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr5jjvh6a40",
+        "color": "yellow",
+        "note": "",
+        "quote": "You are more likely to be liked first; trust comes from accumulated experience.",
+        "prefix": "sIt rarely appears instantly. ",
+        "suffix": "On a projectExpect to earn it ",
+        "created": "2026-10-27T20:42:39.581Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr5mms41n6l",
+        "color": "yellow",
+        "note": "",
+        "quote": "your support, dedication to their interests and courage in challenging them.",
+        "prefix": "eigh your expertise, and also ",
+        "suffix": "On a projectA technically perf",
+        "created": "2026-10-27T20:45:03.316Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr5myysln2r",
+        "color": "yellow",
+        "note": "",
+        "quote": "client has to participate and reciprocate, in their own time.",
+        "prefix": "u cannot create it alone; the ",
+        "suffix": "On a projectAsk for their inpu",
+        "created": "2026-10-27T20:45:19.108Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr5ox57jey7",
+        "color": "yellow",
+        "note": "",
+        "quote": "Say the uncomfortable thing about scope, timeline or a bad idea, with care",
+        "prefix": " nothing to trust.On a project",
+        "suffix": ".tap to expandIt is personalPe",
+        "created": "2026-10-27T20:46:50.059Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr5p7sbgxn7",
+        "color": "yellow",
+        "note": "",
+        "quote": "People trust people, not brands or processes.",
+        "prefix": "re.tap to expandIt is personal",
+        "suffix": " An organisation can get on a ",
+        "created": "2026-10-27T20:47:03.851Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr60h7se5sm",
+        "color": "yellow",
+        "note": "",
+        "quote": "Watch out forListening too rationally (only collecting facts) or too passively (nodding without engaging). Interrupting, jumping to conclusions and solving too quickly.",
+        "prefix": "at shows each person is heard.",
+        "suffix": "On a client projectParaphrase ",
+        "created": "2026-10-27T20:55:49.288Z",
+        "title": "The Trusted Advisor: Earning Client Trust",
+        "display": "Watch out for Listening too rationally (only collecting facts) or too passively (nodding without engaging). Interrupting, jumping to conclusions and solving too quickly."
+      },
+      {
+        "id": "nmvr60o1edxh3",
+        "color": "yellow",
+        "note": "Reminds me of motivational interviewing techniques.",
+        "quote": "On a client projectParaphrase the problem back, ask for the story behind it, and ask how you might be of help before proposing anything.",
+        "prefix": "sions and solving too quickly.",
+        "suffix": "\n  \n  There is no magic stage.",
+        "created": "2026-10-27T20:55:58.130Z",
+        "title": "The Trusted Advisor: Earning Client Trust",
+        "updated": "2026-10-27T20:56:12.630Z",
+        "display": "On a client project Paraphrase the problem back, ask for the story behind it, and ask how you might be of help before proposing anything."
+      },
+      {
+        "id": "nmvr66dojxtw4",
+        "color": "yellow",
+        "note": "",
+        "quote": "Crystallising the client's tangled issues and feelings into a problem statement that gives a fresh way of thinking.",
+        "prefix": "over-enthusiasm\n    What it is",
+        "suffix": " It has a rational side (disti",
+        "created": "2026-10-27T21:00:24.643Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr66vnvhjus",
+        "color": "yellow",
+        "note": "",
+        "quote": "move from blame to a problem someone can own and act on",
+        "prefix": "\" or \"we need more training\"; ",
+        "suffix": ".On a client project\"Naming an",
+        "created": "2026-10-27T21:00:47.947Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr67csznhpw",
+        "color": "yellow",
+        "note": "",
+        "quote": "\"Naming and claiming\": acknowledge it is hard to raise, accept responsibility for raising it",
+        "prefix": "and act on.On a client project",
+        "suffix": ", then state the issue directl",
+        "created": "2026-10-27T21:01:10.163Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr68nbv70ws",
+        "color": "yellow",
+        "note": "",
+        "quote": "Three questions anchor it: what are we really aiming for, what will it look like when we get there, and how will we know we are there?",
+        "prefix": "better future in rich detail. ",
+        "suffix": "Watch out forPremature solving",
+        "created": "2026-10-27T21:02:10.459Z",
+        "title": "The Trusted Advisor: Earning Client Trust"
+      },
+      {
+        "id": "nmvr6aak2pef8",
+        "color": "yellow",
+        "note": "<b>Ive noticed this in my day job.</b> For example when it comes to gathering requirements to solve internal issues or trying to fix problems in a team people can be reluctant to show their real sentiments, needs, etc. Sometimes its because of how the context makes the feel or because they are in conflict with some of their other needs.<br><br>Psychological safety, politics, incentives, ego, etc.<br><br>I think i tend to put my expertise in my action. I try hard to level my language so that its appropriate for my audience or for what I'm trying to accomplish. I agree that jargon and domain specific terminology can sometimes disorient people, especially when they're not actually in the weeds.",
+        "quote": "visible expertise can make clients guarded, because credentials and gadgets raise their sense of being judged or of being behind. Setting the trappings aside, being curious, and putting the client's intelligence and situation first, lowers the barriers.",
+        "prefix": "ator. The point for advisors: ",
+        "suffix": "\n  \n    \n      \n        How mu",
+        "created": "2026-10-27T21:03:27.218Z",
+        "title": "The Trusted Advisor: Earning Client Trust",
+        "updated": "2026-10-27T21:07:16.572Z"
+      },
+      {
+        "id": "nmvr6mz3g1ann",
+        "color": "yellow",
+        "note": "<b>Next client conversation, I will:</b><ol><li><b>Note what the client feels</b>: Name the feeling (and your own, carefully).</li><li><b>Relax your mind before the meeting</b>: Clear distractions; remind yourself it is about the client.</li><li><b>Listen to everything</b>: Paraphrase what you hear until you can say it back.</li></ol>",
+        "quote": "The quick-impact list: pick your three",
+        "prefix": " to self-orientation.\n  \n\n  7 ",
+        "suffix": "\n  The summary ends with a lis",
+        "created": "2026-10-27T21:13:18.892Z",
+        "title": "The Trusted Advisor: Earning Client Trust",
+        "updated": "2026-10-27T21:13:20.577Z"
+      }
+    ]
+  }
+}

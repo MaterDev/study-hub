@@ -49,6 +49,10 @@ When explaining educational content in chat, combine formatting with text-to-spe
 
 ## Git
 - Commit locally when work is done. No conversation links or session ids in commit messages.
+- **Before every push, run `npm run sync-data`** and commit `study-data/study-data.json` if it changed (message such as
+  "Sync study data"). This keeps the repo copy of Key's progress, highlights and notes current. It is a machine setting
+  (the DATA panel, or `.hub-data/settings.json`), on by default here, and it skips itself when off or when there is no data.
+  The website never publishes the file (`_config.yml` excludes it), and a fresh clone is unaffected.
 - **Ask before pushing**, every time: Key has been answering "push it" per change. The repo is public
   (`MaterDev/study-hub`, MIT license); `.hub-data/` (reading progress) and `matrix-concept-art-app-stitch-project.md` stay untracked.
 

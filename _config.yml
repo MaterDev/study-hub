@@ -1,0 +1,4 @@
+# GitHub Pages (Jekyll) settings.
+# Your personal study data is kept in the repo but is never published on the website.
+exclude:
+  - study-data/study-data.json

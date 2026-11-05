@@ -9,7 +9,7 @@
   var LS_P = "hub-progress-v1", LS_N = "hub-notes-v1", LS_AUTO = "hub-use-repo-data", REPO_FILE = "study-data/study-data.json";
   function lsGet(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }catch(e){ return d; } }
   function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
-  var serverUp = null;
+  var serverUp = null, serverSettings = {syncOnPush:true};
   function hasServer(){ if(serverUp != null) return Promise.resolve(serverUp);
     return fetch("/__hub/api/export").then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(b){ serverUp = b; return b; }).catch(function(){ serverUp = false; return false; }); }
   function localBundle(){ return { schema:"study-hub-data/1", exportedAt:new Date().toISOString(), progress:lsGet(LS_P,{}), annotations:lsGet(LS_N,{}) }; }
@@ -33,7 +33,7 @@
       applyLocal(bundle, mode);
     });
   }
-  function fetchRepo(){ return fetch(REPO_FILE + "?t=" + Date.now()).then(function(r){ if(!r.ok) throw new Error("No repo copy yet (" + REPO_FILE + ")."); return r.json(); }); }
+  function fetchRepo(){ return fetch(REPO_FILE + "?t=" + Date.now()).then(function(r){ if(!r.ok) throw new Error("No repo copy is available here. It is not published to the website, so use Import file instead."); return r.json(); }); }
 
   /* ---- first visit: optionally use the repo copy ---- */
   (function auto(){
@@ -59,7 +59,7 @@
     var fileIn = document.createElement("input"); fileIn.type = "file"; fileIn.accept = "application/json,.json"; fileIn.hidden = true; fileIn.setAttribute("data-testid","study-data-file"); document.body.appendChild(fileIn);
     function msg(t, bad){ var m = pop.querySelector(".hd-msg"); if(m){ m.textContent = t; m.style.color = bad ? "var(--bad,#a44646)" : "var(--good,#3a7a52)"; } }
     function render(){
-      current().then(function(b){ var c = counts(b), up = serverUp !== false && !!serverUp;
+      (serverUp ? fetch("/__hub/api/settings").then(function(r){ return r.json(); }).then(function(x){ serverSettings = x; }).catch(function(){}) : Promise.resolve()).then(current).then(function(b){ var c = counts(b), up = serverUp !== false && !!serverUp, syncOn = up && serverSettings.syncOnPush !== false;
         pop.innerHTML =
           '<h3>Study data</h3><p>Your reading progress, highlights and notes: <b>' + c.read + '</b> lessons read, <b>' + c.highlights + '</b> highlights. ' + (up ? 'Saved by the server on this machine.' : 'Saved in this browser only.') + '</p>' +
           '<div class="hd-sec"><b>Keep a copy in the repo</b><p class="hd-small">Writes <code>' + REPO_FILE + '</code> so you can commit it and use it on another computer.</p>' +
@@ -70,6 +70,7 @@
           '<div class="hd-row"><button type="button" class="hd-act" data-a="from-repo" data-testid="study-data-import-repo">Use repo copy</button><button type="button" class="hd-act" data-a="from-file" data-testid="study-data-import-file">Import file…</button></div>' +
           '<label class="hd-lbl"><input type="checkbox" data-a="replace" data-testid="study-data-replace"> <span>Replace instead of merge</span></label>' +
           '<label class="hd-lbl"><input type="checkbox" data-a="auto" data-testid="study-data-auto"' + (lsGet(LS_AUTO,false) ? ' checked' : '') + '> <span>Use the repo copy automatically when this browser has no data</span></label></div>' +
+          (up ? '<div class="hd-sec"><b>Sync on push</b><label class="hd-lbl"><input type="checkbox" data-a="sync" data-testid="study-data-sync"' + (syncOn ? ' checked' : '') + '> <span>When Claude pushes from this machine, refresh the repo copy first</span></label><p class="hd-small">Machine setting, on by default. It never affects the website, which does not publish the repo copy.</p></div>' : '') +
           '<div class="hd-sec"><b>Start over</b><p class="hd-small">Clears your read marks, highlights and notes here. Export first if you might want them back.</p>' +
           '<div class="hd-row"><button type="button" class="hd-act" data-a="reset" data-testid="study-data-reset">Reset my data…</button></div></div>' +
           '<div class="hd-msg" role="status" data-testid="study-data-message"></div>'; });
@@ -80,7 +81,8 @@
     document.addEventListener("keydown", function(e){ if(e.key === "Escape") pop.hidden = true; });
     function modeSel(){ var c = pop.querySelector('[data-a="replace"]'); return c && c.checked ? "replace" : "merge"; }
     function done(t){ msg(t); setTimeout(function(){ location.reload(); }, 900); }
-    pop.addEventListener("change", function(e){ if(e.target.dataset.a === "auto") lsSet(LS_AUTO, e.target.checked); });
+    pop.addEventListener("change", function(e){ if(e.target.dataset.a === "auto") lsSet(LS_AUTO, e.target.checked);
+      if(e.target.dataset.a === "sync"){ var on = e.target.checked; fetch("/__hub/api/settings", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({syncOnPush:on})}).then(function(r){ if(!r.ok) throw 0; serverSettings.syncOnPush = on; msg(on ? "Will refresh the repo copy before each push from this machine." : "Push will leave the repo copy alone."); }).catch(function(){ msg("Could not save the setting.", true); }); } });
     pop.addEventListener("click", function(e){
       var b = e.target.closest("[data-a]"); if(!b || b.tagName === "INPUT") return; var a = b.dataset.a;
       if(a === "repo"){ fetch("/__hub/api/export-to-repo", {method:"POST"}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(r){ msg("Saved to " + r.file + ". Commit it to keep it in the repo."); }).catch(function(){ msg("Could not write the file. Is the server running?", true); }); }

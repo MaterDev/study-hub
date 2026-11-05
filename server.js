@@ -108,6 +108,11 @@ function saveNotes() {
   fs.writeFileSync(tmp, JSON.stringify(notes, null, 2));
   fs.renameSync(tmp, NOTES_FILE);
 }
+/* machine-local settings: .hub-data/settings.json (syncOnPush: whenever Claude pushes on this machine, refresh study-data/study-data.json first) */
+const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
+let settings = { syncOnPush: true };
+try { settings = Object.assign(settings, JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"))); } catch (_) {}
+function saveSettings() { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2)); }
 function bundle() {
   return { schema: "study-hub-data/1", exportedAt: new Date().toISOString(), progress: progress.items, annotations: notes.items };
 }
@@ -138,6 +143,13 @@ function api(req, res, url) {
     const file = path.join(dir, "study-data.json"); const tmp = file + ".tmp";
     fs.writeFileSync(tmp, JSON.stringify(bundle(), null, 2)); fs.renameSync(tmp, file);
     return json(200, { ok: true, file: "study-data/study-data.json" });
+  }
+  if (url.pathname === "/__hub/api/settings") {
+    if (req.method === "GET") return json(200, settings);
+    if (req.method === "POST") return readBody(req, (err, b) => {
+      if (err || !b || typeof b.syncOnPush !== "boolean") return json(400, { error: "bad body" });
+      settings.syncOnPush = b.syncOnPush; saveSettings(); json(200, settings);
+    });
   }
   if (url.pathname === "/__hub/api/reset" && req.method === "POST") {
     progress.items = {}; notes.items = {}; progress.updated = notes.updated = new Date().toISOString(); saveProgress(); saveNotes();

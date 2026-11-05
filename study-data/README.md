@@ -27,6 +27,12 @@ So a fresh clone starts empty, and a different computer or browser doesn't see y
 
 You can also use **Download backup** to save the same file anywhere you like, without touching the repo.
 
+## Sync on push (this machine)
+
+On the machine where you work with Claude, the repo copy refreshes whenever Claude pushes: it runs `npm run sync-data` first and commits the file if anything changed. This is a machine setting in the DATA panel (**Sync on push**, on by default) and is stored in `.hub-data/settings.json`, so it never travels with the repo. On a fresh clone there is nothing to sync, so nothing happens.
+
+The website (GitHub Pages) never publishes the file: `_config.yml` excludes it, so the live site cannot read it. The repository itself, if public, still shows the file.
+
 ## Use it on another computer or after a fresh clone
 
 - Click **DATA**, then **Use repo copy** (reads `study-data/study-data.json`), or **Import file…** to pick a backup you downloaded.
