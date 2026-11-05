@@ -1,6 +1,6 @@
 {
   "schema": "study-hub-data/1",
-  "exportedAt": "2026-11-05T18:30:08.533Z",
+  "exportedAt": "2026-11-05T18:33:40.111Z",
   "progress": {
     "anim-02": {
       "read": true,
@@ -314,8 +314,8 @@
       "read": false,
       "readAt": null,
       "firstOpened": "2026-11-05T18:11:46.224Z",
-      "lastOpened": "2026-11-05T18:30:06.875Z",
-      "opens": 15
+      "lastOpened": "2026-11-05T18:30:11.854Z",
+      "opens": 16
     },
     "cy-2": {
       "read": false,
