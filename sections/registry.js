@@ -8,7 +8,8 @@ window.HUB_REGISTRY = [
   "working-learning-with-ai",
   "platforms",
   "soft-skills",
-  "mind-philosophy"
+  "mind-philosophy",
+  "systems-information"
 ];
 /* Loads every manifest via <script src> (works on file://), then calls cb(sortedSections). */
 window.hubLoadSections = function(base, cb){

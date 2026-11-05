@@ -130,6 +130,8 @@ Bring over only lessons + learning material (not the old project's tooling, memo
 | 4 | Working & Learning with AI | Individual AI workflows + the Lovett (2026) module |
 | 5 | Platforms & Client Work | Courses: Shopify for Developers · WordPress for Front-End & UI Developers (stubs only so far) |
 | 6 | Soft Skills & Collaboration | Trust and client relationships (The Trusted Advisor) |
+| 7 | Mind & Philosophy | Careenium module (Hofstadter 1982), 4 lessons |
+| 8 | Systems & Information | Wiener's Cybernetics module, 12 lessons planned (stubs) |
 
 ## Notes
 
