@@ -1,7 +1,8 @@
 /* Hub reader: a right-edge drawer that shows a module's attached readings (PDFs) beside the lesson.
    A section, module, group or single lesson lists them in its manifest (a lesson's own readings show only on that lesson):  "readings": [{ "id", "title", "kind": "pdf", "file", "credit" }]
    The hub shell calls hubReader.setContext(entry) as you navigate; tabs appear for the readings of the module you are in.
-   Lessons can open one with  parent.postMessage({hub:"reading", id:"<reading id>"}, "*").
+   Lessons can open one with  parent.postMessage({hub:"reading", id:"<reading id>"}, "*"), or jump to a cited page through shared/hub-cite.js.
+   A reading whose printed page numbers differ from its PDF pages declares  "pageMap": { "offset", "romanOffset" }  (PDF page = printed page + offset).
    Reading position (page + offset) is saved per reading in localStorage and restored on open.
    PDF rendering uses the vendored pdf.js in shared/vendor/pdfjs. */
 (function(){
@@ -27,6 +28,7 @@
     ".rd-text mark.hub-hl{color:transparent; mix-blend-mode:multiply;}",
     ".rd-text mark.hub-hl[data-note]{border-bottom-color:#2a3150;} .rd-text mark.hub-hl[data-note]::after{color:#2a3150; font-size:13px;}",
     ".rd-text mark.hub-hl.hub-flash{outline-color:#2a3150;}",
+    ".rd-page.rd-hit{outline:5px solid var(--ochre,#ffe066); outline-offset:-1px;}",
     ".rd-msg{padding:30px 20px; font-family:var(--font-ui); color:#fff; font-weight:700;}",
     ".rd-foot{padding:5px 10px; border-top:3px solid var(--outline); font-family:var(--font-ui); font-size:.7rem; color:var(--ink); background:var(--sunken,var(--surface));}",
     "@media (max-width:640px){.rd-drawer{width:100%; min-width:0;} .rd-tabs{top:auto; bottom:84px;}}"
@@ -50,7 +52,7 @@
   host.appendChild(drawer); host.appendChild(tabsEl);
   var body = drawer.querySelector(".rd-body"), titleEl = drawer.querySelector(".rd-title"), posEl = drawer.querySelector(".rd-pos"), creditEl = drawer.querySelector(".rd-foot");
 
-  var readings = [], current = null, docs = {}, zoom = 1, pages = [], pdfjs = null, rendering = {}, io = null;
+  var readings = [], current = null, docs = {}, zoom = 1, pages = [], pdfjs = null, rendering = {}, io = null, loading = false, jumpTo = null, flashPage = null;
 
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
   function save(id, v){ try{ var m = load(); m[id] = v; localStorage.setItem(KEY, JSON.stringify(m)); }catch(e){} }
@@ -130,8 +132,20 @@
     return chain;
   }
 
+  function flash(){ var pg = flashPage && pages[flashPage-1]; flashPage = null; if(!pg) return;
+    body.querySelectorAll(".rd-hit").forEach(function(el){ el.classList.remove("rd-hit"); });
+    pg.el.classList.add("rd-hit"); setTimeout(function(){ pg.el.classList.remove("rd-hit"); }, 1800); }
+  function romanValue(s){ var v = {i:1,v:5,x:10,l:50,c:100}, t = 0;
+    for(var i=0;i<s.length;i++){ var a = v[s[i]], b = v[s[i+1]] || 0; t += a < b ? -a : a; } return t; }
+  function cite(c){
+    var r = readings.filter(function(x){ return c.reading ? x.id===c.reading : x.kind==="pdf"; })[0]; if(!r) return;
+    var map = r.pageMap || {}, p = String(c.page);
+    var n = /^\d+$/.test(p) ? +p + (c.pdf ? 0 : (map.offset || 0)) : romanValue(p) + (c.pdf ? 0 : (map.romanOffset || 0));
+    flashPage = n; openAt(r.id, n);
+  }
   function openAt(id, page){ var r = readings.filter(function(x){ return x.id===id; })[0]; if(!r) return;
-    if(current && current.id===id && pages.length && drawer.classList.contains("open")){ restore({page:page, frac:0}); return; }
+    if(current && current.id===id && loading){ jumpTo = page; drawer.classList.add("open"); return; }
+    if(current && current.id===id && pages.length && drawer.classList.contains("open")){ restore({page:page, frac:0}); flash(); return; }
     var m = load(); m[id] = Object.assign({}, m[id], {page:page, frac:0}); try{ localStorage.setItem(KEY, JSON.stringify(m)); }catch(e){}
     if(current && current.id===id){ pages = []; } open(id); }
   function open(id){
@@ -141,13 +155,13 @@
     body.style.background = ""; current = r; drawer.classList.add("open"); titleEl.textContent = r.title; creditEl.textContent = r.credit || ""; if(r.url){ creditEl.appendChild(document.createTextNode(" ")); var ca = document.createElement("a"); ca.href = r.url; ca.target = "_blank"; ca.rel = "noopener"; ca.textContent = "Original source"; ca.setAttribute("data-testid","reader-source-link"); creditEl.appendChild(ca); } drawTabs();
     if(!switching && pages.length){ placeTabs(); return; }
     var saved = load()[r.id] || {page:1, frac:0, zoom:1}; zoom = saved.zoom || 1;
-    body.innerHTML = '<div class="rd-msg">Loading…</div>'; pages = []; posEl.textContent = "";
+    body.innerHTML = '<div class="rd-msg">Loading…</div>'; pages = []; posEl.textContent = ""; loading = true; jumpTo = null;
     loadPdfjs().then(function(m){
       return docs[r.id] ? docs[r.id] : (docs[r.id] = m.getDocument(new URL(r.file, location.href).href).promise);
     }).then(function(pdf){
       if(current !== r) return;
-      return build(r, pdf).then(function(){ if(current !== r) return; layout(saved); updatePos(); });
-    }).catch(function(e){ body.innerHTML = '<div class="rd-msg" data-testid="reader-error">Could not load this reading.</div>'; try{ console.error("hub-reader", e); }catch(_){} });
+      return build(r, pdf).then(function(){ if(current !== r) return; layout(jumpTo ? {page:jumpTo, frac:0} : saved); jumpTo = null; loading = false; updatePos(); flash(); });
+    }).catch(function(e){ loading = false; body.innerHTML = '<div class="rd-msg" data-testid="reader-error">Could not load this reading.</div>'; try{ console.error("hub-reader", e); }catch(_){} });
     setTimeout(placeTabs, 220);
   }
   function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
@@ -222,4 +236,5 @@
   }
   window.hubReader = {setContext:setContext, open:function(id){ open(id); }, close:close};
   window.hubReader.openAt = openAt;
+  window.hubReader.cite = cite;
 })();

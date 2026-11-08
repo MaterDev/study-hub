@@ -31,6 +31,9 @@ lesson page free. The full rules are in [`docs/LESSON-STANDARD.md`](docs/LESSON-
   block (Contents or "In this lesson"), numbered `<h2 id="secN">` sections, a Takeaways & sources section, a footer,
   and the two script tags. The manifest entry needs anchors that match, dates, history, a rebuild brief and basis.
 - Source claims to primary documents, and say when something is my own synthesis or an illustrative number.
+- **When a lesson works from a text that is in the project** (a PDF in its `readings`), every citation of it must link to the
+  reference panel: write `[[pp. 11-12 and 18]]` and load `shared/hub-cite.js` in `<head>`. Each page or range becomes its own
+  link. See "Citing an attached reading" in `docs/LESSON-STANDARD.md`. Stated by Key, 2026-11-08.
 - Don't reuse the shared theme's component class names (`.flow`, `.pill`, `.badge`, `.card`, `.mid`) for page-specific widgets;
   the check warns (L11). Look at the result inside the hub, in both skins, and zoom in on text-on-fill areas.
 - Use theme variables, not hard-coded light colours, so the dark skin works; new hard-coded fills need an override in

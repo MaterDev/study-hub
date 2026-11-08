@@ -34,6 +34,8 @@ Enforced by `npm run check` (`scripts/check-structure.mjs`). Rule ids below matc
 | L8 | No third-party scripts or CDNs. Lessons are self-contained. |
 | L9 (warning) | No hard-coded white or light page backgrounds; use theme variables so the dark skin works. |
 | L12 | Inline `<script>` blocks must parse. (A stray doubled backslash from a shell heredoc once broke a whole lesson silently.) |
+| L13 | Citation markers (see **Citing an attached reading**) need `shared/hub-cite.js` loaded in `<head>`, and must point at a PDF reading attached to the lesson or its parents. |
+| L14 (warning) | A lesson with an attached PDF reading has page citations that are not linked. |
 | L10 (warning) | Interactive controls carry `data-testid` (kebab-case, scoped to the component). |
 | L11 (warning) | Don't reuse class names the shared theme already styles as components (for example `.flow`, `.pill`, `.badge`, `.card`, `.mid`): the theme's colours, sizing and text-transform leak in, and text can become unreadable. Give page-specific classes their own names (a short prefix works). |
 
@@ -63,6 +65,28 @@ Enforced by `npm run check` (`scripts/check-structure.mjs`). Rule ids below matc
 S1 to S2: folder, `manifest.js` and `index.html` present and registered; `scope` has purpose, includes and admission.
 Content lives under `sections/<id>/lessons/` or `courses/`.
 
+## Citing an attached reading
+When a lesson works from a text that is in the project (a PDF in its `readings`), **every citation of that text is a link** that opens the reference panel at the cited page. This applies to new and regenerated lessons, and to citations in static HTML and in strings the page's scripts render (quizzes, timelines, explorers).
+
+Wrap the citation, as it should read, in double square brackets:
+
+| You write | The reader sees | Links |
+|---|---|---|
+| `Wiener, [[p. 18]]` | Wiener, p. 18 | one |
+| `Wiener, [[pp. 11-12 and 18]]` | Wiener, pp. 11-12 and 18 | two, each opening its own page |
+| `[[pp. 45-47, 62]]` | pp. 45-47, 62 | two |
+| `Printed [[3-42]]` | Printed 3-42 | one |
+| `[[pp. xxxv and xlvii]]` | pp. xxxv and xlvii | two (roman front matter) |
+| `[[PDF page 53]]` | PDF page 53 | one, a PDF page rather than a printed one |
+| `[[careenium-paper: p. 3]]` | p. 3 | one, in a named reading (needed only when several PDFs are attached) |
+
+- Load `shared/hub-cite.js` in `<head>`, right after the theme link: `<script src="../../../shared/hub-cite.js"></script>`.
+- Write the page numbers **printed in the source**. If they differ from PDF pages, give the reading a `pageMap` in the manifest (see `docs/HUB-STRUCTURE.md`), and check it against the PDF.
+- A range opens at its first page.
+- Inside a button, link or dropdown option the citation shows as plain text, because a link can't nest there.
+- Don't put a marker in an HTML attribute or a `title`; those are never replaced.
+- Citations of works that are *not* attached stay plain text, or link out to the source.
+
 ## Page width
 The lesson window is up to 1080px wide (`--content-w` in `shared/theme.css`) so widgets have room, while running text (direct `<p>`, `<ul>`, `<ol>` children of `.wrap`) is held to a comfortable `--measure` of 78ch. Build widgets to fill the page; don't put a width cap on your own sections. Give grids `minmax(0, …)` columns or rely on `.stage div{min-width:0}` so long unbreakable text can't push a column out of its box, and check the page at phone width.
 
@@ -82,7 +106,7 @@ in light and dark**, never as a raw page.
 ## Checklist for building or regenerating
 0. Build in course order: take the next unbuilt lesson in its course, never a later one.
 1. Plan from the stub (or the existing lesson's rebuild brief). Research primary sources first.
-2. Build the page: free inside, standard around it.
+2. Build the page: free inside, standard around it. If it works from an attached reading, link every citation to it.
 3. Register or update the manifest node, set `"standard": "v1"`, bump `updated` and add a meaningful `history` note.
 4. `npm run check` until it reports **Structure OK**; read the warnings.
 5. Crawl and look at it in the hub, in both skins.

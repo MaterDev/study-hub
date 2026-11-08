@@ -32,6 +32,9 @@ for (const id of ids) {
 const themeCss = fs.readFileSync(path.join(root, "shared/theme.css"), "utf8").replace(/url\([^)]*\)/g, "");
 const themeClasses = new Set([...themeCss.matchAll(/(?:^|[\s,}>+~])\.([a-zA-Z][\w-]*)/gm)].map(m => m[1]));
 const HAZARD = new Set(["flow", "pill", "badge", "card", "mid"]);
+const citeContext = {}; vm.runInNewContext(fs.readFileSync(path.join(root, "shared/hub-cite.js"), "utf8"), citeContext);
+const parseCite = citeContext.hubCiteParse;
+const CITE_TOKEN = /\[\[([^\[\]\n]{1,80})\]\]/g;
 const has = (o, k) => o && o[k] != null && o[k] !== "" && !(Array.isArray(o[k]) && !o[k].length);
 const exists = rel => fs.existsSync(path.join(root, rel.split("?")[0].split("#")[0]));
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -44,6 +47,20 @@ function checkDates(w, n, stub) {
 function checkHistoryRebuild(w, n) {
   if (!Array.isArray(n.history) || !n.history.length || !n.history.every(h => DATE.test(h.date || "") && h.note)) err(w, "M5", "history needs at least one {date, note}");
   if (!n.rebuild || !n.rebuild.brief || !Array.isArray(n.rebuild.basis) || !n.rebuild.basis.length) err(w, "M6", "rebuild needs a brief and a non-empty basis[]");
+}
+
+function checkCitations(w, n, sec, parents, html, scripts, here) {
+  const pdfs = [sec, ...parents, n].flatMap(x => x.readings || []).filter(r => r.kind === "pdf");
+  const loaded = scripts.some(s => path.resolve(here, s) === path.join(root, "shared/hub-cite.js"));
+  const tokens = [...html.matchAll(CITE_TOKEN)].map(m => ({ body: m[1], cite: parseCite(m[1]) })).filter(t => t.cite && (loaded || /^(?:[a-z0-9-]+:\s+)?(?:pp?\.|pages?\s|PDF\s)/.test(t.body)));
+  if (tokens.length && !loaded) err(w, "L13", "uses [[citation]] markers but does not load shared/hub-cite.js");
+  if (loaded && html.indexOf("hub-cite.js") > html.indexOf("</head>")) err(w, "L13", "load shared/hub-cite.js in <head> so citations are replaced before the page paints");
+  if (tokens.length && !pdfs.length) err(w, "L13", "has [[citation]] markers but no PDF reading is attached to this lesson or its parents");
+  for (const t of tokens) if (t.cite.reading && !pdfs.some(r => r.id === t.cite.reading)) err(w, "L13", `[[${t.body}]] names a reading that is not attached here`);
+  if (pdfs.length) {
+    const bare = html.replace(CITE_TOKEN, "").match(/(?<![\w.\[])pp?\.\s(?:\d|[ivxlc]+\b)/g) || [];
+    if (bare.length) warn(w, "L14", `${bare.length} page citation(s) not linked. Wrap citations of the attached reading as [[pp. 11-12 and 18]]`);
+  }
 }
 
 function checkPage(w, n, sec, parents) {
@@ -75,6 +92,7 @@ function checkPage(w, n, sec, parents) {
     const hit = scripts.find(s => path.resolve(here, s) === path.join(root, need));
     if (!hit) err(w, "L7", `missing <script src> for ${need} (needed for the dated label)`);
   }
+  checkCitations(w, n, sec, parents, html, scripts, here);
   const ext = scripts.filter(s => /^(https?:)?\/\//.test(s)); if (ext.length) err(w, "L8", `third-party scripts are not allowed: ${ext.join(", ")}`);
   if (/<style[\s\S]*?background:\s*(#fff\b|#ffffff\b|white\b)/i.test(html)) warn(w, "L9", "hard-coded white background in <style>: use theme variables so the dark skin works");
   for (const m of html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)) {

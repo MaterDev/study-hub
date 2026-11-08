@@ -643,6 +643,7 @@ window.addEventListener("message", ev => {
   if(d.hub==="open") openLesson(d.id, null);
   else if(d.hub==="section") openSection(d.id);
   else if(d.hub==="reading"){ if(window.hubReader) window.hubReader.open(d.id); }
+  else if(d.hub==="cite"){ if(window.hubReader) window.hubReader.cite(d); }
   else if(d.hub==="at"){ const e = d.id ? INDEX[d.id] : BY_FILE[d.file]; if(e) syncTo(e.node.id, null); }
 });
 

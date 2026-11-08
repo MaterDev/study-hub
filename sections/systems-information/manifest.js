@@ -60,6 +60,7 @@
           "tab": "The book",
           "title": "Wiener: Cybernetics (MIT Press, 2nd ed. 1961, 2019 reissue)",
           "file": "sections/systems-information/readings/cybernetics-wiener.pdf",
+          "pageMap": { "offset": 50, "romanOffset": 2 },
           "url": "https://direct.mit.edu/books/oa-monograph/4581/Cybernetics-or-Control-and-Communication-in-the",
           "credit": "Norbert Wiener, Cybernetics (MIT Press). Open-access edition obtained from MIT Press Direct. Copyright remains with MIT Press; check the licence on the MIT Press page before redistributing. Printed page numbers are the PDF page minus 50."
         }
