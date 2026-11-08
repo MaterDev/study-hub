@@ -52,6 +52,7 @@
           "tab": "The paper",
           "title": "Hofstadter (1982): Who Shoves Whom Around Inside the Careenium?",
           "file": "sections/mind-philosophy/readings/careenium.pdf",
+          "pageMap": { "offset": -188 },
           "url": "https://jsomers.net/careenium.pdf",
           "credit": "Douglas R. Hofstadter, Synthese 53 (1982), pp. 189-218. Copy obtained from jsomers.net; copyright remains with the author and publisher."
         }
