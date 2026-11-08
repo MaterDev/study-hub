@@ -1,6 +1,6 @@
 {
   "schema": "study-hub-data/1",
-  "exportedAt": "2026-11-08T08:32:46.556Z",
+  "exportedAt": "2026-11-08T09:03:03.563Z",
   "progress": {
     "anim-02": {
       "read": true,
@@ -311,18 +311,18 @@
       "opens": 2
     },
     "cy-1": {
-      "read": false,
-      "readAt": null,
+      "read": true,
+      "readAt": "2026-11-08T09:02:16.221Z",
       "firstOpened": "2026-11-05T18:11:46.224Z",
-      "lastOpened": "2026-11-08T08:15:53.933Z",
-      "opens": 20
+      "lastOpened": "2026-11-08T09:02:19.281Z",
+      "opens": 22
     },
     "cy-2": {
       "read": false,
       "readAt": null,
       "firstOpened": "2026-11-05T18:11:52.480Z",
-      "lastOpened": "2026-11-05T18:19:57.953Z",
-      "opens": 8
+      "lastOpened": "2026-11-08T09:02:27.385Z",
+      "opens": 10
     },
     "cy-3": {
       "read": false,
@@ -488,6 +488,69 @@
         "created": "2026-10-27T21:13:18.892Z",
         "title": "The Trusted Advisor: Earning Client Trust",
         "updated": "2026-10-27T21:13:20.577Z"
+      }
+    ],
+    "lesson:sections/systems-information/lessons/cybernetics-1-the-book.html": [
+      {
+        "id": "nmw7kygihohdg",
+        "color": "yellow",
+        "note": "",
+        "quote": "a single name for the whole field of control and communication theory, whether it concerns a machine or an animal.",
+        "prefix": "ist Arturo Rosenblueth needed ",
+        "suffix": " They had found that the exist",
+        "created": "2026-11-08T08:38:28.121Z",
+        "title": "The Book and Its Central Idea"
+      },
+      {
+        "id": "nmw7kzwh8f6e4",
+        "color": "yellow",
+        "note": "",
+        "quote": "cybernetics studies how a system, living or built, steers itself by using information about what it is doing.",
+        "prefix": "thesis In one plain sentence: ",
+        "suffix": " That sentence is my compressi",
+        "created": "2026-11-08T08:39:35.468Z",
+        "title": "The Book and Its Central Idea"
+      },
+      {
+        "id": "nmw7lbln1wqv6",
+        "color": "yellow",
+        "note": "",
+        "quote": "the most fruitful areas for science were the neglected boundary regions between fields.",
+        "prefix": " two shared a conviction that ",
+        "suffix": " Specialists had grown narrowe",
+        "created": "2026-11-08T08:48:41.293Z",
+        "title": "The Book and Its Central Idea"
+      },
+      {
+        "id": "nmw7ljkzjw6lx",
+        "color": "yellow",
+        "note": "",
+        "quote": "feedback: a system compares what it was meant to do with what it did, and the difference drives the next action",
+        "prefix": "ok keeps pulling them. One is ",
+        "suffix": " (nodes 4 and 5). The other is",
+        "created": "2026-11-08T08:54:53.695Z",
+        "title": "The Book and Its Central Idea"
+      },
+      {
+        "id": "nmw7ljvlxw33e",
+        "color": "yellow",
+        "note": "",
+        "quote": "message: anything transmitted as a sequence of measurable events in time, which is exactly what statisticians call a time series",
+        "prefix": "es 4 and 5). The other is the ",
+        "suffix": " (node 5). Control and communi",
+        "created": "2026-11-08T08:55:07.461Z",
+        "title": "The Book and Its Central Idea"
+      },
+      {
+        "id": "nmw7lplmawd3f",
+        "color": "yellow",
+        "note": "This seems odd to me, and it doesn't seem like he explains why he believes its not in the line of development.",
+        "quote": "The Golem: a clay figure brought to life by a sacred name. Wiener sets it aside as not on the line of development of modern machines.",
+        "prefix": "w paraphrases it.\n  \n    Magic",
+        "suffix": "Chapter I, p. 57\n    Clockwork",
+        "created": "2026-11-08T08:59:34.450Z",
+        "title": "The Book and Its Central Idea",
+        "updated": "2026-11-08T08:59:58.768Z"
       }
     ]
   }
