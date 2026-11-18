@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Ad Tech Got Here: Five Phases and a Split Market</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<script src="../../../shared/hub-cite.js"></script>
+<style>
+  .ad1-stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm); min-width:0;}
+  .ad1-stage div{min-width:0;}
+  .ad1-small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .ad1-tag{display:inline-block; font-family:var(--font-ui); font-size:.68rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); margin-right:6px; color:var(--ink);}
+  .ad1-tag.d{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad1-tag.c{border-color:var(--forest); background:var(--forest-soft);}
+  .ad1-tag.m{border-color:var(--plum); background:var(--plum-soft);}
+  .ad1-tag.u{border-color:var(--vermil); background:var(--vermil-soft);}
+  .ad1-tag.p{border-color:var(--ochre); background:var(--ochre-soft);}
+  .ad1-opts{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px;}
+  .ad1-opt{border:2px solid var(--line-strong); border-radius:10px; padding:8px 12px; background:var(--paper); color:var(--ink); font:700 .82rem var(--font-ui); cursor:pointer; text-align:left;}
+  .ad1-opt:hover{border-color:var(--cobalt);}
+  .ad1-opt[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad1-opt:focus-visible,.ad1-rng:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad1-panel{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .ad1-panel p{margin:0 0 8px; max-width:none;} .ad1-panel p:last-child{margin-bottom:0;}
+  .ad1-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;} @media(max-width:700px){.ad1-two{grid-template-columns:minmax(0,1fr);}}
+  .ad1-four{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px;} @media(max-width:700px){.ad1-four{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .ad1-shift{display:flex; flex-direction:column; align-items:flex-start; gap:6px; border:2px solid var(--line-strong); border-radius:12px; background:var(--paper); color:var(--ink); padding:12px; cursor:pointer; font:700 .9rem var(--font-ui); text-align:left;}
+  .ad1-shift:hover{border-color:var(--cobalt);}
+  .ad1-shift[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad1-shift:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad1-shift svg{width:44px; height:44px; stroke:var(--ink); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;}
+  .ad1-rng{width:100%; accent-color:var(--cobalt);}
+  .ad1-svg{display:block; width:100%; height:auto;}
+  .ad1-svg text{fill:var(--ink); font-family:var(--font-ui);}
+  .ad1-band{stroke:var(--line-strong); stroke-width:1;}
+  .ad1-curve-a{fill:none; stroke:var(--vermil); stroke-width:3.5;}
+  .ad1-curve-b{fill:none; stroke:var(--ink-mute); stroke-width:2.5; stroke-dasharray:6 5;}
+  .ad1-marker{stroke:var(--ink); stroke-width:2;}
+  .ad1-pyr{cursor:pointer;} .ad1-pyr:focus-visible{outline:3px solid var(--plum);}
+  .ad1-pyr polygon{stroke:var(--outline); stroke-width:2;}
+  .ad1-pyr.on polygon{stroke:var(--ink); stroke-width:4;}
+  .ad1-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin:8px 0;}
+  .ad1-big{font-family:var(--font-ui); font-size:1.9rem; font-weight:800; color:var(--ink); line-height:1.1;}
+  .ad1-meter{height:16px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden; margin:6px 0;}
+  .ad1-meter i{display:block; height:100%; background:var(--vermil);}
+  .ad1-meter.g i{background:var(--forest);}
+  .ad1-tl{list-style:none; margin:8px 0; padding:0; border-left:3px solid var(--line-strong);}
+  .ad1-tl li{position:relative; margin:0 0 10px; padding:0 0 0 14px; font-family:var(--font-ui); font-size:.86rem; color:var(--ink); max-width:none;}
+  .ad1-tl li::before{content:""; position:absolute; left:-8px; top:6px; width:11px; height:11px; border-radius:50%; background:var(--surface); border:3px solid var(--cobalt);}
+  .ad1-bars{display:flex; gap:28px; align-items:flex-end; height:190px; padding:0 10px; border-bottom:2px solid var(--outline); margin:10px 0 4px;}
+  .ad1-barcol{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font-family:var(--font-ui); font-size:.85rem; color:var(--ink); font-weight:800;}
+  .ad1-bar{width:60%; min-height:4px;}
+  .ad1-bar.up{background:var(--cobalt);} .ad1-bar.down{background:var(--vermil);}
+  .ad1-table-wrap{overflow-x:auto; max-width:100%;}
+  table.ad1-tab{border-collapse:collapse; width:100%; min-width:560px; font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
+  table.ad1-tab th,table.ad1-tab td{border-bottom:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top;}
+  table.ad1-tab th{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
+  .ad1-calc-out{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--paper-2); color:var(--ink); margin-top:8px; font-family:var(--font-ui); font-size:.88rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>How Ad Tech Got Here: Five Phases and a Split Market</h1>
+  <p class="subtitle">The opening six slides of LUMA Partners' State of Digital 2026 argue that advertising technology has passed through four eras and is entering a fifth, and that the market has split into winners and losers. This lesson takes those slides one at a time, rebuilds them as things you can poke, and keeps asking the same question: is this what the deck says, or something that can be checked?</p>
+
+  <p class="ad1-small"><span class="ad1-tag d">Deck</span> a claim or framing from the LUMA slides, cited by page. <span class="ad1-tag c">Checked</span> confirmed against a source outside the deck. <span class="ad1-tag u">Unconfirmed</span> I could not confirm it. <span class="ad1-tag m">Mine</span> my own synthesis or arithmetic. <span class="ad1-tag p">Illustrative</span> a number or picture made up to show an idea. Page numbers are pages of the trimmed deck attached to this module (printed page = PDF page).</p>
+
+  <div class="toc" data-testid="sod1-toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">Four shifts at once (explore)</a></li>
+      <li><a href="#sec2">Five phases of ad tech (timeline)</a></li>
+      <li><a href="#sec3">How far AI reaches (layers)</a></li>
+      <li><a href="#sec4">A tale of two deals (calculator)</a></li>
+      <li><a href="#sec5">The Trade Desk and the K shape (evidence)</a></li>
+      <li><a href="#sec6">What was confirmed and what was not (ledger)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> Four shifts at once</h2>
+  <p class="lead">The deck opens with a framing slide, not a chart: advertising is growing, technology is consolidating, media is fragmenting and AI is accelerating ([[p. 2]]). Pick one to see what the deck means by it and what you would need in order to test it.</p>
+  <div class="ad1-stage" data-testid="sod1-shifts">
+    <div class="ad1-four" role="group" aria-label="Four shifts">
+      <button class="ad1-shift" type="button" data-shift="0" aria-pressed="true" data-testid="sod1-shift-growing"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40h36M10 34v-8M20 34v-14M30 34v-18"/><path d="M12 18l10-8 8 4 10-9M34 5h6v6"/></svg>Advertising is growing</button>
+      <button class="ad1-shift" type="button" data-shift="1" aria-pressed="false" data-testid="sod1-shift-consolidating"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4v14M18 12l6 6 6-6M24 44V30M18 36l6-6 6 6M8 24h32M8 20h32M8 28h32"/></svg>Technology is consolidating</button>
+      <button class="ad1-shift" type="button" data-shift="2" aria-pressed="false" data-testid="sod1-shift-fragmenting"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 8h14v10H6zM24 8h18v8H24zM6 22h10v14H6zM20 20h22v10H20zM20 34h12v10H20zM36 34h6v10h-6z"/></svg>Media is fragmenting</button>
+      <button class="ad1-shift" type="button" data-shift="3" aria-pressed="false" data-testid="sod1-shift-accelerating"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 36a18 18 0 0 1 36 0M24 36l9-13M4 40h10M2 34h8"/></svg>AI is accelerating</button>
+    </div>
+    <div class="ad1-panel" id="ad1-shift-panel" aria-live="polite" style="margin-top:12px" data-testid="sod1-shift-panel"></div>
+  </div>
+  <p>Notice that the slide gives no number for any of the four. It is a thesis, and the rest of the deck is the argument for it. That is normal for the opening of a conference presentation, but it means this slide cannot be checked on its own. <span class="ad1-tag m">Mine</span> A useful habit with any presentation of this kind is to turn each headline into a question with a measurable answer, as the panel above does.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Five phases of ad tech</h2>
+  <p class="lead">The deck divides ad tech into five phases and says the industry is entering the fifth, which it calls AI Reinvention ([[p. 3]]). Drag the year, or press a phase, to read what the slide says about each one.</p>
+  <div class="ad1-stage" data-testid="sod1-phases">
+    <div class="ad1-opts" role="group" aria-label="Phases">
+      <button class="ad1-opt" type="button" data-phase="1" aria-pressed="false" data-testid="sod1-phase-1">1 Ad network</button>
+      <button class="ad1-opt" type="button" data-phase="2" aria-pressed="false" data-testid="sod1-phase-2">2 Early programmatic</button>
+      <button class="ad1-opt" type="button" data-phase="3" aria-pressed="false" data-testid="sod1-phase-3">3 Sector headwinds</button>
+      <button class="ad1-opt" type="button" data-phase="4" aria-pressed="false" data-testid="sod1-phase-4">4 Scale and PE</button>
+      <button class="ad1-opt" type="button" data-phase="5" aria-pressed="true" data-testid="sod1-phase-5">5 AI reinvention</button>
+    </div>
+    <svg class="ad1-svg" id="ad1-phase-svg" viewBox="0 0 700 310" role="img" aria-label="Schematic of two market-size curves from 2005 to 2030 over five phase bands"></svg>
+    <label class="ad1-ctl">Year <input class="ad1-rng" id="ad1-year" type="range" min="2005" max="2029" step="1" value="2027" data-testid="sod1-year-slider"><span id="ad1-year-out" class="ad1-small" style="text-transform:none; letter-spacing:0; font-weight:600">2027</span></label>
+    <div class="ad1-panel" id="ad1-phase-panel" aria-live="polite" data-testid="sod1-phase-panel"></div>
+    <p class="ad1-small" style="margin:8px 0 0"><span class="ad1-tag p">Illustrative</span> The two curves are hand-drawn to echo the shape on the slide; they are not data. The slide's own text labels only two values, $13bn at 2005 and $493bn at 2030, and names its source as eMarketer (2025) ([[p. 3]]). It does not say in words which spend each line measures, so do not read levels off the curves.</p>
+  </div>
+  <p><span class="ad1-tag d">Deck</span> The five-phase scheme and its dates are LUMA's own way of cutting history, and the slide draws it as if the phases were natural categories. They are a story with a purpose: it ends with the claim that AI reinvention "will catalyze sector consolidation" ([[p. 3]]), which is a forecast. Two of the slide's own milestones also describe LUMA itself ("LUMAscape reaches peak fragmentation", the end of the venture era).</p>
+  <p><span class="ad1-tag m">Mine</span> The slide mixes three different kinds of statement: what the technology did (contextual versus audience targeting), who paid for it (bootstrapped, venture, private equity) and what the market looked like (walled-garden dominance, fragmentation). The phases are better read as overlapping layers than as strict eras. Where phases 4 and 5 meet, around 2025, the deck's evidence is a forecast about the future rather than a record of the past.</p>
+  <p><span class="ad1-tag u">Unconfirmed</span> I could not find a public eMarketer figure of $493bn for 2030. The eMarketer chart pages I found were behind a login, and one public eMarketer note put 2024 US digital ad spend at $309.3bn. Treat the endpoint as the deck's claim, and note that a worldwide market and a US market would differ by a large factor.</p>
+
+  <h2 id="sec3"><span class="num">3</span> How far AI reaches</h2>
+  <p class="lead">The next slide stacks four layers and says AI affects all of advertising, with disruption rising as you go up ([[p. 4]]). Select a layer to see what the deck puts in it.</p>
+  <div class="ad1-stage" data-testid="sod1-pyramid">
+    <div class="ad1-two">
+      <svg class="ad1-svg" viewBox="0 0 360 290" role="group" aria-label="Four layers of AI impact on advertising">
+        <g class="ad1-pyr" tabindex="0" role="button" data-layer="3" data-testid="sod1-layer-unknown" aria-label="Known unknowns"><polygon points="180,10 220,70 140,70" fill="var(--vermil-soft)"/><text x="180" y="62" text-anchor="middle" font-size="26" font-weight="800">?</text></g>
+        <g class="ad1-pyr" tabindex="0" role="button" data-layer="2" data-testid="sod1-layer-search" aria-label="Search and internet navigation"><polygon points="140,70 220,70 260,130 100,130" fill="var(--forest-soft)"/><text x="180" y="96" text-anchor="middle" font-size="13" font-weight="800">INTERNET</text><text x="180" y="114" text-anchor="middle" font-size="13" font-weight="800">NAVIGATION</text></g>
+        <g class="ad1-pyr" tabindex="0" role="button" data-layer="1" data-testid="sod1-layer-creative" aria-label="Creative"><polygon points="100,130 260,130 300,200 60,200" fill="var(--plum-soft)"/><text x="180" y="152" text-anchor="middle" font-size="13" font-weight="800">CONTENT</text><text x="180" y="170" text-anchor="middle" font-size="13" font-weight="800">AD CREATIVE</text><text x="180" y="188" text-anchor="middle" font-size="13" font-weight="800">COMMUNICATION</text></g>
+        <g class="ad1-pyr" tabindex="0" role="button" data-layer="0" data-testid="sod1-layer-media" aria-label="Media"><polygon points="60,200 300,200 340,270 20,270" fill="var(--cobalt-soft)"/><text x="130" y="228" text-anchor="middle" font-size="12" font-weight="800">WORKFLOW</text><text x="130" y="250" text-anchor="middle" font-size="12" font-weight="800">AUDIENCE DATA</text><text x="238" y="228" text-anchor="middle" font-size="12" font-weight="800">MEASUREMENT</text><text x="238" y="250" text-anchor="middle" font-size="12" font-weight="800">MEDIA BUYING</text></g>
+      </svg>
+      <div class="ad1-panel" id="ad1-layer-panel" aria-live="polite" data-testid="sod1-layer-panel"></div>
+    </div>
+    <p class="ad1-small" style="margin:8px 0 0">Bottom of the stack is the slide's low-impact end; the top is its high-impact end.</p>
+  </div>
+  <p><span class="ad1-tag m">Mine</span> The ordering is a judgement, and it is the part of the slide that matters most, because it implies where value will move. The deck puts the plumbing of media buying at the bottom as the least disruptive layer, and search and the way people find things on the internet near the top. Lessons 2 and 3 of this module test that ordering against the deck's own evidence on consumer behaviour. The top layer, "known unknowns", cannot be wrong: a claim that something unspecified will matter is not testable, so treat it as a reminder of uncertainty rather than as a finding.</p>
+
+  <h2 id="sec4"><span class="num">4</span> A tale of two deals</h2>
+  <p class="lead">The deck sets two acquisitions side by side. Stagwell bought the publisher-services company Freestar for $50 million upfront plus an earnout, described as three times EBITDA. Walmart bought the connected-TV ad platform Vibe for $1.4 billion, described as 25 times revenue ([[p. 5]]). Use the calculator to see what those multiples need to be true.</p>
+  <div class="ad1-stage" data-testid="sod1-deals">
+    <div class="ad1-two">
+      <div>
+        <p class="ad1-small"><b>Vibe: what revenue makes $1.4bn a given multiple?</b></p>
+        <label class="ad1-ctl">Revenue base, $ million <input class="ad1-rng" id="ad1-rev" type="range" min="40" max="350" step="1" value="100" data-testid="sod1-vibe-revenue"></label>
+        <div class="ad1-opts"><button class="ad1-opt" type="button" data-rev="56" data-testid="sod1-vibe-preset-25x">Revenue that gives 25x</button><button class="ad1-opt" type="button" data-rev="100" data-testid="sod1-vibe-preset-arr">About $100m (a reported ARR)</button><button class="ad1-opt" type="button" data-rev="300" data-testid="sod1-vibe-preset-300">$300m (unsourced estimate)</button></div>
+        <div class="ad1-calc-out" id="ad1-vibe-out" aria-live="polite" data-testid="sod1-vibe-out"></div>
+      </div>
+      <div>
+        <p class="ad1-small"><b>Freestar: what does 3x EBITDA imply, and what if the earnout pays?</b></p>
+        <label class="ad1-ctl">Earnout actually paid, $ million (the filing says up to $60m) <input class="ad1-rng" id="ad1-earn" type="range" min="0" max="60" step="5" value="0" data-testid="sod1-freestar-earnout"></label>
+        <div class="ad1-calc-out" id="ad1-fs-out" aria-live="polite" data-testid="sod1-freestar-out"></div>
+      </div>
+    </div>
+    <p class="ad1-small" style="margin:10px 0 0"><span class="ad1-tag p">Illustrative</span> <span class="ad1-tag m">Mine</span> Arithmetic only: price divided by an assumed base. Freestar's EBITDA and Vibe's revenue are not public, so the bases here are what the multiples would imply or what outside reports suggest.</p>
+  </div>
+  <p><span class="ad1-tag c">Checked</span> Stagwell's quarterly filing gives the Freestar terms: $50.0 million, made up of $30.0 million in Class A shares and $20.0 million in cash, with up to $60.0 million more if earnings targets are met; the deal closed on 23 October 2026. Walmart announced the Vibe deal on 23 June 2026 without disclosing terms; the $1.4 billion figure was reported by the Wall Street Journal, as $1.2 billion in cash plus about $180 million to top executives.</p>
+  <p><span class="ad1-tag u">Unconfirmed</span> The two multiples. Freestar's financials are not public, so "three times EBITDA" cannot be reproduced. For Vibe, the outside estimates I found run from about 4.7 times to about 14 times revenue, depending on the revenue base, and none reached 25. The deck's 25 would need revenue near $56 million. It may rest on LUMA's private information, but it is not a number the public record supports.</p>
+  <p><span class="ad1-tag m">Mine</span> Even if both multiples were right, the slide compares unlike things. One is a multiple of profit and the other a multiple of revenue, so the numbers cannot be set against each other. The buyers differ too: a marketing group buying an ad-supported publisher services business, and a retailer with its own streaming-TV inventory buying a self-serve ad platform to feed its ad business. The slide frames it as open web versus "hedged garden", but the deals differ in at least four ways at once, so they cannot isolate that one cause. Two deals are an anecdote, not a trend.</p>
+
+  <h2 id="sec5"><span class="num">5</span> The Trade Desk and the K shape</h2>
+  <p class="lead">The deck calls The Trade Desk the bellwether of ad tech and says its stock fell 91% over 23 months from 2 December 2024 ([[p. 6]]). Then it widens the lens: since LUMA's last conference in May 2025, a basket of three walled-garden stocks is up 39.8% while an open-web ad tech basket is down 4.5%, a K-shaped market ([[p. 7]]).</p>
+  <div class="ad1-stage" data-testid="sod1-ttd">
+    <p class="ad1-small"><b>What was reported about The Trade Desk, in order</b></p>
+    <ul class="ad1-tl" data-testid="sod1-ttd-timeline">
+      <li><b>2 to 4 Dec 2024.</b> Record highs: an intraday record near $132.65 on 2 December, and a record close of $139.51 on 4 December (Investing.com; Macrotrends).</li>
+      <li><b>26 Feb 2026.</b> After the fourth-quarter report the company guided first-quarter revenue to at least $678 million against about $689 million expected, and the shares fell about 15% before the market opened, to roughly $21 (StockStory).</li>
+      <li><b>Spring 2026.</b> A first-quarter miss and a run of analyst downgrades; the CEO bought $150 million of stock in April; a public dispute with the agency group Publicis was settled in mid-June (Nasdaq and other coverage).</li>
+      <li><b>7 Aug 2026.</b> The shares fell 21.9% in a day after third-quarter guidance implied roughly a 12% year-over-year revenue decline. Management said it had not executed as well as it could have.</li>
+      <li><b>3 Nov 2026.</b> Down 73.8% over the previous year. Revenue growth had slowed from 18.7% (quarter to June 2025) to 3.0% (quarter to June 2026), the stock traded near 2 times sales against 13.2 in June 2025, and twelve-month free cash flow was still $849 million (Trefis).</li>
+    </ul>
+    <p class="ad1-small">Direction and scale are consistent with the deck. The exact 91% from 2 December 2024 is the deck's own figure: I did not retrieve that day's close or a current price, so I could not recompute it. The reasons above come from trade and finance coverage, mostly read as search-result summaries, apart from the Trefis page, which I opened.</p>
+  </div>
+  <div class="ad1-stage" data-testid="sod1-kshape">
+    <p class="ad1-small"><b>The K-shape slide, as numbers</b> (stock performance since May 2025, as of 8 Nov 2026, FactSet, per the slide)</p>
+    <div class="ad1-bars" role="img" aria-label="Walled gardens plus 39.8 percent, open web ad tech minus 4.5 percent">
+      <div class="ad1-barcol"><span>+39.8%</span><div class="ad1-bar up" style="height:150px"></div></div>
+      <div class="ad1-barcol"><span>&minus;4.5%</span><div class="ad1-bar down" style="height:16px"></div></div>
+    </div>
+    <div class="ad1-two" style="margin-top:0"><div class="ad1-small" style="text-align:center">Walled gardens</div><div class="ad1-small" style="text-align:center">Ad tech open web</div></div>
+    <div class="ad1-opts" style="margin-top:10px"><button class="ad1-opt" type="button" id="ad1-k-toggle" aria-pressed="false" data-testid="sod1-k-construction">Show how each line is built</button></div>
+    <div class="ad1-panel" id="ad1-k-panel" hidden data-testid="sod1-k-panel">
+      <p><b>Walled gardens</b> is the average return of three stocks: Amazon, Google and Meta ([[p. 7]]).</p>
+      <p><b>Ad tech open web</b> is the average return of the constituents of LUMA's own public-company index, <i>excluding</i> AppLovin, Unity, Liftoff and Zeta ([[p. 7]]).</p>
+      <p><span class="ad1-tag m">Mine</span> Three questions the slide does not answer: why those four are excluded (the footnote gives no reason, and removing the names that did best will pull an average down); how the average is weighted; and whether three very large companies, whose shares also move on cloud and AI spending, are a fair stand-in for the walled-garden advertising business. The start date, LUMA's last conference, is also a choice. The slide shows both lines moving together until about the middle of 2025, so the gap is a fact about the period after that.</p>
+    </div>
+  </div>
+  <p><span class="ad1-tag m">Mine</span> The K shape is a vivid and probably fair summary of a real pattern: the largest platforms have done well and many independent ad tech companies have not. But it is a LUMA construction, built with choices that favour its story, and I cannot rebuild it from public data in this lesson. Use it as an illustration, not as a measurement of the whole sector.</p>
+
+  <h2 id="sec6"><span class="num">6</span> What was confirmed and what was not</h2>
+  <p class="lead">Every headline claim from pages 2 to 7, with the verdict from this research pass. Filter by status. A deck is a point of view, and LUMA advises on deals in this sector, so a thesis that says consolidation is coming is also an argument that its services are needed. <span class="ad1-tag m">Mine</span> That does not make it wrong, but it is a reason to separate the claim from the evidence.</p>
+  <div class="ad1-stage" data-testid="sod1-ledger">
+    <div class="ad1-opts" role="group" aria-label="Filter claims">
+      <button class="ad1-opt" type="button" data-f="all" aria-pressed="true" data-testid="sod1-filter-all">All</button>
+      <button class="ad1-opt" type="button" data-f="c" aria-pressed="false" data-testid="sod1-filter-checked">Checked</button>
+      <button class="ad1-opt" type="button" data-f="p" aria-pressed="false" data-testid="sod1-filter-partly">Partly</button>
+      <button class="ad1-opt" type="button" data-f="u" aria-pressed="false" data-testid="sod1-filter-unconfirmed">Unconfirmed</button>
+      <button class="ad1-opt" type="button" data-f="d" aria-pressed="false" data-testid="sod1-filter-framing">The deck's framing</button>
+    </div>
+    <div class="ad1-table-wrap"><table class="ad1-tab" data-testid="sod1-ledger-table">
+      <thead><tr><th>Claim</th><th>Page</th><th>Status</th><th>Basis</th></tr></thead>
+      <tbody id="ad1-ledger"></tbody>
+    </table></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>The deck is a thesis.</b> Four shifts, five phases and a forecast of consolidation ([[pp. 2-3]]) are framing, not measurement.</li>
+    <li><b>The phases are LUMA's way of cutting history.</b> They mix technology, funding and market structure, and the last one is a forecast ([[p. 3]]).</li>
+    <li><b>The AI layers rank disruption by judgement.</b> The ordering is the claim that matters, and later lessons test it ([[p. 4]]).</li>
+    <li><b>The deal prices are real; the multiples are unverified.</b> Freestar's $50m plus earnout is in Stagwell's filing and Vibe's $1.4bn is widely reported, but 3x EBITDA and 25x revenue are LUMA's numbers, and a profit multiple cannot be set against a revenue multiple ([[p. 5]]).</li>
+    <li><b>The Trade Desk fall is real and large, and the K shape is a LUMA construction.</b> Check the footnote before trusting the shape ([[pp. 6-7]]).</li>
+  </ul>
+  <p class="src"><b>Primary.</b> LUMA Partners, <em>State of Digital 2026</em> (DMS by LUMA, November 2026), attached to this module as the reading tab on the right edge, cited above as [[pp. 2-7]]. Everything from it is paraphrased. LUMA's own page: <a href="https://lumapartners.com/presentations/state-of-digital-2026/" target="_blank" rel="noopener">lumapartners.com/presentations/state-of-digital-2026</a> (the full PDF download there sits behind a sign-up form).</p>
+  <p class="src"><b>Outside sources opened.</b> Stagwell, <a href="https://www.sec.gov/Archives/edgar/data/0000876883/000087688326000033/stgw-20260930.htm" target="_blank" rel="noopener">Form 10-Q for the quarter ended 30 September 2026</a>, Note 1 (Freestar terms, closing date) &middot; <a href="https://www.trefis.com/stock/ttd/articles2/622537/what-is-driving-the-move-in-trade-desk-stock/2026-11-04" target="_blank" rel="noopener">Trefis, What Is Driving The Move In Trade Desk Stock (4 Nov 2026)</a> (share fall, growth slowdown, valuation, cash flow) &middot; the LUMA page above.</p>
+  <p class="src"><b>Outside sources seen in search results, not opened in full.</b> <a href="https://corporate.walmart.com/news/2026/06/23/walmart-to-acquire-vibe-co-to-expand-access-to-connected-tv-advertising" target="_blank" rel="noopener">Walmart's announcement of the Vibe deal (23 Jun 2026)</a> &middot; <a href="https://thenextweb.com/news/walmart-vibe-co-deal-amazon-ads" target="_blank" rel="noopener">The Next Web on the Vibe deal</a> (WSJ price, a 12.6x revenue estimate attributed to The Information) &middot; <a href="https://multiples.vc/private-comps/vibe" target="_blank" rel="noopener">multiples.vc on Vibe</a> (4.7x on an unsourced $300m) &middot; <a href="https://investing.com/news/company-news/trade-desk-stock-soars-to-alltime-high-of-13265-93CH-3749298" target="_blank" rel="noopener">Investing.com on the 2 Dec 2024 record</a> &middot; <a href="https://www.macrotrends.net/stocks/charts/TTD/trade-desk/stock-price-history" target="_blank" rel="noopener">Macrotrends, TTD price history</a> &middot; <a href="https://www.adexchanger.com/agencies/stagwell-acquires-publisher-monetization-network-freestar/" target="_blank" rel="noopener">AdExchanger on Stagwell and Freestar</a>. Trade Desk reasons (guidance, downgrades, Publicis, 7 August) come from finance coverage surfaced by search; they are consistent across items but are not primary filings.</p>
+  <p class="src"><b>Checked 18 Nov 2026.</b> Confirmed: Freestar price, split and earnout cap (primary filing); Walmart-Vibe announcement and reported $1.4bn (reported, not disclosed by Walmart); the direction and scale of The Trade Desk's fall and its causes (secondary). Not confirmed: Freestar at 3x EBITDA; Vibe at 25x revenue; the exact 91%; the $13bn and $493bn endpoints and what the curves measure; the K-shape percentages and index. The phase curves, the calculators and the arithmetic are illustrative. LUMA's role as a deal adviser is background I did not re-check in this pass.</p>
+
+  <footer>How Ad Tech Got Here: Five Phases and a Split Market &middot; The State of Digital 2026 module &middot; part of your Study Hub</footer>
+</div>
+<script>
+(function(){
+  var SHIFTS = [
+    {s:"Advertising is growing", says:"Overall advertising spend is rising. The slide gives no figure.", test:"Independent spend forecasts. For example, eMarketer reported US digital ad spend passing $300bn in 2024 ($309.3bn). Growth is checkable and is the least contested of the four.", cite:"[[p. 2]]"},
+    {s:"Technology is consolidating", says:"The many ad tech companies are merging into fewer, larger ones, and the next phase will speed this up.", test:"A count of deals and of independent companies over time, with prices. The deck offers two deals (section 4) and a forecast. It is also the claim that serves a firm that advises on deals.", cite:"[[pp. 2-3]]"},
+    {s:"Media is fragmenting", says:"Attention is spreading across streaming, creators, mobile apps, real-world screens and the open web.", test:"Time-spent and spend-by-channel data over several years. The deck returns to this in pages 29 to 40, which lesson 4 covers.", cite:"[[p. 2]]"},
+    {s:"AI is accelerating", says:"AI is changing consumer behaviour and how ad businesses run, faster than earlier technology shifts.", test:"Adoption and time-spent figures for consumer AI, and evidence that advertisers shift budgets because of it. The deck's evidence is in pages 8 to 28, covered by lessons 2 and 3.", cite:"[[p. 2]]"}
+  ];
+  var shiftPanel = document.getElementById("ad1-shift-panel");
+  function showShift(i){
+    var d = SHIFTS[i];
+    shiftPanel.innerHTML = "<p><span class='ad1-tag d'>Deck</span> <b>" + d.s + ".</b> " + d.says + " " + d.cite + "</p><p><span class='ad1-tag m'>Mine</span> <b>How you would test it.</b> " + d.test + "</p>";
+    document.querySelectorAll(".ad1-shift").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.shift === i)); });
+  }
+  document.querySelectorAll(".ad1-shift").forEach(function(b){ b.addEventListener("click", function(){ showShift(+b.dataset.shift); }); });
+  showShift(0);
+
+  var PH = [
+    {n:"Ad network", y:"2005 to 2010", pts:["Contextual targeting","Horizontal solutions","Arbitrage model","Most startups bootstrapped"], ask:"Arbitrage means buying inventory cheaply and reselling it with a margin. Small teams could do that without outside money, which is why bootstrapping was common."},
+    {n:"Early programmatic", y:"2010 to 2015", pts:["Audience targeting","Demand and supply platforms","Take-rate fees","Explosion of venture funding"], ask:"Software started to trade impressions automatically, and companies were paid a cut of each trade (a take rate). Venture money followed the growth."},
+    {n:"Sector headwinds", y:"2015 to 2020", pts:["Walled-garden dominance","Problems with transparency, fraud, viewability and privacy","End of the venture era, start of private equity","LUMAscape reaches peak fragmentation"], ask:"The deck's own chart of ad tech vendors (the LUMAscape) is cited here as evidence of fragmentation, so the slide is partly about LUMA's own map."},
+    {n:"Scale and PE", y:"2020 to 2025", pts:["Rise of hedged gardens (CTV, mobile app and commerce media)","The cookie saga","IPO, private equity and M&A boom, then bust","Innovation waning"], ask:"Hedged garden is the deck's label for these channels. Later pages define the idea; this lesson treats it as LUMA vocabulary."},
+    {n:"AI reinvention", y:"2025 to 2030", pts:["AI innovation at a rapid cycle and for mass disruption","Outcomes era","Agentic era","Return to a strategic M&A imperative and sector consolidation"], ask:"This phase is a forecast. Compare its last bullet with who benefits from the forecast being believed."}
+  ];
+  var phase = 5;
+  var svg = document.getElementById("ad1-phase-svg"), X0 = 40, W = 640, Y0 = 20, H = 240;
+  function xOf(yr){ return X0 + (yr - 2005) / 25 * W; }
+  function yOf(v){ return Y0 + H - v / 100 * H; }
+  function path(pts){ return pts.map(function(p,i){ return (i ? "L" : "M") + xOf(p[0]).toFixed(1) + " " + yOf(p[1]).toFixed(1); }).join(" "); }
+  var fills = ["var(--cobalt-soft)","var(--plum-soft)","var(--ochre-soft)","var(--vermil-soft)","var(--forest-soft)"];
+  function drawPhases(){
+    var h = "";
+    for(var i = 0; i < 5; i++){
+      var x = xOf(2005 + i * 5);
+      h += "<rect class='ad1-band' x='" + x + "' y='" + Y0 + "' width='" + (W / 5) + "' height='" + H + "' fill='" + fills[i] + "'" + (phase === i + 1 ? " style='stroke:var(--ink); stroke-width:3'" : "") + "/>";
+      var words = [String(i + 1)].concat(PH[i].n.toUpperCase().split(" "));
+      words.forEach(function(wd, k){ h += "<text x='" + (x + W / 10) + "' y='" + (Y0 + 16 + k * 13) + "' text-anchor='middle' font-size='11' font-weight='800'>" + wd + "</text>"; });
+      h += "<text x='" + x + "' y='" + (Y0 + H + 18) + "' text-anchor='middle' font-size='11'>" + (2005 + i * 5) + "</text>";
+    }
+    h += "<text x='" + (X0 + W) + "' y='" + (Y0 + H + 18) + "' text-anchor='middle' font-size='11'>2030</text>";
+    h += "<path class='ad1-curve-b' d='" + path([[2005,2],[2010,4],[2015,9],[2020,20],[2025,45],[2028,72],[2030,96]]) + "'/>";
+    h += "<path class='ad1-curve-a' d='" + path([[2005,2],[2010,5],[2013,10],[2015,17],[2015.6,40],[2020,50],[2025,55],[2027,62],[2028.5,82],[2030,100]]) + "'/>";
+    h += "<text x='" + (X0 + 6) + "' y='" + (Y0 + H - 22) + "' font-size='11'>$13bn (2005)</text>";
+    h += "<text x='" + (xOf(2026.5)) + "' y='" + (Y0 + 70) + "' text-anchor='end' font-size='11'>$493bn (2030)</text>";
+    var yr = +document.getElementById("ad1-year").value;
+    h += "<line class='ad1-marker' x1='" + xOf(yr) + "' x2='" + xOf(yr) + "' y1='" + Y0 + "' y2='" + (Y0 + H) + "'/>";
+    h += "<text x='" + X0 + "' y='" + (Y0 + H + 40) + "' font-size='11'>Solid red and dashed grey: the slide's two curves, redrawn schematically.</text>";
+    svg.innerHTML = h;
+  }
+  function showPhase(n){
+    phase = n; var d = PH[n - 1];
+    document.querySelectorAll("[data-phase]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.phase === n)); });
+    document.getElementById("ad1-phase-panel").innerHTML = "<p><span class='ad1-tag d'>Deck</span> <b>Phase " + n + ": " + d.n + "</b> (" + d.y + "). The slide lists: " + d.pts.join("; ") + ". [[p. 3]]</p><p><span class='ad1-tag m'>Mine</span> " + d.ask + "</p>";
+    drawPhases();
+  }
+  document.querySelectorAll("[data-phase]").forEach(function(b){ b.addEventListener("click", function(){
+    var n = +b.dataset.phase, yr = Math.min(2029, 2005 + (n - 1) * 5 + 2);
+    document.getElementById("ad1-year").value = yr; document.getElementById("ad1-year-out").textContent = yr; showPhase(n);
+  }); });
+  document.getElementById("ad1-year").addEventListener("input", function(){
+    var yr = +this.value; document.getElementById("ad1-year-out").textContent = yr; showPhase(Math.min(5, Math.floor((yr - 2005) / 5) + 1));
+  });
+  showPhase(5);
+
+  var LAYERS = [
+    {t:"Media", b:"Workflow, audience data, measurement and media buying. The deck places these at the low end of disruption: they are the existing machinery of the trade.", m:"Low is relative. Lesson 5 returns to this layer, where the deck argues that the real shift is from workflow to decisioning."},
+    {t:"Creative", b:"Content, ad creative and communication: what the consumer actually sees.", m:"Generating and testing creative at scale is a visible current use of AI in advertising. Notice that it sits in the middle, not at the top."},
+    {t:"Search and internet navigation", b:"How people find things. If answers replace result lists, the place where ads appear changes.", m:"This is the layer the rest of the module spends most time on: lessons 2 and 3 cover AI assistants as a front door and the compressed purchase funnel."},
+    {t:"Known unknowns", b:"The slide's top layer is a question mark. The caption says AI is so powerful that we are still discovering what it can do.", m:"Not testable as stated. Read it as an admission of uncertainty, and be wary of any argument that leans on it."}
+  ];
+  function showLayer(i){
+    var d = LAYERS[i];
+    document.querySelectorAll(".ad1-pyr").forEach(function(g){ g.classList.toggle("on", +g.dataset.layer === i); });
+    document.getElementById("ad1-layer-panel").innerHTML = "<p><span class='ad1-tag d'>Deck</span> <b>" + d.t + ".</b> " + d.b + " [[p. 4]]</p><p><span class='ad1-tag m'>Mine</span> " + d.m + "</p>";
+  }
+  document.querySelectorAll(".ad1-pyr").forEach(function(g){
+    g.addEventListener("click", function(){ showLayer(+g.dataset.layer); });
+    g.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); showLayer(+g.dataset.layer); } });
+  });
+  showLayer(2);
+
+  var rev = document.getElementById("ad1-rev"), vibe = document.getElementById("ad1-vibe-out");
+  function drawVibe(){
+    var r = +rev.value, m = 1400 / r;
+    vibe.innerHTML = "<div>Revenue assumed: <b>$" + r + "m</b></div><div class='ad1-big'>" + m.toFixed(1) + "x revenue</div><div class='ad1-meter'><i style='width:" + Math.min(100, m / 30 * 100).toFixed(0) + "%'></i></div><div class='ad1-small'>Bar scale runs to 30x. The slide says 25x; outside estimates I found run from about 4.7x to about 14x.</div>";
+  }
+  rev.addEventListener("input", drawVibe);
+  document.querySelectorAll("[data-rev]").forEach(function(b){ b.addEventListener("click", function(){ rev.value = b.dataset.rev; drawVibe(); }); });
+  drawVibe();
+  var earn = document.getElementById("ad1-earn"), fs = document.getElementById("ad1-fs-out");
+  function drawFs(){
+    var e = +earn.value, ebitda = 50 / 3, total = 50 + e, m = total / ebitda;
+    fs.innerHTML = "<div>If the upfront $50m is 3x EBITDA, EBITDA is about <b>$" + ebitda.toFixed(1) + "m</b>.</div><div>Total paid with a &#36;" + e + "m earnout: <b>&#36;" + total + "m</b></div><div class='ad1-big'>" + m.toFixed(1) + "x EBITDA</div><div class='ad1-meter g'><i style='width:" + Math.min(100, m / 10 * 100).toFixed(0) + "%'></i></div><div class='ad1-small'>Bar scale runs to 10x. The slide's 3x counts the upfront price only. The $60m earnout cap in Stagwell's filing would take it to 6.6x if paid in full on the same EBITDA.</div>";
+  }
+  earn.addEventListener("input", drawFs); drawFs();
+
+  var kb = document.getElementById("ad1-k-toggle"), kp = document.getElementById("ad1-k-panel");
+  kb.addEventListener("click", function(){ var open = kp.hidden; kp.hidden = !open; kb.setAttribute("aria-pressed", String(open)); kb.textContent = open ? "Hide how each line is built" : "Show how each line is built"; });
+
+  var L = [
+    {c:"Freestar sold for $50m upfront plus an earnout", p:"5", s:"c", st:"Checked", b:"Stagwell's 10-Q: $50.0m ($30.0m stock, $20.0m cash), up to $60.0m contingent; closed 23 Oct 2026. Press coverage said the price was undisclosed."},
+    {c:"Freestar was done at 3x EBITDA", p:"5", s:"u", st:"Unconfirmed", b:"Freestar's financials are not public, so I could not reproduce the multiple."},
+    {c:"Walmart bought Vibe for $1.4 billion", p:"5", s:"p", st:"Partly", b:"Widely reported (WSJ): $1.2bn cash plus about $180m to executives. Walmart did not disclose terms. Announced 23 Jun 2026."},
+    {c:"Vibe was done at 25x revenue", p:"5", s:"u", st:"Unconfirmed", b:"Outside estimates range from about 4.7x to about 14x depending on the revenue base. 25x would need revenue near $56m."},
+    {c:"The Trade Desk fell 91% since 2 Dec 2024", p:"6", s:"p", st:"Partly", b:"Record high in early Dec 2024 and a 73.8% fall in the year to 3 Nov 2026 are reported. I did not recompute the 91%."},
+    {c:"Walled gardens +39.8%, open-web ad tech -4.5% since May 2025", p:"7", s:"d", st:"Deck framing", b:"A LUMA index with named exclusions and a three-stock garden basket. Not rebuilt here."},
+    {c:"Ad tech has gone through five phases", p:"3", s:"d", st:"Deck framing", b:"LUMA's own periodisation, not a measured series."},
+    {c:"The market grows from $13bn (2005) to $493bn (2030)", p:"3", s:"u", st:"Unconfirmed", b:"Cited to eMarketer (2025). I found no public $493bn figure and could not tell what the lines measure."},
+    {c:"AI affects media, creative, search and navigation, with disruption rising upward", p:"4", s:"d", st:"Deck framing", b:"A judgement, not a measurement."},
+    {c:"AI reinvention will catalyze consolidation", p:"3", s:"d", st:"Deck framing", b:"A forecast, from a firm that advises on deals in the sector."}
+  ];
+  var tb = document.getElementById("ad1-ledger");
+  function drawLedger(f){
+    tb.innerHTML = L.filter(function(r){ return f === "all" || r.s === f; }).map(function(r){
+      return "<tr><td>" + r.c + "</td><td>[[p. " + r.p + "]]</td><td><span class='ad1-tag " + r.s + "'>" + r.st + "</span></td><td>" + r.b + "</td></tr>";
+    }).join("");
+    document.querySelectorAll("[data-f]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.f === f)); });
+  }
+  document.querySelectorAll("[data-f]").forEach(function(b){ b.addEventListener("click", function(){ drawLedger(b.dataset.f); }); });
+  drawLedger("all");
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>
