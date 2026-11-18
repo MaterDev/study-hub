@@ -104,6 +104,10 @@
         {
           "date": "2026-11-18",
           "note": "Lesson 2 remade as a short lesson that teaches the deck's contents first"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Lesson 3 remade as a short lesson that teaches the deck's contents first"
         }
       ],
       "rebuild": {
@@ -266,7 +270,7 @@
           "id": "sod-3",
           "title": "3. The AI Purchase Funnel",
           "pip": "#c0642b",
-          "blurb": "How an AI assistant could squeeze the purchase funnel, the agentic commerce debate, retail media money, the deck's four implications and the GEO deal flow, with claims checked or flagged.",
+          "blurb": "How an AI assistant can shorten the shopping funnel, the debate over agents that buy for you, retail media, and the deck's four implications for advertisers.",
           "tags": [
             "advertising",
             "ad tech",
@@ -276,38 +280,23 @@
           "anchors": [
             {
               "id": "sod3-1",
-              "title": "The funnel squeezed into one place",
+              "title": "The old funnel and the AI funnel",
               "anchor": "sec1"
             },
             {
               "id": "sod3-2",
-              "title": "Agentic commerce: mirage or reality",
+              "title": "Agents that buy: mirage or reality?",
               "anchor": "sec2"
             },
             {
               "id": "sod3-3",
-              "title": "Commerce media, and AI as channel and layer",
+              "title": "Retail media, and AI as channel and layer",
               "anchor": "sec3"
             },
             {
               "id": "sod3-4",
-              "title": "Four implications",
+              "title": "Four implications, and a question about bots",
               "anchor": "sec4"
-            },
-            {
-              "id": "sod3-5",
-              "title": "Influence the AI: the money behind GEO and AEO",
-              "anchor": "sec5"
-            },
-            {
-              "id": "sod3-6",
-              "title": "Who is advertising to whom",
-              "anchor": "sec6"
-            },
-            {
-              "id": "sod3-7",
-              "title": "What was confirmed and what was not",
-              "anchor": "sec7"
             },
             {
               "id": "sod3-src",
@@ -332,17 +321,19 @@
             {
               "date": "2026-11-18",
               "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Remade from scratch as a short teaching lesson: the old and AI purchase funnels, the Seufert and Finkelstein agentic commerce debate, retail media and AI as channel and layer, the four implications (including GEO and AEO) and the humans-and-bots question; one short 'How solid is this?' note replaces the ledger and chips."
             }
           ],
           "rebuild": {
-            "brief": "Lesson 3 of the State of Digital 2026 module, from deck pages 17-28 and 41. Cover the traditional versus AI-compressed funnel (pp. 17-19), the mirage-or-reality debate between Seufert and Finkelstein (p. 20), commerce media and the $75bn Amazon and Walmart figure plus aggregation (p. 21), AI as channel and layer (p. 22), the four implications (pp. 23-25, 28, 41), the GEO and AEO deal and funding list (p. 27) and the human and bot identity question (p. 26). Widgets: journey comparison, party explorer, retail-basis bars, aggregation reach model, channel and layer grid, implication tabs, deal explorer with log-scale bars, interaction matrix, claims ledger. Tag every claim Deck, Checked, Unconfirmed, Mine, Illustrative or Background; call out that the deck is an M&A adviser's point of view and that LUMA advised Senso on the Zeta deal.",
+            "brief": "Lesson 3 of the State of Digital 2026 module, from deck pages 17-28 and 41, about 1,500 words and three widgets. Define purchase funnel, first-party and third-party, agentic commerce, retail media network, commerce media, channel versus layer, GEO, AEO, martech when first used. Widgets: three-journey funnel comparison, player-by-player agentic commerce view, channel-and-layer grid. One short collapsed 'How solid is this?' note; no ledgers or status chips.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 17-28 and 41",
-              "Eric Seufert, Agentic commerce is a mirage, Mobile Dev Memo (mdm.co), 3 Sep 2025 (opened)",
-              "TechCrunch, Shopify is preparing for AI shopping agents to change everything, exec says, 16 Mar 2026; Retail Brew, 16 Jan 2026 (Finkelstein)",
-              "Deal announcements and coverage: Zeta/Senso (5 Oct 2026, LUMA advised Senso), Adobe/Semrush ($1.9bn, 19 Nov 2025), Sitecore/Scrunch (3 Jun 2026, ~$225m per Bloomberg), Profound ($180m Series D, 15 Sep 2026), Bluefish ($43m Series B, 14 Apr 2026), Evertune ($15m Series A, Aug 2025)",
-              "Amazon Q4 2025 results and PPC Land ($68.6bn 2025 advertising); Walmart FY26 advertising ($6.4bn); eMarketer US retail media forecasts (search summaries only)",
-              "Reports on OpenAI's Instant Checkout launch (Sep 2025) and discontinuation (4 Mar 2026); Imperva Bad Bot Report 2026; Sensor Tower State of AI 2026 (Rufus conversion)"
+              "Eric Seufert, Agentic commerce is a mirage (3 Sep 2025); TechCrunch on Shopify and AI shopping agents (16 Mar 2026)",
+              "Coverage of Adobe/Semrush, Sitecore/Scrunch, Profound's Series D and Zeta/Senso",
+              "Imperva Bad Bot Report 2026; reports on Amazon's and Walmart's advertising revenue"
             ]
           },
           "standard": "v1"
