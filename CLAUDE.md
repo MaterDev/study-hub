@@ -31,6 +31,7 @@ lesson page free. The full rules are in [`docs/LESSON-STANDARD.md`](docs/LESSON-
   block (Contents or "In this lesson"), numbered `<h2 id="secN">` sections, a Takeaways & sources section, a footer,
   and the two script tags. The manifest entry needs anchors that match, dates, history, a rebuild brief and basis.
 - Source claims to primary documents, and say when something is my own synthesis or an illustrative number.
+- **Teach the contents; don't audit them on the page.** A lesson built from a document explains what the document says: define every term when it first appears, give a plain example, show how the idea works. Most of the page is that explanation. Source caution is one sentence inline where a number is really shaky, plus one short collapsed "How solid is this" note near the end. No claim ledgers, status-tag legends or tag chips scattered through the body. Cross-check facts quietly while building. Stated by Key, 2026-11-18, after the State of Digital lessons: most of it was "verification fodder".
 - **When a lesson works from a text that is in the project** (a PDF in its `readings`), every citation of it must link to the
   reference panel: write `[[pp. 11-12 and 18]]` and load `shared/hub-cite.js` in `<head>`. Each page or range becomes its own
   link. See "Citing an attached reading" in `docs/LESSON-STANDARD.md`. Stated by Key, 2026-11-08.

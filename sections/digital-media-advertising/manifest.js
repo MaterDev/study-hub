@@ -116,7 +116,7 @@
           "id": "sod-1",
           "title": "1. How Ad Tech Got Here: Five Phases and a Split Market",
           "pip": "#c0642b",
-          "blurb": "The deck's five phases of ad tech, its open-web versus walled-garden deal prices and its K-shaped stock divergence, with each headline claim checked or flagged.",
+          "blurb": "A short walk through ad tech's five phases, the walled-garden versus open-web split, and what two deals and a stock slide say about it.",
           "tags": [
             "advertising",
             "ad tech",
@@ -126,7 +126,7 @@
           "anchors": [
             {
               "id": "sod1-1",
-              "title": "Four shifts at once",
+              "title": "Four shifts, and the words you need",
               "anchor": "sec1"
             },
             {
@@ -136,23 +136,13 @@
             },
             {
               "id": "sod1-3",
-              "title": "How far AI reaches",
+              "title": "Where AI lands, and two worlds of advertising",
               "anchor": "sec3"
             },
             {
               "id": "sod1-4",
-              "title": "A tale of two deals",
+              "title": "What the market believes",
               "anchor": "sec4"
-            },
-            {
-              "id": "sod1-5",
-              "title": "The Trade Desk and the K shape",
-              "anchor": "sec5"
-            },
-            {
-              "id": "sod1-6",
-              "title": "What was confirmed and what was not",
-              "anchor": "sec6"
             },
             {
               "id": "sod1-src",
@@ -177,16 +167,19 @@
             {
               "date": "2026-11-18",
               "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Remade from scratch as a short teaching lesson: the four shifts, terms defined in plain words, the five phases as a story, walled gardens versus the open web, the two deals and the Trade Desk and K-shape slides, with one short 'How solid is this?' note instead of verification tables."
             }
           ],
           "rebuild": {
-            "brief": "Lesson 1 of the State of Digital 2026 module, from deck pages 2-7. Cover the four shifts (p. 2), the five phases and the market-size curve (p. 3), the AI-impact layers (p. 4), the Stagwell/Freestar versus Walmart/Vibe deal slide (p. 5), the Trade Desk 91% fall (p. 6) and the walled-garden versus open-web stock divergence with its FactSet/LUMA-index footnote (p. 7). Widgets: shifts explorer, phase slider over a schematic curve, AI-layer stack, deal-multiple calculators, Trade Desk timeline, K-shape construction toggle, claims ledger with filters. Label every claim Deck, Checked, Unconfirmed, Mine or Illustrative; do not copy the sales tone.",
+            "brief": "Lesson 1 of the State of Digital 2026 module, from deck pages 2-7, about 1,500 words and three widgets. Define each term the first time it appears (ad tech, programmatic, DSP, SSP, ad network, M&A, consolidation, venture capital, private equity, walled garden, open web, EBITDA versus revenue multiple, bellwether, K-shape). Tell the five phases as a story: what each was, who it helped, why it led on. Explain the four shifts, the AI-layers pyramid, the Stagwell/Freestar versus Walmart/Vibe deals, The Trade Desk and the K-shape. Widgets: phase explorer, walled-garden versus open-web hop chain, margin slider showing why a profit multiple and a revenue multiple cannot be compared. One short collapsed 'How solid is this?' note; no ledgers or status chips.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 2-7",
-              "Stagwell Inc., Form 10-Q for the quarter ended 30 Sep 2026, Note 1 (Freestar: $50.0m, $30.0m stock and $20.0m cash, up to $60.0m contingent, closed 23 Oct 2026)",
-              "Walmart's 23 Jun 2026 announcement of the Vibe.co deal and press reports of the $1.4bn price (WSJ via The Next Web); multiples.vc estimate of Vibe revenue",
-              "Trefis, What Is Driving The Move In Trade Desk Stock (4 Nov 2026); Investing.com and Macrotrends for the Dec 2024 record high; trade and finance coverage of the Feb, May, Jun and Aug 2026 events",
-              "LUMA's State of Digital 2026 page (lumapartners.com/presentations/state-of-digital-2026); public eMarketer notes (US digital ad spend $309.3bn in 2024); the 2030 $493bn figure and the K-shape index could not be confirmed"
+              "Stagwell Inc., Form 10-Q for the quarter ended 30 Sep 2026, Note 1 (Freestar terms)",
+              "Walmart's 23 Jun 2026 announcement of Vibe; Trefis, What Is Driving The Move In Trade Desk Stock (4 Nov 2026)",
+              "LUMA's page for the deck (lumapartners.com/presentations/state-of-digital-2026)"
             ]
           },
           "standard": "v1"
