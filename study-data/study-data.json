@@ -1,6 +1,6 @@
 {
   "schema": "study-hub-data/1",
-  "exportedAt": "2026-11-12T16:52:25.307Z",
+  "exportedAt": "2026-11-18T17:53:10.644Z",
   "progress": {
     "anim-02": {
       "read": true,
@@ -20,8 +20,8 @@
       "read": true,
       "readAt": "2026-10-23T20:46:15.241Z",
       "firstOpened": "2026-10-23T18:26:10.463Z",
-      "lastOpened": "2026-10-27T15:20:13.506Z",
-      "opens": 5
+      "lastOpened": "2026-11-18T17:29:23.307Z",
+      "opens": 6
     },
     "transports": {
       "read": true,
@@ -311,8 +311,8 @@
       "opens": 2
     },
     "cy-1": {
-      "read": false,
-      "readAt": null,
+      "read": true,
+      "readAt": "2026-11-12T16:52:31.101Z",
       "firstOpened": "2026-11-05T18:11:46.224Z",
       "lastOpened": "2026-11-12T16:52:07.670Z",
       "opens": 20
@@ -321,8 +321,8 @@
       "read": false,
       "readAt": null,
       "firstOpened": "2026-11-05T18:11:52.480Z",
-      "lastOpened": "2026-11-05T18:19:57.953Z",
-      "opens": 8
+      "lastOpened": "2026-11-12T16:52:32.687Z",
+      "opens": 9
     },
     "cy-3": {
       "read": false,
@@ -330,6 +330,41 @@
       "firstOpened": "2026-11-05T18:13:51.453Z",
       "lastOpened": "2026-11-05T18:14:58.257Z",
       "opens": 4
+    },
+    "sod-1": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-18T16:59:30.385Z",
+      "lastOpened": "2026-11-18T17:04:37.597Z",
+      "opens": 7
+    },
+    "sod-2": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-18T17:04:45.765Z",
+      "lastOpened": "2026-11-18T17:09:23.890Z",
+      "opens": 3
+    },
+    "sod-3": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-18T17:09:28.807Z",
+      "lastOpened": "2026-11-18T17:30:31.103Z",
+      "opens": 7
+    },
+    "sod-4": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-18T17:13:48.536Z",
+      "lastOpened": "2026-11-18T17:29:55.081Z",
+      "opens": 4
+    },
+    "sod-5": {
+      "read": false,
+      "readAt": null,
+      "firstOpened": "2026-11-18T17:17:33.618Z",
+      "lastOpened": "2026-11-18T17:29:44.849Z",
+      "opens": 5
     }
   },
   "annotations": {
