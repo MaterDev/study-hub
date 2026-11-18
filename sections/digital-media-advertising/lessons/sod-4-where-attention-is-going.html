@@ -9,414 +9,178 @@
 <style>
   .ad4-stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm); min-width:0;}
   .ad4-stage div{min-width:0;}
-  .ad4-small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
-  .ad4-tag{display:inline-block; font-family:var(--font-ui); font-size:.68rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); margin-right:6px; color:var(--ink);}
-  .ad4-tag.d{border-color:var(--cobalt); background:var(--cobalt-soft);}
-  .ad4-tag.c{border-color:var(--forest); background:var(--forest-soft);}
-  .ad4-tag.m{border-color:var(--plum); background:var(--plum-soft);}
-  .ad4-tag.u{border-color:var(--vermil); background:var(--vermil-soft);}
-  .ad4-tag.r{border-color:var(--ochre); background:var(--ochre-soft); border-style:dashed;}
-  .ad4-tag.p{border-color:var(--ochre); background:var(--ochre-soft);}
   .ad4-opts{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px;}
   .ad4-opt{border:2px solid var(--line-strong); border-radius:10px; padding:8px 12px; background:var(--paper); color:var(--ink); font:700 .82rem var(--font-ui); cursor:pointer; text-align:left;}
   .ad4-opt:hover{border-color:var(--cobalt);}
   .ad4-opt[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
   .ad4-opt:focus-visible,.ad4-rng:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad4-panel{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .ad4-panel{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.9rem; color:var(--ink); overflow-wrap:anywhere;}
   .ad4-panel p{margin:0 0 8px; max-width:none;} .ad4-panel p:last-child{margin-bottom:0;}
-  .ad4-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;} @media(max-width:700px){.ad4-two{grid-template-columns:minmax(0,1fr);}}
-  .ad4-four{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px;} @media(max-width:700px){.ad4-four{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  .ad4-shift{display:flex; flex-direction:column; align-items:flex-start; gap:6px; border:2px solid var(--line-strong); border-radius:12px; background:var(--paper); color:var(--ink); padding:12px; cursor:pointer; font:700 .9rem var(--font-ui); text-align:left;}
-  .ad4-shift:hover{border-color:var(--cobalt);}
-  .ad4-shift[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
-  .ad4-shift:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad4-shift svg{width:44px; height:44px; stroke:var(--ink); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;}
+  .ad4-four{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:14px 0;} @media(max-width:700px){.ad4-four{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .ad4-tile{border:2px solid var(--outline); border-radius:12px; padding:12px; background:var(--paper); color:var(--ink); font:700 .85rem var(--font-ui);}
+  .ad4-tile b{display:block; font-size:1rem; margin-bottom:4px;}
+  .ad4-terms{margin:12px 0; padding:0; display:grid; gap:6px; max-width:none;}
+  .ad4-terms div{border-left:4px solid var(--cobalt); background:var(--cobalt-soft); color:var(--ink); padding:7px 12px; border-radius:0 8px 8px 0; font-family:var(--font-ui); font-size:.9rem;}
+  .ad4-bands{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;} @media(max-width:700px){.ad4-bands{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .ad4-band{border:2px solid var(--outline); border-radius:8px; padding:8px 6px; color:var(--ink); font:800 .72rem var(--font-ui); text-align:center; cursor:pointer;}
+  .ad4-band small{display:block; font-weight:600; font-size:.68rem; margin-top:2px;}
+  .ad4-band[aria-pressed="true"]{outline:3px solid var(--ink); outline-offset:1px;}
+  .ad4-band:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad4-b1{background:var(--cobalt-soft);} .ad4-b2{background:var(--plum-soft);} .ad4-b3{background:var(--ochre-soft);} .ad4-b4{background:var(--vermil-soft);} .ad4-b5{background:var(--forest-soft);}
+  .ad4-hops{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0;}
+  .ad4-hop{border:2px solid var(--outline); border-radius:8px; padding:6px 10px; font:700 .8rem var(--font-ui); background:var(--paper); color:var(--ink);}
+  .ad4-hop.mid{background:var(--ochre-soft);}
+  .ad4-arrow{font-weight:800; color:var(--ink-mute);}
   .ad4-rng{width:100%; accent-color:var(--cobalt);}
-  .ad4-svg{display:block; width:100%; height:auto;}
-  .ad4-svg text{fill:var(--ink); font-family:var(--font-ui);}
-  .ad4-band{stroke:var(--line-strong); stroke-width:1;}
-  .ad4-curve-a{fill:none; stroke:var(--vermil); stroke-width:3.5;}
-  .ad4-curve-b{fill:none; stroke:var(--ink-mute); stroke-width:2.5; stroke-dasharray:6 5;}
-  .ad4-marker{stroke:var(--ink); stroke-width:2;}
-  .ad4-pyr{cursor:pointer;} .ad4-pyr:focus-visible{outline:3px solid var(--plum);}
-  .ad4-pyr polygon{stroke:var(--outline); stroke-width:2;}
-  .ad4-pyr.on polygon{stroke:var(--ink); stroke-width:4;}
-  .ad4-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin:8px 0;}
-  .ad4-big{font-family:var(--font-ui); font-size:1.9rem; font-weight:800; color:var(--ink); line-height:1.1;}
-  .ad4-meter{height:16px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden; margin:6px 0;}
-  .ad4-meter i{display:block; height:100%; background:var(--vermil);}
-  .ad4-meter.g i{background:var(--forest);}
-  .ad4-tl{list-style:none; margin:8px 0; padding:0; border-left:3px solid var(--line-strong);}
-  .ad4-tl li{position:relative; margin:0 0 10px; padding:0 0 0 14px; font-family:var(--font-ui); font-size:.86rem; color:var(--ink); max-width:none;}
-  .ad4-tl li::before{content:""; position:absolute; left:-8px; top:6px; width:11px; height:11px; border-radius:50%; background:var(--surface); border:3px solid var(--cobalt);}
-  .ad4-bars{display:flex; gap:28px; align-items:flex-end; height:190px; padding:0 10px; border-bottom:2px solid var(--outline); margin:10px 0 4px;}
-  .ad4-barcol{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font-family:var(--font-ui); font-size:.85rem; color:var(--ink); font-weight:800;}
-  .ad4-bar{width:60%; min-height:4px;}
-  .ad4-bar.up{background:var(--cobalt);} .ad4-bar.down{background:var(--vermil);}
-  .ad4-table-wrap{overflow-x:auto; max-width:100%;}
-  table.ad4-tab{border-collapse:collapse; width:100%; min-width:560px; font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
-  table.ad4-tab th,table.ad4-tab td{border-bottom:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top;}
-  table.ad4-tab th{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
-  .ad4-calc-out{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--paper-2); color:var(--ink); margin-top:8px; font-family:var(--font-ui); font-size:.88rem;}
-  .ad4-bars2{display:flex; gap:28px; align-items:flex-end; height:230px; padding:0 10px; border-bottom:2px solid var(--outline); margin:10px 0 4px;}
-  .ad4-tag.b{border-color:var(--line-strong); background:var(--paper-2);}
-  .ad4-list{margin:6px 0 8px 1.1em; padding:0; max-width:none;}
-  .ad4-row{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2.2fr); gap:10px; align-items:center; border-bottom:1px solid var(--line); padding:7px 0; font-family:var(--font-ui); font-size:.86rem; color:var(--ink);}
-  .ad4-stg{font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.04em;}
-  .ad4-chip{display:inline-block; border:2px solid var(--line-strong); border-radius:8px; padding:3px 9px; font-weight:700; font-size:.8rem; color:var(--ink); margin:2px 4px 2px 0;}
-  .ad4-chip.ai{border-color:var(--cobalt); background:var(--cobalt-soft);}
-  .ad4-chip.third{border-color:var(--ochre); background:var(--ochre-soft);}
-  .ad4-chip.own{border-color:var(--forest); background:var(--forest-soft);}
-  .ad4-funnel{display:block; margin:0 auto; width:100%; max-width:260px; height:auto;}
-  .ad4-funnel polygon{stroke:var(--outline); stroke-width:2;}
-  .ad4-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin:8px 0;} @media(max-width:700px){.ad4-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
-  .ad4-chan{border:2px solid var(--line-strong); border-radius:8px; padding:10px 4px; text-align:center; font:800 .72rem var(--font-ui); color:var(--ink); background:var(--paper);}
-  .ad4-chan.lit{border-color:var(--cobalt); background:var(--cobalt-soft);}
-  .ad4-chan.lit2{border-color:var(--ochre); background:var(--ochre-soft);}
-  .ad4-chan.lit.lit2{border-color:var(--forest); background:var(--forest-soft);}
-  .ad4-dealrow{display:grid; grid-template-columns:minmax(0,10em) minmax(0,1fr) minmax(0,6em); gap:8px; align-items:center; width:100%; text-align:left; border:2px solid var(--line-strong); border-radius:8px; background:var(--paper); color:var(--ink); padding:7px 10px; margin:0 0 4px; font:700 .8rem var(--font-ui); cursor:pointer;}
-  .ad4-dealrow:hover{border-color:var(--cobalt);}
-  .ad4-dealrow[aria-pressed="true"]{border-color:var(--ink); border-width:3px; background:var(--cobalt-soft);}
-  .ad4-dealrow:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad4-dealbar{display:block; height:12px; background:var(--cobalt); border-radius:6px; min-width:4px;}
-  .ad4-dealbar.nd{background:var(--ink-faint);}
-  .ad4-quad{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;}
-  .ad4-quadb{border:2px solid var(--line-strong); border-radius:12px; background:var(--paper); color:var(--ink); padding:14px 8px; font:800 .9rem var(--font-ui); cursor:pointer; text-align:center;}
-  .ad4-quadb:hover{border-color:var(--cobalt);}
-  .ad4-quadb[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
-  .ad4-quadb:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad4-numline{position:relative; height:88px; border-top:3px solid var(--outline); margin:30px 10px 10px;}
-  .ad4-yr{position:absolute; top:6px; transform:translateX(-50%); font:700 .7rem var(--font-ui); color:var(--ink-mute);}
-  .ad4-mk{position:absolute; top:-15px; transform:translateX(-50%); width:26px; height:26px; border-radius:50%; border:3px solid var(--ink); background:var(--cobalt-soft); color:var(--ink); font:800 .75rem var(--font-ui); cursor:pointer; padding:0;}
-  .ad4-mk[aria-pressed="true"]{background:var(--ochre); }
-  .ad4-mk:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad4-donut{display:block; margin:0 auto; width:100%; max-width:220px; height:auto;}
+  .ad4-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin:8px 0;}
+  .ad4-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;} @media(max-width:700px){.ad4-two{grid-template-columns:minmax(0,1fr);}}
+  .ad4-out{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--paper-2); color:var(--ink); font-family:var(--font-ui); font-size:.9rem;}
+  .ad4-big{font-family:var(--font-ui); font-size:1.7rem; font-weight:800; color:var(--ink); line-height:1.15;}
+  .ad4-k{display:flex; gap:20px; align-items:flex-end; height:150px; border-bottom:2px solid var(--outline); padding:0 12px; margin:10px 0 4px;}
+  .ad4-kc{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font:800 .85rem var(--font-ui); color:var(--ink);}
+  .ad4-kb{width:55%; min-height:4px;} .ad4-kb.up{background:var(--cobalt);} .ad4-kb.dn{background:var(--vermil);}
+  .ad4-cap{display:flex; gap:20px; font:600 .78rem var(--font-ui); color:var(--ink-mute); padding:0 12px;} .ad4-cap span{flex:1 1 0; text-align:center;}
+  details.ad4-solid{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--surface); color:var(--ink); margin:14px 0; font-family:var(--font-ui); font-size:.9rem;}
+  details.ad4-solid summary{cursor:pointer; font-weight:800;}
+  details.ad4-solid summary:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad4-donut{display:block; margin:0 auto; width:100%; max-width:200px; height:auto;}
+  .ad4-bars{display:flex; gap:22px; align-items:flex-end; height:200px; border-bottom:2px solid var(--outline); padding:0 10px; margin:6px 0 4px;}
+  .ad4-bc{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font:800 .8rem var(--font-ui); color:var(--ink); text-align:center;}
+  .ad4-bar{width:60%; min-height:4px;} .ad4-bar.up{background:var(--cobalt);} .ad4-bar.dn{background:var(--vermil);}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Where Attention Is Going</h1>
-  <p class="subtitle">After the AI funnel, the deck turns to where people spend their time and where advertisers will follow: streaming television, creators, mobile apps and out-of-home media, with the open web as the question mark. This lesson takes each in turn, checks the headline numbers against outside sources, and keeps track of something the deck rarely says aloud: several slides show deals and clients that the deck's author advised.</p>
-
-  <p class="ad4-small"><span class="ad4-tag d">Deck</span> a claim or framing from the LUMA slides, cited by page. <span class="ad4-tag c">Checked</span> confirmed in an outside source that I opened in full (listed under sources). <span class="ad4-tag r">Reported</span> found in outside coverage or announcements that I saw only as search-result summaries, so not confirmed first-hand. <span class="ad4-tag u">Unconfirmed</span> I could not confirm it. <span class="ad4-tag m">Mine</span> my own synthesis or arithmetic. <span class="ad4-tag p">Illustrative</span> a number or picture made up to show an idea. <span class="ad4-tag b">Background</span> general knowledge I did not re-check. Page numbers are pages of the trimmed deck attached to this module (printed page = PDF page). This lesson covers pages 29 to 40.</p>
+  <p class="subtitle">If advertising follows attention, where is attention going? The deck names four growing places, streaming television, creators, mobile apps and real-world media, and leaves the open web as a question mark ([[p. 29]]). This lesson explains each place, what the deck says about it, and why it thinks advertisers and ad tech companies should care.</p>
 
   <div class="toc" data-testid="sod4-toc">
-    <strong>Contents</strong>
+    <strong>In this lesson</strong>
     <ol>
-      <li><a href="#sec1">Streaming and linear TV (measures)</a></li>
-      <li><a href="#sec2">Consolidation and sports rights (deals)</a></li>
-      <li><a href="#sec3">Creators (growth and scale)</a></li>
-      <li><a href="#sec4">Mobile apps (spend per hour)</a></li>
-      <li><a href="#sec5">Out-of-home, called IRL (attributes)</a></li>
-      <li><a href="#sec6">A channel scorecard, with the open web (compare)</a></li>
-      <li><a href="#sec7">What was confirmed and what was not (ledger)</a></li>
+      <li><a href="#sec1">Streaming TV and "convergent" TV</a></li>
+      <li><a href="#sec2">Creators</a></li>
+      <li><a href="#sec3">Mobile apps</a></li>
+      <li><a href="#sec4">Real-world media, and the open web</a></li>
       <li><a href="#sec-src">Takeaways &amp; sources</a></li>
     </ol>
   </div>
 
-  <h2 id="sec1"><span class="num">1</span> Streaming and linear TV</h2>
-  <p class="lead">The deck's opening claim for this part is that CTV, creator, mobile and in-real-life media offer growing ways to influence consumers, while the open web's role is uncertain ([[p. 29]]). It starts with streaming television: Nielsen's Q1 2026 data show streaming at 47% of ad-supported TV, and streaming is expected to pass linear in time spent for the first time in 2027, which the deck calls the promise of convergent TV "finally manifesting" (the slide's title; [[p. 30]]). Pick a way of measuring to see what "streaming's share" can mean.</p>
+  <h2 id="sec1"><span class="num">1</span> Streaming TV and "convergent" TV</h2>
+  <p class="lead"><b>Linear TV</b> is television on a schedule: broadcast and cable channels. <b>Streaming</b> is TV over the internet, and <b>CTV</b> (connected TV) means streaming on a TV screen, through apps such as Netflix or YouTube. The deck says streaming has become "king" ([[p. 30]]).</p>
+  <p>It backs this with Nielsen's measure of ad-supported TV viewing: streaming was 47% in the first quarter of 2026. The exact Nielsen figure was 46.6%, a record, helped by the Super Bowl, the Olympics and NFL playoff games on streaming. Pick a measure.</p>
   <div class="ad4-stage" data-testid="sod4-measures">
     <div class="ad4-opts" role="group" aria-label="Measures">
-      <button class="ad4-opt" type="button" data-ms="0" aria-pressed="true" data-testid="sod4-measure-adsupported">Ad-supported viewing, Q1 2026</button>
-      <button class="ad4-opt" type="button" data-ms="1" aria-pressed="false" data-testid="sod4-measure-total-may">All TV viewing, May 2026</button>
-      <button class="ad4-opt" type="button" data-ms="2" aria-pressed="false" data-testid="sod4-measure-total-aug">All TV viewing, August 2026</button>
+      <button class="ad4-opt" type="button" data-m="0" aria-pressed="true" data-testid="sod4-measure-adsupported">Ad-supported viewing, Q1 2026</button>
+      <button class="ad4-opt" type="button" data-m="1" aria-pressed="false" data-testid="sod4-measure-all">All TV viewing, Aug 2026</button>
     </div>
     <div class="ad4-two">
-      <svg class="ad4-donut" viewBox="0 0 120 120" role="img" aria-label="Donut chart of streaming share"><circle cx="60" cy="60" r="42" fill="none" stroke="var(--line-strong)" stroke-width="20"/><circle id="ad4-arc" cx="60" cy="60" r="42" fill="none" stroke="var(--cobalt)" stroke-width="20" stroke-dasharray="0 264" transform="rotate(-90 60 60)"/><text id="ad4-arc-t" x="60" y="66" text-anchor="middle" font-size="18" font-weight="800" style="fill:var(--ink)">0%</text></svg>
-      <div class="ad4-panel" id="ad4-ms-panel" aria-live="polite" data-testid="sod4-measure-panel"></div>
+      <svg class="ad4-donut" viewBox="0 0 120 120" role="img" aria-label="Streaming share of viewing"><circle cx="60" cy="60" r="42" fill="none" stroke="var(--line-strong)" stroke-width="20"/><circle id="ad4-arc" cx="60" cy="60" r="42" fill="none" stroke="var(--cobalt)" stroke-width="20" stroke-dasharray="0 264" transform="rotate(-90 60 60)"/><text id="ad4-arct" x="60" y="66" text-anchor="middle" font-size="18" font-weight="800" style="fill:var(--ink)">0%</text></svg>
+      <div class="ad4-panel" id="ad4-mp" aria-live="polite" data-testid="sod4-measure-panel"></div>
     </div>
   </div>
-  <p><span class="ad4-tag c">Checked</span> The 47% is real, with a caveat on its meaning. Nielsen's Ad Supported Gauge for Q1 2026 (published late June) has streaming at a record 46.6% of ad-supported TV viewing, with broadcast at 28.2% and cable at 25.2%, so linear is 53.4%. That is a share of viewing on ad-supported platforms, helped in that quarter by the Super Bowl simulcast, the Olympics and NFL playoff games on Amazon. <span class="ad4-tag r">Reported</span> Nielsen's monthly Gauge, which counts all TV viewing, put streaming at 48.6% in May and 49.6% in August 2026 (search-result summaries). Nielsen also said it will change its method from September 2026, so later figures will not line up exactly.</p>
-  <p>Now the dates. The deck says streaming passes linear in time spent in 2027, and its caption says "next year" ([[p. 30]]). Different measures cross at different times. Select a marker on the line.</p>
-  <div class="ad4-stage" data-testid="sod4-cross">
-    <div class="ad4-numline" id="ad4-line" role="group" aria-label="Crossover timeline"></div>
-    <div class="ad4-panel" id="ad4-cross-panel" aria-live="polite" data-testid="sod4-cross-panel"></div>
-  </div>
-  <p><span class="ad4-tag m">Mine</span> The honest summary is that streaming is at or very near half of television viewing in the US already, depending on the dataset, and that "overtakes linear in 2027" is one forecast among several that use different units. The slide gives only one source, Nielsen Q1 2026, for the share, and none for the 2027 date. The deck also recalls LUMA's own 2013 prediction that linear would exceed streaming in ad spend for ten more years, and says it held ([[p. 30]]). That is a claim about the author's track record, and I could not check it. A reader should treat it as the firm's way of saying it was early and right.</p>
-  <p><span class="ad4-tag d">Deck</span> The slide's "performance-driven" panel repeats a LUMA argument from 2018 (the inset slides on the panel are dated 2018) that CTV can bring digital targeting and measurement to television and open it to advertisers of all sizes ([[p. 30]]). <span class="ad4-tag m">Mine</span> That is the thesis behind the performance CTV deals in the next section.</p>
+  <p>The deck predicts that streaming will pass linear TV in time spent in 2027. Measures differ, and some forecasts put the crossing earlier or later, so read it as "around now".</p>
+  <p>The second idea is that TV is becoming <b>performance advertising</b>, meaning ads judged by measurable results such as sales or sign-ups. For decades TV was for big brands with big budgets. Streaming ads can be bought by anyone, targeted like online ads and measured. LUMA says it has argued this for over a decade.</p>
+  <p>The deck lists deals as evidence ([[p. 31]]). Paramount Skydance agreed to buy Warner Bros. Discovery. Fox announced a $22 billion deal for Roku, the maker of TV streaming devices. Disney merged its Hulu live TV service with fubo. Pinterest agreed to buy tvScientific and Walmart bought Vibe, both of which let smaller advertisers buy streaming ads themselves. Streaming services are also paying heavily for <b>live sports rights</b>, the licences to show games: Amazon has NBA games, Netflix has NFL Christmas games, and YouTube has NFL Sunday Ticket.</p>
+  <p>Finally, "convergent" means the lines blur. Streaming services add short vertical clips, and social apps like YouTube and TikTok add long shows ([[p. 32]]). Both are competing for the same attention.</p>
 
-  <h2 id="sec2"><span class="num">2</span> Consolidation and sports rights</h2>
-  <p class="lead">A second slide groups deals under "scale and monetization", covering media mergers and live sports, and "performance-driven", covering Walmart's purchase of Vibe and Pinterest's purchase of tvScientific ([[p. 31]]). Select a row for what I could confirm.</p>
-  <div class="ad4-stage" data-testid="sod4-deals">
-    <div id="ad4-deal-list" role="group" aria-label="Deals"></div>
-    <div class="ad4-panel" id="ad4-deal-panel" aria-live="polite" style="margin-top:8px" data-testid="sod4-deal-panel"></div>
-  </div>
-  <p><span class="ad4-tag m">Mine</span> The slide lists very different things together. Paramount Skydance's offer for Warner Bros. Discovery and Fox's offer for Roku are scale deals between large media companies, driven by programming, distribution and subscriber economics. Walmart's Vibe and Pinterest's tvScientific are self-serve ad platforms that let small advertisers buy connected-TV ads, which is the performance idea from section 1. Putting a $22 billion platform merger beside a deal of undisclosed size does not show that they have one cause. The sports rights are real and large, but most of that spending goes to rights holders, not to ad technology.</p>
-
-  <h2 id="sec3"><span class="num">3</span> Creators</h2>
-  <p class="lead">The deck says streaming and digital video platforms are converging, ([[p. 32]]), with short-form clips used for discovery and long-form for monetisation, and that 27 million creators sit at the centre of the convergence ([[p. 33]]). It then shows US creator ad spend rising from $18.4 billion in 2022 to $43.9 billion in 2026, a 24% compound annual growth rate, with Unilever and Pepsi as examples ([[pp. 34-35]]), and argues that scaling the channel creates an opening for ad technology ([[p. 36]]). Switch between the spend and its year-on-year growth.</p>
+  <h2 id="sec2"><span class="num">2</span> Creators</h2>
+  <p class="lead">A <b>creator</b> is someone who makes videos, posts or streams for an audience, such as a YouTuber, a TikTok star or a podcaster. The deck calls creators the backbone of digital platforms, because people now use them more for entertainment than for keeping in touch ([[p. 33]]).</p>
+  <p>It cites 27 million US creators. That number comes from a 2023 survey that counts anyone who calls themselves an influencer and was paid in the past year. Most earn little, and more than half make under $10,000 a year, so "27 million" describes a very wide crowd.</p>
+  <p>Brands are following. The slide shows US creator ad spend rising from $18.4 billion in 2022 to a projected $43.9 billion in 2026 ([[p. 34]]). Switch between the amount and the growth.</p>
   <div class="ad4-stage" data-testid="sod4-creators">
     <div class="ad4-opts" role="group" aria-label="View">
-      <button class="ad4-opt" type="button" data-cv="lvl" aria-pressed="true" data-testid="sod4-creator-spend">Spend, $bn</button>
-      <button class="ad4-opt" type="button" data-cv="gr" aria-pressed="false" data-testid="sod4-creator-growth">Growth on the year before</button>
+      <button class="ad4-opt" type="button" data-v="lvl" aria-pressed="true" data-testid="sod4-creator-spend">Spend</button>
+      <button class="ad4-opt" type="button" data-v="gr" aria-pressed="false" data-testid="sod4-creator-growth">Growth on the year before</button>
     </div>
-    <div class="ad4-bars2" id="ad4-cbars" role="img" aria-label="US creator ad spend 2022 to 2026"></div>
-    <div class="ad4-panel" id="ad4-cnote" aria-live="polite" style="margin-top:8px" data-testid="sod4-creator-note"></div>
+    <div class="ad4-bars" id="ad4-cb" role="img" aria-label="US creator ad spend 2022 to 2026"></div>
+    <div class="ad4-panel" id="ad4-cn" aria-live="polite" style="margin-top:8px" data-testid="sod4-creator-note"></div>
   </div>
-  <p><span class="ad4-tag r">Reported</span> The levels match the IAB. Its report puts US creator advertising at $37 billion in 2025 and about $44 billion projected for 2026, which agrees with the slide's last two bars. <span class="ad4-tag m">Mine</span> The 24% is a four-year average. Dividing the slide's own numbers, growth was about 20% in 2023, 33% in 2024, 26% in 2025 and 18% in 2026, so the channel is large and growing but slowing, and 2026 is a projection. The slide's last bar is lighter for that reason.</p>
-  <p>Next, how many creators, and how professional? Pick a slice.</p>
-  <div class="ad4-stage" data-testid="sod4-27m">
-    <div class="ad4-opts" role="group" aria-label="Slices">
-      <button class="ad4-opt" type="button" data-cs="0" aria-pressed="true" data-testid="sod4-slice-all">Everyone counted</button>
-      <button class="ad4-opt" type="button" data-cs="1" aria-pressed="false" data-testid="sod4-slice-fulltime">Full-time creators</button>
-      <button class="ad4-opt" type="button" data-cs="2" aria-pressed="false" data-testid="sod4-slice-income">Earning under $10,000</button>
-    </div>
-    <div class="ad4-meter" style="height:26px"><i id="ad4-cs-bar" style="width:100%"></i></div>
-    <div class="ad4-panel" id="ad4-cs-panel" aria-live="polite" data-testid="sod4-slice-panel"></div>
-  </div>
-  <p><span class="ad4-tag r">Reported</span> The 27 million comes from The Keller Advisory Group, as the slide's source line says ([[p. 33]]): a 2023 survey estimate that counts anyone who identifies as an influencer and was paid for content in the past year, around 14% of Americans aged 16 to 54. It reported roughly 44% as full-time, and that more than half earn under $10,000 a year. So "27 million creators supplying premium video" describes a very wide group. Most of the money goes to a small share of them.</p>
-  <p><span class="ad4-tag r">Reported</span> <span class="ad4-tag u">Unconfirmed</span> On the examples ([[pp. 34-35]]). Unilever's chief executive said the company works with close to 300,000 creators, against about 10,000 two years earlier, and that it is moving about half of digital marketing into social-first, creator-led work. But the "20x" in his 2025 announcement is reported as twenty times as many influencers, not twenty times the money, so the slide's "twentyfold creator spending" is looser than the source. For Pepsi, the slide image shows a quotation attributed to Chris Bellinger, PepsiCo's chief creative officer, about moving away from "traditional" advertising into "new content" and the creator economy, and its caption says brands like Pepsi are shifting toward creator-led content. I could not find that quotation in outside sources. The closest I found is the same executive describing a new era of content creation, and a Digiday piece saying PepsiCo's media mix still leans on linear TV, paid social and creators.</p>
-  <p><span class="ad4-tag d">Deck</span> The deck's conclusion is that fragmentation among creators and platforms needs ad tech for scale and measurement, "much the way it did" for the open web and CTV ([[p. 36]]). <span class="ad4-tag m">Mine</span> That argument is plausible and it is also the one that sells ad tech. The same fragmentation could as easily be absorbed by the large platforms' own tools, as the deck says walled gardens are turning into distributors.</p>
+  <p>The deck's example is Unilever, which says it now works with close to 300,000 creators, up from about 10,000 two years earlier. Pepsi's chief creative officer is quoted on the slide about moving from traditional advertising towards "new content" and the creator economy ([[p. 35]]).</p>
+  <p>Why should ad tech care? Because creators are scattered across many platforms, so brands need tools to find them, pay them and measure results. The deck says this is where ad technology can add scale, as it once did for the open web and CTV ([[p. 36]]). It adds that the big walled gardens are becoming distribution platforms for other people's content, rather than the only home for it.</p>
 
-  <h2 id="sec4"><span class="num">4</span> Mobile apps</h2>
-  <p class="lead">The deck says mobile apps capture lots of attention but little ad spend per hour: about $0.07 for third-party in-app, $0.14 for walled-garden in-app, $0.24 for CTV and $0.38 for traditional TV, and cites Liftoff's S-1 and its chief executive's description of a structurally under-monetised market ([[p. 37]]). It then sketches growth along two lines, more kinds of advertiser and more channels, to a $500 billion-plus addressable market ([[p. 38]]). Try the per-hour numbers.</p>
+  <h2 id="sec3"><span class="num">3</span> Mobile apps</h2>
+  <p class="lead">People spend a lot of time in apps, yet the deck says advertisers spend little per hour of that time ([[p. 37]]). Try the numbers from the slide: dollars of ad spend for each hour a user spends.</p>
   <div class="ad4-stage" data-testid="sod4-mobile">
     <div class="ad4-two">
+      <div class="ad4-bars" id="ad4-mb" role="img" aria-label="Ad spend per user hour"></div>
       <div>
-        <div class="ad4-bars2" style="height:210px" role="img" aria-label="Ad spend per user hour by channel" id="ad4-mbars"></div>
-      </div>
-      <div>
-        <label class="ad4-ctl">Hours a day with the medium <input class="ad4-rng" id="ad4-hrs" type="range" min="0.5" max="6" step="0.1" value="3.6" data-testid="sod4-mobile-hours"></label>
-        <div class="ad4-calc-out" id="ad4-mout" aria-live="polite" data-testid="sod4-mobile-out"></div>
+        <label class="ad4-ctl">Hours a day with the medium <input class="ad4-rng" id="ad4-hrs" type="range" min="0.5" max="6" step="0.1" value="3.6" data-testid="sod4-hours-slider"></label>
+        <div class="ad4-out" id="ad4-mo" aria-live="polite" data-testid="sod4-mobile-out"></div>
       </div>
     </div>
-    <p class="ad4-small" style="margin:10px 0 0"><span class="ad4-tag p">Illustrative</span> <span class="ad4-tag m">Mine</span> Spend per hour times hours per year, for one user. The slide's 3.6 hours a day is the average app time it shows.</p>
   </div>
-  <p><span class="ad4-tag d">Deck</span> <span class="ad4-tag u">Unconfirmed</span> The four dollar figures trace, in a secondary report I found, to an Altman Solon study of November 2025 that Liftoff commissioned and cited in its filing. I could not open the S-1. So the slide's "research from Liftoff's S-1" is research that a company with an interest in the answer paid for. The slide's own tombstone (an image on [[p. 37]]) also shows that LUMA acted as an underwriting co-manager on Liftoff's initial public offering, so the deck is presenting the case for a company it helped take public. The $500 billion-plus figure and the 3.6 hours a day carry no source on the slides.</p>
-  <p><span class="ad4-tag m">Mine</span> Low spend per hour is not proof of under-monetisation. An hour on a game and an hour of prime-time television are different products: they differ in who is watching, how many ads appear, how well results can be measured and what advertisers pay for. Television's figure is also the legacy brand-advertising price. Per-hour comparisons make a good chart, but the gap could narrow because mobile improves or because television's price falls, and the slide does not say which it expects. The deck's separate claim that apps are less exposed to agentic commerce is reasoning, not evidence: ads inside an app are not displaced by an assistant's answer in the way a search result might be.</p>
+  <p>Third-party apps (games and other apps that sell ad space through ad tech platforms) draw $0.07 per user hour, half of what the walled gardens' own apps earn ($0.14), well below connected TV ($0.24) and about a fifth of traditional TV ($0.38). The slide's average of 3.6 hours a day on mobile shows the gap in practice. The deck reads this as "under-monetised": attention that advertisers have not caught up with yet.</p>
+  <p>Its argument for growth ([[p. 38]]) has two parts. More kinds of advertiser, such as online shops and other apps, are starting to buy. And the mobile ad platforms, such as AppLovin and Liftoff, are taking their performance skills to other channels, including CTV and creators. The slide puts the total opportunity at over $500 billion, a figure LUMA does not source.</p>
+  <p>A cheap hour is not automatically a bargain. Hours differ in audience, number of ads and how measurable they are. Also, the slide shows LUMA co-managed Liftoff's share offering, and the per-hour figures come from a study Liftoff commissioned.</p>
 
-  <h2 id="sec5"><span class="num">5</span> Out-of-home, called IRL</h2>
-  <p class="lead">For physical advertising such as billboards and transit screens, the deck gives five attributes, in its caption scarcity, IRL authenticity, an unskippable experience, emotional impact and trust, and advises these companies to "seize that comparative advantage" ([[p. 39]]). It closes the section by saying this was the central message of its recent presentation to the OUTFRONT board ([[p. 40]]). Select an attribute to ask whether it can be tested.</p>
-  <div class="ad4-stage" data-testid="sod4-irl">
-    <div class="ad4-opts" role="group" aria-label="Attributes">
-      <button class="ad4-opt" type="button" data-irl="0" aria-pressed="true" data-testid="sod4-irl-scarce">Scarcity</button>
-      <button class="ad4-opt" type="button" data-irl="1" aria-pressed="false" data-testid="sod4-irl-real">IRL authenticity</button>
-      <button class="ad4-opt" type="button" data-irl="2" aria-pressed="false" data-testid="sod4-irl-unskippable">Unskippable experience</button>
-      <button class="ad4-opt" type="button" data-irl="3" aria-pressed="false" data-testid="sod4-irl-emotional">Emotional impact</button>
-      <button class="ad4-opt" type="button" data-irl="4" aria-pressed="false" data-testid="sod4-irl-trusted">Trust</button>
-    </div>
-    <div class="ad4-panel" id="ad4-irl-panel" aria-live="polite" data-testid="sod4-irl-panel"></div>
-  </div>
-  <p><span class="ad4-tag r">Reported</span> The sector is growing. OUTFRONT Media reported second-quarter 2026 revenue of about $522 million, up 14% on the year, with digital revenue growing faster, and more than $50 million of it tied to the FIFA World Cup, which management said was about half incremental. <span class="ad4-tag m">Mine</span> Part of that strength is a one-off event, so it supports "out-of-home is healthy" better than "out-of-home is winning in the AI era". Sources disagreed on the exact digital growth rate, so I give only the direction. I did not find the board presentation or any outside account of it.</p>
-  <p><span class="ad4-tag d">Deck</span> The last slide (an image on [[p. 40]]) is a billboard with a LUMA executive's face on it and a made-up telephone number inviting a call about deals. It is a joke, and it is also a clear statement of what these slides are: part of a pitch to advisory clients, here a listed billboard company. Everything in the section should be read with that in mind.</p>
-
-  <h2 id="sec6"><span class="num">6</span> A channel scorecard, with the open web</h2>
-  <p class="lead">Pull the section together. The deck names four channels to grow and leaves the open web as a question. Pick a channel to see the deck's case, the strongest check I found, and the weakest link.</p>
-  <div class="ad4-stage" data-testid="sod4-scorecard">
-    <div class="ad4-opts" role="group" aria-label="Channels">
-      <button class="ad4-opt" type="button" data-ch="0" aria-pressed="true" data-testid="sod4-channel-ctv">CTV</button>
-      <button class="ad4-opt" type="button" data-ch="1" aria-pressed="false" data-testid="sod4-channel-creator">Creator</button>
-      <button class="ad4-opt" type="button" data-ch="2" aria-pressed="false" data-testid="sod4-channel-mobile">Mobile</button>
-      <button class="ad4-opt" type="button" data-ch="3" aria-pressed="false" data-testid="sod4-channel-irl">IRL</button>
-      <button class="ad4-opt" type="button" data-ch="4" aria-pressed="false" data-testid="sod4-channel-openweb">Open web</button>
-    </div>
-    <div class="ad4-panel" id="ad4-ch-panel" aria-live="polite" data-testid="sod4-channel-panel"></div>
-  </div>
-  <p><span class="ad4-tag m">Mine</span> Notice a pattern in who is behind each case. The CTV section leans on LUMA's own earlier predictions and on deals in its sector; creators lean on a survey count and brand examples with loose wording; mobile rests on a study commissioned by a company LUMA took public; and out-of-home is a message to a client's board. None of that makes the underlying trends false, and the largest of them, streaming's share and creator spend, are well supported. It does mean the deck's strongest evidence is the part it did not produce.</p>
-
-  <h2 id="sec7"><span class="num">7</span> What was confirmed and what was not</h2>
-  <p class="lead">Every headline claim from pages 29 to 40, with the verdict from this research pass. Filter by status.</p>
-  <div class="ad4-stage" data-testid="sod4-ledger">
-    <div class="ad4-opts" role="group" aria-label="Filter claims">
-      <button class="ad4-opt" type="button" data-f="all" aria-pressed="true" data-testid="sod4-filter-all">All</button>
-      <button class="ad4-opt" type="button" data-f="c" aria-pressed="false" data-testid="sod4-filter-checked">Checked</button>
-      <button class="ad4-opt" type="button" data-f="p" aria-pressed="false" data-testid="sod4-filter-partly">Partly or reported</button>
-      <button class="ad4-opt" type="button" data-f="u" aria-pressed="false" data-testid="sod4-filter-unconfirmed">Unconfirmed</button>
-      <button class="ad4-opt" type="button" data-f="d" aria-pressed="false" data-testid="sod4-filter-framing">The deck's framing</button>
-    </div>
-    <div class="ad4-table-wrap"><table class="ad4-tab" data-testid="sod4-ledger-table">
-      <thead><tr><th>Claim</th><th>Page</th><th>Status</th><th>Basis</th></tr></thead>
-      <tbody id="ad4-ledger"></tbody>
-    </table></div>
-  </div>
+  <h2 id="sec4"><span class="num">4</span> Real-world media, and the open web</h2>
+  <p class="lead">Out-of-home (OOH) advertising means billboards, transit screens and signs. The deck calls it IRL, "in real life" ([[p. 39]]). It offers five attributes: scarcity (a site is a fixed place), IRL authenticity, an unskippable experience, emotional impact and trust.</p>
+  <p>Think of a giant screen in Times Square. You cannot skip it, you cannot block it, and nobody can make more of that location. The deck says these real-world qualities are a comparative advantage over digital, and advises OOH companies to lean into them. Notice that "unskippable" does not mean "noticed", and the emotional and trust claims come without evidence.</p>
+  <p>The section ends with a slide saying this was the central message of LUMA's recent presentation to the board of OUTFRONT, a billboard company ([[p. 40]]). So it is advice LUMA gave a client. OUTFRONT's second-quarter 2026 revenue was up about 14%, partly from World Cup advertising.</p>
+  <p>What about the fifth place? The <b>open web</b> is independent sites and apps, joined by ad tech. The deck's opening slide marks its role as "uncertain" ([[p. 29]]). Its traffic is declining as attention moves to streaming, creators and apps, and AI answers may send fewer people to sites. That is also the market most ad tech companies depend on, which is why the deck's later slides look for ways for the open web to compete.</p>
 
   <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
   <ul>
-    <li><b>Streaming is at about half of TV viewing, and the dates depend on the measure.</b> Nielsen has it at 46.6% of ad-supported viewing in Q1 2026 and 49.6% of all viewing in August; "2027" is one forecast among several ([[pp. 30-31]]).</li>
-    <li><b>The deals are real but unlike each other.</b> Scale mergers between media giants and small performance-CTV platforms are listed as one trend ([[p. 31]]).</li>
-    <li><b>Creator spend is large and slowing.</b> The 24% is a four-year average, 27 million is a wide survey count, and the Unilever and Pepsi wording is looser than the sources ([[pp. 33-35]]).</li>
-    <li><b>Mobile's "under-monetised" chart comes from a study the beneficiary commissioned</b>, and the slide shows that LUMA co-managed that company's IPO ([[pp. 37-38]]).</li>
-    <li><b>Out-of-home's case is a client pitch.</b> The sector is growing, partly on a one-off event ([[pp. 39-40]]).</li>
-    <li><b>The open web's role is called uncertain</b> ([[p. 29]]). That is the segment that ad tech companies depend on, and they are the deck's audience and likely clients; that link is my inference, not something the slide says.</li>
+    <li>Streaming is now about half of TV viewing, and TV ads are becoming measurable, performance-based ads.</li>
+    <li>Creators are a large, fragmented channel where brands are spending fast, though growth is slowing.</li>
+    <li>Mobile apps hold huge attention for modest ad spend per hour, which the deck calls an opportunity.</li>
+    <li>Out-of-home is physical, unskippable and growing, and the deck advises its owners to play to that.</li>
+    <li>The open web is the deck's question mark, and the market ad tech depends on.</li>
   </ul>
-  <p class="src"><b>Primary.</b> LUMA Partners, <em>State of Digital 2026</em> (DMS by LUMA, November 2026), attached to this module as the reading tab on the right edge, cited above as [[pp. 29-40]]. Everything from it is paraphrased.</p>
-  <p class="src"><b>Outside sources opened.</b> <a href="https://www.tvtechnology.com/insights/analysis/nielsen-streaming-hit-record-46-6-percent-share-of-ad-supported-viewing-in-q1" target="_blank" rel="noopener">TV Technology on Nielsen's Q1 2026 Ad Supported Gauge</a> (46.6% streaming, 28.2% broadcast, 25.2% cable, ad-supported 73% of viewing).</p>
-  <p class="src"><b>Outside sources seen in search results, not opened in full.</b> Streaming share: <a href="https://www.mediapost.com/publications/article/416872/" target="_blank" rel="noopener">MediaPost on Nielsen's May 2026 Gauge</a> (48.6%) and <a href="https://www.tubefilter.com/2026/10/22/nielsen-the-gauge-youtube-record-watch-time-share-us-tv/amp/" target="_blank" rel="noopener">Tubefilter on the August Gauge</a> (49.6%). Crossover forecasts: <a href="https://www.emarketer.com/chart/c/362230/ctv-will-surpass-linear-tv-time-spent-by-over-30-minutes-per-day-2026-by-nearly-hour-2027-362230" target="_blank" rel="noopener">eMarketer chart title on CTV and linear time spent</a> (the chart is behind a login; I read only its title) and <a href="https://www.emarketer.com/content/ctv-becomes-tv-s-growth-engine-linear-collapses" target="_blank" rel="noopener">eMarketer on CTV ad spend</a>. Deals: <a href="https://www.advanced-television.com/2026/02/28/paramount-wbd-confirm-merger-deal/" target="_blank" rel="noopener">Advanced Television on Paramount and Warner Bros. Discovery</a> &middot; <a href="https://foxbusiness.com/markets/fox-corporation-announces-22b-acquisition-roku-landmark-streaming-live-tv-deal" target="_blank" rel="noopener">Fox Business on Fox and Roku</a> &middot; <a href="https://www.advanced-television.com/2025/10/29/fubo-disneys-hulu-live-tv-complete-business-combination" target="_blank" rel="noopener">Advanced Television on Fubo and Hulu + Live TV</a> &middot; <a href="https://www.nasdaq.com/articles/pinterest-acquire-tvscientific-undisclosed-sum" target="_blank" rel="noopener">Nasdaq on Pinterest and tvScientific</a> &middot; <a href="https://www.thewrap.com/culture-lifestyle/sports/streaming-service-sports-rights-spend-ampere-analysis-forecast/" target="_blank" rel="noopener">TheWrap on streamers' 2026 sports rights spend (Ampere Analysis)</a>. Creators: <a href="https://www.mediapost.com/publications/article/391106/us-creator-economy-estimated-at-27-million-full.html" target="_blank" rel="noopener">MediaPost on the Keller Advisory Group estimate</a> &middot; <a href="https://www.marketingdive.com/news/creator-marketing-now-a-core-media-channel-while-search-slows-iab/817832/" target="_blank" rel="noopener">Marketing Dive on the IAB creator report</a> &middot; <a href="https://hellopartner.com/one-year-ago-unilever-ceo-swore-to-hire-20x-more-influencers-did-it-deliver-on-that-promise/" target="_blank" rel="noopener">Hello Partner on Unilever's 20x pledge</a> &middot; <a href="https://digiday.com/marketing/pepsico-wants-to-remain-a-driver-of-culture-as-it-turns-to-influencers-and-activations-amid-rebrand" target="_blank" rel="noopener">Digiday on PepsiCo</a>. Mobile: <a href="https://ppc.land/liftoff-prices-ipo-at-23-and-surges-past-30-on-nasdaq-debut/" target="_blank" rel="noopener">PPC Land on Liftoff's IPO</a> and the search coverage of its Altman Solon study (I did not open the S-1 itself). Out-of-home: <a href="https://www.barchart.com/story/news/3672717/outfront-media-reports-second-quarter-2026-results" target="_blank" rel="noopener">OUTFRONT's second-quarter 2026 results</a> (via Barchart) and <a href="https://www.marketbeat.com/instant-alerts/outfront-media-q2-earnings-call-highlights-2026-08-08/" target="_blank" rel="noopener">MarketBeat on the earnings call</a>.</p>
-  <p class="src"><b>Checked 18 Nov 2026.</b> Checked (source opened in full): Nielsen's 46.6% of ad-supported viewing in Q1 2026 (TV Technology's report of the Ad Supported Gauge). Reported (search-result summaries only, not opened in full): Nielsen's monthly share figures; the Fubo and Disney, Fox and Roku, and Paramount and Warner Bros. Discovery deals as announced; Pinterest's announcement; sports-rights deals; the IAB's 2025 and 2026 creator figures; the Keller Advisory Group's 27 million; Unilever's 300,000 creators; OUTFRONT's second-quarter results; the Liftoff study details. Not confirmed: the 2027 time-spent crossover (other measures differ); LUMA's 2013 prediction; whether the Paramount and Warner deal has closed; Pinterest's price (undisclosed; one tracker says $350 million); the Pepsi quotation shown on the slide; the $500 billion TAM and the 3.6 hours a day; whether the S-1 itself carries the per-hour figures. The donut, the per-year spend arithmetic and the scorecard judgments are illustrative or mine.</p>
+  <details class="ad4-solid" data-testid="sod4-solid">
+    <summary>How solid is this?</summary>
+    <p>LUMA advises ad tech and media companies, and it co-managed Liftoff's share offering and pitched OUTFRONT's board, so the mobile and out-of-home sections carry its interests. The per-hour figures come from a study Liftoff commissioned, and the $500 billion is unsourced. The 2027 date is one forecast among several. Creator numbers are survey and trade estimates, and the deal prices are reported or announced, not all complete.</p>
+  </details>
+  <p class="src"><b>Deck.</b> LUMA Partners, <em>State of Digital 2026</em> (November 2026), pages 29 to 40, in this module's reading tab: [[pp. 29-40]].</p>
+  <p class="src"><b>Outside.</b> <a href="https://www.tvtechnology.com/insights/analysis/nielsen-streaming-hit-record-46-6-percent-share-of-ad-supported-viewing-in-q1" target="_blank" rel="noopener">TV Technology on Nielsen's Q1 2026 Gauge</a> &middot; <a href="https://www.marketingdive.com/news/creator-marketing-now-a-core-media-channel-while-search-slows-iab/817832/" target="_blank" rel="noopener">Marketing Dive on the IAB creator report</a> &middot; <a href="https://www.mediapost.com/publications/article/391106/us-creator-economy-estimated-at-27-million-full.html" target="_blank" rel="noopener">MediaPost on the 27 million creators</a> &middot; <a href="https://foxbusiness.com/markets/fox-corporation-announces-22b-acquisition-roku-landmark-streaming-live-tv-deal" target="_blank" rel="noopener">Fox Business on Fox and Roku</a>.</p>
 
   <footer>Where Attention Is Going &middot; The State of Digital 2026 module &middot; part of your Study Hub</footer>
 </div>
 <script>
 (function(){
-  /* measures */
   var MS = [
-    {v:46.6, t:"<p><span class='ad4-tag c'>Checked</span> <b>46.6% of ad-supported TV viewing in Q1 2026</b> (Nielsen's Ad Supported Gauge). The deck rounds this to 47%. Sports-heavy quarter. [[p. 30]]</p><p><span class='ad4-tag m'>Mine</span> Ad-supported viewing is about 73% of all TV viewing, so this excludes subscription-only streaming.</p>"},
-    {v:48.6, t:"<p><span class='ad4-tag r'>Reported</span> <b>48.6% of all TV viewing in May 2026</b> (Nielsen's monthly Gauge, reported as a record at the time).</p><p><span class='ad4-tag m'>Mine</span> A different base from the deck's slide: it counts subscription streaming as well.</p>"},
-    {v:49.6, t:"<p><span class='ad4-tag r'>Reported</span> <b>49.6% of all TV viewing in August 2026</b>, though streaming usage itself fell 3.2% that month; the share rose because total TV viewing fell more.</p><p><span class='ad4-tag m'>Mine</span> A share can rise when the whole falls. It does not show streaming growing.</p>"}
+    [46.6, "<p><b>46.6% of ad-supported TV viewing, Q1 2026.</b> This is the figure the deck rounds to 47%. Ad-supported viewing is about 73% of all TV time. The quarter was full of live sports. [[p. 30]]</p>"],
+    [49.6, "<p><b>49.6% of all TV viewing, August 2026.</b> This counts subscription streaming too. The share rose partly because total TV viewing fell, so it does not prove streaming grew.</p>"]
   ];
-  var arc = document.getElementById("ad4-arc"), arcT = document.getElementById("ad4-arc-t");
-  function drawMs(i){
-    var d = MS[i], c = 2 * Math.PI * 42;
-    arc.setAttribute("stroke-dasharray", (c * d.v / 100).toFixed(1) + " " + c.toFixed(1));
-    arcT.textContent = d.v + "%";
-    document.getElementById("ad4-ms-panel").innerHTML = d.t;
-    document.querySelectorAll("[data-ms]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.ms === i)); });
+  function drawM(i){
+    var c = 2 * Math.PI * 42;
+    document.getElementById("ad4-arc").setAttribute("stroke-dasharray", (c * MS[i][0] / 100).toFixed(1) + " " + c.toFixed(1));
+    document.getElementById("ad4-arct").textContent = MS[i][0] + "%";
+    document.getElementById("ad4-mp").innerHTML = MS[i][1];
+    document.querySelectorAll("[data-m]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.m === i)); });
   }
-  document.querySelectorAll("[data-ms]").forEach(function(b){ b.addEventListener("click", function(){ drawMs(+b.dataset.ms); }); });
-  drawMs(0);
+  document.querySelectorAll("[data-m]").forEach(function(b){ b.addEventListener("click", function(){ drawM(+b.dataset.m); }); });
+  drawM(0);
 
-  /* crossover line: 2025..2029 */
-  var X = [
-    {y:2026, l:"A", t:"<p><span class='ad4-tag r'>Reported</span> <b>eMarketer, time spent.</b> A chart title I could see (the data is behind a login) says CTV will surpass linear TV time spent by over 30 minutes a day in 2026 and by nearly an hour in 2027. That would put the crossover before the deck's 2027.</p>"},
-    {y:2026.7, l:"B", t:"<p><span class='ad4-tag r'>Reported</span> <b>Nielsen, share of viewing.</b> Streaming was 49.6% of all TV viewing in August 2026: at or just under half, so crossing the line within months on this measure.</p>"},
-    {y:2027, l:"C", t:"<p><span class='ad4-tag d'>Deck</span> <b>The slide's claim:</b> streaming to surpass linear in time spent for the first time in 2027, and a caption saying consumers are expected to spend more time streaming \"next year\". [[p. 30]] No source is given for the date.</p>"},
-    {y:2028, l:"D", t:"<p><span class='ad4-tag r'>Reported</span> <b>eMarketer, ad spend.</b> Reports of its forecast have US CTV ad spending passing traditional TV ad spending by 2028; an older secondary account said 2027. The deck's time-spent claim and an ad-spend claim are different crossings.</p>"}
-  ];
-  var line = document.getElementById("ad4-line"), xsel = 2;
-  function xpos(y){ return ((y - 2025.5) / 4) * 100; }
-  function drawCross(){
-    var h = "";
-    for(var y = 2026; y <= 2029; y++) h += "<span class='ad4-yr' style='left:" + xpos(y) + "%'>" + y + "</span>";
-    X.forEach(function(d, i){ h += "<" + "button type='button' class='ad4-mk' style='left:" + xpos(d.y) + "%' aria-pressed='" + (i === xsel) + "' data-x='" + i + "' data-testid='sod4-cross-" + d.l.toLowerCase() + "' aria-label='Marker " + d.l + "'>" + d.l + "</button>"; });
-    line.innerHTML = h;
-    document.getElementById("ad4-cross-panel").innerHTML = X[xsel].t;
-    line.querySelectorAll(".ad4-mk").forEach(function(b){ b.addEventListener("click", function(){ xsel = +b.dataset.x; drawCross(); }); });
-  }
-  drawCross();
-
-  /* deals */
-  var DL = [
-    {n:"Paramount Skydance / WBD", tag:"Scale", s:"p", st:"Reported", t:"The acquirer is Paramount Skydance, which agreed on 27 February 2026 to buy Warner Bros. Discovery at $31 a share in cash after a competing Netflix deal was ended. WBD shareholders approved it on 23 April 2026. Sources conflict on whether it has closed (one database says 6 October 2026), so I treat completion as unconfirmed."},
-    {n:"Fox / Roku", tag:"Scale", s:"p", st:"Reported", t:"Fox announced on 15 June 2026 an agreement to buy Roku for about $22bn in enterprise value, $160 a share in cash and stock. Closing is expected in the first half of 2027 and needs approvals, so this is announced, not done. Source: a business-news report of the announcement."},
-    {n:"Disney / fubo", tag:"Scale", s:"p", st:"Reported", t:"Disney's Hulu + Live TV combined with fubo, completed on 29 October 2025, with Disney holding about 70% of the combined company. Fubo's ad sales moved into Disney's."},
-    {n:"Amazon, Netflix, YouTube: live sports", tag:"Sports", s:"p", st:"Reported", t:"Reports show Amazon with an 11-year NBA deal (about $1.8bn a season, per Ampere Analysis) and Thursday night NFL games; Netflix with NFL Christmas games, WWE Raw and some MLB events; YouTube with NFL Sunday Ticket. Ampere projects streamers will spend $14.2bn on sports rights in 2026. Several logos on the slide (UFC, Formula 1, the WWE premium events) belong to other services: UFC to Paramount+, F1 to Apple, WWE premium events to ESPN."},
-    {n:"Pinterest / tvScientific", tag:"Performance", s:"p", st:"Reported", t:"Pinterest announced the deal on 11 December 2025, expected to close in the first half of 2026. The price was not disclosed; one deal tracker says $350m, which I could not confirm. I did not confirm completion."},
-    {n:"Walmart / Vibe", tag:"Performance", s:"p", st:"Reported", t:"Announced 23 June 2026 at a reported $1.4bn (the Wall Street Journal's figure; Walmart did not disclose terms). Lesson 1 covers it, including why the slide's revenue multiple is unconfirmed."}
-  ];
-  var dl = document.getElementById("ad4-deal-list"), dsel = 0;
-  function drawDeals(){
-    var h = "";
-    DL.forEach(function(d, i){
-      h += "<" + "button type='button' class='ad4-dealrow' data-d='" + i + "' aria-pressed='" + (i === dsel) + "' data-testid='sod4-deal-" + d.n.toLowerCase().replace(/[^a-z]+/g, "-") + "'><span>" + d.n + "</span><span class='ad4-small' style='font-weight:600'>" + d.tag + " (the deck's grouping)</span><span><span class='ad4-tag " + d.s + "' style='margin:0'>" + d.st + "</span></span></button>";
-    });
-    dl.innerHTML = h;
-    document.getElementById("ad4-deal-panel").innerHTML = "<p><b>" + DL[dsel].n + ".</b> " + DL[dsel].t + " [[p. 31]]</p>";
-    dl.querySelectorAll(".ad4-dealrow").forEach(function(b){ b.addEventListener("click", function(){ dsel = +b.dataset.d; drawDeals(); }); });
-  }
-  drawDeals();
-
-  /* creators */
-  var CY = [["2022",18.4],["2023",22.1],["2024",29.5],["2025",37.1],["2026",43.9]];
-  var cview = "lvl";
-  function drawCreators(){
+  var CY = [["2022", 18.4], ["2023", 22.1], ["2024", 29.5], ["2025", 37.1], ["2026", 43.9]], view = "lvl";
+  function drawC(){
     var h = "";
     CY.forEach(function(r, i){
-      var g = i ? (r[1] / CY[i - 1][1] - 1) * 100 : null, val = cview === "lvl" ? r[1] : g;
-      var label = cview === "lvl" ? "&#36;" + r[1].toFixed(1) + "bn" : (g === null ? "n/a" : "+" + g.toFixed(0) + "%");
-      var hh = cview === "lvl" ? Math.round(r[1] / 45 * 150) : (g === null ? 0 : Math.round(g / 40 * 150));
-      h += "<div class='ad4-barcol'><span>" + label + "</span>" + (g === null && cview !== "lvl" ? "<div style='height:4px'></div>" : "<div class='ad4-bar " + (i === 4 ? "down" : "up") + "' style='height:" + hh + "px'></div>") + "<span class='ad4-small' style='font-weight:600'>" + r[0] + (i === 4 ? " (proj.)" : "") + "</span></div>";
+      var g = i ? (r[1] / CY[i - 1][1] - 1) * 100 : null, lvl = view === "lvl";
+      var label = lvl ? "&#36;" + r[1].toFixed(1) + "bn" : (g === null ? "n/a" : "+" + g.toFixed(0) + "%");
+      var ht = lvl ? Math.round(r[1] / 45 * 150) : (g === null ? 0 : Math.round(g / 40 * 150));
+      h += "<div class='ad4-bc'><span>" + label + "</span><div class='ad4-bar " + (i === 4 ? "dn" : "up") + "' style='height:" + (ht || 4) + "px'></div><span>" + r[0] + (i === 4 ? " (projected)" : "") + "</span></div>";
     });
-    document.getElementById("ad4-cbars").innerHTML = h;
-    var cagr = (Math.pow(43.9 / 18.4, 1 / 4) - 1) * 100;
-    document.getElementById("ad4-cnote").innerHTML = cview === "lvl"
-      ? "<p><span class='ad4-tag d'>Deck</span> US creator ad spend from &#36;18.4bn in 2022 to &#36;43.9bn in 2026, CAGR 24%. [[p. 34]]</p><p><span class='ad4-tag m'>Mine</span> The four-year average from the slide's own endpoints is " + cagr.toFixed(1) + "% a year, so the 24% is arithmetically right.</p>"
-      : "<p><span class='ad4-tag m'>Mine</span> Year on year, computed from the slide's own bars: growth peaked at about 33% in 2024 and the projected 2026 is about 18%, slower than the 24% average. The IAB's own commentary also gives roughly 18 to 19% for 2026.</p>";
-    document.querySelectorAll("[data-cv]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.cv === cview)); });
+    document.getElementById("ad4-cb").innerHTML = h;
+    document.getElementById("ad4-cn").innerHTML = view === "lvl"
+      ? "<p>Spend more than doubled in four years, about 24% a year on average, which is the deck's figure. The last bar is a forecast. [[p. 34]]</p>"
+      : "<p>Growth peaked around 33% in 2024 and the projected 2026 is about 18%. The channel is big and growing, but more slowly.</p>";
+    document.querySelectorAll("[data-v]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.v === view)); });
   }
-  document.querySelectorAll("[data-cv]").forEach(function(b){ b.addEventListener("click", function(){ cview = b.dataset.cv; drawCreators(); }); });
-  drawCreators();
+  document.querySelectorAll("[data-v]").forEach(function(b){ b.addEventListener("click", function(){ view = b.dataset.v; drawC(); }); });
+  drawC();
 
-  var CS = [
-    {w:100, t:"<p><span class='ad4-tag d'>Deck</span> More than 27 million creators supplying an expanding pool of premium video. [[p. 33]]</p><p><span class='ad4-tag r'>Reported</span> The Keller Advisory Group's 2023 survey estimates about 27 million US creators, defined as people who identify as an influencer and were paid for content in the past year.</p>"},
-    {w:44, t:"<p><span class='ad4-tag r'>Reported</span> About 44% of that group say creating is a full-time job, which the report puts at around 11.6 million people (the 27 million is rounded: 44% of exactly 27 million would be 11.9 million).</p><p><span class='ad4-tag m'>Mine</span> Full-time creators are the audience advertisers actually buy from at scale. They are a minority of the 27 million.</p>"},
-    {w:55, t:"<p><span class='ad4-tag r'>Reported</span> More than half of those surveyed earn under $10,000 a year from it. The bar shows 55% only as a marker for \"more than half\".</p><p><span class='ad4-tag m'>Mine</span> The slide's figure is correct as a count of people who earn something, and it overstates the number of professional publishers.</p>"}
-  ];
-  function showCs(i){
-    document.getElementById("ad4-cs-bar").style.width = CS[i].w + "%";
-    document.getElementById("ad4-cs-panel").innerHTML = CS[i].t;
-    document.querySelectorAll("[data-cs]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.cs === i)); });
-  }
-  document.querySelectorAll("[data-cs]").forEach(function(b){ b.addEventListener("click", function(){ showCs(+b.dataset.cs); }); });
-  showCs(0);
-
-  /* mobile */
-  var MB = [["In-app, third party",0.07,"up"],["Walled-garden in-app",0.14,"up"],["CTV",0.24,"up"],["Traditional TV",0.38,"down"]];
-  var mb = document.getElementById("ad4-mbars"), hrs = document.getElementById("ad4-hrs"), mout = document.getElementById("ad4-mout");
+  var MB = [["Third-party apps", 0.07, "up"], ["Walled-garden apps", 0.14, "up"], ["Connected TV", 0.24, "up"], ["Traditional TV", 0.38, "dn"]];
   var h = "";
-  MB.forEach(function(r){ h += "<div class='ad4-barcol'><span>&#36;" + r[1].toFixed(2) + "</span><div class='ad4-bar " + r[2] + "' style='height:" + Math.round(r[1] / 0.4 * 140) + "px'></div><span class='ad4-small' style='font-weight:600; text-align:center'>" + r[0] + "</span></div>"; });
-  mb.innerHTML = h;
-  function drawMobile(){
-    var hr = +hrs.value, rows = "";
-    MB.forEach(function(r){ rows += "<div>" + r[0] + ": <b>&#36;" + (r[1] * hr * 365).toFixed(0) + "</b> a year</div>"; });
-    mout.innerHTML = "<div>One user at <b>" + hr.toFixed(1) + " hours a day</b> would carry:</div>" + rows + "<div class='ad4-small'>The point of the slide is the gap between the first row and the others at the same hours.</div>";
+  MB.forEach(function(r){ h += "<div class='ad4-bc'><span>&#36;" + r[1].toFixed(2) + "</span><div class='ad4-bar " + r[2] + "' style='height:" + Math.round(r[1] / 0.4 * 140) + "px'></div><span>" + r[0] + "</span></div>"; });
+  document.getElementById("ad4-mb").innerHTML = h;
+  var hr = document.getElementById("ad4-hrs");
+  function drawMb(){
+    var x = +hr.value, o = "";
+    MB.forEach(function(r){ o += "<div>" + r[0] + ": <b>&#36;" + (r[1] * x * 365).toFixed(0) + "</b> a year</div>"; });
+    document.getElementById("ad4-mo").innerHTML = "<div>One user at " + x.toFixed(1) + " hours a day:</div>" + o;
   }
-  hrs.addEventListener("input", drawMobile); drawMobile();
-
-  /* irl */
-  var IR = [
-    {t:"Scarcity", e:"A billboard site is a fixed physical place, so supply is limited in a way that a website's is not.", c:"Reasonable and checkable: count sites and occupancy. But scarcity helps prices only if demand holds, and the deck gives no occupancy or price data.", s:"d"},
-    {t:"IRL authenticity", e:"The audience is in the world, not on a screen, and cannot be replaced by an assistant's answer.", c:"Plausible. It does not say whether the audience is paying attention to the sign.", s:"d"},
-    {t:"Unskippable experience", e:"You cannot press skip on a billboard.", c:"True of the format. Not being skippable is not the same as being seen, and the measurement tools for out-of-home are weaker than for digital.", s:"d"},
-    {t:"Emotional impact", e:"Large, public and physical formats can have impact.", c:"Not tested in the deck. An outcomes study (sales lift, store visits) would test it.", s:"u"},
-    {t:"Trust", e:"People may trust what they see in a public place more than a targeted feed.", c:"No evidence on the slide. Surveys of trust by medium exist, and I did not check any.", s:"u"}
-  ];
-  function showIrl(i){
-    var d = IR[i];
-    document.getElementById("ad4-irl-panel").innerHTML = "<p><span class='ad4-tag d'>Deck</span> The slide and its caption name <b>" + d.t + "</b> as one of five attributes of out-of-home. [[p. 39]]</p><p><span class='ad4-tag m'>Mine</span> " + d.e + "</p><p><span class='ad4-tag " + (d.s === "u" ? "u" : "m") + "'>" + (d.s === "u" ? "Unconfirmed" : "Mine") + "</span> " + d.c + "</p>";
-    document.querySelectorAll("[data-irl]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.irl === i)); });
-  }
-  document.querySelectorAll("[data-irl]").forEach(function(b){ b.addEventListener("click", function(){ showIrl(+b.dataset.irl); }); });
-  showIrl(0);
-
-  /* scorecard */
-  var CH = [
-    {n:"CTV", d:"Streaming has won television, and performance advertisers can now use television. [[pp. 30-31]]", s:"The strongest check: Nielsen puts streaming near half of viewing.", w:"The 2027 date and the 2013 prediction are the deck's own; the deal list mixes unlike things."},
-    {n:"Creator", d:"27 million creators and $43.9bn of US spend in 2026, with brands such as Unilever and Pepsi shifting money. [[pp. 33-36]]", s:"The IAB agrees on the spend levels.", w:"Growth is slowing, the 27 million is a wide survey count, and the Unilever and Pepsi wording is looser than the sources."},
-    {n:"Mobile", d:"Apps hold attention but earn little per hour, with a $500bn-plus market ahead. [[pp. 37-38]]", s:"The per-hour figures are reported consistently in coverage of the filing.", w:"They come from a study Liftoff commissioned, and LUMA co-managed Liftoff's IPO. The TAM has no source."},
-    {n:"IRL", d:"Scarcity, IRL authenticity, an unskippable experience, emotional impact and trust. [[pp. 39-40]]", s:"OUTFRONT's 2026 revenue growth is real.", w:"Part of it is World Cup revenue, and the slides are an advisory pitch to a listed client."},
-    {n:"Open web", d:"The open web's role \"remains uncertain\". [[p. 29]]", s:"Lesson 1 found independent ad tech stocks and deals weak against the walled gardens.", w:"My inference: this is the channel that ad tech companies, the deck's audience, most depend on, and the deck gives it one slide and a question mark."}
-  ];
-  function showCh(i){
-    var d = CH[i];
-    document.getElementById("ad4-ch-panel").innerHTML = "<p><span class='ad4-tag d'>Deck</span> <b>" + d.n + ".</b> " + d.d + "</p><p><span class='ad4-tag r'>Reported</span> <b>Strongest outside evidence</b> (mostly from search summaries). " + d.s + "</p><p><span class='ad4-tag m'>Mine</span> <b>Weakest link.</b> " + d.w + "</p>";
-    document.querySelectorAll("[data-ch]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.ch === i)); });
-  }
-  document.querySelectorAll("[data-ch]").forEach(function(b){ b.addEventListener("click", function(){ showCh(+b.dataset.ch); }); });
-  showCh(0);
-
-  /* ledger */
-  var L = [
-    {c:"CTV, creator, mobile and IRL are growing channels; the open web's role is uncertain", p:"29", s:"d", st:"Deck framing", b:"A framing. Evidence on each is in the rows below."},
-    {c:"Streaming is 47% of total ad-supported TV (Nielsen, Q1 2026)", p:"30", s:"c", st:"Checked", b:"Nielsen: 46.6% of ad-supported viewing, which is 73% of all viewing. Sports-heavy quarter."},
-    {c:"Streaming will surpass linear in time spent for the first time in 2027", p:"30", s:"p", st:"Partly", b:"Streaming was 49.6% of all TV viewing in Aug 2026 (Nielsen); an eMarketer chart title has CTV ahead of linear in 2026; CTV ad spend crosses in 2028. It depends on the measure."},
-    {c:"LUMA predicted in 2013 that linear would exceed streaming ad spend for ten years", p:"30", s:"u", st:"Unconfirmed", b:"The author's own prediction; I could not check the 2013 event or its wording."},
-    {c:"Skydance / Warner Bros. Discovery", p:"31", s:"p", st:"Reported", b:"Agreed Feb 2026 at $31 a share, by Paramount Skydance; closing status conflicting."},
-    {c:"Fox / Roku", p:"31", s:"p", st:"Reported", b:"Announced 15 Jun 2026, about $22bn; expected to close in 1H 2027."},
-    {c:"Disney / fubo", p:"31", s:"p", st:"Reported", b:"Completed 29 Oct 2025; Disney about 70%."},
-    {c:"Pinterest / tvScientific and Walmart / Vibe reflect performance CTV", p:"31", s:"p", st:"Reported", b:"Both announced; Pinterest's price undisclosed, Vibe's $1.4bn reported. Whether they show a single trend is the deck's interpretation."},
-    {c:"Amazon, Netflix and YouTube are investing in live sports rights", p:"31", s:"p", st:"Reported", b:"NBA and NFL at Amazon, NFL and WWE at Netflix, Sunday Ticket at YouTube; $14.2bn streamer spend projected for 2026 (Ampere). Some logos on the slide are other services' rights."},
-    {c:"Streaming and short-form social video are converging", p:"32", s:"d", st:"Deck framing", b:"Cited to The Keller Advisory Group; an observation, not measured here."},
-    {c:"There are more than 27 million creators", p:"33", s:"p", st:"Partly", b:"Keller Advisory Group, 2023 survey estimate of US creators paid in the past year; over half earn under $10,000."},
-    {c:"US creator ad spend $18.4bn (2022) to $43.9bn (2026), 24% CAGR", p:"34", s:"p", st:"Partly", b:"2025 and 2026 levels match the IAB, and the CAGR arithmetic holds, but 2026 growth is about 18% and the year is projected."},
-    {c:"Unilever increased creator spending twentyfold and built a 300,000-creator network", p:"34", s:"p", st:"Partly", b:"About 300,000 creators, up from about 10,000 (CEO). The 20x is reported as the number of influencers."},
-    {c:"Pepsi is shifting away from traditional advertising toward creator-led content", p:"35", s:"u", st:"Unconfirmed", b:"I could not find the quoted line; Digiday says PepsiCo's mix still leans on linear TV, paid social and creators."},
-    {c:"Ad tech can scale creator advertising and measurement", p:"36", s:"d", st:"Deck framing", b:"An opportunity argument from an ad tech adviser."},
-    {c:"Ad spend per user hour: $0.07 third-party in-app, $0.14 walled-garden in-app, $0.24 CTV, $0.38 TV", p:"37", s:"p", st:"Partly", b:"Reported figures trace to a Liftoff-commissioned Altman Solon study (Nov 2025) cited in its S-1; I did not open the S-1. LUMA co-managed Liftoff's IPO."},
-    {c:"Mobile apps are less exposed to disruption from agentic commerce", p:"37", s:"d", st:"Deck framing", b:"Reasoning, not evidence."},
-    {c:"A $500bn-plus addressable market for mobile app advertising platforms", p:"38", s:"u", st:"Unconfirmed", b:"No source on the slide."},
-    {c:"Out-of-home offers scarcity, IRL authenticity, an unskippable experience, emotional impact and trust", p:"39", s:"d", st:"Deck framing", b:"Attributes asserted; emotional and trusted have no evidence on the slides."},
-    {c:"This was the central message to the OUTFRONT board", p:"40", s:"d", st:"Deck framing", b:"An advisory client pitch. OUTFRONT's Q2 2026 revenue rose about 14% to about $522m, with more than $50m World Cup revenue."}
-  ];
-  var tb = document.getElementById("ad4-ledger");
-  function drawLedger(f){
-    tb.innerHTML = L.filter(function(r){ return f === "all" || r.s === f; }).map(function(r){
-      return "<tr><td>" + r.c + "</td><td>[[p. " + r.p + "]]</td><td><span class='ad4-tag " + r.s + "'>" + r.st + "</span></td><td>" + r.b + "</td></tr>";
-    }).join("");
-    document.querySelectorAll("[data-f]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.f === f)); });
-  }
-  document.querySelectorAll("[data-f]").forEach(function(b){ b.addEventListener("click", function(){ drawLedger(b.dataset.f); }); });
-  drawLedger("all");
+  hr.addEventListener("input", drawMb); drawMb();
 })();
 </script>
 <script src="../../registry.js"></script>
