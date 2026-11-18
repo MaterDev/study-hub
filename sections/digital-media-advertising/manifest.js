@@ -84,6 +84,10 @@
         {
           "date": "2026-11-18",
           "note": "Lesson 3 built: the AI purchase funnel, with the agentic commerce debate, retail media figure and GEO deals cross-checked"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Lesson 4 built: where attention is going, with the deck's streaming, creator, mobile and out-of-home claims cross-checked"
         }
       ],
       "rebuild": {
@@ -340,60 +344,81 @@
           "id": "sod-4",
           "title": "4. Where Attention Is Going",
           "pip": "#c0642b",
-          "blurb": "Streaming, creators, mobile apps, in-real-life media and the open web: where the deck says audiences and budgets are heading.",
+          "blurb": "Where the deck says attention is heading, from streaming TV and creators to mobile apps and out-of-home, with each headline number checked and the deck's advisory ties flagged.",
           "tags": [
             "advertising",
             "ad tech",
             "luma"
           ],
-          "plan": {
-            "goals": [
-              "Describe how streaming and digital video platforms are converging and what role creators play",
-              "Weigh the deck's case for mobile apps and in-real-life media as growth channels",
-              "Say what the deck leaves uncertain about the open web"
-            ],
-            "concepts": [
-              "CTV as a performance channel and streaming overtaking linear",
-              "Convergence of streaming and video platforms",
-              "Creators as the backbone of platforms",
-              "Mobile apps and their exposure to agentic commerce",
-              "In-real-life media (out of home)",
-              "The open web's uncertain role"
-            ],
-            "takeaways": [
-              "Attention is spreading, and the deck names winners with some evidence and some advocacy",
-              "Creators change who the walled gardens are for",
-              "The open web's role is the deck's open question"
-            ],
-            "connections": [
-              "Builds on the K-shape and deal slides in lesson 1",
-              "Links to hedged gardens named in lesson 1's phase 4"
-            ],
-            "build": "A convergence map of streaming and video platforms, a creator-spend bar sketch, and a channel scorecard with the deck's claims and checks.",
-            "notes": [
-              "Source: LUMA Partners, State of Digital 2026, pages 29-40 of the attached trimmed PDF (printed page = PDF page). Every citation of the deck uses [[pp. N-M]] links. Keep the Deck / Checked / Unconfirmed / Mine labelling used in lesson 1, and research outside sources for any checkable claim at build time."
-            ]
-          },
-          "status": "stub",
-          "file": "shared/outline.html?id=sod-4",
-          "anchors": [],
+          "file": "sections/digital-media-advertising/lessons/sod-4-where-attention-is-going.html",
+          "anchors": [
+            {
+              "id": "sod4-1",
+              "title": "Streaming and linear TV",
+              "anchor": "sec1"
+            },
+            {
+              "id": "sod4-2",
+              "title": "Consolidation and sports rights",
+              "anchor": "sec2"
+            },
+            {
+              "id": "sod4-3",
+              "title": "Creators",
+              "anchor": "sec3"
+            },
+            {
+              "id": "sod4-4",
+              "title": "Mobile apps",
+              "anchor": "sec4"
+            },
+            {
+              "id": "sod4-5",
+              "title": "Out-of-home, called IRL",
+              "anchor": "sec5"
+            },
+            {
+              "id": "sod4-6",
+              "title": "A channel scorecard, with the open web",
+              "anchor": "sec6"
+            },
+            {
+              "id": "sod4-7",
+              "title": "What was confirmed and what was not",
+              "anchor": "sec7"
+            },
+            {
+              "id": "sod4-src",
+              "title": "Takeaways & sources",
+              "anchor": "sec-src"
+            }
+          ],
           "dates": {
-            "planned": "2026-11-18"
+            "created": "2026-11-18",
+            "updated": "2026-11-18",
+            "verified": "2026-11-18"
           },
           "history": [
             {
               "date": "2026-11-18",
               "note": "Planned (stub)"
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Built from deck pages 29-40: a measure-by-measure view of streaming's share with a crossover timeline, a CTV deal and sports-rights explorer, creator spend and growth views with a 27 million breakdown, a mobile spend-per-hour model, an out-of-home attribute test, a channel scorecard including the open web, and a claims ledger."
             }
           ],
           "rebuild": {
-            "brief": "Build from the plan: visual and interactive, introductory, for a curious general reader. Source pages: pages 29-40 of the deck. Paraphrase the deck, separate its claims from what can be checked, and flag where it is the point of view of a firm that advises on ad tech M&A. Build in order, after the previous lesson.",
+            "brief": "Lesson 4 of the State of Digital 2026 module, from deck pages 29-40. Cover the five-channel framing (p. 29), streaming versus linear and the Nielsen 47% (p. 30), the CTV and live-sports deals (p. 31), streaming and social video convergence (p. 32), creators (pp. 33-36), mobile apps and the Liftoff per-hour chart (pp. 37-38) and out-of-home with the OUTFRONT message (pp. 39-40). Widgets: Nielsen measure picker with donut, crossover timeline, deal explorer, creator spend and growth bars, 27 million breakdown, mobile spend-per-hour model, IRL attribute test, channel scorecard, claims ledger. Tag every claim Deck, Checked, Unconfirmed, Mine, Illustrative or Background; call out that LUMA co-managed Liftoff's IPO, presented to OUTFRONT's board, and that the deck is an M&A adviser's point of view.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 29-40",
-              "Outside sources checked at build time"
+              "Nielsen Ad Supported Gauge Q1 2026 via TV Technology (opened); Nielsen monthly Gauge for May and August 2026 via MediaPost and Tubefilter",
+              "eMarketer chart titles and notes on CTV versus linear time spent and ad spend (login-gated)",
+              "Deal coverage: Paramount Skydance and Warner Bros. Discovery (Feb 2026), Fox and Roku (15 Jun 2026), Disney and fubo (completed 29 Oct 2025), Pinterest and tvScientific (11 Dec 2025); Ampere Analysis via TheWrap on streamers' sports rights spend",
+              "Keller Advisory Group 2023 creator study via MediaPost; IAB creator advertising figures via Marketing Dive; reports on Unilever's 300,000 creators and Pepsi; Digiday on PepsiCo",
+              "Coverage of Liftoff's S-1 and the Altman Solon study it commissioned; OUTFRONT Media Q2 2026 results"
             ]
           },
-          "overlaps": [],
           "standard": "v1"
         },
         {
