@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The AI Purchase Funnel</title>
+<link rel="stylesheet" href="../../../shared/theme.css">
+<script src="../../../shared/hub-cite.js"></script>
+<style>
+  .ad3-stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm); min-width:0;}
+  .ad3-stage div{min-width:0;}
+  .ad3-small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
+  .ad3-tag{display:inline-block; font-family:var(--font-ui); font-size:.68rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); margin-right:6px; color:var(--ink);}
+  .ad3-tag.d{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad3-tag.c{border-color:var(--forest); background:var(--forest-soft);}
+  .ad3-tag.m{border-color:var(--plum); background:var(--plum-soft);}
+  .ad3-tag.u{border-color:var(--vermil); background:var(--vermil-soft);}
+  .ad3-tag.p{border-color:var(--ochre); background:var(--ochre-soft);}
+  .ad3-opts{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px;}
+  .ad3-opt{border:2px solid var(--line-strong); border-radius:10px; padding:8px 12px; background:var(--paper); color:var(--ink); font:700 .82rem var(--font-ui); cursor:pointer; text-align:left;}
+  .ad3-opt:hover{border-color:var(--cobalt);}
+  .ad3-opt[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad3-opt:focus-visible,.ad3-rng:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad3-panel{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .ad3-panel p{margin:0 0 8px; max-width:none;} .ad3-panel p:last-child{margin-bottom:0;}
+  .ad3-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;} @media(max-width:700px){.ad3-two{grid-template-columns:minmax(0,1fr);}}
+  .ad3-four{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px;} @media(max-width:700px){.ad3-four{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .ad3-shift{display:flex; flex-direction:column; align-items:flex-start; gap:6px; border:2px solid var(--line-strong); border-radius:12px; background:var(--paper); color:var(--ink); padding:12px; cursor:pointer; font:700 .9rem var(--font-ui); text-align:left;}
+  .ad3-shift:hover{border-color:var(--cobalt);}
+  .ad3-shift[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad3-shift:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad3-shift svg{width:44px; height:44px; stroke:var(--ink); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;}
+  .ad3-rng{width:100%; accent-color:var(--cobalt);}
+  .ad3-svg{display:block; width:100%; height:auto;}
+  .ad3-svg text{fill:var(--ink); font-family:var(--font-ui);}
+  .ad3-band{stroke:var(--line-strong); stroke-width:1;}
+  .ad3-curve-a{fill:none; stroke:var(--vermil); stroke-width:3.5;}
+  .ad3-curve-b{fill:none; stroke:var(--ink-mute); stroke-width:2.5; stroke-dasharray:6 5;}
+  .ad3-marker{stroke:var(--ink); stroke-width:2;}
+  .ad3-pyr{cursor:pointer;} .ad3-pyr:focus-visible{outline:3px solid var(--plum);}
+  .ad3-pyr polygon{stroke:var(--outline); stroke-width:2;}
+  .ad3-pyr.on polygon{stroke:var(--ink); stroke-width:4;}
+  .ad3-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin:8px 0;}
+  .ad3-big{font-family:var(--font-ui); font-size:1.9rem; font-weight:800; color:var(--ink); line-height:1.1;}
+  .ad3-meter{height:16px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden; margin:6px 0;}
+  .ad3-meter i{display:block; height:100%; background:var(--vermil);}
+  .ad3-meter.g i{background:var(--forest);}
+  .ad3-tl{list-style:none; margin:8px 0; padding:0; border-left:3px solid var(--line-strong);}
+  .ad3-tl li{position:relative; margin:0 0 10px; padding:0 0 0 14px; font-family:var(--font-ui); font-size:.86rem; color:var(--ink); max-width:none;}
+  .ad3-tl li::before{content:""; position:absolute; left:-8px; top:6px; width:11px; height:11px; border-radius:50%; background:var(--surface); border:3px solid var(--cobalt);}
+  .ad3-bars{display:flex; gap:28px; align-items:flex-end; height:190px; padding:0 10px; border-bottom:2px solid var(--outline); margin:10px 0 4px;}
+  .ad3-barcol{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font-family:var(--font-ui); font-size:.85rem; color:var(--ink); font-weight:800;}
+  .ad3-bar{width:60%; min-height:4px;}
+  .ad3-bar.up{background:var(--cobalt);} .ad3-bar.down{background:var(--vermil);}
+  .ad3-table-wrap{overflow-x:auto; max-width:100%;}
+  table.ad3-tab{border-collapse:collapse; width:100%; min-width:560px; font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
+  table.ad3-tab th,table.ad3-tab td{border-bottom:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top;}
+  table.ad3-tab th{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
+  .ad3-calc-out{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--paper-2); color:var(--ink); margin-top:8px; font-family:var(--font-ui); font-size:.88rem;}
+  .ad3-bars2{display:flex; gap:28px; align-items:flex-end; height:230px; padding:0 10px; border-bottom:2px solid var(--outline); margin:10px 0 4px;}
+  .ad3-tag.b{border-color:var(--line-strong); background:var(--paper-2);}
+  .ad3-list{margin:6px 0 8px 1.1em; padding:0; max-width:none;}
+  .ad3-row{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2.2fr); gap:10px; align-items:center; border-bottom:1px solid var(--line); padding:7px 0; font-family:var(--font-ui); font-size:.86rem; color:var(--ink);}
+  .ad3-stg{font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.04em;}
+  .ad3-chip{display:inline-block; border:2px solid var(--line-strong); border-radius:8px; padding:3px 9px; font-weight:700; font-size:.8rem; color:var(--ink); margin:2px 4px 2px 0;}
+  .ad3-chip.ai{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad3-chip.third{border-color:var(--ochre); background:var(--ochre-soft);}
+  .ad3-chip.own{border-color:var(--forest); background:var(--forest-soft);}
+  .ad3-funnel{display:block; margin:0 auto; width:100%; max-width:260px; height:auto;}
+  .ad3-funnel polygon{stroke:var(--outline); stroke-width:2;}
+  .ad3-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin:8px 0;} @media(max-width:700px){.ad3-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+  .ad3-chan{border:2px solid var(--line-strong); border-radius:8px; padding:10px 4px; text-align:center; font:800 .72rem var(--font-ui); color:var(--ink); background:var(--paper);}
+  .ad3-chan.lit{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad3-chan.lit2{border-color:var(--ochre); background:var(--ochre-soft);}
+  .ad3-chan.lit.lit2{border-color:var(--forest); background:var(--forest-soft);}
+  .ad3-dealrow{display:grid; grid-template-columns:minmax(0,10em) minmax(0,1fr) minmax(0,6em); gap:8px; align-items:center; width:100%; text-align:left; border:2px solid var(--line-strong); border-radius:8px; background:var(--paper); color:var(--ink); padding:7px 10px; margin:0 0 4px; font:700 .8rem var(--font-ui); cursor:pointer;}
+  .ad3-dealrow:hover{border-color:var(--cobalt);}
+  .ad3-dealrow[aria-pressed="true"]{border-color:var(--ink); border-width:3px; background:var(--cobalt-soft);}
+  .ad3-dealrow:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad3-dealbar{display:block; height:12px; background:var(--cobalt); border-radius:6px; min-width:4px;}
+  .ad3-dealbar.nd{background:var(--ink-faint);}
+  .ad3-quad{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;}
+  .ad3-quadb{border:2px solid var(--line-strong); border-radius:12px; background:var(--paper); color:var(--ink); padding:14px 8px; font:800 .9rem var(--font-ui); cursor:pointer; text-align:center;}
+  .ad3-quadb:hover{border-color:var(--cobalt);}
+  .ad3-quadb[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
+  .ad3-quadb:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The AI Purchase Funnel</h1>
+  <p class="subtitle">If people start using AI assistants to find and compare things, the shopping journey that advertising was built around changes shape. This lesson follows LUMA's argument from the squeezed funnel to the debate over agentic commerce, the money in retail media, the deck's four implications for advertisers and marketers, and the question of who is advertising to whom. It tests the checkable parts against outside sources, and it flags where the deck is selling a view.</p>
+
+  <p class="ad3-small"><span class="ad3-tag d">Deck</span> a claim or framing from the LUMA slides, cited by page. <span class="ad3-tag c">Checked</span> confirmed against a source outside the deck. <span class="ad3-tag u">Unconfirmed</span> I could not confirm it. <span class="ad3-tag m">Mine</span> my own synthesis or arithmetic. <span class="ad3-tag p">Illustrative</span> a number or picture made up to show an idea. <span class="ad3-tag b">Background</span> general knowledge I did not re-check. Page numbers are pages of the trimmed deck attached to this module (printed page = PDF page). This lesson covers pages 17 to 28 and page 41, the deck's order for the four implications.</p>
+
+  <div class="toc" data-testid="sod3-toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#sec1">The funnel squeezed into one place (compare)</a></li>
+      <li><a href="#sec2">Agentic commerce: mirage or reality (stakeholders)</a></li>
+      <li><a href="#sec3">Commerce media, and AI as channel and layer (evidence)</a></li>
+      <li><a href="#sec4">Four implications (explore)</a></li>
+      <li><a href="#sec5">Influence the AI: the money behind GEO and AEO (deals)</a></li>
+      <li><a href="#sec6">Who is advertising to whom (matrix)</a></li>
+      <li><a href="#sec7">What was confirmed and what was not (ledger)</a></li>
+      <li><a href="#sec-src">Takeaways &amp; sources</a></li>
+    </ol>
+  </div>
+
+  <h2 id="sec1"><span class="num">1</span> The funnel squeezed into one place</h2>
+  <p class="lead">The deck starts with the familiar funnel of awareness, interest, consideration, intent and purchase, spread across many first-party and third-party touchpoints: search, research pages, reviews, brand sites, email and text ([[p. 17]]). It then says an AI assistant can fold discovery, research, short-listing and decision into one interface, with the shopper often leaving only to complete the final purchase on the brand's or retailer's site ([[p. 18]]), and that an agent could take over the transaction too ([[p. 19]]). Choose a journey and see where each stage happens.</p>
+  <div class="ad3-stage" data-testid="sod3-funnel">
+    <div class="ad3-opts" role="group" aria-label="Journey">
+      <button class="ad3-opt" type="button" data-j="0" aria-pressed="true" data-testid="sod3-journey-traditional">Traditional</button>
+      <button class="ad3-opt" type="button" data-j="1" aria-pressed="false" data-testid="sod3-journey-ai">With an AI assistant</button>
+      <button class="ad3-opt" type="button" data-j="2" aria-pressed="false" data-testid="sod3-journey-agentic">With an agent that buys</button>
+    </div>
+    <div class="ad3-two">
+      <svg class="ad3-funnel" viewBox="0 0 260 230" role="img" aria-label="Funnel of five stages from awareness to purchase">
+        <polygon points="10,10 250,10 230,52 30,52" fill="var(--cobalt-soft)"/>
+        <polygon points="30,56 230,56 214,98 46,98" fill="var(--cobalt-soft)"/>
+        <polygon points="46,102 214,102 198,144 62,144" fill="var(--cobalt-soft)"/>
+        <polygon points="62,148 198,148 184,186 76,186" fill="var(--cobalt-soft)"/>
+        <polygon points="84,192 176,192 168,226 92,226" fill="var(--ochre-soft)"/>
+        <text x="130" y="36" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">AWARENESS / SEARCH</text>
+        <text x="130" y="82" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">INTEREST</text>
+        <text x="130" y="128" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">CONSIDERATION</text>
+        <text x="130" y="171" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">INTENT</text>
+        <text x="130" y="214" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">PURCHASE</text>
+      </svg>
+      <div>
+        <div id="ad3-journey" data-testid="sod3-journey-rows"></div>
+        <div class="ad3-calc-out" id="ad3-touch" aria-live="polite" data-testid="sod3-touchpoints"></div>
+      </div>
+    </div>
+    <p class="ad3-small" style="margin:10px 0 0"><span class="ad3-tag p">Illustrative</span> The places and the counts are my own drawing of the slide's idea, not data. Colour key: cobalt is an AI interface, ochre is another site or channel, green is a brand's or retailer's own property.</p>
+  </div>
+  <p><span class="ad3-tag d">Deck</span> The deck says shoppers are "increasingly" doing this and "in many cases" deciding on the AI platform ([[p. 18]]). It gives no figure for how many. <span class="ad3-tag u">Unconfirmed</span> I found no public measure of the share of purchases decided inside a third-party assistant. One related data point exists from Sensor Tower's June 2026 report: Amazon Rufus users convert at nearly twice the rate of non-users. That is a retailer's own assistant on its own site, so it supports the idea that assistance helps shoppers buy, not the idea that the journey moves to a third party.</p>
+  <p><span class="ad3-tag m">Mine</span> The funnel itself is a teaching device, and real journeys were never this tidy. The useful point in the slide is the shift of where the early stages happen. If discovery and comparison move to an assistant, then brands lose the chance to show their own pages during those stages, which is where the later implications in this lesson come from.</p>
+
+  <h2 id="sec2"><span class="num">2</span> Agentic commerce: mirage or reality</h2>
+  <p class="lead">The deck sets two views side by side. Eric Seufert, a mobile marketing analyst, calls agentic commerce a mirage, citing retailer incentives, how agents would earn money, and consumer trust. Harley Finkelstein, Shopify's president, sees a major disruption of online shopping, citing early adoption, a human in the loop, and delegation rather than autonomy. LUMA says its own view falls in between, likening it to coding agents that do the dull tasks while people make the judgement calls ([[p. 20]]). Pick a party to see what each wants.</p>
+  <div class="ad3-stage" data-testid="sod3-agentic">
+    <div class="ad3-opts" role="group" aria-label="Parties">
+      <button class="ad3-opt" type="button" data-pty="0" aria-pressed="true" data-testid="sod3-party-amazon">Amazon</button>
+      <button class="ad3-opt" type="button" data-pty="1" aria-pressed="false" data-testid="sod3-party-shopify">Shopify</button>
+      <button class="ad3-opt" type="button" data-pty="2" aria-pressed="false" data-testid="sod3-party-openai">OpenAI</button>
+      <button class="ad3-opt" type="button" data-pty="3" aria-pressed="false" data-testid="sod3-party-shopper">The shopper</button>
+    </div>
+    <div class="ad3-panel" id="ad3-party-panel" aria-live="polite" data-testid="sod3-party-panel"></div>
+  </div>
+  <p><span class="ad3-tag c">Checked</span> The primary sources exist and say what the deck says, with more care. Seufert's post "Agentic commerce is a mirage" (3 September 2025) was prompted by reports that Amazon had begun blocking outside chatbots and shopping agents. His argument is about <i>independent</i> agents: platforms with advertising revenue and valuable purchase data have no reason to let outside agents sit between them and the customer, so he expects agentic features to extend the big platforms rather than to build a separate business. He calls agentic commerce inevitable but unworkable as a standalone one. The post, as I read it, does not make consumer trust a main argument, so the deck's third "mirage" bullet is LUMA's addition.</p>
+  <p><span class="ad3-tag c">Checked</span> Finkelstein's remarks across 2026 (Retail Brew in January, a TechCrunch report in March, Shopify's earnings calls) say Shopify is "laying the rails", that agentic shopping could favour smaller merchants, that only about 18% of US retail purchases are made online, and that AI assistants do not bypass Shopify's checkout. In March he said about a dozen merchants were using the technology, which fits "early adoption" and not yet "massive disruption".</p>
+  <p><span class="ad3-tag m">Mine</span> Both men speak from positions that colour what they say: Seufert runs a research business that argues about platform economics, and Finkelstein leads a company that sells the infrastructure agents would use. Neither is neutral, and neither is LUMA, whose "somewhere in between" is the comfortable middle. <span class="ad3-tag c">Checked</span> Evidence from earlier in 2026 leans toward the narrower reading: reports say OpenAI launched an in-chat Instant Checkout in September 2025 and discontinued it on 4 March 2026, while its checkout protocol with Stripe continues to power retailer integrations (these come from secondary reports I did not open in full).</p>
+
+  <h2 id="sec3"><span class="num">3</span> Commerce media, and AI as channel and layer</h2>
+  <p class="lead">The deck says commerce media is a clear opportunity, that Amazon and Walmart alone account for $75 billion of retail media spend, and that smaller retail networks will need third-party technology and aggregation ([[p. 21]]). Then it argues that, like commerce media, AI is both a channel (ads on AI platforms) and a layer (intent data that improves decisions in every other channel) ([[p. 22]]). First, where does $75 billion come from?</p>
+  <div class="ad3-stage" data-testid="sod3-retail">
+    <div class="ad3-opts" role="group" aria-label="Basis">
+      <button class="ad3-opt" type="button" data-rb="co" aria-pressed="true" data-testid="sod3-basis-company">Company-reported ad revenue, worldwide</button>
+      <button class="ad3-opt" type="button" data-rb="em" aria-pressed="false" data-testid="sod3-basis-emarketer">US retail media forecast, 2026</button>
+    </div>
+    <div class="ad3-bars2" id="ad3-rbars" role="img" aria-label="Bars for Amazon, Walmart and a total"></div>
+    <div class="ad3-panel" id="ad3-rnote" aria-live="polite" style="margin-top:10px" data-testid="sod3-retail-note"></div>
+  </div>
+  <p><span class="ad3-tag m">Mine</span> The deck's $75 billion matches, almost to the decimal, the sum of Amazon's reported 2025 advertising revenue (about $68.6 billion) and Walmart's fiscal 2026 global advertising business (nearly $6.4 billion, including Vizio). That is probably its basis, though the slide does not say so. It is a worldwide, company-reported figure, and it includes things beyond on-site retail media, such as Prime Video and connected-TV advertising. The narrower figure for US retail media in the sources I found is smaller. So "retail media spend" is a fair label for the direction and a loose one for the number.</p>
+  <p>Now the aggregation argument. The deck says small retail networks are far more powerful together, but competitors will not share data, so a neutral party such as a payments or delivery company would have to do it. Try the model.</p>
+  <div class="ad3-stage" data-testid="sod3-aggregate">
+    <div class="ad3-two">
+      <div>
+        <label class="ad3-ctl">Small retail networks joined together <input class="ad3-rng" id="ad3-n" type="range" min="1" max="30" step="1" value="10" data-testid="sod3-agg-count"></label>
+        <label class="ad3-ctl">Audience each reaches, % of target shoppers <input class="ad3-rng" id="ad3-r" type="range" min="1" max="10" step="1" value="3" data-testid="sod3-agg-reach"></label>
+        <label class="ad3-ctl">Overlap between their audiences, % <input class="ad3-rng" id="ad3-o" type="range" min="0" max="80" step="5" value="30" data-testid="sod3-agg-overlap"></label>
+      </div>
+      <div class="ad3-calc-out" id="ad3-agg-out" aria-live="polite" data-testid="sod3-agg-out"></div>
+    </div>
+    <p class="ad3-small" style="margin:10px 0 0"><span class="ad3-tag p">Illustrative</span> <span class="ad3-tag m">Mine</span> A toy reach model: each network adds its audience, shrunk by the overlap. It shows why aggregation helps only when the networks reach different people.</p>
+  </div>
+  <p>Next, the channel and layer idea. Switch on a layer to see which channels it would reach, in the deck's picture.</p>
+  <div class="ad3-stage" data-testid="sod3-layers">
+    <div class="ad3-opts" role="group" aria-label="Layers">
+      <button class="ad3-opt" type="button" id="ad3-L1" aria-pressed="false" data-testid="sod3-layer-intent">Intent data from AI</button>
+      <button class="ad3-opt" type="button" id="ad3-L2" aria-pressed="false" data-testid="sod3-layer-conversions">Conversion data from commerce</button>
+    </div>
+    <div class="ad3-grid" id="ad3-grid" role="group" aria-label="Scaled digital ad channels"></div>
+    <div class="ad3-panel" id="ad3-layer-note" aria-live="polite" data-testid="sod3-layer-note"></div>
+  </div>
+  <p><span class="ad3-tag d">Deck</span> The slide's central idea: conversion data from commerce already improves ads in other channels, and intent data from AI could do the same ([[p. 22]]). <span class="ad3-tag m">Mine</span> The word "could" carries the argument. Commerce data became a layer because retailers chose to sell or share it. Whether AI platforms will let intent data flow into other channels is the same question lesson 2 raised about privacy and trust, and the platforms' public stance so far is the opposite.</p>
+
+  <h2 id="sec4"><span class="num">4</span> Four implications</h2>
+  <p class="lead">The deck draws four consequences from the AI purchase funnel ([[p. 23]]). Pick one for the deck's claim and a plain test of it.</p>
+  <div class="ad3-stage" data-testid="sod3-implications">
+    <div class="ad3-opts" role="group" aria-label="Implications">
+      <button class="ad3-opt" type="button" data-imp="0" aria-pressed="true" data-testid="sod3-imp-compress">1 The funnel compresses</button>
+      <button class="ad3-opt" type="button" data-imp="1" aria-pressed="false" data-testid="sod3-imp-influence-ai">2 Influence the AI</button>
+      <button class="ad3-opt" type="button" data-imp="2" aria-pressed="false" data-testid="sod3-imp-ads-closer">3 Ads move closer to purchase</button>
+      <button class="ad3-opt" type="button" data-imp="3" aria-pressed="false" data-testid="sod3-imp-converge">4 Ad tech and martech converge</button>
+    </div>
+    <div class="ad3-panel" id="ad3-imp-panel" aria-live="polite" data-testid="sod3-imp-panel"></div>
+  </div>
+  <p><span class="ad3-tag m">Mine</span> The four are best read as a chain. A shorter funnel (1) means brands need to shape what the assistant says about them (2) and reach shoppers close to the moment of decision (3), and those two jobs are done by different teams with different tools, which is why the deck says they will merge (4). The chain is plausible, and each link is a forecast. The deck offers no evidence for any of them other than the earlier slides. It is also worth noticing who benefits if the fourth link is believed: LUMA's clients in both ad tech and martech, and anyone brokering deals between them.</p>
+
+  <h2 id="sec5"><span class="num">5</span> Influence the AI: the money behind GEO and AEO</h2>
+  <p class="lead">Brands that want to appear in AI answers are paying for tools that track and improve it, called generative engine optimization (GEO) or answer engine optimization (AEO) ([[p. 27]]). The deck lists three acquisitions and four funding rounds as evidence of "significant activity" and attracted capital. Select a row to see what I could confirm. Bar length is the reported amount on a log scale.</p>
+  <div class="ad3-stage" data-testid="sod3-deals">
+    <div id="ad3-deal-list" role="group" aria-label="Deals"></div>
+    <div class="ad3-panel" id="ad3-deal-panel" aria-live="polite" style="margin-top:8px" data-testid="sod3-deal-panel"></div>
+  </div>
+  <p><span class="ad3-tag c">Checked</span> A disclosure to weigh. The Zeta and Senso slide includes a transaction notice reading that LUMA acted as exclusive financial adviser to Senso, and trade coverage says the same. The deck is therefore showing a deal that its author earned fees on, in a slide arguing that this is a hot area. That is a normal use of a tombstone in an adviser's deck, and it is exactly the kind of fact a reader should weigh.</p>
+  <p><span class="ad3-tag m">Mine</span> What the list does and does not show: money is flowing to firms that help brands appear in AI answers, which is a genuine sign of investor and buyer interest. It does not show that the tools work, that the answers stay stable enough to optimise, or that the spending will last. The seven items are also very different in kind. Semrush is a large, established search-marketing software company, bought mainly for its customers and tools; Evertune's round is a small Series A from August 2025, more than a year before the deck. Putting them in one column makes the trend look sharper than a count of like-for-like events would.</p>
+
+  <h2 id="sec6"><span class="num">6</span> Who is advertising to whom</h2>
+  <p class="lead">The deck calls this an identity crisis: advertising may flow human to human, human to bot, bot to human and bot to bot, and all four will coexist ([[p. 26]]). Pick a quadrant for an example and the problem it raises.</p>
+  <div class="ad3-stage" data-testid="sod3-matrix">
+    <div class="ad3-quad" role="group" aria-label="Quadrants">
+      <button class="ad3-quadb" type="button" data-q="0" aria-pressed="true" data-testid="sod3-quad-hh">Humans to humans</button>
+      <button class="ad3-quadb" type="button" data-q="1" aria-pressed="false" data-testid="sod3-quad-hb">Humans to bots</button>
+      <button class="ad3-quadb" type="button" data-q="2" aria-pressed="false" data-testid="sod3-quad-bh">Bots to humans</button>
+      <button class="ad3-quadb" type="button" data-q="3" aria-pressed="false" data-testid="sod3-quad-bb">Bots to bots</button>
+    </div>
+    <div class="ad3-panel" id="ad3-quad-panel" aria-live="polite" style="margin-top:10px" data-testid="sod3-quad-panel"></div>
+  </div>
+  <p><span class="ad3-tag c">Checked</span> The bot side is not hypothetical. Imperva's 2026 Bad Bot Report (data for 2025) estimated that automated traffic was about 53% of all web traffic, up from 51% the year before. That is the security vendor's own telemetry from its customers, not a measure of the whole internet, and most of what it counts is not shopping agents. <span class="ad3-tag m">Mine</span> The point for advertising is measurement: every impression-based metric assumes a human on the other side, and the deck's matrix is a short way of saying that assumption is weakening. The examples in the panel are mine.</p>
+
+  <h2 id="sec7"><span class="num">7</span> What was confirmed and what was not</h2>
+  <p class="lead">Every headline claim from pages 17 to 28 and page 41, with the verdict from this research pass. Filter by status. As before, remember the deck comes from an adviser to firms in this sector, and its list of deals includes one it advised on.</p>
+  <div class="ad3-stage" data-testid="sod3-ledger">
+    <div class="ad3-opts" role="group" aria-label="Filter claims">
+      <button class="ad3-opt" type="button" data-f="all" aria-pressed="true" data-testid="sod3-filter-all">All</button>
+      <button class="ad3-opt" type="button" data-f="c" aria-pressed="false" data-testid="sod3-filter-checked">Checked</button>
+      <button class="ad3-opt" type="button" data-f="p" aria-pressed="false" data-testid="sod3-filter-partly">Partly</button>
+      <button class="ad3-opt" type="button" data-f="u" aria-pressed="false" data-testid="sod3-filter-unconfirmed">Unconfirmed</button>
+      <button class="ad3-opt" type="button" data-f="d" aria-pressed="false" data-testid="sod3-filter-framing">The deck's framing</button>
+    </div>
+    <div class="ad3-table-wrap"><table class="ad3-tab" data-testid="sod3-ledger-table">
+      <thead><tr><th>Claim</th><th>Page</th><th>Status</th><th>Basis</th></tr></thead>
+      <tbody id="ad3-ledger"></tbody>
+    </table></div>
+  </div>
+
+  <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
+  <ul>
+    <li><b>The squeezed funnel is the deck's idea, with no share given.</b> Shoppers using AI earlier in the journey is plausible; how often they decide there is not measured in the deck ([[pp. 17-19]]).</li>
+    <li><b>The mirage debate is narrower than the slide.</b> Seufert's argument is about independent agents versus platforms that control data and ads, and the evidence from early 2026 leans his way on in-chat checkout ([[p. 20]]).</li>
+    <li><b>$75 billion is a worldwide company-reported sum.</b> It matches Amazon plus Walmart advertising revenue, not US retail media spend as such ([[p. 21]]).</li>
+    <li><b>AI as a data layer depends on platform choices.</b> It is a forecast, not an observation ([[p. 22]]).</li>
+    <li><b>The four implications are a chain of forecasts</b> that ends in the claim that ad tech and martech will merge ([[pp. 23-25, 28, 41]]).</li>
+    <li><b>The GEO deals are real and unlike each other</b>, and one was advised by the author ([[p. 27]]).</li>
+    <li><b>Bots are a large share of traffic</b>, so who is on the other end of an impression is a real measurement question ([[p. 26]]).</li>
+  </ul>
+  <p class="src"><b>Primary.</b> LUMA Partners, <em>State of Digital 2026</em> (DMS by LUMA, November 2026), attached to this module as the reading tab on the right edge, cited above as [[pp. 17-28]] and [[p. 41]]. Everything from it is paraphrased.</p>
+  <p class="src"><b>Outside sources opened.</b> <a href="https://mdm.co/agentic-commerce-is-a-mirage/" target="_blank" rel="noopener">Eric Seufert, Agentic commerce is a mirage (Mobile Dev Memo, 3 Sep 2025)</a> &middot; <a href="https://techcrunch.com/2026/03/16/shopify-is-preparing-for-ai-shopping-agents-to-change-everything-exec-says" target="_blank" rel="noopener">TechCrunch, Shopify is preparing for AI shopping agents to change everything, exec says (16 Mar 2026)</a> (Finkelstein, 18% of US retail online). Sensor Tower's <a href="https://sensortower.com/press/sensor-tower-state-of-ai-2026-report-global-time-spent-on-generative-ai-apps-projected-to-more-than-double-year-over-year" target="_blank" rel="noopener">State of AI 2026 release</a> (Rufus conversion) was opened for lesson 2.</p>
+  <p class="src"><b>Outside sources seen in search results, not opened in full.</b> Deals and funding: <a href="https://pulse2.com/zeta-global-to-acquire-senso-to-expand-ai-engineering-and-frontier-model-connectivity/" target="_blank" rel="noopener">Zeta to acquire Senso</a> (5 Oct 2026; LUMA advised Senso) &middot; <a href="https://www.mediapost.com/publications/article/410804/" target="_blank" rel="noopener">MediaPost on Adobe acquiring Semrush for $1.9bn</a> (announced 19 Nov 2025) &middot; <a href="https://www.sitecore.com/company/newsroom/press-releases/2026/06/sitecore-acquires-scrunch-to-help-brands-influence-discovery--and-buying-decisions" target="_blank" rel="noopener">Sitecore's announcement of Scrunch</a> (3 Jun 2026; the roughly $225m price is Bloomberg's, via B&amp;T) &middot; <a href="https://www.tryprofound.com/newsroom/profound-raises-usd180m-series-d-at-usd1-8b-valuation-to-build-the-ai-platform-for-marketing-teams" target="_blank" rel="noopener">Profound's Series D announcement</a> &middot; <a href="https://builtin.com/articles/bluefish-raises-43m-series-b-20260417" target="_blank" rel="noopener">Built In on Bluefish's Series B</a> &middot; <a href="https://evertune.ai/resources/insights-on-ai/evertune-raises-15-million-series-a-to-scale-its-ai-marketing-and-discovery-platform" target="_blank" rel="noopener">Evertune's Series A announcement</a>. Retail media: <a href="https://www.emarketer.com/content/faq-on-retail-media-networks-how-marketers-should-allocate-budgets-2026" target="_blank" rel="noopener">eMarketer FAQ on retail media networks</a> (I could only read search-result summaries; the page refused my fetch) &middot; <a href="https://ppc.land/amazons-ad-revenue-hits-21-3b-as-prime-video-reaches-315m-viewers/" target="_blank" rel="noopener">PPC Land on Amazon's ad revenue</a> (the $68.6bn full-year figure has one source) &middot; <a href="https://ppc.land/walmart-connect-hits-41-growth-as-ad-business-nears-6-4b/" target="_blank" rel="noopener">PPC Land on Walmart Connect</a>. Agentic commerce: <a href="https://stellagent.ai/insights/openai-scales-back-instant-checkout" target="_blank" rel="noopener">Stellagent on OpenAI scaling back Instant Checkout</a> and <a href="https://www.forrester.com/blogs/power-couple-openai-amazon-may-have-just-won-consumer-agentic-commerce" target="_blank" rel="noopener">Forrester on OpenAI and Amazon</a> (secondary analysis; I did not find OpenAI's own notice) &middot; <a href="https://www.retailbrew.com/stories/2026/01/16/shopify-president-agentic-commerce-could-usher-in-merit-based-shopping" target="_blank" rel="noopener">Retail Brew on Finkelstein</a>. Bots: <a href="https://www.imperva.com/blog/bad-bot-report-2026-bots-agentic-age/" target="_blank" rel="noopener">Imperva Bad Bot Report 2026</a>.</p>
+  <p class="src"><b>Checked 18 Nov 2026.</b> Confirmed from the primary posts or announcements: Seufert's argument and date; Finkelstein's remarks in March; Zeta and Senso (announcement, LUMA's role); Sitecore's announcement of Scrunch; Profound's round (summaries of its announcement). Confirmed from secondary reports only: the Adobe and Semrush terms, Bluefish's and Evertune's rounds, Amazon's and Walmart's advertising figures, OpenAI's Instant Checkout reversal, Imperva's 53%. Not confirmed: the share of purchases decided in third-party assistants; OptimizeGEO's round (the slide says not disclosed); whether Adobe and Semrush have closed. The funnel counts, reach model and examples in the matrix are illustrative. The Scrunch price is a reported figure that neither company confirmed.</p>
+
+  <footer>The AI Purchase Funnel &middot; The State of Digital 2026 module &middot; part of your Study Hub</footer>
+</div>
+<script>
+(function(){
+  /* funnel */
+  var STAGES = ["Awareness / search","Interest","Consideration","Intent","Purchase"];
+  var J = [
+    {rows:[["Search engine","third"],["Publishers, social and video","third"],["Review sites and brand pages","third"],["Email, text and retargeting","third"],["Brand or retailer checkout","own"]], n:7, t:"search, a publisher, reviews, brand site, email, text, checkout"},
+    {rows:[["AI assistant","ai"],["AI assistant","ai"],["AI assistant: short-list","ai"],["AI assistant: decision","ai"],["Brand or retailer checkout","own"]], n:2, t:"the assistant, then checkout"},
+    {rows:[["AI assistant","ai"],["AI assistant","ai"],["AI assistant: short-list","ai"],["AI assistant: decision","ai"],["The agent, with your approval","ai"]], n:1, t:"one interface; the shopper delegates and approves"}
+  ];
+  function drawJourney(i){
+    var d = J[i], h = "";
+    d.rows.forEach(function(r, k){ h += "<div class='ad3-row'><div class='ad3-stg'>" + STAGES[k] + "</div><div><span class='ad3-chip " + r[1] + "'>" + r[0] + "</span></div></div>"; });
+    document.getElementById("ad3-journey").innerHTML = h;
+    document.getElementById("ad3-touch").innerHTML = "<div>Places a shopper visits (illustrative): <b>" + d.n + "</b></div><div class='ad3-small'>" + d.t + ".</div>";
+    document.querySelectorAll("[data-j]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.j === i)); });
+  }
+  document.querySelectorAll("[data-j]").forEach(function(b){ b.addEventListener("click", function(){ drawJourney(+b.dataset.j); }); });
+  drawJourney(0);
+
+  /* parties */
+  var PT = [
+    {n:"Amazon", t:"Seufert reports that Amazon began blocking outside chatbots and shopping agents from its listings in 2025, protecting an advertising business he cites at $15.7bn in the second quarter of 2025, and builds its own shopping agents (Rufus, Buy for Me). The incentive: keep the customer relationship, the purchase data and the ad revenue.", s:"c", st:"Checked"},
+    {n:"Shopify", t:"Seufert's post says Shopify lets agents in but requires human review and its Shop Pay checkout, because its income is from transactions. Finkelstein says agents are an opportunity for merchants and that AI assistants do not bypass Shopify's checkout. The incentive: more online sales through its stores, with Shopify staying in the payment path.", s:"c", st:"Checked"},
+    {n:"OpenAI", t:"Reports say OpenAI launched Instant Checkout in ChatGPT in September 2025 with Stripe, then discontinued it on 4 March 2026, while its agentic commerce protocol continues to support retailer integrations. The incentive: to earn from shopping without owning the retail backend, which is the problem Seufert describes. Source: secondary reports, not an OpenAI notice.", s:"p", st:"Partly"},
+    {n:"The shopper", t:"The deck says delegation, not autonomy: agents do the dull tasks and people make the judgement calls ([[p. 20]]). Consumer trust is the deck's third reason for doubt. Finkelstein argues an assistant that is not paid on commission is a more honest guide, while ads in assistants (lesson 2) cut against that. Nobody I read has a measure of how much shoppers trust an agent with a purchase.", s:"u", st:"Unconfirmed"}
+  ];
+  function showParty(i){
+    var d = PT[i];
+    document.getElementById("ad3-party-panel").innerHTML = "<p><span class='ad3-tag " + d.s + "'>" + d.st + "</span> <b>" + d.n + ".</b> " + d.t + "</p>";
+    document.querySelectorAll("[data-pty]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.pty === i)); });
+  }
+  document.querySelectorAll("[data-pty]").forEach(function(b){ b.addEventListener("click", function(){ showParty(+b.dataset.pty); }); });
+  showParty(0);
+
+  /* retail */
+  var RB = {
+    co:{bars:[["Amazon",68.6,"up"],["Walmart",6.4,"up"],["Sum",75.0,"down"]], note:"<p><span class='ad3-tag d'>Deck</span> $75BN of retail media spend for Amazon and Walmart. [[p. 21]]</p><p><span class='ad3-tag c'>Checked</span> Company-reported advertising revenue: Amazon about $68.6bn for 2025 (one source for the full-year figure; Q4 alone was $21.3bn) and Walmart nearly $6.4bn for fiscal 2026, including Vizio. The sum is $75.0bn.</p>"},
+    em:{bars:[["Amazon",56.7,"up"],["Walmart",6.0,"up"],["Others (derived)",8.4,"down"]], note:"<p><span class='ad3-tag c'>Checked</span> eMarketer's US retail media forecast for 2026 is about $71.1bn in total (an older forecast said $69.3bn), with Amazon near $56.7bn and Walmart near $6.0bn, so those two are about $62.7bn together. I read these from search-result summaries of eMarketer because its page refused my fetch.</p><p><span class='ad3-tag m'>Mine</span> The third bar is the remainder, my subtraction. It is US only and counts on-site retail media, so it is smaller than the worldwide company totals.</p>"}
+  };
+  function drawRetail(k){
+    var d = RB[k], h = "";
+    d.bars.forEach(function(b){ h += "<div class='ad3-barcol'><span>&#36;" + b[1].toFixed(1) + "bn</span><div class='ad3-bar " + b[2] + "' style='height:" + Math.round(b[1] / 80 * 150) + "px'></div><span class='ad3-small' style='font-weight:600'>" + b[0] + "</span></div>"; });
+    document.getElementById("ad3-rbars").innerHTML = h;
+    document.getElementById("ad3-rnote").innerHTML = d.note;
+    document.querySelectorAll("[data-rb]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.rb === k)); });
+  }
+  document.querySelectorAll("[data-rb]").forEach(function(b){ b.addEventListener("click", function(){ drawRetail(b.dataset.rb); }); });
+  drawRetail("co");
+
+  /* aggregation */
+  var an = document.getElementById("ad3-n"), ar = document.getElementById("ad3-r"), ao = document.getElementById("ad3-o"), aout = document.getElementById("ad3-agg-out");
+  function drawAgg(){
+    var n = +an.value, r = +ar.value / 100, o = +ao.value / 100, reach = 1 - Math.pow(1 - r * (1 - o), n), naive = Math.min(1, n * r);
+    aout.innerHTML = "<div>" + n + " networks, each " + (r * 100).toFixed(0) + "%, with " + (o * 100).toFixed(0) + "% overlap:</div><div class='ad3-big'>" + (reach * 100).toFixed(1) + "% reached</div><div class='ad3-meter'><i style='width:" + Math.min(100, reach * 100).toFixed(0) + "%'></i></div><div class='ad3-small'>Adding them up with no overlap would say " + (naive * 100).toFixed(0) + "%. One network alone reaches " + (r * 100).toFixed(0) + "%.</div>";
+  }
+  [an, ar, ao].forEach(function(el){ el.addEventListener("input", drawAgg); }); drawAgg();
+
+  /* layers */
+  var CH = ["AI platforms","Retail media","Search","Social","Mobile app","Open web","CTV"];
+  var l1 = false, l2 = false;
+  function drawLayers(){
+    var h = "";
+    CH.forEach(function(c, i){
+      h += "<div class='ad3-chan" + (l1 ? " lit" : "") + (l2 && i > 1 ? " lit2" : "") + "'>" + c + "</div>";
+    });
+    document.getElementById("ad3-grid").innerHTML = h;
+    var msg = "<p><span class='ad3-tag d'>Deck</span> In the slide, AI platforms and retail media are channels of their own, and two bands run under every scaled channel: intent data (from AI) and conversion data (from commerce). [[p. 22]]</p>";
+    if(l1) msg += "<p><span class='ad3-tag m'>Mine</span> Intent data from AI lights every channel in the picture. In practice that requires an AI platform to supply it, and lesson 2 noted that platforms such as OpenAI say conversations stay private from advertisers.</p>";
+    if(l2) msg += "<p><span class='ad3-tag m'>Mine</span> Conversion data already reaches search, social, mobile, the open web and connected TV through retailers' ad products. Retail media is shaded because it is the source, not a receiver.</p>";
+    document.getElementById("ad3-layer-note").innerHTML = msg;
+    document.getElementById("ad3-L1").setAttribute("aria-pressed", String(l1));
+    document.getElementById("ad3-L2").setAttribute("aria-pressed", String(l2));
+  }
+  document.getElementById("ad3-L1").addEventListener("click", function(){ l1 = !l1; drawLayers(); });
+  document.getElementById("ad3-L2").addEventListener("click", function(){ l2 = !l2; drawLayers(); });
+  drawLayers();
+
+  /* implications */
+  var IM = [
+    {t:"The purchase funnel compresses", d:"AI combines faster rounds of discovery, research and consideration with richer context about the shopper, which reduces friction and moves people from discovery to purchase more efficiently. Speed plus context equals reduced friction. [[p. 24]]", m:"Test: do conversion rates, or time from first search to purchase, fall for shoppers who use an assistant? The only public hint I found is the Rufus conversion figure, which is a retailer's own tool."},
+    {t:"AI optimization becomes critical", d:"AI acts as a filter, so brands must optimise their data, sites, reviews and marketing for AI ingestion and influence, across earned, owned and paid media. The deck calls the strategy \"Influence the AI\", and says optimising the customer experience moves from first-party to third-party interactions. [[p. 25]]", m:"Test: do assistants cite or recommend brands differently after a brand changes its content, and is the effect stable? Section 5 shows money is flowing, not that the method works."},
+    {t:"Ads move closer to purchase", d:"A compressed funnel moves the impact of ads and brand-building closer to the purchase: brands must influence what shoppers ask for in the AI journey and build trust as they move down. The deck adds that time saved by agents could mean more time with media and gaming, which means more ad opportunities. Labelled \"Influence Consumers\". [[p. 28]]", m:"The second point is the weakest: that saved time becomes more media time is a hopeful guess, and the deck gives no evidence for it."},
+    {t:"Ad tech and martech converge", d:"With a compressed funnel, what influences the AI and what influences the consumer become tied together. The deck says ad tech and martech can no longer be separated and need shared context, coordinated action and real-time decisioning. [[p. 41]]", m:"This is the conclusion that serves the deck's audience best, and it is stated as a necessity. Test: are buyers actually merging their ad tech and martech tools and budgets, and are vendors being bought for that reason?"}
+  ];
+  function showImp(i){
+    var d = IM[i];
+    document.getElementById("ad3-imp-panel").innerHTML = "<p><span class='ad3-tag d'>Deck</span> <b>" + d.t + ".</b> " + d.d + "</p><p><span class='ad3-tag m'>Mine</span> " + d.m + "</p>";
+    document.querySelectorAll("[data-imp]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.imp === i)); });
+  }
+  document.querySelectorAll("[data-imp]").forEach(function(b){ b.addEventListener("click", function(){ showImp(+b.dataset.imp); }); });
+  showImp(0);
+
+  /* deals */
+  var DL = [
+    {n:"Evertune", when:"Aug 2025", amt:15, kind:"Series A raise", s:"c", st:"Checked", t:"Evertune announced a $15m Series A in August 2025, led by Felicis Ventures, taking total funding to about $19m. That is over a year before the deck, so it is not a recent move."},
+    {n:"Adobe / Semrush", when:"Nov 2025", amt:1900, kind:"Acquisition", s:"c", st:"Checked", t:"Adobe agreed to buy Semrush for about $1.9bn in cash ($12 a share), announced 19 November 2025, to add GEO to its marketing products, with closing expected in the first half of 2026. I did not confirm that it has closed. Semrush is a large search-marketing software company, so this is not a pure GEO deal."},
+    {n:"Bluefish", when:"Apr 2026", amt:43, kind:"Series B raise", s:"c", st:"Checked", t:"Bluefish announced a $43m Series B on 14 April 2026, co-led by Threshold Ventures and NEA, taking total funding to about $68m. Its product helps brands track and influence how AI assistants present them."},
+    {n:"Sitecore / Scrunch", when:"Jun 2026", amt:225, kind:"Acquisition (price reported)", s:"p", st:"Partly", t:"Sitecore announced that it acquired Scrunch on 3 June 2026. Neither company disclosed the price; Bloomberg reported about $225m. The deal is confirmed and the price is not."},
+    {n:"Profound", when:"Sep 2026", amt:180, kind:"Series D raise", s:"c", st:"Checked", t:"Profound announced a $180m Series D at a $1.8bn valuation on 15 September 2026, co-led by Sequoia and Kleiner Perkins, less than seven months after a $96m Series C, per several reports."},
+    {n:"Zeta / Senso", when:"Oct 2026", amt:0, kind:"Acquisition (price not disclosed)", s:"c", st:"Checked", t:"Zeta Global agreed to acquire Senso, announced 5 October 2026. Price and closing date were not disclosed. Senso's technology already powered Zeta's GEO offering. LUMA advised Senso, which the slide's transaction notice states."},
+    {n:"OptimizeGEO", when:"n/a", amt:0, kind:"Raise (not disclosed)", s:"u", st:"Unconfirmed", t:"The slide shows ND, not disclosed. I did not search for this company, so I have nothing to add."}
+  ];
+  var dl = document.getElementById("ad3-deal-list"), dsel = 5;
+  function drawDeals(){
+    var h = "";
+    DL.forEach(function(d, i){
+      var w = d.amt ? Math.round(Math.log(d.amt) / Math.log(2000) * 100) : 6;
+      h += "<" + "button type='button' class='ad3-dealrow' data-d='" + i + "' aria-pressed='" + (i === dsel) + "' data-testid='sod3-deal-" + d.n.toLowerCase().replace(/[^a-z]+/g, "-") + "'><span>" + d.n + "</span><span class='ad3-dealbar" + (d.amt ? "" : " nd") + "' style='width:" + w + "%'></span><span>" + (d.amt ? "&#36;" + (d.amt >= 1000 ? (d.amt / 1000) + "bn" : d.amt + "m") : "n/d") + "</span></button>";
+    });
+    dl.innerHTML = h;
+    var d = DL[dsel];
+    document.getElementById("ad3-deal-panel").innerHTML = "<p><span class='ad3-tag " + d.s + "'>" + d.st + "</span> <b>" + d.n + "</b> (" + d.when + ", " + d.kind + "). " + d.t + " [[p. 27]]</p>";
+    dl.querySelectorAll(".ad3-dealrow").forEach(function(b){ b.addEventListener("click", function(){ dsel = +b.dataset.d; drawDeals(); }); });
+  }
+  drawDeals();
+
+  /* matrix */
+  var Q = [
+    {t:"Humans to humans", e:"A brand's film on television, or a banner a person reads. The long-standing case.", p:"Measurement assumes a person: viewability, attention and reach are all defined for humans."},
+    {t:"Humans to bots", e:"A brand writes product pages, reviews and answers so that an AI crawler or assistant reads and repeats them. This is what GEO and AEO sell.", p:"The audience is a model, so the usual proof of effect (a person saw it) does not exist, and the brand cannot tell which version the model used."},
+    {t:"Bots to humans", e:"An automated system writes, targets and buys the ad that a person sees, from creative to bidding.", p:"Who is responsible for what the ad says, and how the person knows the offer is real."},
+    {t:"Bots to bots", e:"A shopping agent asks a seller's agent for price and stock, and the two negotiate.", p:"There is no person to advertise to in the middle, so what an ad even is becomes unclear, and who bears the cost of the traffic."}
+  ];
+  function showQ(i){
+    var d = Q[i];
+    document.getElementById("ad3-quad-panel").innerHTML = "<p><span class='ad3-tag d'>Deck</span> <b>" + d.t + ".</b> One of four interaction types the deck expects to coexist. [[p. 26]]</p><p><span class='ad3-tag p'>Illustrative</span> " + d.e + "</p><p><span class='ad3-tag m'>Mine</span> <b>The problem it raises.</b> " + d.p + "</p>";
+    document.querySelectorAll("[data-q]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.q === i)); });
+  }
+  document.querySelectorAll("[data-q]").forEach(function(b){ b.addEventListener("click", function(){ showQ(+b.dataset.q); }); });
+  showQ(0);
+
+  /* ledger */
+  var L = [
+    {c:"AI can consolidate discovery, research and consideration into one third-party interface, often with the decision made there", p:"18", s:"d", st:"Deck framing", b:"No figure on the slide; I found no public measure of purchases decided in a third-party assistant. Amazon Rufus users convert at nearly twice the rate (Sensor Tower), a retailer's own tool."},
+    {c:"Agentic commerce is early, with a real debate over its reality", p:"20", s:"c", st:"Checked", b:"The debate is documented. OpenAI's in-chat Instant Checkout (Sep 2025) was reportedly discontinued on 4 Mar 2026; secondary reports."},
+    {c:"Eric Seufert has characterised agentic commerce as a mirage", p:"20", s:"c", st:"Checked", b:"Primary post, 3 Sep 2025. His claim is about independent agents; he calls agentic commerce inevitable, and trust is not a main argument in it."},
+    {c:"Harley Finkelstein sees agentic commerce as a massive disruption", p:"20", s:"p", st:"Partly", b:"He says Shopify is laying the rails and could help small merchants, but also that only about 18% of US retail is online and about a dozen merchants were using it in March 2026. He leads a company that sells the infrastructure."},
+    {c:"Amazon and Walmart account for $75 billion of retail media spend", p:"21", s:"p", st:"Partly", b:"Equals company-reported worldwide ad revenue (Amazon about $68.6bn in 2025 plus Walmart nearly $6.4bn in FY26). eMarketer's US retail media forecast for 2026 is about $71bn in total, with those two near $63bn."},
+    {c:"Small retail networks need third-party technology and aggregation, ideally by a fintech or delivery company", p:"21", s:"d", st:"Deck framing", b:"An opinion; no evidence given. The model shows aggregation helps only if audiences overlap little."},
+    {c:"AI is both an ad channel and a data layer, like commerce media", p:"22", s:"d", st:"Deck framing", b:"A forecast. Platforms' public stance is that conversations stay private from advertisers."},
+    {c:"Four implications: the funnel compresses, influence the AI, ads move closer to purchase, ad tech and martech converge", p:"24", s:"d", st:"Deck framing", b:"A chain of forecasts with no evidence beyond the earlier slides (pages 24, 25, 28 and 41)."},
+    {c:"Zeta acquired Senso (Oct 2026)", p:"27", s:"c", st:"Checked", b:"Announced 5 Oct 2026; price not disclosed. LUMA advised Senso, and the slide's tombstone says so."},
+    {c:"Adobe acquired Semrush", p:"27", s:"c", st:"Checked", b:"About $1.9bn in cash, announced 19 Nov 2025, expected to close in 1H 2026. Not confirmed as closed. An established SEO company, not a GEO start-up."},
+    {c:"Sitecore acquired Scrunch", p:"27", s:"p", st:"Partly", b:"Announced 3 Jun 2026. Price undisclosed; Bloomberg reported about $225m."},
+    {c:"Profound raised $180mm", p:"27", s:"c", st:"Checked", b:"Series D at a $1.8bn valuation, 15 Sep 2026."},
+    {c:"Bluefish raised $43mm", p:"27", s:"c", st:"Checked", b:"Series B, 14 Apr 2026."},
+    {c:"Evertune raised $15mm", p:"27", s:"c", st:"Checked", b:"Series A, Aug 2025, more than a year before the deck."},
+    {c:"OptimizeGEO raised an undisclosed amount", p:"27", s:"u", st:"Unconfirmed", b:"Not searched."},
+    {c:"Humans and bots will advertise to each other in all four combinations", p:"26", s:"d", st:"Deck framing", b:"A forecast. Imperva's 2026 report puts automated traffic at about 53% of web traffic in 2025 (vendor telemetry)."}
+  ];
+  var tb = document.getElementById("ad3-ledger");
+  function drawLedger(f){
+    tb.innerHTML = L.filter(function(r){ return f === "all" || r.s === f; }).map(function(r){
+      return "<tr><td>" + r.c + "</td><td>[[p. " + r.p + "]]</td><td><span class='ad3-tag " + r.s + "'>" + r.st + "</span></td><td>" + r.b + "</td></tr>";
+    }).join("");
+    document.querySelectorAll("[data-f]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.f === f)); });
+  }
+  document.querySelectorAll("[data-f]").forEach(function(b){ b.addEventListener("click", function(){ drawLedger(b.dataset.f); }); });
+  drawLedger("all");
+})();
+</script>
+<script src="../../registry.js"></script>
+<script src="../../../shared/lesson-meta.js"></script>
+</body>
+</html>
