@@ -100,6 +100,10 @@
         {
           "date": "2026-11-18",
           "note": "Accuracy review of all five lessons against the deck's page text and slide images"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Lesson 2 remade as a short lesson that teaches the deck's contents first"
         }
       ],
       "rebuild": {
@@ -189,7 +193,7 @@
           "id": "sod-2",
           "title": "2. Consumers Move to AI: Attention, Money and Intent",
           "pip": "#c0642b",
-          "blurb": "How fast consumers are moving to AI, how the assistants might earn money, and why the deck calls AI conversations intent data, with each claim checked or flagged.",
+          "blurb": "Why people are moving to AI assistants, how those apps may earn money, and why the deck thinks a conversation reveals more intent than a search.",
           "tags": [
             "advertising",
             "ad tech",
@@ -199,38 +203,23 @@
           "anchors": [
             {
               "id": "sod2-1",
-              "title": "How fast consumers moved",
+              "title": "How fast people moved",
               "anchor": "sec1"
             },
             {
               "id": "sod2-2",
-              "title": "Time spent",
+              "title": "How AI apps make money",
               "anchor": "sec2"
             },
             {
               "id": "sod2-3",
-              "title": "Who pays: subscriptions or ads",
+              "title": "Proxies, and the thing advertisers really want",
               "anchor": "sec3"
             },
             {
               "id": "sod2-4",
-              "title": "All roads lead to advertising?",
+              "title": "Why a conversation beats a search",
               "anchor": "sec4"
-            },
-            {
-              "id": "sod2-5",
-              "title": "Proxies and intent",
-              "anchor": "sec5"
-            },
-            {
-              "id": "sod2-6",
-              "title": "Search versus AI answers",
-              "anchor": "sec6"
-            },
-            {
-              "id": "sod2-7",
-              "title": "What was confirmed and what was not",
-              "anchor": "sec7"
             },
             {
               "id": "sod2-src",
@@ -255,17 +244,19 @@
             {
               "date": "2026-11-18",
               "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Remade from scratch as a short teaching lesson: adoption and time spent, subscription versus advertising and why the deck says all roads lead to advertising, proxies and intent, and why a conversation shows more intent than a search; one short 'How solid is this?' note replaces the ledger and chips."
             }
           ],
           "rebuild": {
-            "brief": "Lesson 2 of the State of Digital 2026 module, from deck pages 8-16. Cover the two paradigm shifts (pp. 8-9), consumer AI adoption (p. 10), time spent (p. 11), subscription versus advertising (p. 12), all roads lead to advertising (p. 13), the proxy ladder to intent (p. 14), and AI answers as richer intent than search (pp. 15-16). Widgets: source-lens bar chart, Muse claim explorer, hours-per-user calculator, per-assistant ad status, ad revenue sketch, pattern versus exceptions, proxy ladder, conversation signals model, claims ledger. Tag every claim Deck, Checked, Unconfirmed, Mine, Illustrative or Background; call out that the deck is an M&A adviser's point of view; disclose that Claude is made by Anthropic.",
+            "brief": "Lesson 2 of the State of Digital 2026 module, from deck pages 8-16, about 1,500 words and three widgets. Define AI assistant, subscription, advertising, CPM, proxy and intent when first used. Cover the two paradigm shifts (pp. 8-9), adoption and time spent (pp. 10-11), subscription versus ads and 'all roads lead to advertising' (pp. 12-13), the proxy ladder to intent (p. 14) and search versus AI conversation intent (pp. 15-16). Widgets: hours-per-user sketch, per-assistant ad status, proxy ladder. One short collapsed 'How solid is this?' note; no ledgers or status chips.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 8-16",
-              "Sensor Tower, State of AI 2026 press release, 16 Jun 2026 (ChatGPT 1bn monthly users May 2026; 17.2bn to projected 36bn hours)",
-              "Mixed (mixed-news.com), Meta's Muse tops Apple's US free iPhone chart, Sep 2026; other reports of the same",
-              "OpenAI posts on ads in ChatGPT (16 Jan 2026 and later updates); Anthropic, Claude is a space to think (4 Feb 2026); eMarketer on Perplexity; Android Central on Google and Gemini ads",
-              "Similarweb and Semrush coverage on prompt versus search length (the 7x claim could not be traced to one study)",
-              "Brin and Page, 1998, appendix on advertising and search (background)"
+              "Sensor Tower, State of AI 2026 press release, 16 Jun 2026",
+              "Mixed, Meta's Muse tops Apple's US free iPhone chart (Sep 2026)",
+              "OpenAI, Our approach to advertising and expanding access (Jan 2026) and later updates; Anthropic, Claude is a space to think (4 Feb 2026); reports on Google's Gemini app and ads"
             ]
           },
           "standard": "v1"

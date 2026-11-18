@@ -9,380 +9,169 @@
 <style>
   .ad2-stage{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:18px; margin:16px 0; box-shadow:var(--shadow-sm); min-width:0;}
   .ad2-stage div{min-width:0;}
-  .ad2-small{font-family:var(--font-ui); font-size:.82rem; color:var(--ink-mute);}
-  .ad2-tag{display:inline-block; font-family:var(--font-ui); font-size:.68rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:2px 8px; border-radius:6px; border:2px solid var(--line-strong); margin-right:6px; color:var(--ink);}
-  .ad2-tag.d{border-color:var(--cobalt); background:var(--cobalt-soft);}
-  .ad2-tag.c{border-color:var(--forest); background:var(--forest-soft);}
-  .ad2-tag.m{border-color:var(--plum); background:var(--plum-soft);}
-  .ad2-tag.u{border-color:var(--vermil); background:var(--vermil-soft);}
-  .ad2-tag.r{border-color:var(--ochre); background:var(--ochre-soft); border-style:dashed;}
-  .ad2-tag.p{border-color:var(--ochre); background:var(--ochre-soft);}
   .ad2-opts{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 10px;}
   .ad2-opt{border:2px solid var(--line-strong); border-radius:10px; padding:8px 12px; background:var(--paper); color:var(--ink); font:700 .82rem var(--font-ui); cursor:pointer; text-align:left;}
   .ad2-opt:hover{border-color:var(--cobalt);}
   .ad2-opt[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
   .ad2-opt:focus-visible,.ad2-rng:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad2-panel{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.88rem; color:var(--ink); min-width:0; overflow-wrap:anywhere;}
+  .ad2-panel{border:2px solid var(--outline); border-radius:12px; padding:12px 14px; background:var(--surface); font-family:var(--font-ui); font-size:.9rem; color:var(--ink); overflow-wrap:anywhere;}
   .ad2-panel p{margin:0 0 8px; max-width:none;} .ad2-panel p:last-child{margin-bottom:0;}
-  .ad2-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;} @media(max-width:700px){.ad2-two{grid-template-columns:minmax(0,1fr);}}
-  .ad2-four{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px;} @media(max-width:700px){.ad2-four{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  .ad2-shift{display:flex; flex-direction:column; align-items:flex-start; gap:6px; border:2px solid var(--line-strong); border-radius:12px; background:var(--paper); color:var(--ink); padding:12px; cursor:pointer; font:700 .9rem var(--font-ui); text-align:left;}
-  .ad2-shift:hover{border-color:var(--cobalt);}
-  .ad2-shift[aria-pressed="true"]{border-color:var(--cobalt); background:var(--cobalt-soft);}
-  .ad2-shift:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad2-shift svg{width:44px; height:44px; stroke:var(--ink); fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;}
+  .ad2-four{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:14px 0;} @media(max-width:700px){.ad2-four{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .ad2-tile{border:2px solid var(--outline); border-radius:12px; padding:12px; background:var(--paper); color:var(--ink); font:700 .85rem var(--font-ui);}
+  .ad2-tile b{display:block; font-size:1rem; margin-bottom:4px;}
+  .ad2-terms{margin:12px 0; padding:0; display:grid; gap:6px; max-width:none;}
+  .ad2-terms div{border-left:4px solid var(--cobalt); background:var(--cobalt-soft); color:var(--ink); padding:7px 12px; border-radius:0 8px 8px 0; font-family:var(--font-ui); font-size:.9rem;}
+  .ad2-bands{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px;} @media(max-width:700px){.ad2-bands{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .ad2-band{border:2px solid var(--outline); border-radius:8px; padding:8px 6px; color:var(--ink); font:800 .72rem var(--font-ui); text-align:center; cursor:pointer;}
+  .ad2-band small{display:block; font-weight:600; font-size:.68rem; margin-top:2px;}
+  .ad2-band[aria-pressed="true"]{outline:3px solid var(--ink); outline-offset:1px;}
+  .ad2-band:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad2-b1{background:var(--cobalt-soft);} .ad2-b2{background:var(--plum-soft);} .ad2-b3{background:var(--ochre-soft);} .ad2-b4{background:var(--vermil-soft);} .ad2-b5{background:var(--forest-soft);}
+  .ad2-hops{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0;}
+  .ad2-hop{border:2px solid var(--outline); border-radius:8px; padding:6px 10px; font:700 .8rem var(--font-ui); background:var(--paper); color:var(--ink);}
+  .ad2-hop.mid{background:var(--ochre-soft);}
+  .ad2-arrow{font-weight:800; color:var(--ink-mute);}
   .ad2-rng{width:100%; accent-color:var(--cobalt);}
-  .ad2-svg{display:block; width:100%; height:auto;}
-  .ad2-svg text{fill:var(--ink); font-family:var(--font-ui);}
-  .ad2-band{stroke:var(--line-strong); stroke-width:1;}
-  .ad2-curve-a{fill:none; stroke:var(--vermil); stroke-width:3.5;}
-  .ad2-curve-b{fill:none; stroke:var(--ink-mute); stroke-width:2.5; stroke-dasharray:6 5;}
-  .ad2-marker{stroke:var(--ink); stroke-width:2;}
-  .ad2-pyr{cursor:pointer;} .ad2-pyr:focus-visible{outline:3px solid var(--plum);}
-  .ad2-pyr polygon{stroke:var(--outline); stroke-width:2;}
-  .ad2-pyr.on polygon{stroke:var(--ink); stroke-width:4;}
-  .ad2-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin:8px 0;}
-  .ad2-big{font-family:var(--font-ui); font-size:1.9rem; font-weight:800; color:var(--ink); line-height:1.1;}
-  .ad2-meter{height:16px; border:2px solid var(--outline); border-radius:8px; background:var(--paper-2); overflow:hidden; margin:6px 0;}
-  .ad2-meter i{display:block; height:100%; background:var(--vermil);}
-  .ad2-meter.g i{background:var(--forest);}
-  .ad2-tl{list-style:none; margin:8px 0; padding:0; border-left:3px solid var(--line-strong);}
-  .ad2-tl li{position:relative; margin:0 0 10px; padding:0 0 0 14px; font-family:var(--font-ui); font-size:.86rem; color:var(--ink); max-width:none;}
-  .ad2-tl li::before{content:""; position:absolute; left:-8px; top:6px; width:11px; height:11px; border-radius:50%; background:var(--surface); border:3px solid var(--cobalt);}
-  .ad2-bars{display:flex; gap:28px; align-items:flex-end; height:190px; padding:0 10px; border-bottom:2px solid var(--outline); margin:10px 0 4px;}
-  .ad2-barcol{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font-family:var(--font-ui); font-size:.85rem; color:var(--ink); font-weight:800;}
-  .ad2-bar{width:60%; min-height:4px;}
-  .ad2-bar.up{background:var(--cobalt);} .ad2-bar.down{background:var(--vermil);}
-  .ad2-table-wrap{overflow-x:auto; max-width:100%;}
-  table.ad2-tab{border-collapse:collapse; width:100%; min-width:560px; font-family:var(--font-ui); font-size:.84rem; color:var(--ink);}
-  table.ad2-tab th,table.ad2-tab td{border-bottom:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top;}
-  table.ad2-tab th{font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-mute);}
-  .ad2-calc-out{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--paper-2); color:var(--ink); margin-top:8px; font-family:var(--font-ui); font-size:.88rem;}
-  .ad2-tag.b{border-color:var(--line-strong); background:var(--paper-2);}
-  .ad2-list{margin:6px 0 8px 1.1em; padding:0; max-width:none;}
-  .ad2-rung{display:block; width:100%; text-align:left; border:2px solid var(--line-strong); border-radius:8px; background:var(--paper); color:var(--ink); padding:8px 12px; margin:0 0 4px; font:700 .85rem var(--font-ui); cursor:pointer;}
+  .ad2-ctl{display:flex; flex-direction:column; gap:3px; font-family:var(--font-ui); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:800; color:var(--ink-mute); margin:8px 0;}
+  .ad2-two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;} @media(max-width:700px){.ad2-two{grid-template-columns:minmax(0,1fr);}}
+  .ad2-out{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--paper-2); color:var(--ink); font-family:var(--font-ui); font-size:.9rem;}
+  .ad2-big{font-family:var(--font-ui); font-size:1.7rem; font-weight:800; color:var(--ink); line-height:1.15;}
+  .ad2-k{display:flex; gap:20px; align-items:flex-end; height:150px; border-bottom:2px solid var(--outline); padding:0 12px; margin:10px 0 4px;}
+  .ad2-kc{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font:800 .85rem var(--font-ui); color:var(--ink);}
+  .ad2-kb{width:55%; min-height:4px;} .ad2-kb.up{background:var(--cobalt);} .ad2-kb.dn{background:var(--vermil);}
+  .ad2-cap{display:flex; gap:20px; font:600 .78rem var(--font-ui); color:var(--ink-mute); padding:0 12px;} .ad2-cap span{flex:1 1 0; text-align:center;}
+  details.ad2-solid{border:2px solid var(--outline); border-radius:12px; padding:10px 14px; background:var(--surface); color:var(--ink); margin:14px 0; font-family:var(--font-ui); font-size:.9rem;}
+  details.ad2-solid summary{cursor:pointer; font-weight:800;}
+  details.ad2-solid summary:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
+  .ad2-ladder{display:grid; gap:4px;}
+  .ad2-rung{display:block; width:100%; text-align:left; border:2px solid var(--line-strong); border-radius:8px; background:var(--paper); color:var(--ink); padding:8px 12px; font:700 .85rem var(--font-ui); cursor:pointer;}
   .ad2-rung:hover{border-color:var(--cobalt);}
   .ad2-rung.in{background:var(--cobalt-soft); border-color:var(--cobalt);}
   .ad2-rung[aria-pressed="true"]{border-color:var(--ink); border-width:3px;}
   .ad2-rung:focus-visible{outline:3px solid var(--plum); outline-offset:2px;}
-  .ad2-chk{display:flex; gap:8px; align-items:flex-start; margin:6px 0; font-family:var(--font-ui); font-size:.86rem; color:var(--ink);}
-  .ad2-chk input{margin-top:3px; accent-color:var(--cobalt);}
-  .ad2-bars2{display:flex; gap:28px; align-items:flex-end; height:200px; padding:0 10px; border-bottom:2px solid var(--outline); margin:10px 0 4px;}
+  .ad2-bars{display:flex; gap:28px; align-items:flex-end; height:170px; border-bottom:2px solid var(--outline); padding:0 10px; margin:6px 0 4px;}
+  .ad2-bc{flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font:800 .85rem var(--font-ui); color:var(--ink);}
+  .ad2-bar{width:55%; min-height:4px;} .ad2-bar.up{background:var(--cobalt);} .ad2-bar.dn{background:var(--vermil);}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Consumers Move to AI: Attention, Money and Intent</h1>
-  <p class="subtitle">LUMA's deck says AI is creating two shifts at once: how consumers behave, and how advertising technology and operations work ([[pp. 8-9]]). This lesson takes the first. It follows the deck's argument that people are moving to AI assistants quickly, that the assistants will need to earn money from that attention, and that advertising will be the answer because AI conversations reveal intent. Each step is tested against sources outside the deck.</p>
-
-  <p class="ad2-small"><span class="ad2-tag d">Deck</span> a claim or framing from the LUMA slides, cited by page. <span class="ad2-tag c">Checked</span> confirmed in an outside source that I opened in full (listed under sources). <span class="ad2-tag r">Reported</span> found in outside coverage or announcements that I saw only as search-result summaries, so not confirmed first-hand. <span class="ad2-tag u">Unconfirmed</span> I could not confirm it. <span class="ad2-tag m">Mine</span> my own synthesis or arithmetic. <span class="ad2-tag p">Illustrative</span> a number or picture made up to show an idea. <span class="ad2-tag b">Background</span> general knowledge I did not re-check in this pass. Page numbers are pages of the trimmed deck attached to this module (printed page = PDF page).</p>
-  <p class="ad2-small"><b>A disclosure.</b> The deck puts Claude on its map, and Claude is made by Anthropic, the company whose assistant helped write this lesson. I have treated Claude like every other platform and relied on its maker's public statements only where they are the primary source.</p>
+  <p class="subtitle">The deck says AI is changing advertising in two ways at once: how people behave, and how ad technology works ([[pp. 8-9]]). This lesson takes the first. People are spending time with AI assistants, those assistants need to earn money, and the deck argues that advertising is where they will end up, because an AI conversation shows what you want better than a search does.</p>
 
   <div class="toc" data-testid="sod2-toc">
-    <strong>Contents</strong>
+    <strong>In this lesson</strong>
     <ol>
-      <li><a href="#sec1">How fast consumers moved (compare sources)</a></li>
-      <li><a href="#sec2">Time spent (calculator)</a></li>
-      <li><a href="#sec3">Who pays: subscriptions or ads (explore)</a></li>
-      <li><a href="#sec4">All roads lead to advertising? (evidence)</a></li>
-      <li><a href="#sec5">Proxies and intent (ladder)</a></li>
-      <li><a href="#sec6">Search versus AI answers (signals)</a></li>
-      <li><a href="#sec7">What was confirmed and what was not (ledger)</a></li>
+      <li><a href="#sec1">How fast people moved</a></li>
+      <li><a href="#sec2">How AI apps make money</a></li>
+      <li><a href="#sec3">Proxies, and the thing advertisers really want</a></li>
+      <li><a href="#sec4">Why a conversation beats a search</a></li>
       <li><a href="#sec-src">Takeaways &amp; sources</a></li>
     </ol>
   </div>
 
-  <h2 id="sec1"><span class="num">1</span> How fast consumers moved</h2>
-  <p class="lead">The deck's evidence for the shift starts with two charts: ChatGPT's monthly users, from about 490 million at LUMA's May 2025 conference to a billion "today", and daily active users of Meta's Muse, a personal-agent app, reaching 2.2 million about seven weeks after a September 2026 launch ([[p. 10]]). Switch between the deck's figures and what outside sources say.</p>
-  <div class="ad2-stage" data-testid="sod2-scale">
-    <div class="ad2-opts" role="group" aria-label="Which figures">
-      <button class="ad2-opt" type="button" data-lens="deck" aria-pressed="true" data-testid="sod2-lens-deck">The deck's figures</button>
-      <button class="ad2-opt" type="button" data-lens="out" aria-pressed="false" data-testid="sod2-lens-outside">What outside sources show</button>
-    </div>
-    <div class="ad2-bars2" role="img" aria-label="ChatGPT monthly users in May 2025 and today">
-      <div class="ad2-barcol"><span id="ad2-v1">~490m</span><div class="ad2-bar up" id="ad2-b1" style="height:80px"></div></div>
-      <div class="ad2-barcol"><span id="ad2-v2">1bn</span><div class="ad2-bar up" id="ad2-b2" style="height:160px"></div></div>
-    </div>
-    <div class="ad2-two" style="margin-top:0"><div class="ad2-small" style="text-align:center">May 2025</div><div class="ad2-small" style="text-align:center">May 2026 / "today"</div></div>
-    <div class="ad2-panel" id="ad2-scale-note" aria-live="polite" style="margin-top:10px" data-testid="sod2-scale-note"></div>
-  </div>
-  <p><span class="ad2-tag c">Checked</span> The billion is real as an estimate. Sensor Tower's State of AI 2026 release (16 June 2026) says ChatGPT reached 1 billion monthly active users in May 2026, the fastest mobile app to do so. Two cautions. It is a market-intelligence estimate of app users, not a figure OpenAI audited and published, and its method is not disclosed in full. And the slide's own axis label says "Today", which in a November 2026 deck means somewhere between May and November.</p>
-  <p><span class="ad2-tag u">Unconfirmed</span> The 490 million. The slide cites Sensor Tower, CNBC and Similarweb together, which does not say which produced which number. I found a 486 million figure for May 2025 attributed to We Are Social, which is close but a different firm with a different method, and I found no Sensor Tower 490 million. Comparing a May 2025 number from one source with a May 2026 number from another is the weakest part of the chart: the doubling may be real, but the bars are not a like-for-like measurement.</p>
-  <p>Now the Muse chart. Pick a claim from the slide.</p>
-  <div class="ad2-stage" data-testid="sod2-muse">
-    <div class="ad2-opts" role="group" aria-label="Muse claims">
-      <button class="ad2-opt" type="button" data-muse="0" aria-pressed="true" data-testid="sod2-muse-rank">Overtook ChatGPT as the top free iOS app</button>
-      <button class="ad2-opt" type="button" data-muse="1" aria-pressed="false" data-testid="sod2-muse-dau">2.2 million daily active users</button>
-      <button class="ad2-opt" type="button" data-muse="2" aria-pressed="false" data-testid="sod2-muse-weeks">About seven weeks</button>
-    </div>
-    <div class="ad2-panel" id="ad2-muse-panel" aria-live="polite" data-testid="sod2-muse-panel"></div>
-  </div>
-  <p><span class="ad2-tag m">Mine</span> A ranking on a free-app chart measures how quickly people are installing an app, not how many use it or whether they come back. It is a fair signal of curiosity, and a poor one of habit. Coverage I found also noted that Muse did not appear in Apple's top 50 grossing apps, which ChatGPT leads. The deck uses the chart as evidence of "early traction" ([[p. 10]]), which is accurate as far as it goes.</p>
-
-  <h2 id="sec2"><span class="num">2</span> Time spent</h2>
-  <p class="lead">The deck's next slide says global hours spent in generative-AI mobile apps doubled from 17.2 billion in the first half of 2025 to 36.0 billion in the first half of 2026, citing Sensor Tower ([[p. 11]]). The calculator turns that into something you can feel.</p>
+  <h2 id="sec1"><span class="num">1</span> How fast people moved</h2>
+  <p class="lead">An <b>AI assistant</b> is a chat app, such as ChatGPT, Gemini or Claude, that answers questions and does tasks in plain language. The deck says these apps have scaled at unprecedented speed ([[p. 10]]).</p>
+  <p>ChatGPT went from about 490 million monthly users at LUMA's conference in May 2025 to a billion. Meta's personal AI agent app, Muse, launched in September 2026 and overtook ChatGPT as the top free iPhone app in the US within about two weeks. A chart like that counts downloads, not daily habit, but it shows curiosity. The billion is an estimate by the research firm Sensor Tower, and the 490 million comes from a different source, so treat the doubling as a rough picture.</p>
+  <p>Time matters more than sign-ups. The next slide says hours spent in AI mobile apps worldwide doubled, from 17.2 billion in the first half of 2025 to 36.0 billion in the first half of 2026 ([[p. 11]]). The 36 billion was a projection made in June, and it counts phone apps only. Try spreading those hours over a user base.</p>
   <div class="ad2-stage" data-testid="sod2-hours">
     <div class="ad2-two">
       <div>
-        <div class="ad2-bars2" style="height:150px" role="img" aria-label="Hours: 17.2 billion then 36.0 billion">
-          <div class="ad2-barcol"><span>17.2bn</span><div class="ad2-bar up" style="height:72px"></div></div>
-          <div class="ad2-barcol"><span>36.0bn</span><div class="ad2-bar down" style="height:150px"></div></div>
-        </div>
-        <div class="ad2-two" style="margin-top:0"><div class="ad2-small" style="text-align:center">1H 2025</div><div class="ad2-small" style="text-align:center">1H 2026</div></div>
+        <label class="ad2-ctl">Monthly users sharing the hours, in millions <input class="ad2-rng" id="ad2-users" type="range" min="200" max="1500" step="50" value="1000" data-testid="sod2-users-slider"></label>
+        <div style="font:600 .8rem var(--font-ui); color:var(--ink-mute)">A rough sketch: the hours cover all AI apps, the user count is one app.</div>
       </div>
-      <div>
-        <label class="ad2-ctl">Monthly users to spread the hours over, millions <input class="ad2-rng" id="ad2-users" type="range" min="200" max="1500" step="50" value="1000" data-testid="sod2-hours-users"></label>
-        <div class="ad2-calc-out" id="ad2-hours-out" aria-live="polite" data-testid="sod2-hours-out"></div>
-      </div>
+      <div class="ad2-out" id="ad2-hours-out" aria-live="polite" data-testid="sod2-hours-out"></div>
     </div>
-    <p class="ad2-small" style="margin:10px 0 0"><span class="ad2-tag p">Illustrative</span> <span class="ad2-tag m">Mine</span> Hours divided by users and months. The hours cover all gen-AI mobile apps, while a single user count describes one app, so the result is a rough scale, not a measurement.</p>
   </div>
-  <p><span class="ad2-tag c">Checked</span> Both figures appear in Sensor Tower's own release. <span class="ad2-tag m">Mine</span> One detail changes how to read them: Sensor Tower's release, dated 16 June 2026, calls the 36 billion hours a projection for the half-year, and the deck presents it as a plain number ([[p. 11]], source line "Sensor Tower"). A projection made in mid-June for a period ending on 30 June is probably close, but it is not a final count. The doubling is also a fact about mobile apps only. The same release counted nearly 23 billion hours on gen-AI websites in the first quarter of 2026, so total time with AI is larger than the chart shows, and the chart cannot tell you how much of that time was ever available to advertisers.</p>
+  <p>The deck then asks the key question: with this much attention, how do these platforms earn money?</p>
 
-  <h2 id="sec3"><span class="num">3</span> Who pays: subscriptions or ads</h2>
-  <p class="lead">The deck frames a spectrum from subscription to ad-supported, places Claude, ChatGPT and Gemini toward the subscription end, and says advertising models have begun to emerge and will matter more as engagement grows ([[p. 12]]). Pick an assistant to see where each stood in the sources I could find.</p>
+  <h2 id="sec2"><span class="num">2</span> How AI apps make money</h2>
+  <p class="lead">There are two classic ways to earn from a big audience: <b>subscriptions</b> (users pay) and <b>advertising</b> (companies pay to reach users). The deck puts Claude, ChatGPT and Gemini toward the subscription end, and says ads are starting to appear and will matter more as engagement grows ([[p. 12]]).</p>
+  <p>Pick an assistant to see where it stands. Claude is made by Anthropic, the company behind the assistant that helped write this lesson.</p>
   <div class="ad2-stage" data-testid="sod2-money">
     <div class="ad2-opts" role="group" aria-label="Assistants">
-      <button class="ad2-opt" type="button" data-plat="0" aria-pressed="true" data-testid="sod2-plat-chatgpt">ChatGPT</button>
-      <button class="ad2-opt" type="button" data-plat="1" aria-pressed="false" data-testid="sod2-plat-gemini">Gemini</button>
-      <button class="ad2-opt" type="button" data-plat="2" aria-pressed="false" data-testid="sod2-plat-claude">Claude</button>
-      <button class="ad2-opt" type="button" data-plat="3" aria-pressed="false" data-testid="sod2-plat-perplexity">Perplexity</button>
+      <button class="ad2-opt" type="button" data-p="0" aria-pressed="true" data-testid="sod2-plat-chatgpt">ChatGPT</button>
+      <button class="ad2-opt" type="button" data-p="1" aria-pressed="false" data-testid="sod2-plat-gemini">Gemini</button>
+      <button class="ad2-opt" type="button" data-p="2" aria-pressed="false" data-testid="sod2-plat-claude">Claude</button>
     </div>
-    <div class="ad2-panel" id="ad2-plat-panel" aria-live="polite" data-testid="sod2-plat-panel"></div>
+    <div class="ad2-panel" id="ad2-plat" aria-live="polite" data-testid="sod2-plat-panel"></div>
   </div>
-  <p>The deck's claim has two halves, and they fare differently. That ads have begun to emerge ([[p. 12]]) is reported by outside sources, at least for ChatGPT. That they will "play an increasingly important role" ([[p. 12]]) is a forecast, and the next calculator shows why the size of that role is open. Set an audience, an ad frequency and a price.</p>
-  <div class="ad2-stage" data-testid="sod2-adrev">
-    <div class="ad2-two">
-      <div>
-        <label class="ad2-ctl">Free-tier users who can see ads, millions <input class="ad2-rng" id="ad2-fu" type="range" min="50" max="800" step="10" value="300" data-testid="sod2-adrev-users"></label>
-        <label class="ad2-ctl">Ads seen per user per month <input class="ad2-rng" id="ad2-fi" type="range" min="1" max="60" step="1" value="10" data-testid="sod2-adrev-freq"></label>
-        <label class="ad2-ctl">Price per thousand ads (CPM), dollars <input class="ad2-rng" id="ad2-fc" type="range" min="5" max="80" step="1" value="20" data-testid="sod2-adrev-cpm"></label>
-      </div>
-      <div class="ad2-calc-out" id="ad2-adrev-out" aria-live="polite" data-testid="sod2-adrev-out"></div>
-    </div>
-    <p class="ad2-small" style="margin:10px 0 0"><span class="ad2-tag p">Illustrative</span> All three inputs are made-up starting points. Reported figures to compare with: an analyst estimate of under $1 billion of 2026 advertising revenue for ChatGPT, and a reported launch price near $60 per thousand from a secondary source I treat with caution.</p>
-  </div>
+  <p>Why does the deck think ads are coming anyway? Its slide says "all roads lead to advertising" ([[p. 13]]). The idea is that technology companies often start by looking down on ads, then adopt them once the audience is too valuable to ignore. Google's founders once warned that ad-funded search would be biased, and Google became the biggest ad business in the world. Netflix launched a cheaper ad-supported tier in 2022. That is a pattern, not a law. Anthropic has publicly promised that Claude will carry no ads.</p>
+  <p>Advertisers pay in units called <b>CPM</b>, the price for a thousand ad views. Even a modest price adds up at AI scale. One analyst estimate puts ChatGPT's 2026 ad revenue under a billion dollars, small next to Google's search business, which the deck calls a multi-hundred-billion-dollar business built on intent ([[p. 15]]).</p>
 
-  <h2 id="sec4"><span class="num">4</span> All roads lead to advertising?</h2>
-  <p class="lead">The deck's slide shows social networks, walled gardens, new entrants such as retailers and a telecom, and AI model makers all converging on one central hub labelled advertising, and says even platforms that resist it eventually embrace it ([[p. 13]]). Compare the pattern with the exceptions.</p>
-  <div class="ad2-stage" data-testid="sod2-roads">
-    <div class="ad2-opts" role="group" aria-label="Pattern or exceptions">
-      <button class="ad2-opt" type="button" data-road="pat" aria-pressed="true" data-testid="sod2-road-pattern">Followed the pattern</button>
-      <button class="ad2-opt" type="button" data-road="exc" aria-pressed="false" data-testid="sod2-road-exceptions">Held out, or mixed</button>
-    </div>
-    <div class="ad2-panel" id="ad2-road-panel" aria-live="polite" data-testid="sod2-road-panel"></div>
-  </div>
-  <p><span class="ad2-tag m">Mine</span> "All roads lead to advertising" is an observation about the survivors that did turn to ads, and it says little about the ones that did not. Services paid for by donation, or by subscription alone, rarely feature in a slide about advertising. The claim is best read as a strong tendency rather than a law, and it comes from an adviser to firms that sell advertising technology, who gain when the tendency holds. It is also notable that one AI company chose publicly, in February 2026, to commit to the opposite.</p>
-
-  <h2 id="sec5"><span class="num">5</span> Proxies and intent</h2>
-  <p class="lead">The deck's pyramid argues that advertising has been built on proxies: an impression is a proxy for a viewable impression, which is a proxy for attention; context is a proxy for audience, which is a proxy for intent; and intent is what drives outcomes ([[p. 14]]). Choose what an advertiser pays for and see how many inferences stand between it and the result.</p>
+  <h2 id="sec3"><span class="num">3</span> Proxies, and the thing advertisers really want</h2>
+  <p class="lead">A <b>proxy</b> is a stand-in: something easy to measure that you hope points to the thing you actually want. The deck says advertising has been built on proxies, and the end game is <b>intent</b>, what a person is trying to do ([[p. 14]]). Pick what an advertiser pays for.</p>
   <div class="ad2-stage" data-testid="sod2-ladder">
     <div class="ad2-two">
-      <div id="ad2-ladder" role="group" aria-label="What you buy"></div>
-      <div class="ad2-panel" id="ad2-ladder-panel" aria-live="polite" data-testid="sod2-ladder-panel"></div>
+      <div class="ad2-ladder" id="ad2-rungs" role="group" aria-label="What you buy"></div>
+      <div class="ad2-panel" id="ad2-rung" aria-live="polite" data-testid="sod2-rung-panel"></div>
     </div>
   </div>
-  <p><span class="ad2-tag d">Deck</span> This is the deck's central argument for why AI matters to advertising, so it deserves scrutiny. <span class="ad2-tag m">Mine</span> The ladder is a tidy way to say that advertisers have always bought the thing they could measure, and hoped it related to the thing they wanted. It is a framing, not a measured result: the deck gives no evidence that each step loses a fixed amount of information, and the order of the middle rungs (is context really a stage before audience?) is arguable. Notice also that "intent" is itself an inference. A person who asks about divorce lawyers may be researching for a friend, a novel or a job.</p>
+  <p>The slide actually shows two chains. An <b>impression</b> (one ad shown) stands in for a viewable impression (the ad could be seen), which stands in for <b>attention</b>. Separately, <b>context</b> (the page around the ad) stands in for the <b>audience</b> (who is reading), which stands in for intent. Intent is the signal that drives outcomes. The pyramid stacks them as one ladder, which is the deck's simplification.</p>
 
-  <h2 id="sec6"><span class="num">6</span> Search versus AI answers</h2>
-  <p class="lead">The last slides compare a search for "cleveland divorce lawyer" with a long ChatGPT prompt asking for the ten best divorce lawyers in Cleveland ranked on settlements. The slide's text says AI chat users average nearly seven times as many words as Google searches, and the next slide that AI can build context over time where search captures it in the moment ([[pp. 15-16]]); the slide's title is "AI Answers is Like Search Intent Data on Steroids". Build a conversation and watch what it reveals.</p>
-  <div class="ad2-stage" data-testid="sod2-signals">
-    <div class="ad2-two">
-      <div>
-        <label class="ad2-chk"><input type="checkbox" id="ad2-t0" data-turn="0" data-testid="sod2-turn-search"> <span><b>Search:</b> "cleveland divorce lawyer"</span></label>
-        <label class="ad2-chk"><input type="checkbox" id="ad2-t1" data-turn="1" data-testid="sod2-turn-prompt"> <span><b>Prompt:</b> "list the 10 best divorce lawyers in cleveland based on their track record securing the largest settlements"</span></label>
-        <label class="ad2-chk"><input type="checkbox" id="ad2-t2" data-turn="2" data-testid="sod2-turn-follow"> <span><b>Follow-up:</b> "what happens to our house and two kids if my spouse contests it"</span></label>
-        <label class="ad2-chk"><input type="checkbox" id="ad2-t3" data-turn="3" data-testid="sod2-turn-earlier"> <span><b>Earlier chat, last month:</b> "I am thinking of moving closer to my sister"</span></label>
-        <hr style="border:none; border-top:1px solid var(--line); margin:10px 0">
-        <label class="ad2-chk"><input type="checkbox" id="ad2-mem" data-testid="sod2-memory"> <span>The assistant keeps memory of earlier chats</span></label>
-        <label class="ad2-chk"><input type="checkbox" id="ad2-share" data-testid="sod2-share"> <span>The advertiser is told what the user said</span></label>
-      </div>
-      <div class="ad2-calc-out" id="ad2-sig-out" aria-live="polite" data-testid="sod2-sig-out"></div>
-    </div>
-    <p class="ad2-small" style="margin:10px 0 0"><span class="ad2-tag p">Illustrative</span> The first two turns come from the slide; the last two and the signals listed are my invention to show the mechanism.</p>
-  </div>
-  <p><span class="ad2-tag d">Deck</span> The argument is that the assistant knows more about a person's situation than a search engine can. <span class="ad2-tag m">Mine</span> Notice the two switches. The assistant platform may know a great deal, but an advertiser gets that richness only if the platform passes it on or lets advertisers target on it. OpenAI's own posts about its ad programme, as summarised in search results, say ads are labelled, do not influence answers, and that conversations are kept private from advertisers, so the intent signal would sit with the platform rather than the buyer. That is a design choice with trust and privacy consequences, and it limits how far the "intent data on steroids" argument (the slide's title, [[p. 15]]) carries for the open web and its ad tech companies, which is the deck's audience.</p>
-  <p><span class="ad2-tag u">Unconfirmed</span> The "nearly 7x as many words" figure carries no source on the slide. I found no single study behind it. Word-based comparisons I found put AI search-style queries at roughly 3 to 5 times a classic Google query, and Similarweb-based figures for full chat prompts are far larger but appear to mix characters and words in coverage. The direction (AI prompts are longer) is well supported; the specific multiple is not.</p>
-
-  <h2 id="sec7"><span class="num">7</span> What was confirmed and what was not</h2>
-  <p class="lead">Every headline claim from pages 8 to 16 (including the two framing slides on pages 8 and 9), with the verdict from this research pass. Filter by status. As in lesson 1, remember that the deck comes from an adviser to firms in this sector, and a story in which every AI platform needs advertising, and therefore ad tech, is a story that favours its clients. <span class="ad2-tag m">Mine</span> That does not make it wrong.</p>
-  <div class="ad2-stage" data-testid="sod2-ledger">
-    <div class="ad2-opts" role="group" aria-label="Filter claims">
-      <button class="ad2-opt" type="button" data-f="all" aria-pressed="true" data-testid="sod2-filter-all">All</button>
-      <button class="ad2-opt" type="button" data-f="c" aria-pressed="false" data-testid="sod2-filter-checked">Checked</button>
-      <button class="ad2-opt" type="button" data-f="p" aria-pressed="false" data-testid="sod2-filter-partly">Partly or reported</button>
-      <button class="ad2-opt" type="button" data-f="u" aria-pressed="false" data-testid="sod2-filter-unconfirmed">Unconfirmed</button>
-      <button class="ad2-opt" type="button" data-f="d" aria-pressed="false" data-testid="sod2-filter-framing">The deck's framing</button>
-    </div>
-    <div class="ad2-table-wrap"><table class="ad2-tab" data-testid="sod2-ledger-table">
-      <thead><tr><th>Claim</th><th>Page</th><th>Status</th><th>Basis</th></tr></thead>
-      <tbody id="ad2-ledger"></tbody>
-    </table></div>
-  </div>
+  <h2 id="sec4"><span class="num">4</span> Why a conversation beats a search</h2>
+  <p class="lead">The deck's example: someone types "cleveland divorce lawyer" into Google. That tells an advertiser three things: this person lives in Cleveland, is getting divorced, and needs a lawyer ([[p. 15]]). That is already high intent.</p>
+  <p>Now suppose they ask ChatGPT for the ten best divorce lawyers in Cleveland based on their record of winning large settlements. That is a much longer message. The slide says AI chat users type nearly seven times as many words as Google searchers, though it gives no source for that figure. More words means more detail about the person's situation and what they value.</p>
+  <p>There is a second difference. Search captures context in the moment. An assistant with memory can build context over time, from earlier conversations and stated preferences ([[p. 16]]). So the deck calls AI answers "search intent data on steroids".</p>
+  <p>One catch. The platform may know all this, but the advertiser may not. OpenAI says its ads are labelled, do not change the answers, and that conversations are not shared with advertisers. So the rich signal sits with the platform first. How much of it ever reaches the open web and its ad technology companies, which are the deck's audience, depends on privacy choices the deck does not discuss.</p>
 
   <h2 id="sec-src"><span class="num">&#10022;</span> Takeaways &amp; sources</h2>
   <ul>
-    <li><b>The shift to AI is real, and the deck's charts overstate their precision.</b> The slide's billion monthly ChatGPT users ([[p. 10]]; its source line names Sensor Tower, CNBC and Similarweb) matches a Sensor Tower estimate of app users, and the doubling in hours ([[p. 11]]; source line Sensor Tower) is a mid-year projection for mobile apps only.</li>
-    <li><b>Ads have started, which fits the deck's direction</b> ([[p. 12]]). Outside sources report that OpenAI has shown ads in ChatGPT since February 2026, while Anthropic says Claude will carry none and Google says the Gemini app has none.</li>
-    <li><b>"All roads lead to advertising" is a tendency, not a law.</b> It is also the view that serves the deck's audience ([[p. 13]]).</li>
-    <li><b>The proxy ladder is a framing.</b> It explains why intent is valuable, but intent is itself an inference ([[p. 14]]).</li>
-    <li><b>Richer intent sits with the platform first.</b> Whether advertisers outside the platform can use it depends on privacy and trust choices the deck does not discuss ([[pp. 15-16]]).</li>
+    <li>People adopted AI assistants very quickly, and time spent roughly doubled in a year.</li>
+    <li>Assistants earn through subscriptions or ads, and ads have started with ChatGPT's free tiers.</li>
+    <li>Advertising runs on proxies. The prize is intent, what someone is trying to do.</li>
+    <li>A long chat reveals more intent than a short search, especially with memory.</li>
+    <li>The richest signal may stay with the platform, not the advertiser.</li>
   </ul>
-  <p class="src"><b>Primary.</b> LUMA Partners, <em>State of Digital 2026</em> (DMS by LUMA, November 2026), attached to this module as the reading tab on the right edge, cited above as [[pp. 8-16]]. Everything from it is paraphrased.</p>
-  <p class="src"><b>Outside sources opened.</b> <a href="https://sensortower.com/press/sensor-tower-state-of-ai-2026-report-global-time-spent-on-generative-ai-apps-projected-to-more-than-double-year-over-year" target="_blank" rel="noopener">Sensor Tower, State of AI 2026 press release (16 Jun 2026)</a> (1 billion ChatGPT monthly users in May 2026; 17.2 billion to a projected 36 billion hours; web hours) &middot; <a href="https://mixed-news.com/en/meta-muse-tops-apple-free-iphone-chart-ahead-of-chatgpt/" target="_blank" rel="noopener">Mixed, Meta's Muse tops Apple's US free iPhone chart</a> (launch around 8 September, No. 1 on 20 September, ChatGPT second, not in top grossing, no daily-active figure).</p>
-  <p class="src"><b>Outside sources seen in search results, not opened in full.</b> <a href="https://openai.com/index/our-approach-to-advertising-and-expanding-access/" target="_blank" rel="noopener">OpenAI, Our approach to advertising and expanding access (16 Jan 2026)</a> and later OpenAI updates on ads (test from 9 February, new buying tools in May, Europe in August, 89 countries and over 100,000 advertisers) &middot; <a href="https://www.anthropic.com/news/claude-is-a-space-to-think" target="_blank" rel="noopener">Anthropic, Claude is a space to think (4 Feb 2026)</a> &middot; <a href="https://www.emarketer.com/content/perplexity-retreat-ads-marks-split-on-ai-monetization-models" target="_blank" rel="noopener">eMarketer on Perplexity's retreat from ads</a> &middot; <a href="https://www.androidcentral.com/apps-software/ai/google-seeks-to-pile-on-the-ads-in-gemini-as-reports-say-advertisers-have-been-notified" target="_blank" rel="noopener">Android Central on Google's "no ads planned" statement for Gemini</a> &middot; <a href="https://techcrunch.com/2026/02/09/chatgpt-rolls-out-ads/" target="_blank" rel="noopener">TechCrunch on the ChatGPT ads rollout</a> &middot; <a href="https://www.similarweb.com/blog/insights/ai-news/conversation-gen-ai" target="_blank" rel="noopener">Similarweb on conversational AI</a> (this page returned an error when I tried to open it; cited only as the source search results pointed to) &middot; <a href="http://infolab.stanford.edu/~backrub/google.html" target="_blank" rel="noopener">Brin and Page, The Anatomy of a Large-Scale Hypertextual Web Search Engine (1998)</a>, whose appendix argues that ad-funded search engines are biased toward advertisers (background for the "held out" discussion).</p>
-  <p class="src"><b>Checked 18 Nov 2026.</b> Checked (sources opened in full): ChatGPT at 1 billion monthly users as a Sensor Tower estimate for May 2026; the 17.2 and 36 billion hours as Sensor Tower's figures, the second a projection (Sensor Tower's release); Muse reaching No. 1 on the US free iPhone chart in September ahead of ChatGPT (the Mixed report). Reported (search-result summaries only, not opened in full): ChatGPT ads live since February 2026 and expanded; Anthropic's no-ads commitment; Google's ads in AI Overviews and AI Mode and its statements about the Gemini app; Perplexity's position (reports conflict). Not confirmed: the 490 million for May 2025; Muse's 2.2 million daily users; the "nearly 7x" words multiple. The calculators, the conversation example and the ad-revenue model are illustrative. The "followed the pattern" and "held out" examples marked Background are general knowledge I did not re-check.</p>
+  <details class="ad2-solid" data-testid="sod2-solid">
+    <summary>How solid is this?</summary>
+    <p>LUMA advises ad tech companies, and a story where every AI platform needs advertising favours its clients. User numbers and hours come from Sensor Tower estimates, and the 36 billion hours was a projection. The 490 million and the "seven times as many words" figures have no clear source. Muse's chart measures downloads, and its 2.2 million daily users is unconfirmed. Ad status for ChatGPT, Gemini and Claude comes from company statements and press reports.</p>
+  </details>
+  <p class="src"><b>Deck.</b> LUMA Partners, <em>State of Digital 2026</em> (November 2026), pages 8 to 16, in this module's reading tab: [[pp. 8-16]].</p>
+  <p class="src"><b>Outside.</b> <a href="https://sensortower.com/press/sensor-tower-state-of-ai-2026-report-global-time-spent-on-generative-ai-apps-projected-to-more-than-double-year-over-year" target="_blank" rel="noopener">Sensor Tower, State of AI 2026</a> &middot; <a href="https://mixed-news.com/en/meta-muse-tops-apple-free-iphone-chart-ahead-of-chatgpt/" target="_blank" rel="noopener">Mixed on Muse topping the App Store</a> &middot; <a href="https://openai.com/index/our-approach-to-advertising-and-expanding-access/" target="_blank" rel="noopener">OpenAI on advertising</a> &middot; <a href="https://www.anthropic.com/news/claude-is-a-space-to-think" target="_blank" rel="noopener">Anthropic, Claude is a space to think</a>.</p>
 
   <footer>Consumers Move to AI: Attention, Money and Intent &middot; The State of Digital 2026 module &middot; part of your Study Hub</footer>
 </div>
 <script>
 (function(){
-  /* scale */
-  var lens = "deck";
-  function drawScale(){
-    var d = lens === "deck";
-    document.getElementById("ad2-v1").textContent = d ? "~490m" : "486m (We Are Social)";
-    document.getElementById("ad2-v2").textContent = "1bn";
-    document.getElementById("ad2-b1").style.height = (d ? 80 : 78) + "px";
-    document.getElementById("ad2-b2").style.height = "160px";
-    document.getElementById("ad2-scale-note").innerHTML = d
-      ? "<p><span class='ad2-tag d'>Deck</span> The slide shows ~490mm in May 2025 and 1Bn today, sourced to Sensor Tower, CNBC and Similarweb. [[p. 10]]</p>"
-      : "<p><span class='ad2-tag c'>Checked</span> May 2026: 1 billion monthly active app users, a Sensor Tower estimate. <span class='ad2-tag u'>Unconfirmed</span> May 2025: I found 486 million from a different firm (We Are Social), and no Sensor Tower 490 million. The two bars come from different sources and methods.</p>";
-    document.querySelectorAll("[data-lens]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.lens === lens)); });
+  var us = document.getElementById("ad2-users");
+  function drawH(){
+    var u = +us.value, a = 36e9 / (u * 1e6 * 6), b = 17.2e9 / (u * 1e6 * 6);
+    document.getElementById("ad2-hours-out").innerHTML = "<div>Spread over " + u + " million users:</div><div class='ad2-big'>" + a.toFixed(1) + " hours a month</div><div>against " + b.toFixed(1) + " a year earlier. That is about " + (a - b).toFixed(1) + " extra hours each.</div>";
   }
-  document.querySelectorAll("[data-lens]").forEach(function(b){ b.addEventListener("click", function(){ lens = b.dataset.lens; drawScale(); }); });
-  drawScale();
+  us.addEventListener("input", drawH); drawH();
 
-  var MUSE = [
-    "<p><span class='ad2-tag d'>Deck</span> Meta's Muse overtook ChatGPT as the leading free iOS app in the US in September 2026. [[p. 10]]</p><p><span class='ad2-tag c'>Checked</span> Reports put Muse at No. 1 on Apple's US free iPhone chart around 19 to 21 September, with ChatGPT second, about twelve days after launch.</p>",
-    "<p><span class='ad2-tag d'>Deck</span> The line chart ends at 2.2mm daily active users. [[p. 10]]</p><p><span class='ad2-tag u'>Unconfirmed</span> I found no published daily-active figure for Muse. The coverage I opened says the chart measures downloads, not regular use. The number may come from a source LUMA has and the public does not.</p>",
-    "<p><span class='ad2-tag d'>Deck</span> About seven weeks from the September 2026 launch to \"today\". [[p. 10]]</p><p><span class='ad2-tag m'>Mine</span> Reports put the launch around 8 September, so seven weeks ends in late October, while the ranking milestone came after about twelve days. The slide's \"today\" is not dated.</p>"
-  ];
-  function showMuse(i){
-    document.getElementById("ad2-muse-panel").innerHTML = MUSE[i];
-    document.querySelectorAll("[data-muse]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.muse === i)); });
-  }
-  document.querySelectorAll("[data-muse]").forEach(function(b){ b.addEventListener("click", function(){ showMuse(+b.dataset.muse); }); });
-  showMuse(0);
-
-  /* hours */
-  var us = document.getElementById("ad2-users"), ho = document.getElementById("ad2-hours-out");
-  function drawHours(){
-    var u = +us.value, h26 = 36e9 / (u * 1e6 * 6), h25 = 17.2e9 / (u * 1e6 * 6);
-    ho.innerHTML = "<div>Spread over <b>" + u + "m</b> monthly users:</div><div class='ad2-big'>" + h26.toFixed(1) + " hours a month</div><div class='ad2-small'>in 1H 2026, against " + h25.toFixed(1) + " in 1H 2025 on the same user count. Doubling the hours on the same users means about " + (h26 - h25).toFixed(1) + " more hours a month each.</div>";
-  }
-  us.addEventListener("input", drawHours); drawHours();
-
-  /* platforms */
   var PL = [
-    {n:"ChatGPT", s:"p", st:"Reported", t:"The deck places ChatGPT toward the subscription end. OpenAI announced on 16 January 2026 that it would test ads for Free and Go users in the US, started on 9 February 2026, and later reported expansion to dozens of countries and over 100,000 advertisers. Ads are labelled and shown separately from answers; Plus, Pro, Business and Enterprise stay ad-free. A trade report cites an analyst estimate of under $1bn of 2026 ad revenue, and says advertisers found the rollout slow."},
-    {n:"Gemini", s:"p", st:"Reported", t:"Google runs ads in AI Overviews and AI Mode in Search. For the Gemini app itself, reports say Google has said it has no current plans for ads, while its executives have been open to the idea if an AI Mode format works. This is stated in hedged terms and may have changed; I found no newer statement. Source: search-result summaries of coverage."},
-    {n:"Claude", s:"p", st:"Reported", t:"Anthropic published a commitment on 4 February 2026 to keep Claude ad-free, including no ads shown beside answers. Its income comes from subscriptions and enterprise sales. This is the deck's own subscription end, and it is stated as a choice, not a limitation. See the disclosure at the top of this page."},
-    {n:"Perplexity", s:"u", st:"Unconfirmed", t:"The deck's road map includes Perplexity. Reports conflict: one says it stepped back from ads in early 2026, another still lists sponsored follow-up questions. I could not find a company statement that settles it."}
+    ["ChatGPT", "OpenAI announced in January 2026 that it would test ads for free and low-cost (Go) users in the US. The test began in February. Ads are labelled and kept apart from answers, and paid tiers stay ad-free. OpenAI has since widened the ads to many more countries."],
+    ["Gemini", "Google already shows ads in AI Overviews and AI Mode inside Search. For the Gemini app itself, Google has said it has no current plans for ads, though it has not ruled them out."],
+    ["Claude", "Anthropic promised in February 2026 that Claude will carry no ads, not even labelled ones beside answers. It earns from subscriptions and business customers."]
   ];
-  function showPlat(i){
-    var d = PL[i];
-    document.getElementById("ad2-plat-panel").innerHTML = "<p><span class='ad2-tag " + d.s + "'>" + d.st + "</span> <b>" + d.n + ".</b> " + d.t + "</p><p><span class='ad2-tag d'>Deck</span> Subscription to ad-supported spectrum, with advertising expected to grow in importance. [[p. 12]]</p>";
-    document.querySelectorAll("[data-plat]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.plat === i)); });
+  function showP(i){
+    document.getElementById("ad2-plat").innerHTML = "<p><b>" + PL[i][0] + ".</b> " + PL[i][1] + "</p>";
+    document.querySelectorAll("[data-p]").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.dataset.p === i)); });
   }
-  document.querySelectorAll("[data-plat]").forEach(function(b){ b.addEventListener("click", function(){ showPlat(+b.dataset.plat); }); });
-  showPlat(0);
+  document.querySelectorAll("[data-p]").forEach(function(b){ b.addEventListener("click", function(){ showP(+b.dataset.p); }); });
+  showP(0);
 
-  /* ad revenue */
-  var fu = document.getElementById("ad2-fu"), fi = document.getElementById("ad2-fi"), fc = document.getElementById("ad2-fc"), fo = document.getElementById("ad2-adrev-out");
-  function drawRev(){
-    var u = +fu.value, i = +fi.value, c = +fc.value, bn = u * i * 12 * c / 1e6;
-    fo.innerHTML = "<div>" + u + "m users, " + i + " ads a month, &#36;" + c + " per thousand:</div><div class='ad2-big'>&#36;" + bn.toFixed(2) + "bn a year</div><div class='ad2-meter'><i style='width:" + Math.min(100, bn / 5 * 100).toFixed(0) + "%'></i></div><div class='ad2-small'>Bar scale runs to &#36;5bn. Compare an analyst's under-&#36;1bn estimate for ChatGPT in 2026. Search advertising, by contrast, is described by the deck as a multi-hundred-billion-dollar business ([[p. 15]]).</div>";
-  }
-  [fu, fi, fc].forEach(function(el){ el.addEventListener("input", drawRev); }); drawRev();
-
-  /* roads */
-  var ROAD = {
-    pat: "<p><span class='ad2-tag b'>Background</span> <b>Google.</b> Its founders' 1998 paper argued that advertising-funded search engines would be biased toward advertisers; it later became the largest ad business built on search.</p><p><span class='ad2-tag b'>Background</span> <b>Social networks and video.</b> Facebook began without ads and now runs on them. Netflix added a cheaper ad-supported tier in 2022 and Amazon Prime Video began showing ads by default in 2024.</p><p><span class='ad2-tag r'>Reported</span> <b>ChatGPT.</b> OpenAI began testing ads in February 2026, about three years after launch.</p><p><span class='ad2-tag d'>Deck</span> The slide's hub shows retailers, a telecom, a payments company and a commerce platform joining the same road. [[p. 13]]</p>",
-    exc: "<p><span class='ad2-tag r'>Reported</span> <b>Claude.</b> Anthropic committed in February 2026 to no ads of any kind. The deck lists Anthropic on its road map anyway.</p><p><span class='ad2-tag b'>Background</span> <b>Subscription and donation services.</b> Wikipedia runs on donations, and many messaging and software services run on subscriptions or one-off payments. They are not on a slide about advertising because they have no advertising to sell.</p><p><span class='ad2-tag b'>Background</span> <b>Mixed models.</b> Several services offer an ad-free paid tier beside a free ad-supported one, so \"has ads\" and \"is paid for\" are not opposites.</p><p><span class='ad2-tag r'>Reported</span> <b>Gemini app.</b> Google says it has no current plans for ads in the app, though it sells ads in AI search.</p>"
-  };
-  function showRoad(k){
-    document.getElementById("ad2-road-panel").innerHTML = ROAD[k];
-    document.querySelectorAll("[data-road]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.road === k)); });
-  }
-  document.querySelectorAll("[data-road]").forEach(function(b){ b.addEventListener("click", function(){ showRoad(b.dataset.road); }); });
-  showRoad("pat");
-
-  /* ladder */
   var LAD = [
-    {n:"Impression", t:"A page or ad was served. Easy to count, so the industry prices it (cost per thousand, or CPM)."},
-    {n:"Viewable impression", t:"The ad could actually have been seen. A proxy for the impression being noticed."},
-    {n:"Attention", t:"Someone looked, for some time. A proxy for the ad registering."},
-    {n:"Context", t:"The page or programme around the ad. A proxy for who is reading it."},
-    {n:"Audience", t:"Who the person is, by group or profile. A proxy for what they want."},
-    {n:"Intent", t:"What the person is trying to do right now. Closest to the outcome the advertiser wants."},
-    {n:"Outcomes", t:"A sale, a visit, a sign-up: the thing the advertiser actually pays for in the end."}
+    ["Impression", "One ad was shown. Easy to count, so the whole industry prices it, in CPM."],
+    ["Viewable impression", "The ad could actually be seen on screen."],
+    ["Attention", "Someone looked, for some time."],
+    ["Context", "The page or programme around the ad, such as a cooking article."],
+    ["Audience", "Who the viewer is, by group, such as parents of young children."],
+    ["Intent", "What the person is trying to do right now, such as buy a pram."],
+    ["Outcomes", "The sale, visit or sign-up the advertiser actually wants."]
   ];
-  var lad = document.getElementById("ad2-ladder"), sel = 0;
-  function drawLadder(){
+  var sel = 0;
+  function drawL(){
     var h = "";
-    for(var i = LAD.length - 1; i >= 0; i--){
-      h += "<" + "button type='button' class='ad2-rung" + (i >= sel ? " in" : "") + "' data-rung='" + i + "' aria-pressed='" + (i === sel) + "' data-testid='sod2-rung-" + LAD[i].n.toLowerCase().replace(/ /g, "-") + "'>" + (i + 1) + ". " + LAD[i].n + "</button>";
-    }
-    lad.innerHTML = h;
+    for(var i = LAD.length - 1; i >= 0; i--) h += "<" + "button type='button' class='ad2-rung" + (i >= sel ? " in" : "") + "' data-r='" + i + "' aria-pressed='" + (i === sel) + "' data-testid='sod2-rung-" + LAD[i][0].toLowerCase().replace(/ /g, "-") + "'>" + LAD[i][0] + "</button>";
+    document.getElementById("ad2-rungs").innerHTML = h;
     var steps = LAD.length - 1 - sel;
-    document.getElementById("ad2-ladder-panel").innerHTML = "<p><b>" + LAD[sel].n + ".</b> " + LAD[sel].t + "</p><p><span class='ad2-tag d'>Deck</span> The slide gives two chains: impression, then viewable impression, then attention; and context, then audience, then intent, with intent the signal that drives outcomes. Its caption calls each a proxy for the next in its chain, and the pyramid stacks them as one ladder. [[p. 14]]</p><p><span class='ad2-tag m'>Mine</span> Reading it as one ladder, buying on this rung leaves <b>" + steps + " inference" + (steps === 1 ? "" : "s") + "</b> between what you pay for and the outcome.</p>";
-    lad.querySelectorAll(".ad2-rung").forEach(function(b){ b.addEventListener("click", function(){ sel = +b.dataset.rung; drawLadder(); }); });
+    document.getElementById("ad2-rung").innerHTML = "<p><b>" + LAD[sel][0] + ".</b> " + LAD[sel][1] + "</p><p>Buying here leaves <b>" + steps + " guess" + (steps === 1 ? "" : "es") + "</b> between what you pay for and the outcome you want.</p>";
+    document.querySelectorAll(".ad2-rung").forEach(function(b){ b.addEventListener("click", function(){ sel = +b.dataset.r; drawL(); }); });
   }
-  drawLadder();
-
-  /* signals */
-  var TURNS = [
-    {sig:["Lives in or near Cleveland","Has a legal need","Likely a divorce"], earlier:false},
-    {sig:["Values financial outcome over price","Is comparing firms, so is close to hiring","Has enough at stake to want a track record"], earlier:false},
-    {sig:["Owns or shares a home","Has two children","Expects a contested case"], earlier:false},
-    {sig:["May be relocating","Has family nearby elsewhere"], earlier:true}
-  ];
-  var so = document.getElementById("ad2-sig-out");
-  function drawSig(){
-    var mem = document.getElementById("ad2-mem").checked, share = document.getElementById("ad2-share").checked, got = [], n = 0, locked = 0;
-    TURNS.forEach(function(t, i){
-      if(!document.getElementById("ad2-t" + i).checked) return;
-      if(t.earlier && !mem){ locked++; return; }
-      t.sig.forEach(function(s){ got.push(s); });
-    });
-    n = got.length;
-    var inner = n ? "<ul class='ad2-list'>" + got.map(function(s){ return "<li>" + s + "</li>"; }).join("") + "</ul>" : "<div class='ad2-small'>Tick a turn to begin.</div>";
-    so.innerHTML = "<div>Signals the <b>platform</b> could infer:</div><div class='ad2-big'>" + n + "</div>" + inner +
-      (locked ? "<div class='ad2-small'>" + locked + " earlier chat not usable because memory is off.</div>" : "") +
-      "<hr style='border:none; border-top:1px solid var(--line); margin:8px 0'>" +
-      "<div>Signals the <b>advertiser</b> sees: <b>" + (share ? n : "none") + "</b></div>" +
-      "<div class='ad2-small'>" + (share ? "Here the advertiser is told the conversation. OpenAI says it does not do this, and many users would object." : "The advertiser buys a placement and gets back clicks or sales, not the chat.") + "</div>";
-  }
-  document.querySelectorAll("[data-turn], #ad2-mem, #ad2-share").forEach(function(c){ c.addEventListener("change", drawSig); });
-  document.getElementById("ad2-t0").checked = true; document.getElementById("ad2-t1").checked = true; drawSig();
-
-  /* ledger */
-  var L = [
-    {c:"AI creates two paradigm shifts at once: changing consumer behaviour, and transforming technology and operations", p:"8", s:"d", st:"Deck framing", b:"A framing slide with no figures."},
-    {c:"The deck starts with changing consumer behaviour", p:"9", s:"d", st:"Deck framing", b:"A transition slide; the technology and operations shift is taken up from page 42 (lesson 5)."},
-    {c:"ChatGPT had about 490 million monthly users in May 2025", p:"10", s:"u", st:"Unconfirmed", b:"Cited to Sensor Tower, CNBC and Similarweb together. I found 486m for May 2025 from We Are Social, and no Sensor Tower 490m."},
-    {c:"ChatGPT has reached a billion monthly users", p:"10", s:"p", st:"Partly", b:"Sensor Tower estimate of app monthly users for May 2026 (16 Jun release). Not an OpenAI-audited figure; method not fully disclosed."},
-    {c:"Meta's Muse overtook ChatGPT as the leading free iOS app in the US in September 2026", p:"10", s:"c", st:"Checked", b:"Reports of No. 1 around 19 to 21 Sep, about twelve days after launch. The chart measures downloads, and Muse is absent from top grossing."},
-    {c:"Muse reached 2.2 million daily active users in about seven weeks", p:"10", s:"u", st:"Unconfirmed", b:"No published daily-active figure found; the coverage opened says the chart measures downloads."},
-    {c:"Hours in gen-AI mobile apps doubled, 17.2bn to 36.0bn", p:"11", s:"p", st:"Partly", b:"Both numbers are in Sensor Tower's 16 Jun 2026 release, but the 36bn is a projection for 1H 2026 and covers mobile apps only."},
-    {c:"AI platforms started with subscriptions, and advertising models have begun to emerge", p:"12", s:"p", st:"Reported", b:"OpenAI's ad test from 9 Feb 2026 and later expansion; Google's ads in AI Overviews and AI Mode; subscriptions remain the base for most."},
-    {c:"Claude, ChatGPT and Gemini sit toward the subscription end", p:"12", s:"p", st:"Partly", b:"True for Claude by pledge and for the Gemini app by current statement; out of date for ChatGPT's free tier."},
-    {c:"Advertising will play an increasingly important role as engagement grows", p:"12", s:"d", st:"Deck framing", b:"A forecast. Reported 2026 ChatGPT ad revenue estimates are under $1bn."},
-    {c:"All roads lead to advertising for LLMs", p:"13", s:"d", st:"Deck framing", b:"A tendency stated as a law; Anthropic publicly committed to the opposite."},
-    {c:"Advertising was built on proxies and the end game is intent", p:"14", s:"d", st:"Deck framing", b:"An argument, not a measurement."},
-    {c:"AI chat users average nearly 7x as many words as Google searches", p:"15", s:"u", st:"Unconfirmed", b:"No source on the slide. Word-based studies I found show roughly 3x to 5x for AI search queries; chat-prompt comparisons vary and mix units."},
-    {c:"AI builds context over time, giving a richer intent signal than search", p:"16", s:"d", st:"Deck framing", b:"Depends on memory features and on whether advertisers can use the signal; OpenAI says conversations stay private from advertisers."}
-  ];
-  var tb = document.getElementById("ad2-ledger");
-  function drawLedger(f){
-    tb.innerHTML = L.filter(function(r){ return f === "all" || r.s === f; }).map(function(r){
-      return "<tr><td>" + r.c + "</td><td>[[p. " + r.p + "]]</td><td><span class='ad2-tag " + r.s + "'>" + r.st + "</span></td><td>" + r.b + "</td></tr>";
-    }).join("");
-    document.querySelectorAll("[data-f]").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.f === f)); });
-  }
-  document.querySelectorAll("[data-f]").forEach(function(b){ b.addEventListener("click", function(){ drawLedger(b.dataset.f); }); });
-  drawLedger("all");
+  drawL();
 })();
 </script>
 <script src="../../registry.js"></script>
