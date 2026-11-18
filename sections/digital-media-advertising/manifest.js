@@ -42,7 +42,7 @@
       "title": "Module: State of Digital 2026",
       "home": "shared/outline.html?id=state-of-digital",
       "pip": "#c0642b",
-      "summary": "A close reading of LUMA Partners' State of Digital 2026 conference deck in five lessons: how ad tech got here, consumers moving to AI, the AI purchase funnel, where attention is going, and where value moves.",
+      "summary": "A close reading of LUMA Partners' State of Digital 2026 deck in five short lessons: how ad tech got here, consumers moving to AI, the AI purchase funnel, where attention is going, and where value moves.",
       "throughline": "AI is changing both where people spend attention and how advertising is bought, and the deck argues that value will move from running workflows to making decisions. Every lesson separates what the deck claims from what can be checked.",
       "paths": [
         "\"Where do I start?\" → 1",
@@ -112,6 +112,10 @@
         {
           "date": "2026-11-18",
           "note": "Lesson 4 remade as a short lesson that teaches the deck's contents first"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Lesson 5 remade as a short lesson that teaches the deck's contents first"
         }
       ],
       "rebuild": {
@@ -421,7 +425,7 @@
           "id": "sod-5",
           "title": "5. Decisioning: Where Value Moves",
           "pip": "#c0642b",
-          "blurb": "The deck's theory that value moves from workflow to decisioning, with its framework kept apart from the checkable facts and the consolidation thesis tested against 2026 deals.",
+          "blurb": "The deck's theory that value moves from running campaign workflows to making decisions, the layers of the decisioning stack, and what it expects from consolidation.",
           "tags": [
             "advertising",
             "ad tech",
@@ -441,7 +445,7 @@
             },
             {
               "id": "sod5-3",
-              "title": "The fight to own decisioning",
+              "title": "Who is fighting to own decisioning",
               "anchor": "sec3"
             },
             {
@@ -451,18 +455,8 @@
             },
             {
               "id": "sod5-5",
-              "title": "Squash or racquetball",
+              "title": "Consolidation, and five attributes of a winner",
               "anchor": "sec5"
-            },
-            {
-              "id": "sod5-6",
-              "title": "Consolidation and the five attributes",
-              "anchor": "sec6"
-            },
-            {
-              "id": "sod5-7",
-              "title": "What was confirmed and what was not",
-              "anchor": "sec7"
             },
             {
               "id": "sod5-src",
@@ -487,17 +481,20 @@
             {
               "date": "2026-11-18",
               "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Remade from scratch as a short teaching lesson: efficiency versus effectiveness, workflow versus decisioning, who is competing for decisioning, the decisioning stack layer by layer, and consolidation with the five attributes of a winner; one short 'How solid is this?' note replaces the ledger and chips."
             }
           ],
           "rebuild": {
-            "brief": "Lesson 5 of the State of Digital 2026 module, from deck pages 42-70, the most opinion-heavy part of the deck. Label every statement as Framework (workflow versus decisioning, the stack, squash versus racquetball, the five attributes), Deck, Checked, Unconfirmed, Mine, Illustrative or Background. Cover efficiency versus effectiveness and the illustrative 10% versus 10x (pp. 43-45), workflow versus decisioning (pp. 46-51), agency and retail media disputes and supply-side decisioning (pp. 52-54), the decisioning stack and measurement tooling (pp. 55-64), ad tech and martech convergence (p. 65), squash versus racquetball (p. 66), consolidation and the five attributes with the six-deal matrix (pp. 67-70). Check disputes, supply-side developments, MMM and incrementality tooling, and the consolidation thesis against 2025-2026 deal activity. Call out that the stack's stated purpose includes showing where M&A activity may emerge, that LUMA advised Affle on Perion, that Aperiam is a venture investor, and that the deck is an M&A adviser's point of view.",
+            "brief": "Lesson 5 of the State of Digital 2026 module, from deck pages 42-70, about 2,000 words and three widgets. Define efficiency, SPO, effectiveness, workflow, decisioning, SSP, DSP, RMN, supply-side decisioning, MMM, incrementality, pLTV, squash, consolidation and take rate when first used. Teach the poker image with a simple example, the stack layer by layer, supply-side decisioning, who competes, and the five attributes with the six-deal slide. Widgets: 10% versus 10x calculator, workflow-moat slider, decisioning stack explorer. State that the stack's purpose includes pointing at where M&A may emerge and that LUMA advised Affle on Perion. One short collapsed 'How solid is this?' note; no ledgers or status chips.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 42-70",
-              "Adweek (leaked Publicis memo), ExchangeWire digest of 19 Mar 2026, Digiday on the Publicis and The Trade Desk settlement, eMarketer on Walmart's DSP partnerships",
-              "Index Exchange on agentic sell-side decisioning (12 Feb 2026), PPC Land on Magnite and Cognitiv, Prebid on seller agents (AdCP), IAB Tech Lab Agentic RTB Framework (Nov 2025)",
-              "PPC Land on Google Meridian; Silverback Strategies on Meridian and Robyn; AdExchanger on Aperiam",
-              "Deal coverage: Publicis and LiveRamp (about $2.2bn), Nielsen and DoubleVerify ($2.15bn, Aug 2026), Affle and Perion (about $420m, 1 Nov 2026), plus Fox and Roku, Pinterest and tvScientific, Walmart and Vibe from earlier lessons",
-              "LUMA's Q1 and Q2 2026 market reports and Digiday's Q1 2026 coverage of ad tech and martech deal counts (search summaries; definitions differ)"
+              "Adweek and Digiday on the Publicis and The Trade Desk dispute; eMarketer on Walmart's DSP partnerships",
+              "Index Exchange on agentic sell-side decisioning; Magnite and Prebid announcements",
+              "PPC Land on Google Meridian; AdExchanger on Aperiam",
+              "Deal coverage: Publicis and LiveRamp, Nielsen and DoubleVerify, Affle and Perion, Fox and Roku; LUMA and Digiday coverage of ad tech deal counts"
             ]
           },
           "standard": "v1"
