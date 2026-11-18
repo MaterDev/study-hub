@@ -132,7 +132,7 @@ Bring over only lessons + learning material (not the old project's tooling, memo
 | 4 | Soft Skills & Collaboration | Trust and client relationships (The Trusted Advisor) |
 | 5 | Mind & Philosophy | Careenium module (Hofstadter 1982), 4 lessons |
 | 6 | Systems & Information | Wiener's Cybernetics module, 10 lessons planned |
-| 7 | Digital Media & Advertising | State of Digital 2026 module (LUMA Partners), 5 lessons: 1 built, 4 planned |
+| 7 | Digital Media & Advertising | State of Digital 2026 module (LUMA Partners), 5 lessons |
 
 ## Notes
 

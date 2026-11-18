@@ -88,6 +88,14 @@
         {
           "date": "2026-11-18",
           "note": "Lesson 4 built: where attention is going, with the deck's streaming, creator, mobile and out-of-home claims cross-checked"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Lesson 5 built: decisioning, with the deck's framework separated from checkable claims and the consolidation thesis tested against 2026 deals"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "All five lessons built; the module now covers the whole deck, pages 2-70"
         }
       ],
       "rebuild": {
@@ -426,61 +434,81 @@
           "id": "sod-5",
           "title": "5. Decisioning: Where Value Moves",
           "pip": "#c0642b",
-          "blurb": "Efficiency versus effectiveness, workflow versus decisioning, the decisioning stack, and the deck's case for consolidation.",
+          "blurb": "The deck's theory that value moves from workflow to decisioning, with its framework kept apart from the checkable facts and the consolidation thesis tested against 2026 deals.",
           "tags": [
             "advertising",
             "ad tech",
             "luma"
           ],
-          "plan": {
-            "goals": [
-              "Contrast efficiency with effectiveness and workflow with decisioning",
-              "Walk the decisioning stack: channel, measurement and allocation, input decisioning (creative and signal), supply-side decisioning",
-              "Assess the consolidation thesis and its five attributes of a winner (scale, access, signal, intelligence, trust) as a point of view"
-            ],
-            "concepts": [
-              "SPO versus outcomes",
-              "Workflow moat erosion when agents own setup",
-              "Channel decisioning and walled-garden strength",
-              "Measurement and allocation, MMM and incrementality",
-              "Input decisioning: creative and signal",
-              "Supply-side decisioning",
-              "Five attributes of a winner"
-            ],
-            "takeaways": [
-              "Value shifts from running workflows to making decisions, according to the deck",
-              "The consolidation thesis serves a firm that advises on deals, so separate it from the evidence",
-              "The five attributes are a framework, not a finding"
-            ],
-            "connections": [
-              "Completes the arc from lesson 1's phase 5 forecast",
-              "Revisits convergence of ad tech and martech from lesson 3"
-            ],
-            "build": "A decisioning-stack diagram, a squash-versus-racquetball skill-advantage simulation, and a winner-attributes scorecard for example companies.",
-            "notes": [
-              "Source: LUMA Partners, State of Digital 2026, pages 42-70 of the attached trimmed PDF (printed page = PDF page). Every citation of the deck uses [[pp. N-M]] links. Keep the Deck / Checked / Unconfirmed / Mine labelling used in lesson 1, and research outside sources for any checkable claim at build time."
-            ]
-          },
-          "status": "stub",
-          "file": "shared/outline.html?id=sod-5",
-          "anchors": [],
+          "file": "sections/digital-media-advertising/lessons/sod-5-decisioning-where-value-moves.html",
+          "anchors": [
+            {
+              "id": "sod5-1",
+              "title": "Efficiency or effectiveness",
+              "anchor": "sec1"
+            },
+            {
+              "id": "sod5-2",
+              "title": "Workflow or decisioning",
+              "anchor": "sec2"
+            },
+            {
+              "id": "sod5-3",
+              "title": "The fight to own decisioning",
+              "anchor": "sec3"
+            },
+            {
+              "id": "sod5-4",
+              "title": "The decisioning stack",
+              "anchor": "sec4"
+            },
+            {
+              "id": "sod5-5",
+              "title": "Squash or racquetball",
+              "anchor": "sec5"
+            },
+            {
+              "id": "sod5-6",
+              "title": "Consolidation and the five attributes",
+              "anchor": "sec6"
+            },
+            {
+              "id": "sod5-7",
+              "title": "What was confirmed and what was not",
+              "anchor": "sec7"
+            },
+            {
+              "id": "sod5-src",
+              "title": "Takeaways & sources",
+              "anchor": "sec-src"
+            }
+          ],
           "dates": {
-            "planned": "2026-11-18"
+            "created": "2026-11-18",
+            "updated": "2026-11-18",
+            "verified": "2026-11-18"
           },
           "history": [
             {
               "date": "2026-11-18",
               "note": "Planned (stub)"
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Built from deck pages 42-70: an efficiency versus effectiveness calculator exposing the 100x arithmetic, a workflow-moat model, a Trade Desk dispute and supply-side decisioning evidence list, a clickable decisioning stack, a squash versus racquetball simulation, a five-attribute deal matrix with a consolidation check against 2026 deal activity, and a ledger separating framework from checkable claims."
             }
           ],
           "rebuild": {
-            "brief": "Build from the plan: visual and interactive, introductory, for a curious general reader. Source pages: pages 42-70 of the deck. Paraphrase the deck, separate its claims from what can be checked, and flag where it is the point of view of a firm that advises on ad tech M&A. Build in order, after the previous lesson.",
+            "brief": "Lesson 5 of the State of Digital 2026 module, from deck pages 42-70, the most opinion-heavy part of the deck. Label every statement as Framework (workflow versus decisioning, the stack, squash versus racquetball, the five attributes), Deck, Checked, Unconfirmed, Mine, Illustrative or Background. Cover efficiency versus effectiveness and the illustrative 10% versus 10x (pp. 43-45), workflow versus decisioning (pp. 46-51), agency and retail media disputes and supply-side decisioning (pp. 52-54), the decisioning stack and measurement tooling (pp. 55-64), ad tech and martech convergence (p. 65), squash versus racquetball (p. 66), consolidation and the five attributes with the six-deal matrix (pp. 67-70). Check disputes, supply-side developments, MMM and incrementality tooling, and the consolidation thesis against 2025-2026 deal activity. Call out that the stack was built to show where M&A may emerge, that LUMA advised Affle on Perion, that Aperiam is a venture investor, and that the deck is an M&A adviser's point of view.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 42-70",
-              "Outside sources checked at build time"
+              "Adweek (leaked Publicis memo), ExchangeWire digest of 19 Mar 2026, Digiday on the Publicis and The Trade Desk settlement, eMarketer on Walmart's DSP partnerships",
+              "Index Exchange on agentic sell-side decisioning (12 Feb 2026), PPC Land on Magnite and Cognitiv, Prebid on seller agents (AdCP), IAB Tech Lab Agentic RTB Framework (Nov 2025)",
+              "PPC Land on Google Meridian; Silverback Strategies on Meridian and Robyn; AdExchanger on Aperiam",
+              "Deal coverage: Publicis and LiveRamp (about $2.2bn), Nielsen and DoubleVerify ($2.15bn, Aug 2026), Affle and Perion (about $420m, 1 Nov 2026), plus Fox and Roku, Pinterest and tvScientific, Walmart and Vibe from earlier lessons",
+              "LUMA's Q1 and Q2 2026 market reports and Digiday's Q1 2026 coverage of ad tech and martech deal counts (search summaries; definitions differ)"
             ]
           },
-          "overlaps": [],
           "standard": "v1"
         }
       ]
