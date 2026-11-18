@@ -96,6 +96,10 @@
         {
           "date": "2026-11-18",
           "note": "All five lessons built; the module now covers the whole deck, pages 2-70"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Accuracy review of all five lessons against the deck's page text and slide images"
         }
       ],
       "rebuild": {
@@ -169,6 +173,10 @@
             {
               "date": "2026-11-18",
               "note": "Built from deck pages 2-7: a four-shifts explorer, a five-phase year slider over a schematic of the market curves, an AI-layers stack, a deal-multiple calculator for Freestar and Vibe, a Trade Desk timeline and K-shape construction panel, and a claims ledger marking what was checked and what was not."
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
             }
           ],
           "rebuild": {
@@ -250,6 +258,10 @@
             {
               "date": "2026-11-18",
               "note": "Built from deck pages 8-16: a source-lens toggle on the ChatGPT and Muse growth charts, an hours-per-user calculator, an assistant-by-assistant ad status explorer with an ad revenue sketch, pattern-versus-exceptions on advertising, a proxy ladder, a conversation signals model with memory and sharing switches, and a claims ledger."
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
             }
           ],
           "rebuild": {
@@ -332,6 +344,10 @@
             {
               "date": "2026-11-18",
               "note": "Built from deck pages 17-28 and 41: a three-journey funnel comparison, a party-by-party view of the agentic commerce debate with Seufert's primary post, a retail media figure traced to company-reported revenue, an aggregation reach model, a channel-and-layer grid, the four implications, a GEO and AEO deal explorer (noting LUMA advised Senso), a human and bot matrix, and a claims ledger."
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
             }
           ],
           "rebuild": {
@@ -414,6 +430,10 @@
             {
               "date": "2026-11-18",
               "note": "Built from deck pages 29-40: a measure-by-measure view of streaming's share with a crossover timeline, a CTV deal and sports-rights explorer, creator spend and growth views with a 27 million breakdown, a mobile spend-per-hour model, an out-of-home attribute test, a channel scorecard including the open web, and a claims ledger."
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
             }
           ],
           "rebuild": {
@@ -496,10 +516,14 @@
             {
               "date": "2026-11-18",
               "note": "Built from deck pages 42-70: an efficiency versus effectiveness calculator exposing the 100x arithmetic, a workflow-moat model, a Trade Desk dispute and supply-side decisioning evidence list, a clickable decisioning stack, a squash versus racquetball simulation, a five-attribute deal matrix with a consolidation check against 2026 deal activity, and a ledger separating framework from checkable claims."
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Accuracy review: Checked now only where the outside source was opened in full (others tagged Reported), page citations and wording corrected to match the slides, ledgers completed, and two calculators fixed"
             }
           ],
           "rebuild": {
-            "brief": "Lesson 5 of the State of Digital 2026 module, from deck pages 42-70, the most opinion-heavy part of the deck. Label every statement as Framework (workflow versus decisioning, the stack, squash versus racquetball, the five attributes), Deck, Checked, Unconfirmed, Mine, Illustrative or Background. Cover efficiency versus effectiveness and the illustrative 10% versus 10x (pp. 43-45), workflow versus decisioning (pp. 46-51), agency and retail media disputes and supply-side decisioning (pp. 52-54), the decisioning stack and measurement tooling (pp. 55-64), ad tech and martech convergence (p. 65), squash versus racquetball (p. 66), consolidation and the five attributes with the six-deal matrix (pp. 67-70). Check disputes, supply-side developments, MMM and incrementality tooling, and the consolidation thesis against 2025-2026 deal activity. Call out that the stack was built to show where M&A may emerge, that LUMA advised Affle on Perion, that Aperiam is a venture investor, and that the deck is an M&A adviser's point of view.",
+            "brief": "Lesson 5 of the State of Digital 2026 module, from deck pages 42-70, the most opinion-heavy part of the deck. Label every statement as Framework (workflow versus decisioning, the stack, squash versus racquetball, the five attributes), Deck, Checked, Unconfirmed, Mine, Illustrative or Background. Cover efficiency versus effectiveness and the illustrative 10% versus 10x (pp. 43-45), workflow versus decisioning (pp. 46-51), agency and retail media disputes and supply-side decisioning (pp. 52-54), the decisioning stack and measurement tooling (pp. 55-64), ad tech and martech convergence (p. 65), squash versus racquetball (p. 66), consolidation and the five attributes with the six-deal matrix (pp. 67-70). Check disputes, supply-side developments, MMM and incrementality tooling, and the consolidation thesis against 2025-2026 deal activity. Call out that the stack's stated purpose includes showing where M&A activity may emerge, that LUMA advised Affle on Perion, that Aperiam is a venture investor, and that the deck is an M&A adviser's point of view.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 42-70",
               "Adweek (leaked Publicis memo), ExchangeWire digest of 19 Mar 2026, Digiday on the Publicis and The Trade Desk settlement, eMarketer on Walmart's DSP partnerships",
