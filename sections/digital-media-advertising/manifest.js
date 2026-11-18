@@ -76,6 +76,10 @@
         {
           "date": "2026-11-18",
           "note": "Module planned: five lessons from the deck; lesson 1 built, lessons 2-5 stubs"
+        },
+        {
+          "date": "2026-11-18",
+          "note": "Lesson 2 built: consumers moving to AI, with the deck's user, hours and ad claims cross-checked"
         }
       ],
       "rebuild": {
@@ -168,59 +172,81 @@
           "id": "sod-2",
           "title": "2. Consumers Move to AI: Attention, Money and Intent",
           "pip": "#c0642b",
-          "blurb": "How consumers adopt AI, how AI platforms might earn money, and why the deck thinks advertising follows intent.",
+          "blurb": "How fast consumers are moving to AI, how the assistants might earn money, and why the deck calls AI conversations intent data, with each claim checked or flagged.",
           "tags": [
             "advertising",
             "ad tech",
             "luma"
           ],
-          "plan": {
-            "goals": [
-              "Read the adoption and time-spent evidence for consumer AI and say what it does and does not show",
-              "Compare the subscription and advertising routes for AI platforms",
-              "Follow the deck's argument that advertising is built on proxies and that intent is the end game, and test it"
-            ],
-            "concepts": [
-              "Consumer AI adoption (ChatGPT at a billion monthly users, per the deck) and time spent",
-              "Subscription versus advertising",
-              "All roads lead to advertising",
-              "Impression, viewability and attention as proxies",
-              "Search as monetised intent; AI answers as richer, longer-lived context"
-            ],
-            "takeaways": [
-              "Adoption and time spent are claims to check against outside data",
-              "The deck's monetisation argument is a pattern from past platforms, not a proof",
-              "Intent is the valuable signal, but AI-held context raises privacy and trust questions"
-            ],
-            "connections": [
-              "Builds on lesson 1's AI-layers slide (p. 4)",
-              "Leads into the compressed purchase funnel in lesson 3"
-            ],
-            "build": "Adoption and time-spent charts redrawn with sources, a subscription-versus-ads revenue sketch, and a proxy-ladder diagram from impression to intent.",
-            "notes": [
-              "Source: LUMA Partners, State of Digital 2026, pages 8-16 of the attached trimmed PDF (printed page = PDF page). Every citation of the deck uses [[pp. N-M]] links. Keep the Deck / Checked / Unconfirmed / Mine labelling used in lesson 1, and research outside sources for any checkable claim at build time."
-            ]
-          },
-          "status": "stub",
-          "file": "shared/outline.html?id=sod-2",
-          "anchors": [],
+          "file": "sections/digital-media-advertising/lessons/sod-2-consumers-move-to-ai.html",
+          "anchors": [
+            {
+              "id": "sod2-1",
+              "title": "How fast consumers moved",
+              "anchor": "sec1"
+            },
+            {
+              "id": "sod2-2",
+              "title": "Time spent",
+              "anchor": "sec2"
+            },
+            {
+              "id": "sod2-3",
+              "title": "Who pays: subscriptions or ads",
+              "anchor": "sec3"
+            },
+            {
+              "id": "sod2-4",
+              "title": "All roads lead to advertising?",
+              "anchor": "sec4"
+            },
+            {
+              "id": "sod2-5",
+              "title": "Proxies and intent",
+              "anchor": "sec5"
+            },
+            {
+              "id": "sod2-6",
+              "title": "Search versus AI answers",
+              "anchor": "sec6"
+            },
+            {
+              "id": "sod2-7",
+              "title": "What was confirmed and what was not",
+              "anchor": "sec7"
+            },
+            {
+              "id": "sod2-src",
+              "title": "Takeaways & sources",
+              "anchor": "sec-src"
+            }
+          ],
           "dates": {
-            "planned": "2026-11-18"
+            "created": "2026-11-18",
+            "updated": "2026-11-18",
+            "verified": "2026-11-18"
           },
           "history": [
             {
               "date": "2026-11-18",
               "note": "Planned (stub)"
+            },
+            {
+              "date": "2026-11-18",
+              "note": "Built from deck pages 8-16: a source-lens toggle on the ChatGPT and Muse growth charts, an hours-per-user calculator, an assistant-by-assistant ad status explorer with an ad revenue sketch, pattern-versus-exceptions on advertising, a proxy ladder, a conversation signals model with memory and sharing switches, and a claims ledger."
             }
           ],
           "rebuild": {
-            "brief": "Build from the plan: visual and interactive, introductory, for a curious general reader. Source pages: pages 8-16 of the deck. Paraphrase the deck, separate its claims from what can be checked, and flag where it is the point of view of a firm that advises on ad tech M&A. Build in order, after the previous lesson.",
+            "brief": "Lesson 2 of the State of Digital 2026 module, from deck pages 8-16. Cover the two paradigm shifts (pp. 8-9), consumer AI adoption (p. 10), time spent (p. 11), subscription versus advertising (p. 12), all roads lead to advertising (p. 13), the proxy ladder to intent (p. 14), and AI answers as richer intent than search (pp. 15-16). Widgets: source-lens bar chart, Muse claim explorer, hours-per-user calculator, per-assistant ad status, ad revenue sketch, pattern versus exceptions, proxy ladder, conversation signals model, claims ledger. Tag every claim Deck, Checked, Unconfirmed, Mine, Illustrative or Background; call out that the deck is an M&A adviser's point of view; disclose that Claude is made by Anthropic.",
             "basis": [
               "LUMA Partners, State of Digital 2026 (attached reading), pages 8-16",
-              "Outside sources checked at build time"
+              "Sensor Tower, State of AI 2026 press release, 16 Jun 2026 (ChatGPT 1bn monthly users May 2026; 17.2bn to projected 36bn hours)",
+              "Mixed (mixed-news.com), Meta's Muse tops Apple's US free iPhone chart, Sep 2026; other reports of the same",
+              "OpenAI posts on ads in ChatGPT (16 Jan 2026 and later updates); Anthropic, Claude is a space to think (4 Feb 2026); eMarketer on Perplexity; Android Central on Google and Gemini ads",
+              "Similarweb and Semrush coverage on prompt versus search length (the 7x claim could not be traced to one study)",
+              "Brin and Page, 1998, appendix on advertising and search (background)"
             ]
           },
-          "overlaps": [],
           "standard": "v1"
         },
         {
