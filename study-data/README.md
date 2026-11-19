@@ -60,3 +60,13 @@ Resetting does not touch the lessons or the attached documents, only your own ma
 ```
 
 Highlights are stored by the text they cover, not by position, so they survive small edits to a lesson.
+
+## When a lesson file moves
+
+Progress is keyed by lesson id, so moving a lesson does not affect which lessons are marked read. Highlights and notes, however, are keyed by the lesson's repo path (`lesson:sections/<section>/lessons/<file>.html`; attached readings use `reading:<reading id>`). If a lesson file is moved or renamed, its highlights would be orphaned under the old path unless the keys are remapped:
+
+1. Add the old and new path prefix to `shared/path-remap.json`. The server rewrites matching keys when it starts and when you import a backup, and the hub rewrites them in the browser's own copy, so an old backup or browser cannot bring the old key back.
+2. Or run `node scripts/remap-study-data.mjs <old-prefix> <new-prefix>` (add `--apply` to write) with the server stopped. With no prefixes it applies `shared/path-remap.json` to `.hub-data/annotations.json` and `study-data/study-data.json`.
+3. Then run `npm run sync-data` so the repo copy matches.
+
+Retitling a section or a lesson, without moving its file, needs none of this.

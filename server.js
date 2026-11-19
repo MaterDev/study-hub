@@ -102,6 +102,21 @@ function saveProgress() {
 const NOTES_FILE = path.join(DATA_DIR, "annotations.json");
 let notes = { schema: "hub-annotations/1", items: {} };
 try { notes = JSON.parse(fs.readFileSync(NOTES_FILE, "utf8")); notes.items = notes.items || {}; } catch (_) {}
+/* Annotation keys are "lesson:<repo path>"; shared/path-remap.json lists prefixes that moved, so old keys (on load, or from an old backup) are rewritten to the new ones. */
+let PATH_REMAP = [];
+try { PATH_REMAP = JSON.parse(fs.readFileSync(path.join(__dirname, "shared", "path-remap.json"), "utf8")).paths || []; } catch (_) {}
+function remapKey(key) {
+  const m = /^([a-z]+:)(.*)$/.exec(key); if (!m) return key;
+  for (const r of PATH_REMAP) if (m[2].startsWith(r.from)) return m[1] + r.to + m[2].slice(r.from.length);
+  return key;
+}
+function remapItems(items) {
+  const out = {};
+  for (const k of Object.keys(items || {})) { const nk = remapKey(k), have = new Map((out[nk] || []).map(a => [a.id, a]));
+    for (const a of items[k]) have.set(a.id, a); out[nk] = [...have.values()]; }
+  return out;
+}
+if (PATH_REMAP.length && Object.keys(notes.items).some(k => remapKey(k) !== k)) { notes.items = remapItems(notes.items); saveNotes(); }
 function saveNotes() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   const tmp = NOTES_FILE + ".tmp";
@@ -122,9 +137,9 @@ function importBundle(b, mode) {
   let p = 0, n = 0;
   if (mode === "replace") { progress.items = {}; notes.items = {}; }
   for (const id of Object.keys(inP)) { if (!ID_OK.test(id)) continue; const cur = progress.items[id]; progress.items[id] = cur ? newer(cur, inP[id], ["lastOpened", "readAt"]) : inP[id]; p++; }
-  for (const doc of Object.keys(inN)) { if (!Array.isArray(inN[doc]) || doc.length > 300) continue;
+  for (const rawDoc of Object.keys(inN)) { const doc = remapKey(rawDoc); if (!Array.isArray(inN[rawDoc]) || doc.length > 300) continue;
     const have = new Map((notes.items[doc] || []).map(a => [a.id, a]));
-    for (const a of inN[doc]) { if (!a || !a.id) continue; have.set(a.id, have.has(a.id) ? newer(have.get(a.id), a, ["updated", "created"]) : a); n++; }
+    for (const a of inN[rawDoc]) { if (!a || !a.id) continue; have.set(a.id, have.has(a.id) ? newer(have.get(a.id), a, ["updated", "created"]) : a); n++; }
     notes.items[doc] = [...have.values()]; }
   progress.updated = new Date().toISOString(); notes.updated = progress.updated; saveProgress(); saveNotes();
   return { ok: true, progressItems: p, annotations: n, mode };

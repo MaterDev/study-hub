@@ -15,8 +15,21 @@
     try{ fetch("/__hub/api/annotations", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({doc:doc, items:store.items[doc]||[]})}).catch(function(){}); }catch(e){}
     emit();
   }
-  var ready = fetch("/__hub/api/annotations").then(function(r){ return r.json(); }).then(function(j){ store.items = j.items || {}; mirror(); })
-    .catch(function(){ try{ store.items = JSON.parse(localStorage.getItem(LS)) || {}; }catch(e){ store.items = {}; } });
+  /* keys of lessons that moved are rewritten through shared/path-remap.json, so a stale browser mirror cannot bring an old key back */
+  var remapRules = fetch("/shared/path-remap.json").then(function(r){ return r.json(); }).then(function(j){ return j.paths || []; }).catch(function(){ return []; });
+  function remapStore(items, rules){
+    var out = {}, changed = false;
+    Object.keys(items || {}).forEach(function(k){
+      var nk = k, m = /^([a-z]+:)(.*)$/.exec(k);
+      if(m) rules.some(function(r){ if(m[2].indexOf(r.from)===0){ nk = m[1] + r.to + m[2].slice(r.from.length); return true; } return false; });
+      if(nk !== k) changed = true;
+      var seen = {}; (out[nk] || []).forEach(function(a){ seen[a.id] = a; }); items[k].forEach(function(a){ seen[a.id] = a; });
+      out[nk] = Object.keys(seen).map(function(id){ return seen[id]; });
+    });
+    return changed ? out : items;
+  }
+  var ready = Promise.all([fetch("/__hub/api/annotations").then(function(r){ return r.json(); }).then(function(j){ return j.items || {}; }).catch(function(){ try{ return JSON.parse(localStorage.getItem(LS)) || {}; }catch(e){ return {}; } }), remapRules])
+    .then(function(v){ store.items = remapStore(v[0], v[1]); mirror(); });
   function emit(){ listeners.forEach(function(f){ try{ f(); }catch(e){} }); }
   function list(doc){ return (store.items[doc]||[]).slice(); }
   function find(id){ for(var d in store.items){ var a = store.items[d].filter(function(x){ return x.id===id; })[0]; if(a) return {doc:d, ann:a}; } return null; }

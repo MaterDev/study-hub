@@ -4,14 +4,14 @@
 (window.HUB_SECTIONS = window.HUB_SECTIONS || []).push({
   "schema": "hub-section/1",
   "created": "2026-07-22",
-  "updated": "2026-11-05",
+  "updated": "2026-11-19",
   "id": "building-with-ai",
   "order": 2,
-  "title": "Building & Learning with AI",
+  "title": "Artificial Intelligence",
   "icon": "🛠️",
-  "summary": "Engineering systems on top of models, and the human side: how AI changes the way we work, what it does to our skills, and how to use it so you get better, not just faster.",
+  "summary": "Working with AI: orchestrating agents and tools, engineering context, choosing models, personal AI workflows, and the evidence on how AI changes our work and skills.",
   "scope": {
-    "purpose": "Technical decisions when building software that uses LLMs and agents, together with evidence and practice on how individuals and teams work, learn and develop expertise alongside AI.",
+    "purpose": "Artificial intelligence as a working subject: technical decisions when building software that uses LLMs and agents (orchestration, context, models, diffs), together with evidence and practice on how individuals and teams work, learn and develop expertise alongside AI.",
     "includes": [
       "Agent and sub-agent orchestration patterns",
       "Tool interfaces for agents (CLI, MCP, code execution)",

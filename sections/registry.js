@@ -7,7 +7,6 @@ window.HUB_REGISTRY = [
   "platforms",
   "soft-skills",
   "mind-philosophy",
-  "systems-information",
   "digital-media-advertising"
 ];
 /* Loads every manifest via <script src> (works on file://), then calls cb(sortedSections). */

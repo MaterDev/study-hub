@@ -21,7 +21,7 @@
     ],
     "excludes": [
       "Platform-specific technical knowledge (→ Platforms)",
-      "How AI changes skills and learning (→ Building & Learning with AI)",
+      "How AI changes skills and learning (→ Artificial Intelligence)",
       "Management theory with no day-to-day application for a developer"
     ],
     "admission": [

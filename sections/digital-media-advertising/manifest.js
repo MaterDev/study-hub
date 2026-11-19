@@ -3,27 +3,27 @@
 (window.HUB_SECTIONS = window.HUB_SECTIONS || []).push({
   "schema": "hub-section/1",
   "created": "2026-11-18",
-  "updated": "2026-11-18",
+  "updated": "2026-11-19",
   "id": "digital-media-advertising",
-  "order": 7,
-  "title": "Digital Media & Advertising",
+  "order": 6,
+  "title": "Advertising & Marketing",
   "icon": "📡",
-  "summary": "How advertising, ad tech and media work and are changing, read from industry sources with their claims separated from the evidence.",
+  "summary": "How advertising, marketing, ad tech and media work and are changing, read from industry sources with their claims separated from the evidence.",
   "scope": {
-    "purpose": "Understand the business of digital media: advertising markets, ad tech, attention and measurement, and how AI is changing them.",
+    "purpose": "Understand the business of advertising and marketing: advertising markets, ad tech, media and attention, measurement, and how AI is changing them.",
     "includes": [
-      "Ad tech and the advertising ecosystem",
+      "Advertising, marketing and the ad tech ecosystem",
       "Consumer attention and the media channels that capture it",
       "AI's effect on search, commerce and advertising",
       "Reading industry reports and conference decks critically"
     ],
     "excludes": [
       "Building storefronts or sites on a platform (→ Platforms)",
-      "General AI tooling and workflows (→ Building & Learning with AI)",
-      "Front-end performance of ad scripts (→ Web Realtime, Performance & Motion)"
+      "General AI tooling and workflows (→ Artificial Intelligence)",
+      "Front-end performance of ad scripts (→ Building & Engineering)"
     ],
     "admission": [
-      "Is it about how advertising or digital media is bought, sold, measured or consumed?",
+      "Is it about how advertising or marketing is planned, bought, sold, measured or consumed?",
       "Can it be taught from a named source with its claims checked against outside evidence?"
     ],
     "audience": "Curious readers, including developers, who work near advertising and media and want the business logic behind it.",

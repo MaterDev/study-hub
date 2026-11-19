@@ -4,14 +4,14 @@
 (window.HUB_SECTIONS = window.HUB_SECTIONS || []).push({
   "schema": "hub-section/1",
   "created": "2026-07-21",
-  "updated": "2026-11-05",
+  "updated": "2026-11-19",
   "id": "web-realtime",
   "order": 1,
-  "title": "Web Realtime, Performance & Motion",
+  "title": "Building & Engineering",
   "icon": "🌐",
-  "summary": "How browsers talk in real time, how multiplayer games survive the network, and how the browser turns code into pixels fast, smooth and measurable.",
+  "summary": "Engineering for the web: how browsers talk in real time, how multiplayer games survive the network, and how the browser turns code into pixels that are fast, smooth and measurable.",
   "scope": {
-    "purpose": "Protocols and synchronisation for realtime web experiences, plus the browser rendering pipeline and everything that rides on it: loading, main-thread work, animation, graphics and measuring the result.",
+    "purpose": "Building and engineering for the web: protocols and synchronisation for realtime experiences, plus the browser rendering pipeline and everything that rides on it (loading, main-thread work, animation, graphics, performance and measuring the result).",
     "includes": [
       "Browser realtime APIs (WebSocket, WebRTC, WebTransport, SSE)",
       "Transport fundamentals (TCP/UDP, head-of-line blocking, jitter, loss)",
@@ -27,7 +27,7 @@
       "Profiling (DevTools) and real-user measurement"
     ],
     "excludes": [
-      "AI or agent tooling (→ Building & Learning with AI)",
+      "AI or agent tooling (→ Artificial Intelligence)",
       "Game design or art pipelines unrelated to networking",
       "Visual or UX design theory without a rendering/performance angle"
     ],

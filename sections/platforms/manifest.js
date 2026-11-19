@@ -20,8 +20,8 @@
       "Scoping, estimating and collaborating with clients"
     ],
     "excludes": [
-      "Pure web-platform techniques with no platform angle (→ Web Realtime, Performance & Motion)",
-      "AI tooling and agent workflows (→ Building & Learning with AI)",
+      "Pure web-platform techniques with no platform angle (→ Building & Engineering)",
+      "AI tooling and agent workflows (→ Artificial Intelligence)",
       "Client-confidential details of specific projects"
     ],
     "admission": [

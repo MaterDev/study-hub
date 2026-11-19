@@ -1,6 +1,6 @@
 {
   "schema": "study-hub-data/1",
-  "exportedAt": "2026-11-18T17:53:10.644Z",
+  "exportedAt": "2026-11-19T20:45:07.506Z",
   "progress": {
     "anim-02": {
       "read": true,
@@ -20,15 +20,15 @@
       "read": true,
       "readAt": "2026-10-23T20:46:15.241Z",
       "firstOpened": "2026-10-23T18:26:10.463Z",
-      "lastOpened": "2026-11-18T17:29:23.307Z",
-      "opens": 6
+      "lastOpened": "2026-11-19T20:37:26.571Z",
+      "opens": 7
     },
     "transports": {
       "read": true,
       "readAt": "2026-10-23T20:46:18.081Z",
       "firstOpened": "2026-10-23T18:26:11.779Z",
-      "lastOpened": "2026-10-23T18:27:08.823Z",
-      "opens": 2
+      "lastOpened": "2026-11-19T20:37:34.012Z",
+      "opens": 3
     },
     "webrtc": {
       "read": true,
@@ -39,10 +39,10 @@
     },
     "gameloops": {
       "read": true,
-      "readAt": "2026-10-23T20:46:20.469Z",
+      "readAt": "2026-11-19T20:37:30.820Z",
       "firstOpened": "2026-10-23T18:26:13.705Z",
-      "lastOpened": "2026-10-23T18:27:10.812Z",
-      "opens": 2
+      "lastOpened": "2026-11-19T20:37:28.941Z",
+      "opens": 3
     },
     "netcodemodels": {
       "read": true,
@@ -188,8 +188,8 @@
       "read": true,
       "readAt": "2026-10-27T21:28:28.497Z",
       "firstOpened": "2026-10-26T14:59:54.906Z",
-      "lastOpened": "2026-10-27T22:15:44.462Z",
-      "opens": 78
+      "lastOpened": "2026-11-19T20:44:51.351Z",
+      "opens": 79
     },
     "sh-1.1": {
       "read": false,
@@ -328,43 +328,43 @@
       "read": false,
       "readAt": null,
       "firstOpened": "2026-11-05T18:13:51.453Z",
-      "lastOpened": "2026-11-05T18:14:58.257Z",
-      "opens": 4
+      "lastOpened": "2026-11-19T20:44:23.126Z",
+      "opens": 5
     },
     "sod-1": {
-      "read": false,
-      "readAt": null,
+      "read": true,
+      "readAt": "2026-11-18T19:24:30.269Z",
       "firstOpened": "2026-11-18T16:59:30.385Z",
-      "lastOpened": "2026-11-18T17:04:37.597Z",
-      "opens": 7
+      "lastOpened": "2026-11-18T20:33:37.581Z",
+      "opens": 13
     },
     "sod-2": {
-      "read": false,
-      "readAt": null,
+      "read": true,
+      "readAt": "2026-11-18T19:38:28.173Z",
       "firstOpened": "2026-11-18T17:04:45.765Z",
-      "lastOpened": "2026-11-18T17:09:23.890Z",
-      "opens": 3
+      "lastOpened": "2026-11-18T20:52:08.278Z",
+      "opens": 8
     },
     "sod-3": {
-      "read": false,
-      "readAt": null,
+      "read": true,
+      "readAt": "2026-11-18T19:51:42.342Z",
       "firstOpened": "2026-11-18T17:09:28.807Z",
-      "lastOpened": "2026-11-18T17:30:31.103Z",
-      "opens": 7
+      "lastOpened": "2026-11-18T21:02:35.240Z",
+      "opens": 13
     },
     "sod-4": {
-      "read": false,
-      "readAt": null,
+      "read": true,
+      "readAt": "2026-11-18T19:56:35.235Z",
       "firstOpened": "2026-11-18T17:13:48.536Z",
-      "lastOpened": "2026-11-18T17:29:55.081Z",
-      "opens": 4
+      "lastOpened": "2026-11-18T21:23:11.678Z",
+      "opens": 8
     },
     "sod-5": {
-      "read": false,
-      "readAt": null,
+      "read": true,
+      "readAt": "2026-11-18T21:40:06.222Z",
       "firstOpened": "2026-11-18T17:17:33.618Z",
-      "lastOpened": "2026-11-18T17:29:44.849Z",
-      "opens": 5
+      "lastOpened": "2026-11-18T21:40:04.463Z",
+      "opens": 14
     }
   },
   "annotations": {
@@ -523,6 +523,60 @@
         "created": "2026-10-27T21:13:18.892Z",
         "title": "The Trusted Advisor: Earning Client Trust",
         "updated": "2026-10-27T21:13:20.577Z"
+      }
+    ],
+    "lesson:sections/digital-media-advertising/lessons/sod-3-the-ai-purchase-funnel.html": [
+      {
+        "id": "nmwmj63nv9xk4",
+        "color": "yellow",
+        "note": "",
+        "quote": "His argument is about independent agents: platforms with advertising revenue and valuable purchase data have no reason to let outside agents sit between them and the customer, so he expects agentic features to extend the big platforms rather than to build a separate business.",
+        "prefix": "chatbots and shopping agents. ",
+        "suffix": " He calls agentic commerce ine",
+        "created": "2026-11-18T19:44:58.123Z",
+        "title": "The AI Purchase Funnel"
+      },
+      {
+        "id": "nmwmj6k110ehz",
+        "color": "yellow",
+        "note": "",
+        "quote": "Shopify is preparing for agents to act as personal shoppers, that they could help smaller merchants be found, and that only about 18% of US retail purchases are made online.",
+        "prefix": "pened in full) has him saying ",
+        "suffix": " Reported Search-result summar",
+        "created": "2026-11-18T19:45:19.333Z",
+        "title": "The AI Purchase Funnel"
+      }
+    ],
+    "lesson:sections/digital-media-advertising/lessons/sod-5-decisioning-where-value-moves.html": [
+      {
+        "id": "nmwmn5zxn8y4f",
+        "color": "yellow",
+        "note": "",
+        "quote": "Google's Meridian MMM is open source",
+        "prefix": "d anyway) cheaper and faster. ",
+        "suffix": ". It also quotes a venture inv",
+        "created": "2026-11-18T21:36:51.755Z",
+        "title": "Decisioning: Where Value Moves"
+      },
+      {
+        "id": "nmwmn6hyj3u96",
+        "color": "yellow",
+        "note": "",
+        "quote": "small differences in intelligence can mean big differences in results",
+        "prefix": " skill edge wins reliably, so ",
+        "suffix": " (p. 66). That is an analogy, ",
+        "created": "2026-11-18T21:37:15.115Z",
+        "title": "Decisioning: Where Value Moves"
+      },
+      {
+        "id": "nmwmn6xxt2c9z",
+        "color": "yellow",
+        "note": "",
+        "quote": "AI will help resolve ad tech's fragmentation, leaving fewer players, more direct connections, higher volumes per company, lower take rates and better quality (p. 68). A take rate is the percentage of ad spend a firm keeps.",
+        "prefix": "few big ones (p. 67). It says ",
+        "suffix": "\n  The five attributes it says",
+        "created": "2026-11-18T21:37:35.825Z",
+        "title": "Decisioning: Where Value Moves"
       }
     ]
   }

@@ -124,15 +124,16 @@ Bring over only lessons + learning material (not the old project's tooling, memo
 
 ## Current sections
 
-| # | Section | Contains |
+| # | Section (folder id) | Contains |
 |---|---|---|
-| 1 | Web Realtime, Performance & Motion | Foundations + netcode-feasibility spike case study · Course: Web Animation & Motion Graphics · Course: FE Web Performance Workshop |
-| 2 | Building & Learning with AI | Agents & tools; context engineering; choosing models · individual AI workflows + the Lovett (2026) module |
-| 3 | Platforms | Courses: Shopify for Developers · WordPress for Front-End & UI Developers |
-| 4 | Soft Skills & Collaboration | Trust and client relationships (The Trusted Advisor) |
-| 5 | Mind & Philosophy | Careenium module (Hofstadter 1982), 4 lessons |
-| 6 | Systems & Information | Wiener's Cybernetics module, 10 lessons planned |
-| 7 | Digital Media & Advertising | State of Digital 2026 module (LUMA Partners), 5 lessons |
+| 1 | Building & Engineering (`web-realtime`) | Web realtime foundations + netcode-feasibility spike case study · Course: Web Animation & Motion Graphics · Course: FE Web Performance Workshop |
+| 2 | Artificial Intelligence (`building-with-ai`) | Agents & tools; context engineering; choosing models · individual AI workflows + the Lovett (2026) module · AI diff material |
+| 3 | Platforms (`platforms`) | Courses: Shopify for Developers · WordPress for Front-End & UI Developers |
+| 4 | Soft Skills & Collaboration (`soft-skills`) | Trust and client relationships (The Trusted Advisor) |
+| 5 | Philosophy (`mind-philosophy`) | Careenium module (Hofstadter 1982), 4 lessons · Wiener's Cybernetics module, 10 lessons (3 built) |
+| 6 | Advertising & Marketing (`digital-media-advertising`) | State of Digital 2026 module (LUMA Partners), 5 lessons |
+
+Section folder ids are deliberately kept when a section is retitled or merged, because a lesson's repo path is the key for its saved highlights and notes (see "Moving or renaming lessons" below).
 
 ## Notes
 
@@ -146,3 +147,6 @@ Bring over only lessons + learning material (not the old project's tooling, memo
 
 ### Study data (progress, highlights, notes)
 Personal data lives in `.hub-data/` (server) or browser storage and is never committed. `shared/hub-data.js` adds the DATA panel (export to `study-data/study-data.json`, download, import with merge or replace, optional auto-use of the repo copy, reset); the server routes are `/__hub/api/export`, `/export-to-repo`, `/import` and `/reset`. `npm run reset` clears it from a terminal. See `study-data/README.md`.
+
+### Moving or renaming lessons
+Highlights and notes are keyed by `lesson:<repo-relative path>` (readings by their own key), in `.hub-data/annotations.json`, the browser mirror `hub-notes-v1` and `study-data/study-data.json`. Progress is keyed by lesson id and is unaffected by a move. If you move or rename a lesson file, remap its keys with `node scripts/remap-study-data.mjs <old-prefix> <new-prefix>` (see `study-data/README.md`), and add the old-to-new prefix to `PATH_REMAP` in `shared/hub-annotate.js` so a browser that still holds the old key is migrated on load. Changing only a section's title, or a lesson's manifest title, needs no remap.

@@ -1,0 +1,6 @@
+{
+  "about": "Highlights and notes are keyed by 'lesson:<repo path>'. When lesson files move, list the old and new path prefix here. The server (on load and on import), the hub's browser mirror and scripts/remap-study-data.mjs all use this list, so old keys are never left behind or brought back from a backup.",
+  "paths": [
+    { "from": "sections/systems-information/lessons/cybernetics-", "to": "sections/mind-philosophy/lessons/cybernetics-", "moved": "2026-11-19" }
+  ]
+}
