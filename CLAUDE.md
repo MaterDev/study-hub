@@ -10,8 +10,10 @@ A personal, local study app: interactive lessons built with an agent. Structure 
 - The Write and Edit tools trigger a hook that auto-opens any `.html` file in the browser pane as a raw page. **Write and
   patch HTML (and JS/CSS for the hub) with Bash (heredoc or python), not Write/Edit**, so nothing pops up.
 - Check changes in both skins (light "Sky Cartridge", dark "Console Black") using the LIGHT/DARK toggle.
-- Start the server through the Terminal tool (`run_in_terminal`, `npm run dev`), not Bash: a server started from Bash
-  can't be reached by the browser pane. Restart it after editing `server.js`.
+- Start the server through the Terminal tool (`run_in_terminal`, `npm start`), not Bash: a server started from Bash
+  can't be reached by the browser pane. Use `npm start`, not `npm run dev`: dev also opens Key's own system browser, which
+  Key does not want when an agent starts it. `/study-hub` (the project skill in `.claude/skills/study-hub/`) does all of this.
+  Restart it after editing `server.js`.
 - After moving files or editing manifests, crawl every manifest page and its local assets (fetch each; report non-200)
   before saying it works.
 
