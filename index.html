@@ -453,7 +453,7 @@ function buildLesson(m, depth){
     });
     (m.examples||[]).forEach((x,i) => {
       const li = el("li","hs-section hs-ex",'<span class="hs-section-title">'+(x.standalone?"◆ ":"▣ ")+esc(x.title)+'</span>'); li.dataset.section = m.id+"-ex"+i;
-      li.addEventListener("click", () => { show(x.file); syncTo(m.id, {id:m.id+"-ex"+i, title:x.title}); });
+      li.addEventListener("click", () => { show(x.file); syncTo(m.id, {id:m.id+"-ex"+i, title:x.title}); setRoute(routeFor(m.id, {id:m.id+"-ex"+i})); });
       ul.appendChild(li);
     });
     wrap.appendChild(ul);
@@ -592,7 +592,7 @@ function buildWelcome(){
 function crumbs(parts){
   bc.innerHTML = parts.map((p,i) => '<span class="'+(i===parts.length-1?"crumb-current":"crumb-cur-group")+'">'+esc(p)+'</span>').join('<span class="crumb-sep">›</span>');
 }
-function show(src){ warp(); frame.src = src; try{ sessionStorage.setItem("hub-frame", src); }catch(e){} frame.style.display="block"; welcome.style.display="none"; if(window.innerWidth<=640) setCollapsed(true); }
+function show(src){ warp(); try{ frame.contentWindow.location.replace(new URL(src, location.href).href); }catch(e){ frame.src = src; } try{ sessionStorage.setItem("hub-frame", src); }catch(e){} frame.style.display="block"; welcome.style.display="none"; if(window.innerWidth<=640) setCollapsed(true); }
 function markActive(lessonId, anchorId, groupId, sectionId){
   document.querySelectorAll(".hs-lesson").forEach(w => w.classList.toggle("active", w.dataset.lesson===lessonId));
   document.querySelectorAll(".hs-section").forEach(r => r.classList.toggle("active", !!anchorId && r.dataset.section===anchorId));
@@ -611,25 +611,67 @@ function syncTo(id, anchor){
   revealPath(e);
   crumbs([e.section.title].concat(e.path.map(g=>g.title.replace(/^Module:\s*/,""))).concat([e.node.title + (anchor?' · '+anchor.title:'')]));
   markActive(e.node.type==="lesson"?id:null, anchor&&anchor.id, e.node.type==="group"?id:null, e.section.id);
+  setTitle(e.node.title.replace(/^Module:\s*/,""));
 }
+/* ---------- routing: every page has its own URL ----------
+   #/<section-id>            a section home
+   #/<module-or-lesson-id>   a module overview or a lesson
+   #/<lesson-id>/<part-id>   a part of a lesson (its manifest anchor id) or one of its examples
+   #/                        the stage-select home
+   Navigating updates the address (so Back, Forward, reload and copy-paste all work); loading an address opens it. */
+let ROUTE_LOCK = false;
+function routeFor(id, part){ return "#/" + encodeURIComponent(id) + (part && part.id ? "/" + encodeURIComponent(part.id) : ""); }
+function setRoute(hash, replace){
+  if(ROUTE_LOCK || location.hash === hash) return;
+  try{ history[replace ? "replaceState" : "pushState"](null, "", location.pathname + location.search + hash); }catch(e){}
+}
+function setTitle(t){ try{ document.title = t ? "Study Hub · " + t : "Study Hub"; }catch(e){} }
+/* open whatever the address names; returns false when it names nothing (so the caller can fall back) */
+function applyRoute(){
+  const parts = (location.hash || "").replace(/^#\/?/, "").split("/").filter(Boolean).map(x => { try{ return decodeURIComponent(x); }catch(e){ return x; } });
+  if(!parts.length) return false;
+  const id = parts[0], sub = parts[1];
+  ROUTE_LOCK = true;
+  try{
+    const e = INDEX[id];
+    if(e){
+      if(sub && e.node.type==="lesson"){
+        const ex = sub.match(/^(.*)-ex(\d+)$/);
+        if(ex && ex[1]===id && (e.node.examples||[])[+ex[2]]){ const x = e.node.examples[+ex[2]]; show(x.file); syncTo(id, {id:sub, title:x.title}); return true; }
+        const a = (e.node.anchors||[]).find(a => a.id===sub || a.anchor===sub);
+        openLesson(id, a || null); return true;
+      }
+      openLesson(id, null); return true;
+    }
+    if(SECTIONS.some(s => s.id===id)){ openSection(id); return true; }
+    return false;
+  } finally { ROUTE_LOCK = false; }
+}
+window.addEventListener("popstate", () => {
+  if(applyRoute()) return;
+  ROUTE_LOCK = true; try{ goHome(); } finally { ROUTE_LOCK = false; }
+});
 function openLesson(id, anchor){
   const e = INDEX[id]; if(!e) return;
   if(e.node.type==="group"){ if(e.node.home) openFile(e.node.home, id); return; }
   show(anchor ? e.node.file+"#"+anchor.anchor : e.node.file);
   syncTo(id, anchor);
+  setRoute(routeFor(id, anchor));
 }
 function openFile(file, groupId){
   show(file);
   const e = BY_FILE[file];
-  if(e) syncTo(e.node.id, null);
-  else if(groupId) syncTo(groupId, null);
+  if(e){ syncTo(e.node.id, null); setRoute(routeFor(e.node.id)); }
+  else if(groupId){ syncTo(groupId, null); setRoute(routeFor(groupId)); }
 }
 function openSection(id){
   const s = SECTIONS.find(x => x.id===id); if(!s) return;
   show("sections/"+id+"/index.html");
   crumbs([s.title, "Section home"]); markActive(null,null,null,id);
+  setTitle(s.title); setRoute("#/" + encodeURIComponent(id));
 }
 function goHome(){
+  setTitle(""); setRoute("#/");
   if(window.hubReader) window.hubReader.setContext(null);
   try{ sessionStorage.removeItem("hub-frame"); }catch(e){}
   warp(); frame.style.display="none"; welcome.style.display="block";
@@ -644,7 +686,7 @@ window.addEventListener("message", ev => {
   else if(d.hub==="section") openSection(d.id);
   else if(d.hub==="reading"){ if(window.hubReader) window.hubReader.open(d.id); }
   else if(d.hub==="cite"){ if(window.hubReader) window.hubReader.cite(d); }
-  else if(d.hub==="at"){ const e = d.id ? INDEX[d.id] : BY_FILE[d.file]; if(e) syncTo(e.node.id, null); }
+  else if(d.hub==="at"){ const e = d.id ? INDEX[d.id] : BY_FILE[d.file]; if(e){ syncTo(e.node.id, null); const r = routeFor(e.node.id); if(location.hash !== r && location.hash.indexOf(r + "/") !== 0) setRoute(r); } }
 });
 
 /* ---------- collapse ---------- */
@@ -773,17 +815,14 @@ hubLoadSections("sections/", secs => {
   }));
   buildNav(); buildWelcome();
   hubProgress.ready(()=>{ paintRead(); renderDash(); }); hubProgress.onChange(()=>{ paintRead(); renderDash(); });
-  /* deep link: index.html#/<lesson-or-module-id> or #/<section-id> */
-  const want = decodeURIComponent((location.hash||"").replace(/^#\/?/,""));
-  if(want){ history.replaceState(null,"",location.pathname);
-    if(INDEX[want]){ openLesson(want, null); return; }
-    if(SECTIONS.some(s=>s.id===want)){ openSection(want); return; } }
+  /* the address wins: #/<section>, #/<module-or-lesson>, #/<lesson>/<part> */
+  if(applyRoute()) return;
   /* restore the open page after a (hot) reload */
   let last=null; try{ last=sessionStorage.getItem("hub-frame"); }catch(e){}
   if(last){ frame.src=last; frame.style.display="block"; welcome.style.display="none";
     const base=last.split("#")[0]; const e=BY_FILE[base] || (base.startsWith("shared/outline.html?id=") && INDEX[base.slice(23)]);
-    if(e) syncTo(e.node.id, null);
-    else { const m=base.match(/^sections\/([^/]+)\/index\.html$/); if(m){ const s=SECTIONS.find(x=>x.id===m[1]); if(s){ crumbs([s.title,"Section home"]); markActive(null,null,null,s.id);} } } }
+    if(e){ syncTo(e.node.id, null); setRoute(routeFor(e.node.id), true); }
+    else { const m=base.match(/^sections\/([^/]+)\/index\.html$/); if(m){ const s=SECTIONS.find(x=>x.id===m[1]); if(s){ crumbs([s.title,"Section home"]); markActive(null,null,null,s.id); setTitle(s.title); setRoute("#/"+s.id, true);} } } }
 });
 </script>
 
