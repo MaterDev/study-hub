@@ -1,6 +1,6 @@
 {
   "schema": "study-hub-data/1",
-  "exportedAt": "2026-11-19T21:47:28.602Z",
+  "exportedAt": "2026-11-19T21:51:01.790Z",
   "progress": {
     "anim-02": {
       "read": true,
@@ -314,15 +314,15 @@
       "read": true,
       "readAt": "2026-11-12T16:52:31.101Z",
       "firstOpened": "2026-11-05T18:11:46.224Z",
-      "lastOpened": "2026-11-12T16:52:07.670Z",
-      "opens": 20
+      "lastOpened": "2026-11-19T21:49:44.866Z",
+      "opens": 22
     },
     "cy-2": {
       "read": false,
       "readAt": null,
       "firstOpened": "2026-11-05T18:11:52.480Z",
-      "lastOpened": "2026-11-19T21:44:48.316Z",
-      "opens": 13
+      "lastOpened": "2026-11-19T21:49:54.841Z",
+      "opens": 17
     },
     "cy-3": {
       "read": false,
