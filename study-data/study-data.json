@@ -1,6 +1,6 @@
 {
   "schema": "study-hub-data/1",
-  "exportedAt": "2026-11-19T20:45:07.506Z",
+  "exportedAt": "2026-11-19T21:47:28.602Z",
   "progress": {
     "anim-02": {
       "read": true,
@@ -188,8 +188,8 @@
       "read": true,
       "readAt": "2026-10-27T21:28:28.497Z",
       "firstOpened": "2026-10-26T14:59:54.906Z",
-      "lastOpened": "2026-11-19T20:44:51.351Z",
-      "opens": 79
+      "lastOpened": "2026-11-19T21:46:07.457Z",
+      "opens": 82
     },
     "sh-1.1": {
       "read": false,
@@ -321,8 +321,8 @@
       "read": false,
       "readAt": null,
       "firstOpened": "2026-11-05T18:11:52.480Z",
-      "lastOpened": "2026-11-12T16:52:32.687Z",
-      "opens": 9
+      "lastOpened": "2026-11-19T21:44:48.316Z",
+      "opens": 13
     },
     "cy-3": {
       "read": false,
@@ -342,8 +342,8 @@
       "read": true,
       "readAt": "2026-11-18T19:38:28.173Z",
       "firstOpened": "2026-11-18T17:04:45.765Z",
-      "lastOpened": "2026-11-18T20:52:08.278Z",
-      "opens": 8
+      "lastOpened": "2026-11-19T21:46:47.427Z",
+      "opens": 11
     },
     "sod-3": {
       "read": true,
@@ -577,6 +577,29 @@
         "suffix": "\n  The five attributes it says",
         "created": "2026-11-18T21:37:35.825Z",
         "title": "Decisioning: Where Value Moves"
+      }
+    ],
+    "lesson:sections/mind-philosophy/lessons/cybernetics-2-time-order-statistics.html": [
+      {
+        "id": "nmwo2rrcqvh7d",
+        "color": "yellow",
+        "note": "",
+        "quote": "Solar system\n      \n        Few bodies, very unequal in size, loosely coupled (p. 46).\n        Positions, velocities and masses very well known; computing past and future is easy and precise in principle (pp. 46-47).\n        Time can be run either way; the future repeats the past (p. 45).\n      \n    \n    \n      Weather\n      \n        An enormous number of nearly equal particles, many closely coupled (p. 46).\n        An exact record of the starting state is impossible. Words like cloud, temperature and turbulence describe a distribution of possible situations, of which one is actual (p. 47).\n        Time has a direction; all that can be predicted is a probability distribution, and even that fades with time (p. 47).",
+        "prefix": "ng (pp. 45-46).\n  \n    \n      ",
+        "suffix": "\n      \n    \n  \n  Wiener The s",
+        "created": "2026-11-19T21:41:27.482Z",
+        "title": "2. Time, order and statistics",
+        "display": "Solar system Few bodies, very unequal in size, loosely coupled (p. 46). Positions, velocities and masses very well known; computing past and future is easy and precise in principle (pp. 46-47). Time can be run either way; the future repeats the past (p. 45). Weather An enormous number of nearly equal particles, many closely coupled (p. 46). An exact record of the starting state is impossible. Words like cloud, temperature and turbulence describe a distribution of possible situations, of which one is actual (p. 47). Time has a direction; all that can be predicted is a probability distribution, and even that fades with time (p. 47)."
+      },
+      {
+        "id": "nmwo2v8xsohyk",
+        "color": "yellow",
+        "note": "",
+        "quote": "Biology is full of one-way processes: birth is not the reverse of death, and evolution runs from the simple to the complex (pp. 51-52).",
+        "prefix": " tidal evolution (pp. 50-51). ",
+        "suffix": " He ties this to Maxwell, Bolt",
+        "created": "2026-11-19T21:44:10.240Z",
+        "title": "2. Time, order and statistics"
       }
     ]
   }
