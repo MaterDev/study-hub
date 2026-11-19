@@ -57,10 +57,23 @@
     }
     return best;
   }
+  /* Whitespace-only text between block-level elements (or directly inside a grid, flex or table container) is
+     not rendered. Wrapping it in a <mark> would create a real element there, which becomes an empty grid or flex
+     item and breaks the layout, so such nodes are left alone. The offsets still count them. */
+  function layoutSpace(n){
+    if(/\S/.test(n.nodeValue)) return false;
+    var w = n.ownerDocument.defaultView, p = n.parentNode;
+    try{
+      if(p && p.nodeType === 1 && /grid|flex|table/.test(w.getComputedStyle(p).display)) return true;
+      return [n.previousSibling, n.nextSibling].some(function(x){
+        if(!x || x.nodeType !== 1) return false; var d = w.getComputedStyle(x).display;
+        return d !== "none" && d.indexOf("inline") !== 0; });
+    }catch(e){ return false; }
+  }
   function wrap(root, s, e, ann){
     var doc = root.ownerDocument, pos = 0, segs = [];
     textNodes(root).forEach(function(n){ var len = n.nodeValue.length, a = Math.max(s,pos), b = Math.min(e,pos+len);
-      if(a < b) segs.push({n:n, a:a-pos, b:b-pos}); pos += len; });
+      if(a < b && !layoutSpace(n)) segs.push({n:n, a:a-pos, b:b-pos}); pos += len; });
     segs.forEach(function(g){
       var r = doc.createRange(); r.setStart(g.n, g.a); r.setEnd(g.n, g.b);
       var m = doc.createElement("mark"); m.className = "hub-hl"; m.setAttribute("data-hl", ann.id); m.setAttribute("data-c", ann.color || "yellow");
